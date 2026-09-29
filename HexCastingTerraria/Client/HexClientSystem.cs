@@ -60,6 +60,20 @@ public sealed class HexClientSystem : ModSystem
     private bool _prevMouseLeft;
     private bool _prevMouseRight;
 
+    /// <summary>上一帧画布鼠标位置（屏幕像素），用于沿路径采样。</summary>
+    private Vector2? _prevCanvasMouse;
+
+    /// <summary>
+    /// 屏幕像素下的鼠标位置。不用 Main.mouseX：它在不同阶段会被换算到界面缩放 / 世界缩放空间，
+    /// 输入与绘制拿到的可能不是同一套坐标，界面缩放 ≠ 100% 时笔迹就偏离光标。
+    /// </summary>
+    internal static Vector2 RawMouse()
+    {
+        var m = Terraria.GameInput.PlayerInput.MouseInfo;
+        var s = Terraria.GameInput.PlayerInput.RawMouseScale;
+        return new Vector2(m.X * s.X, m.Y * s.Y);
+    }
+
     /// <summary>按键绑定表是否已就绪（见 PostUpdateInput 里的就绪门闩说明）。</summary>
     private bool _keybindReady;
 
@@ -123,8 +137,8 @@ public sealed class HexClientSystem : ModSystem
             HexCanvasState.BlockedInput = true;
         }
 
-        // 动画时钟：驱动 zappy 抖动随时间流动
-        canvas.Tick += 1.0;
+        // 动画时钟：驱动 zappy 抖动随时间流动。单位是 MC 游戏刻（20/秒），泰拉每秒更新 60 次
+        canvas.Tick += 20.0 / 60.0;
 
         // 无限媒质切换（开发者模式）——画布开不开都要能按。
         //
@@ -212,9 +226,12 @@ public sealed class HexClientSystem : ModSystem
         // 必须每帧刷新（而不是只在打开时画一次）：玩家移动后瞄准点会跟着变。
         UpdateAimMarker();
 
+        // 画布一律用屏幕像素（与 InterfaceScaleType.None 的绘制层一致），不受界面缩放影响
         float w = Main.screenWidth;
         float h = Main.screenHeight;
-        var mouse = new Vector2(Main.mouseX, Main.mouseY);
+        var mouse = RawMouse();
+        var prevMouse = _prevCanvasMouse ?? mouse;
+        _prevCanvasMouse = mouse;
 
         // F1 切换调试面板
         if (Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F1)
@@ -227,26 +244,23 @@ public sealed class HexClientSystem : ModSystem
         // 物品栏的压制交给 ModPlayer.PostUpdate()，它每帧强制 Main.playerInventory = false，
         // 所以画布内按 Esc 既不会关画布、也不会弹背包。
 
-        // 左键按下 → 落笔
+        // 左键按下 → 落笔。原版只在真的落笔时播 START_PATTERN（点在已用格点上不响）
         if (leftDown && !leftWasDown)
         {
-            canvas.DrawStart(mouse, w, h);
-            Content.SpellSounds.Play("casting.pattern.start");
+            if (canvas.DrawStart(mouse, w, h))
+            {
+                Content.SpellSounds.Play("casting.pattern.start");
+            }
+            prevMouse = mouse;
         }
 
-        // 每帧都尝试延展（原作 mouseMoved 与 mouseDragged 都会调用 drawMove）
-        if (leftDown || canvas.State != DrawState.BetweenPatterns)
+        // 按住左键拖动 → 沿本帧鼠标路径逐步吸附。原版每个吸附事件（含第一段、回退）都播 ADD_TO_PATTERN
+        // （抬起那一帧也要把最后一段位移算上，再收笔）
+        // 一帧内吸附多步时只响一次，免得叠音爆音。
+        if ((leftDown || leftWasDown) && canvas.State != DrawState.BetweenPatterns
+            && canvas.DrawMove(prevMouse, mouse, w, h).Count > 0)
         {
-            // 用「角度序列长度」判断有没有真的多画一段。
-            // 不能用「这一帧有没有在拖」—— 鼠标停着不动时每帧都会响，会变成噪音。
-            int before = canvas.WipPattern?.Angles.Count ?? 0;
-            canvas.DrawMove(mouse, w, h);
-            int after = canvas.WipPattern?.Angles.Count ?? 0;
-
-            if (after > before)
-            {
-                Content.SpellSounds.Play("casting.pattern.add_segment");
-            }
+            Content.SpellSounds.Play("casting.pattern.add_segment");
         }
 
         // 法术配色跟着本地玩家的存档值走（`colorize` 改的就是它）。
@@ -324,6 +338,22 @@ public sealed class HexClientSystem : ModSystem
             index = layers.Count;
         }
 
+        // 笔迹层：屏幕像素坐标（InterfaceScaleType.None），与输入端的 RawMouse() 同一套坐标。
+        // 放在 HUD 层下面，HUD 文字压在笔迹上方。
+        layers.Insert(index, new LegacyGameInterfaceLayer(
+            "HexCastingTerraria: Hex Canvas Strokes",
+            () =>
+            {
+                bool ctrl = Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl)
+                            || Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightControl);
+                // 原版：按住 Ctrl 才显示笔顺渐变（ctrlTogglesOffStrokeOrder 默认 false）
+                HexCanvasState.Canvas.DrawContent(Main.screenWidth, Main.screenHeight, RawMouse(),
+                    showStrokeOrder: ctrl, Matrix.Identity);
+                return true;
+            },
+            InterfaceScaleType.None));
+        index++;
+
         layers.Insert(index, new LegacyGameInterfaceLayer(
             "HexCastingTerraria: Hex Canvas",
             () =>
@@ -333,7 +363,6 @@ public sealed class HexClientSystem : ModSystem
                 var mouse = new Vector2(Main.mouseX, Main.mouseY);
 
                 var canvas = HexCanvasState.Canvas;
-                canvas.DrawContent(Main.spriteBatch, Pixel, w, h, mouse);
                 DrawHud(Main.spriteBatch, w, h, mouse);
                 DrawVmStack(Main.spriteBatch, w, h);
 
@@ -429,7 +458,8 @@ public sealed class HexClientSystem : ModSystem
         // 这是排查「画出来的和想画的不是一个形状」最直接的信息：
         // 一边拖就能看到系统读到的角度串、以及当前是否已经命中某条图案。
         // 没有它，玩家只有松手之后才知道画错了，而且只知道「无效」，不知道差在哪。
-        if (canvas.IsOpen && canvas.WipPattern is { } wip)
+        bool diag = HexClientConfig.Instance.ShowDebugPanel;
+        if (diag && canvas.IsOpen && canvas.WipPattern is { } wip)
         {
             var live = PatternRegistry.Match(wip);
             string sig = wip.AnglesSignature();
@@ -455,7 +485,8 @@ public sealed class HexClientSystem : ModSystem
         }
 
         // ===== 最近识别结果 =====
-        if (canvas.LastPattern != null)
+        // （原版靠图案颜色表达结果：蓝=已求值 黄=已转义 红=出错/无效 灰=等待中）
+        if (diag && canvas.LastPattern != null)
         {
             var last = canvas.LastPattern;
             string line = last.IsValid

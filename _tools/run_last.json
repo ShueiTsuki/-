@@ -1,5 +1,5 @@
 {
-    "at":  "2026-09-29 10:18:34",
+    "at":  "2026-09-29 10:33:33",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
@@ -10,7 +10,7 @@
                    "failed":  0
                },
     "drawtest":  {
-                     "passed":  91,
+                     "passed":  119,
                      "failed":  0
                  },
     "assets":  {
@@ -19,7 +19,7 @@
                },
     "package":  {
                     "ok":  true,
-                    "bytes":  354169
+                    "bytes":  360759
                 },
     "server":  {
                    "ok":  true

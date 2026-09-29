@@ -54,6 +54,16 @@ public static class HexVmState
     /// </summary>
     public static bool IsStackClear => _vm?.Image.IsStackClear() ?? true;
 
+    /// <summary>
+    /// 一条图案的求值结果到了：记下来，并给画布上最后一条图案上色（原版 recvServerUpdate）。
+    /// 联机时结果要等服务端回包，在那之前图案保持灰色（Unresolved）—— 与原版一致。
+    /// </summary>
+    private static void Resolve(ResolvedPatternType type)
+    {
+        LastResolution = type;
+        HexCanvasState.Canvas.ApplyResolution(type);
+    }
+
     /// <summary>清空 VM（潜行右键重开时调用）。</summary>
     public static void Reset()
     {
@@ -109,7 +119,7 @@ public static class HexVmState
         catch (System.Exception e)
         {
             HexCastingTerraria.Instance?.Logger.Warn($"[HexCasting] 发送图案包失败：{e.Message}");
-            LastResolution = ResolvedPatternType.Errored;
+            Resolve(ResolvedPatternType.Errored);
             LastError = "无法与服务器通信";
         }
     }
@@ -129,7 +139,7 @@ public static class HexVmState
         }
 
         _syncedStack = stack;
-        LastResolution = resolution;
+        Resolve(resolution);
         LastError = resolution switch
         {
             ResolvedPatternType.Invalid => "图案无效或行为未实现",
@@ -182,7 +192,7 @@ public static class HexVmState
             }
 
             var outcome = vm.QueueExecute(vm.Image, new Iota[] { iota });
-            LastResolution = outcome.ResolutionType;
+            Resolve(outcome.ResolutionType);
 
             // 音效与粒子：单人在本地直接出
             {
@@ -203,7 +213,7 @@ public static class HexVmState
         catch (System.Exception e)
         {
             // VM 内部不应抛异常（都该转成 mishap）；这里兜底以防漏网
-            LastResolution = ResolvedPatternType.Errored;
+            Resolve(ResolvedPatternType.Errored);
             LastError = e.Message;
         }
     }

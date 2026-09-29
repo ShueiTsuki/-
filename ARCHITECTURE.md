@@ -47,6 +47,9 @@
 
 | 文件 | 职责 |
 |---|---|
+| `Canvas/PatternDrawer.cs` | 鐢诲竷涓婂凡缁忕敾瀹岀殑涓€鏉″浘妗堛€?see cref="Type"/> 鍦ㄦ眰鍊肩粨鏋滃洖鏉ヤ箣鍓嶆槸 Unresolved锛堢伆鑹诧級銆?/summary> |
+| `Canvas/PatternGeometry.cs` | 涓€涓甫棰滆壊鐨勯《鐐广€傞鑹蹭负 0xAARRGGBB锛堥潪棰勪箻 alpha锛夈€備笁涓竴缁勬瀯鎴愪笁瑙掑舰銆?/summary> |
+| `Canvas/SimplexNoise.cs` | Minecraft 鐨?`SimplexNoise` + `SingleThreadedRandomSource`锛岄€愯绉绘銆?/// |
 | `Casting/Actions/AkashicActions.cs` | `akashic/read`锛氫粠鏌愪釜鍧愭爣鐨勯樋鍗″璁板綍鏂瑰潡涓婏紝鎸?*鍥炬**鏌ヤ竴涓?iota銆?/// 绉绘鑷簮椤圭洰 akashic/OpAkashicRead.kt銆?/// |
 | `Casting/Actions/BasicActions.cs` | 甯告暟鍥炬锛氫笉鍙栧弬鏁帮紝寰€鏍堜笂鍘嬩竴涓浐瀹氬€笺€?/// 瀵瑰簲婧愰」鐩?Action.makeConstantOp(x)銆?/// </summary> |
 | `Casting/Actions/BlockActions.cs` | `conjure_block` 与 `conjure_light`：**凭空**造出一块方块 / 一盏光。 |
@@ -205,10 +208,11 @@
 | `UI/BookUiState.cs` | 涔︽湰 UI 鐨勫唴瀹癸紙<see cref="UIState"/>锛夆€斺€?**鍘熺増鐨偆**锛岀敤娉版媺鑷繁鐨勬帶浠舵惌銆?/// |
 | `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︺€?/// |
 | `UI/HexBook.Themed.cs` | 涔︽湰鐨?*鏂版覆鏌撹矾寰?*锛氱敤 <see cref="BookView"/> + <see cref="BookSkin"/> 鐢汇€?/// |
-| `UI/HexCanvas.cs` | 宸茬敾瀹岀殑涓€鏉″浘妗堬細鍥炬鏈綋銆佽捣濮嬫牸鐐广€佸尮閰嶅埌鐨勫畾涔夛紙null 琛ㄧず鏈懡涓級銆?/// </summary> |
+| `UI/HexCanvas.cs` | 宸茬敾瀹岀殑涓€鏉″浘妗?+ 娉ㄥ唽琛ㄥ尮閰嶇粨鏋滐紙null = 鏈懡涓級+ 姹傚€肩粨鏋滐紙鍐冲畾棰滆壊锛夈€?/summary> |
 | `UI/PatchouliBookElement.cs` | 甯曠鑾夌毊鑲わ紙閭ｆ湰鐨潻涔︼級浣滀负**涓€涓?UIElement**銆?/// |
 | `UI/PatternIconElement.cs` | 鎶婁竴涓?*鍥炬**鐢绘垚涓€涓?UIElement锛堢缉鐣ュ浘锛夈€?/// |
-| `UI/PatternRenderer.cs` | 鍥炬娓叉煋锛氬繝瀹炵Щ妞嶆簮椤圭洰鐨勩€寊appy锛堢數鍏夋姈鍔級銆嶇嚎鍨嬨€?/// |
+| `UI/PatternRenderer.cs` | 鍥炬鐨勯潤鎬侀瑙堬紙涔︺€佺煶鏉裤€佸嵎杞淬€侀樋鍗″璁板綍锛変笌鍥炬妫€绱㈣緟鍔┿€?/// 鐢诲竷涓婄殑鐢靛厜绾垮瀷鍦?<see cref="Core.Canvas.PatternGeometry"/>锛堥€愯绉绘 RenderLib锛夈€?/// </summary> |
+| `UI/PrimitiveBatch.cs` | 鎶?<see cref="PatternGeometry"/> 浜у嚭鐨勪笁瑙掑舰鐩存帴浜ょ粰鏄惧崱銆?/// |
 | `UI/SpriteBatchBookCanvas.cs` | 鎶?<see cref="IBookCanvas"/> 钀藉埌 tModLoader 鐨?<see cref="SpriteBatch"/> 涓?鈥斺€?/// 杩欐槸銆岀灞忛瑙堛€嶄笌銆屾父鎴忓唴瀹為檯娓叉煋銆嶄箣闂村敮涓€鐨勬ˉ銆?/// |
 
 ### （模组根目录）

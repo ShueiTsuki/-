@@ -5,6 +5,7 @@
 // 覆盖的是「几何 + 匹配」这条链路（注册表数据 → Positions() → 像素吸附 →
 // TryAppendDir → AnglesSignature → Match）。输入层（鼠标事件、帧率）不在这里，
 // 但玩家画不出来的图形，这里一定能先抓出来。
+using HexCastingTerraria.Core.Canvas;
 using HexCastingTerraria.Core.Casting.Actions;
 using HexCastingTerraria.Core.Casting.Math;
 using HexCastingTerraria.Core.Registry;
@@ -19,85 +20,23 @@ static (float X, float Y) Px((int Q, int R) c, float size)
     return (v.X, v.Y);
 }
 
-// 同样用真代码的坐标加法（HexCoord + HexDir），不再手写 6 个方向的 switch
-static (int Q, int R) Step((int Q, int R) c, HexDir d)
-{
-    var next = new HexCoord(c.Q, c.R) + d;
-    return (next.X, next.Y);
-}
 
 /// <summary>
-/// 照抄 HexCanvas.DrawMove 的状态机，但只用纯数学 —— 逐行对应，改动时两边要一起改。
-/// 返回最终签名的同时，把每一步的判定结果记进 trace 便于定位。
+/// 用**模组里的真状态机** <see cref="PatternDrawer"/> 模拟一次拖拽（每个采样点 = 一个鼠标事件，同原版）。
+/// 以前这里是「照抄 HexCanvas.DrawMove」的副本，真代码改坏了这里照样全绿。
+/// 起点取 path[0]，网格原点在像素 (0,0)。
 /// </summary>
 static string SimulateDrag(List<(float X, float Y)> path, float size, float threshold,
                            List<string>? trace = null)
 {
-    float snapSq = size * size * 2f * Math.Clamp(threshold, 0.5f, 1f);
-
-    var anchor = (Q: 0, R: 0);
-    var start = (Q: 0, R: 0);
-    HexPattern? wip = null;
-    bool started = false;
-
-    foreach (var (mx, my) in path)
+    var d = new PatternDrawer { SnapThreshold = threshold };
+    d.Begin(new Vec2f(path[0].X, path[0].Y), size, Vec2f.Zero);
+    for (int i = 1; i < path.Count; i++)
     {
-        if (!started)                       // DrawStart：落笔
-        {
-            started = true;
-            continue;
-        }
-
-        var (ax, ay) = Px(anchor, size);
-        float dx = mx - ax, dy = my - ay;
-
-        if (dx * dx + dy * dy < snapSq) continue;      // 距离不够，本帧不记
-
-        float turns = MathF.Atan2(dy, dx) / (MathF.PI * 2f) * 6f;
-        int snapped = ((int)MathF.Round(turns) + 1) % 6;
-        if (snapped < 0) snapped += 6;
-        var newDir = (HexDir)snapped;
-
-        var idealNext = Step(anchor, newDir);
-
-        if (wip is null)                    // JustStarted -> 第一段
-        {
-            wip = new HexPattern(newDir);
-            anchor = idealNext;
-            trace?.Add($"第一段 {newDir}");
-            continue;
-        }
-
-        var lastDir = wip.FinalDir();
-        if (newDir == lastDir.RotatedBy(HexAngle.Back))   // 反方向 -> 回溯
-        {
-            if (wip.Length == 0)
-            {
-                anchor = idealNext;
-                start = anchor;
-                trace?.Add("回溯到起点");
-            }
-            else
-            {
-                anchor = idealNext;
-                wip.RemoveLastAngle();
-                trace?.Add($"回溯（删掉一段）→ {wip.AnglesSignature()}");
-            }
-            continue;
-        }
-
-        if (wip.TryAppendDir(newDir))
-        {
-            anchor = idealNext;
-            trace?.Add($"加一段 {newDir} → {wip.AnglesSignature()}");
-        }
-        else
-        {
-            trace?.Add($"拒绝 {newDir}（该方向的线已经画过）");
-        }
+        var r = d.Move(new Vec2f(path[i].X, path[i].Y), size, Vec2f.Zero);
+        if (r != MoveResult.None) trace?.Add($"{r} → {d.Wip?.AnglesSignature() ?? "(起点)"}");
     }
-
-    return wip?.AnglesSignature() ?? "";
+    return d.Wip?.AnglesSignature() ?? "";
 }
 
 /// <summary>
@@ -275,6 +214,8 @@ Console.WriteLine("\n=== ③ 手抖鲁棒性：188 个图案各带平滑摆动�
     Check($"摆动 ±16px（约 25% 格距）时仍有 {188 - bad}/188 正确", bad == 0,
         badNames.Count == 0 ? null : string.Join(", ", badNames.Take(10)));
 }
+
+CanvasFeelTests.Run(size, Check);
 
 Console.WriteLine("\n=== ④ 坐标换算（HexGrid 真代码，以前是手抄副本）===");
 {
