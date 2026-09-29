@@ -81,15 +81,23 @@ public sealed class OpCoerceToAxial : ConstMediaAction
 
             case VectorIota v:
             {
-                if (System.Math.Abs(v.X) < 1e-9 && System.Math.Abs(v.Y) < 1e-9)
+                if (v.X == 0 && v.Y == 0 && v.Z == 0)
                 {
-                    return new Iota[] { v };   // 零向量原样返回
+                    return new Iota[] { v };   // 源项目：vec == Vec3.ZERO 原样返回
                 }
 
-                // 取绝对值较大的那个分量定轴（2D 下就是上下左右四向）
-                return System.Math.Abs(v.X) >= System.Math.Abs(v.Y)
-                    ? new Iota[] { new VectorIota(System.Math.Sign(v.X), 0) }
-                    : new Iota[] { new VectorIota(0, System.Math.Sign(v.Y)) };
+                // 源项目 Direction.getNearest(x, y, z)：按 DOWN, UP, NORTH(−z), SOUTH(+z), WEST(−x), EAST(+x)
+                // 的顺序取点积最大的方向，**平局取先出现的**（所以 (1,1,0) 得到的是「上」）。
+                // ⚠️ 这里曾经只看 x/y、平局取 x 轴。
+                (double X, double Y, double Z)[] dirs = { (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1), (-1, 0, 0), (1, 0, 0) };
+                var best = (X: 0.0, Y: 0.0, Z: -1.0);   // NORTH（MC 的初值）
+                double bestDot = float.Epsilon;          // Float.MIN_VALUE
+                foreach (var d in dirs)
+                {
+                    double dot = (float)v.X * d.X + (float)v.Y * d.Y + (float)v.Z * d.Z;
+                    if (dot > bestDot) { bestDot = dot; best = d; }
+                }
+                return new Iota[] { new VectorIota(best.X, best.Y, best.Z) };
             }
 
             default:

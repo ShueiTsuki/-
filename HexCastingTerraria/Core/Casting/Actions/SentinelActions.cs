@@ -39,8 +39,8 @@ public sealed class OpCreateSentinel : SpellAction
     {
         // 源项目：env.castingEntity !is ServerPlayer → MishapBadCaster（法术环里不能用哨卫）
         SentinelGuard.RequirePlayerCaster(env);
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
             new WorldSpell.Simple(_ => env.SetSentinel(x, y, _great)),
@@ -116,16 +116,18 @@ public sealed class OpGetSentinelWayfind : ConstMediaAction
     {
         // 源项目：env.castingEntity !is ServerPlayer → MishapBadCaster（法术环里不能用哨卫）
         SentinelGuard.RequirePlayerCaster(env);
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "起点");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "起点");
 
         if (env.Sentinel is not { } s)
         {
             return new Iota[] { NullIota.Instance };
         }
 
+        // 源项目 sentinel.position.subtract(from).normalize()：三维；哨卫在世界平面上（z = 0）
         double dx = s.X - x;
         double dy = s.Y - y;
-        double lenSq = dx * dx + dy * dy;
+        double dz = 0.0 - z;
+        double lenSq = dx * dx + dy * dy + dz * dz;
 
         // 与 MC 的 Vec3.normalize() 同款阈值：太短就返回零向量，不产生 NaN
         if (lenSq < 1e-8)
@@ -134,7 +136,7 @@ public sealed class OpGetSentinelWayfind : ConstMediaAction
         }
 
         double len = System.Math.Sqrt(lenSq);
-        return new Iota[] { new VectorIota(dx / len, dy / len) };
+        return new Iota[] { new VectorIota(dx / len, dy / len, dz / len) };
     }
 }
 

@@ -116,8 +116,8 @@ public abstract class Iota
             // 源项目 Vec3Iota：距离² < TOLERANCE²（曾经是精确相等）
             case (VectorIota va, VectorIota vb):
             {
-                double dx = va.X - vb.X, dy = va.Y - vb.Y;
-                return dx * dx + dy * dy < DoubleIota.Tolerance * DoubleIota.Tolerance;
+                double dx = va.X - vb.X, dy = va.Y - vb.Y, dz = va.Z - vb.Z;
+                return dx * dx + dy * dy + dz * dz < DoubleIota.Tolerance * DoubleIota.Tolerance;
             }
             // 源项目 ListIota：长度相同且逐项 tolerates（递归；曾经逐项精确相等）
             case (ListIota la, ListIota lb):

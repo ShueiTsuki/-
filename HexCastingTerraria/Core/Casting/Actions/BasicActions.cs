@@ -133,11 +133,13 @@ public static class HexActions
         Const("hexcasting:const/true", BooleanIota.True);
         Const("hexcasting:const/false", BooleanIota.False);
 
-        // 2D 适配：只保留 x/y 轴单位向量；pz/nz（±Z 轴）在二维世界无意义，不予实现
         Const("hexcasting:const/vec/0", VectorIota.Zero);
         Const("hexcasting:const/vec/px", VectorIota.UnitX);
         Const("hexcasting:const/vec/py", VectorIota.UnitY);
         Const("hexcasting:const/vec/nx", VectorIota.NegUnitX);
+        // ±Z：向量是三维的（原版同），这两个常量曾经因为「二维世界没有 z 轴」被删掉
+        Const("hexcasting:const/vec/pz", VectorIota.UnitZ);
+        Const("hexcasting:const/vec/nz", VectorIota.NegUnitZ);
         Const("hexcasting:const/vec/ny", VectorIota.NegUnitY);
 
         // 注意：本命名空间下有 HexCastingTerraria.Core.Casting.Math，

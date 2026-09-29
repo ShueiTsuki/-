@@ -113,6 +113,7 @@ internal static class IotaWire
                 w.Write(KindVec);
                 w.Write(v.X);
                 w.Write(v.Y);
+                w.Write(v.Z);
                 break;
 
             case EntityIota e:
@@ -169,7 +170,7 @@ internal static class IotaWire
                 return new DoubleIota(r.ReadDouble());
 
             case KindVec:
-                return new VectorIota(r.ReadDouble(), r.ReadDouble());
+                return new VectorIota(r.ReadDouble(), r.ReadDouble(), r.ReadDouble());
 
             case KindEntity:
             {

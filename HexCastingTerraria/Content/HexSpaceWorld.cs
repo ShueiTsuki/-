@@ -81,6 +81,8 @@ public sealed class HexSpaceWorld : ICastingWorld
 
     public bool IsVecInRange(double x, double y) => _inner.IsVecInRange(x, InY(y));
 
+    public bool IsVecInRange(double x, double y, double z) => _inner.IsVecInRange(x, InY(y), z);
+
     public bool IsTileSolid(int tileX, int tileY) => _inner.IsTileSolid(tileX, HexAxes.FlipBlock(tileY, Main.maxTilesY));
 
     public IReadOnlyList<EntityBox> EntitiesInArea(double minX, double minY, double maxX, double maxY)

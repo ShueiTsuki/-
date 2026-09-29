@@ -717,7 +717,7 @@ static class Program
         NullIota => "null",
         BooleanIota b => b.Value ? "true" : "false",
         DoubleIota d => d.Value.ToString("0.####"),
-        VectorIota v => $"({v.X:0.##},{v.Y:0.##})",
+        VectorIota v => v.Z == 0 ? $"({v.X:0.##},{v.Y:0.##})" : $"({v.X:0.##},{v.Y:0.##},{v.Z:0.##})",
         PatternIota p => "pattern:" + p.AnglesSignature,
         ListIota l => "list(" + l.Count + ")",
         GarbageIota => "garbage",
@@ -986,9 +986,10 @@ static class Program
         }
         {
             var env = new TestEnv();
+            // 原版 Vec3Arithmetic DIV = 叉积（向量）：x̂ × ŷ = ẑ（这条测试原来断言「2D 叉积 = 数字 1」）
             var img = new CastingImage(new Iota[] { new VectorIota(1, 0), new VectorIota(0, 1) });
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:div") });
-            Check("vec div = 2D 叉积 1", Sig(r.Image) == "[1]", Sig(r.Image));
+            Check("vec div = 叉积（向量）：(1,0,0) × (0,1,0) = (0,0,1)", Sig(r.Image) == "[(0,0,1)]", Sig(r.Image));
         }
         {
             var env = new TestEnv();
@@ -1047,15 +1048,16 @@ static class Program
         Console.WriteLine("=== 16. 向量拆装（2 分量）===");
         {
             var env = new TestEnv();
-            var img = new CastingImage(new Iota[] { new DoubleIota(7), new DoubleIota(9) });
+            // 原版 PACK：三个数字 → 向量（这条测试原来是两个分量）
+            var img = new CastingImage(new Iota[] { new DoubleIota(7), new DoubleIota(9), new DoubleIota(2) });
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:construct_vec") });
-            Check("construct_vec(7,9) = (7,9)", Sig(r.Image) == "[(7,9)]", Sig(r.Image));
+            Check("construct_vec(7,9,2) = (7,9,2)", Sig(r.Image) == "[(7,9,2)]", Sig(r.Image));
         }
         {
             var env = new TestEnv();
             var img = new CastingImage(new Iota[] { new VectorIota(7, 9) });
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:deconstruct_vec") });
-            Check("deconstruct_vec(7,9) = [7,9]", Sig(r.Image) == "[7, 9]", Sig(r.Image));
+            Check("deconstruct_vec(7,9) = [7,9,0]（原版 UNPACK 三个分量）", Sig(r.Image) == "[7, 9, 0]", Sig(r.Image));
         }
 
         Console.WriteLine("=== 17. 批量压力用例 ===");
@@ -4117,8 +4119,9 @@ static class Program
 
             bool zAxisAbsent = NotApplicablePatterns.ZAxisVectors.All(id => !HasBehavior(id));
             bool pehkuiAbsent = NotApplicablePatterns.PehkuiInterop.All(id => !HasBehavior(id));
-            Check("不适用清单：Z 轴向量与 Pehkui 联动都没有行为（不是「忘了做」而是「不该做」）",
-                zAxisAbsent && pehkuiAbsent && NotApplicablePatterns.Count == 4,
+            Check("不适用清单：只剩 Pehkui 联动（±Z 向量已按原版实现）",
+                zAxisAbsent && pehkuiAbsent && NotApplicablePatterns.Count == 2
+                && HasBehavior("hexcasting:const/vec/pz") && HasBehavior("hexcasting:const/vec/nz"),
                 $"count={NotApplicablePatterns.Count}");
         }
 
@@ -5432,17 +5435,57 @@ static class Program
             Check("方向：泰拉向下 = 法术 −Y", HexAxes.FlipDirection(1) == -1);
         }
 
+        // ==================== 三维向量（原版 Vec3） ====================
+        {
+            var env = new TestEnv();
+            var one = new CastingVM(new CastingImage(), env).QueueExecute(new CastingImage(), new Iota[] { P("hexcasting:const/vec/pz") });
+            Check("const/vec/pz = (0,0,1)", Sig(one.Image) == "[(0,0,1)]", Sig(one.Image));
+            var ab = new CastingImage(new Iota[] { new VectorIota(0, 3, 4) });
+            var rab = new CastingVM(ab, env).QueueExecute(ab, new Iota[] { P("hexcasting:abs") });
+            Check("长度算上 z：|(0,3,4)| = 5", Sig(rab.Image) == "[5]", Sig(rab.Image));
+            Check("相等判定算上 z", Sig(Run2(env, new VectorIota(1, 2, 3), new VectorIota(1, 2), "hexcasting:equals").Image) == "[false]");
+            var ax = new CastingImage(new Iota[] { new VectorIota(1, 1, 0) });
+            var rax = new CastingVM(ax, env).QueueExecute(ax, new Iota[] { P("hexcasting:coerce_axial") });
+            Check("coerce_axial：(1,1,0) 平局取「上」（MC Direction 顺序 下 上 北 南 西 东）", Sig(rax.Image) == "[(0,1)]", Sig(rax.Image));
+            var az = new CastingImage(new Iota[] { new VectorIota(0.1, 0.2, -3) });
+            var raz = new CastingVM(az, env).QueueExecute(az, new Iota[] { P("hexcasting:coerce_axial") });
+            Check("coerce_axial：z 占优 → (0,0,-1)", Sig(raz.Image) == "[(0,0,-1)]", Sig(raz.Image));
+
+            // 世界是 z = 0 的平面：离平面远的位置超出施法范围（三维距离）
+            var world = new FakeWorld();
+            world.Replaceable.Add((3, 3));
+            var envW = new TestEnv(world: world, media: 1_000_000);
+            var far = new CastingImage(new Iota[] { new VectorIota(3.5, 3.5, 50) });
+            var rfar = new CastingVM(far, envW).QueueExecute(far, new Iota[] { P("hexcasting:conjure_block") });
+            Check("位置 z 偏离平面 → 超出范围（原版三维距离）", rfar.ResolutionType == ResolvedPatternType.Errored && world.Conjured.Count == 0,
+                rfar.ResolutionType.ToString());
+
+            // 射线：纯 z 方向在平面上的投影为 0，打不中任何东西
+            var wr = new FakeWorld();
+            wr.Solid.Add((14, 19));
+            var envR = new TestEnv(world: wr);
+            var rz = new CastingImage(new Iota[] { new VectorIota(10, 19.4), new VectorIota(0, 0, 1) });
+            var rrz = new CastingVM(rz, envR).QueueExecute(rz, new Iota[] { P("hexcasting:raycast") });
+            Check("射线沿纯 z 方向：落空（null）", Sig(rrz.Image) == "[null]", Sig(rrz.Image));
+            // 方向 (1,0,1)：沿三维方向走 32 格，xy 投影约 22.6 格，仍能打到 4 格外的方块
+            var r45 = new CastingImage(new Iota[] { new VectorIota(10, 19.4), new VectorIota(1, 0, 1) });
+            var rr45 = new CastingVM(r45, envR).QueueExecute(r45, new Iota[] { P("hexcasting:raycast") });
+            Check("射线方向带 z：按 xy 投影判定，打到 (14,19)", Sig(rr45.Image) == "[(14.5,19.5)]", Sig(rr45.Image));
+        }
+
         // ==================== 向量 × 数字（逐分量广播） ====================
         {
             var env = new TestEnv();
             var r1 = Run2(env, new VectorIota(1, -2), new DoubleIota(3), "hexcasting:mul");
             Check("向量 × 数字 = 缩放（原版 OperatorVec3Delegating）", Sig(r1.Image) == "[(3,-6)]", Sig(r1.Image));
             var r2 = Run2(env, new DoubleIota(2), new VectorIota(1, 4), "hexcasting:sub");
-            Check("数字 − 向量：数字广播到每个分量", Sig(r2.Image) == "[(1,-2)]", Sig(r2.Image));
+            Check("数字 − 向量：数字广播到三个分量（z = 2 − 0）", Sig(r2.Image) == "[(1,-2,2)]", Sig(r2.Image));
             var r3 = Run2(env, new VectorIota(4, 6), new DoubleIota(2), "hexcasting:div");
             Check("向量 ÷ 数字", Sig(r3.Image) == "[(2,3)]", Sig(r3.Image));
-            var r4 = Run2(env, new VectorIota(5, 7), new VectorIota(3, 4), "hexcasting:modulo");
-            Check("向量 % 向量：逐分量取余", Sig(r4.Image) == "[(2,3)]", Sig(r4.Image));
+            var r4 = Run2(env, new VectorIota(5, 7, 2), new VectorIota(3, 4, 5), "hexcasting:modulo");
+            Check("向量 % 向量：逐分量取余", Sig(r4.Image) == "[(2,3,2)]", Sig(r4.Image));
+            var r4z = Run2(env, new VectorIota(5, 7), new VectorIota(3, 4), "hexcasting:modulo");
+            Check("向量 % 向量：z 分量 0 % 0 → 除以零（原版逐分量，同样报错）", r4z.ResolutionType == ResolvedPatternType.Errored, r4z.ResolutionType.ToString());
             var r5 = Run2(env, new VectorIota(1, 2), new DoubleIota(0), "hexcasting:div");
             Check("向量 ÷ 0：除零 mishap", r5.ResolutionType == ResolvedPatternType.Errored, r5.ResolutionType.ToString());
             var r6 = Run2(env, new VectorIota(1, 2), new VectorIota(3, 4), "hexcasting:mul");

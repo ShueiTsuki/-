@@ -82,6 +82,12 @@ public interface ICastingWorld
     bool IsVecInRange(double x, double y);
 
     /// <summary>
+    /// 三维版：世界是 z = 0 的平面，z 不为 0 的点离施法者更远（三维距离）。
+    /// 默认实现只接受 z = 0；泰拉世界（HexSpaceWorld）按三维距离算。
+    /// </summary>
+    bool IsVecInRange(double x, double y, double z) => z == 0.0 && IsVecInRange(x, y);
+
+    /// <summary>
     /// 某图格是否**实心**（阻挡射线）。
     /// 对应 MC 的 `ClipContext.Block.COLLIDER` —— 只算有碰撞的方块，不算液体/草。
     /// </summary>

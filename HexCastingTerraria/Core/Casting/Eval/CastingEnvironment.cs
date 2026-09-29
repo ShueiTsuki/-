@@ -172,9 +172,10 @@ public abstract class CastingEnvironment
     /// 射线类图案必须先校验**起点**，命中点还要再校验一次 ——
     /// 否则可以站在范围边缘把射线打向远处，隔着半张地图探测地形。
     /// </summary>
-    public void AssertVecInRange(double x, double y)
+    public void AssertVecInRange(double x, double y, double z = 0.0)
     {
-        if (!RequireWorld().IsVecInRange(x, y))
+        // 世界是 z = 0 的平面：z 不为 0 的点与施法者的距离要把 z 算进去（原版就是三维距离）
+        if (!RequireWorld().IsVecInRange(x, y, z))
         {
             throw new MishapLocationTooFarAway(x, y);
         }
@@ -302,6 +303,16 @@ public abstract class CastingEnvironment
             throw new MishapInvalidIota(iota, what);
         }
         return (v.X, v.Y);
+    }
+
+    /// <summary>同上，带 z（源项目的向量是三维的；作为位置时 z 参与范围判定）。</summary>
+    public static (double X, double Y, double Z) RequireVec3(Iota iota, string what)
+    {
+        if (iota is not VectorIota v)
+        {
+            throw new MishapInvalidIota(iota, what);
+        }
+        return (v.X, v.Y, v.Z);
     }
 
     /// <summary>

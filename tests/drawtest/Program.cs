@@ -684,7 +684,7 @@ Console.WriteLine($"\n================ 通过 {passed} / 失败 {failed} =======
     int notApplicable = 0;
     var naKeys = new HashSet<string>(
         HexCastingTerraria.Core.Casting.Actions.NotApplicablePatterns.ZAxisVectors.Concat(
-        HexCastingTerraria.Core.Casting.Actions.NotApplicablePatterns.PehkuiInterop));
+        HexCastingTerraria.Core.Casting.Actions.NotApplicablePatterns.PehkuiInterop));   // ZAxisVectors 已清空
     foreach (var def in PatternRegistry.All)
     {
         if (naKeys.Contains(def.Id)) notApplicable++;

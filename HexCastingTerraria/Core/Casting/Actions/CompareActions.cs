@@ -48,11 +48,11 @@ public sealed class OpBlockEquality : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x1, y1) = CastingEnvironment.RequireVec(args[0], "第一个位置");
-        var (x2, y2) = CastingEnvironment.RequireVec(args[1], "第二个位置");
+        var (x1, y1, z1) = CastingEnvironment.RequireVec3(args[0], "第一个位置");
+        var (x2, y2, z2) = CastingEnvironment.RequireVec3(args[1], "第二个位置");
 
-        env.AssertVecInRange(x1, y1);
-        env.AssertVecInRange(x2, y2);
+        env.AssertVecInRange(x1, y1, z1);
+        env.AssertVecInRange(x2, y2, z2);
 
         return new Iota[] { BooleanIota.Of(env.RequireWorld().CompareBlocks(x1, y1, x2, y2, _exact)) };
     }
@@ -117,16 +117,10 @@ public static class CompareActions
 public static class NotApplicablePatterns
 {
     /// <summary>
-    /// Z 轴单位向量。2D 世界没有第三轴，这两个图案**永远不可能有意义**。
-    ///
-    /// 注意与「未实现」区分：泰拉的其它 2D 适配（比如向量的 `div`）是语义变了，
-    /// 而这两个是**维度不存在**。
+    /// （已清空）Z 轴单位向量曾因「二维世界没有第三轴」列在这里。
+    /// 现在向量与原版一样是三维的，`const/vec/pz` / `nz` 已实现（世界是 z = 0 的平面）。
     /// </summary>
-    public static readonly string[] ZAxisVectors =
-    {
-        "hexcasting:const/vec/pz",
-        "hexcasting:const/vec/nz",
-    };
+    public static readonly string[] ZAxisVectors = System.Array.Empty<string>();
 
     /// <summary>
     /// Pehkui 联动（MC 的实体缩放模组）。泰拉没有等价物，也没有对应的需求。

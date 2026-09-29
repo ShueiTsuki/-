@@ -28,14 +28,14 @@ public sealed class OpAkashicRead : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "坐标");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "坐标");
 
         if (args[1] is not PatternIota key)
         {
             throw new MishapInvalidIota(args[1], "图案");
         }
 
-        env.AssertVecInRange(x, y);
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
         if (!world.IsAkashicRecord(x, y))
@@ -61,7 +61,7 @@ public sealed class OpAkashicWrite : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "坐标");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "坐标");
 
         if (args[1] is not PatternIota key)
         {
@@ -70,7 +70,7 @@ public sealed class OpAkashicWrite : SpellAction
 
         var datum = args[2];
 
-        env.AssertVecInRange(x, y);
+        env.AssertVecInRange(x, y, z);
 
         // 源项目 OpAkashicWrite：不能把别的玩家写进阿卡夏记录
         MishapOthersName.ThrowIfTrueName(datum, env.World?.Caster, allowSelf: true);

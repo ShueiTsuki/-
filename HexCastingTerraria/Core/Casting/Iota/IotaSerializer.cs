@@ -102,11 +102,12 @@ public static class IotaSerializer
                 return false;
 
             case KindVec:
-                // 载荷固定是 [x, y] 两个 double
-                if (value is List<object?> vec && vec.Count == 2
+                // 载荷是 [x, y, z]；旧存档（二维时期）是 [x, y]，z 取 0
+                if (value is List<object?> vec && (vec.Count == 2 || vec.Count == 3)
                     && vec[0] is double vx && vec[1] is double vy)
                 {
-                    iota = new VectorIota(vx, vy);
+                    double vz = vec.Count == 3 && vec[2] is double z ? z : 0.0;
+                    iota = new VectorIota(vx, vy, vz);
                     return true;
                 }
                 return false;

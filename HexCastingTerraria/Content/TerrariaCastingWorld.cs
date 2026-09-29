@@ -179,14 +179,18 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// 的第一段分支就是「在大哨卫 16 格内 -> 也算在范围内」。
     /// 这是 `sentinel/create/great` 存在的全部理由，漏掉它这个图案就白做了。
     /// </summary>
-    private bool InRange(double tileX, double tileY)
+    private bool InRange(double tileX, double tileY) => InRange(tileX, tileY, 0.0);
+
+    /// <summary>三维距离：施法者、哨卫都在世界平面上（z = 0），点的 z 算进距离。法术环的包围盒 z 范围是 [0, 1)。</summary>
+    private bool InRange(double tileX, double tileY, double z)
     {
         // 法术环：范围 = 环的包围盒（源项目 CircleCastEnv 的语义）
         if (_circleBounds is { } b)
         {
             // 源项目 bounds.contains(vec)：[min, max + 1)，不多放半格（这里曾经四周各放宽半格）
             return tileX >= b.MinX && tileX < b.MaxX + 1
-                && tileY >= b.MinY && tileY < b.MaxY + 1;
+                && tileY >= b.MinY && tileY < b.MaxY + 1
+                && z >= 0 && z < 1;
         }
 
         // 大哨卫：以哨卫为心 16 格（对齐 DEFAULT_SENTINEL_RADIUS）
@@ -196,7 +200,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             double sdx = tileX - s.X;
             double sdy = tileY - HexSpaceWorld.TileY(s.Y);
             const double sr = CastingEnvironment.SentinelRadiusTiles;
-            if (sdx * sdx + sdy * sdy <= sr * sr + 1e-10)
+            if (sdx * sdx + sdy * sdy + z * z <= sr * sr + 1e-10)
             {
                 return true;
             }
@@ -207,7 +211,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         double dx = tileX - cx;
         double dy = tileY - cy;
         const double r = HexUnits.AmbitRadiusTiles;
-        return dx * dx + dy * dy <= r * r;
+        return dx * dx + dy * dy + z * z <= r * r + 1e-10;
     }
 
     /// <summary>
@@ -222,6 +226,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     }
 
     public bool IsVecInRange(double x, double y) => InRange(x, y);
+
+    public bool IsVecInRange(double x, double y, double z) => InRange(x, y, z);
 
     /// <summary>
     /// 图格是否阻挡射线。**所有**射线相关的实心判定都必须走这里，包括客户端的瞄准预览 ——

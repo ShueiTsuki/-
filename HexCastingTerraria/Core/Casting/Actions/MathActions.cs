@@ -17,7 +17,7 @@ namespace HexCastingTerraria.Core.Casting.Actions;
 ///
 /// 它不自己实现运算，而是**按操作数类型**交给算术引擎分派：
 ///   两个 number → DoubleArithmetic
-///   两个 vector → Vec2Arithmetic
+///   含 vector → Vec3Arithmetic
 ///   两个 bool   → BoolArithmetic
 ///   比较运算符   → BoolArithmetic（吃 number，吐 boolean）
 /// </summary>
@@ -58,41 +58,31 @@ public sealed class OperationAction : IAction
 }
 
 /// <summary>
-/// 二维向量的拆装。
-///
-/// ⚠️ 3D → 2D：源项目的 construct_vec 吃 **3** 个分量、deconstruct_vec 吐 **3** 个；
-/// 泰拉只有二维，因此这里改为 **2** 个分量。
+/// 向量之提整 / 向量之拆解（源项目 Vec3Arithmetic 的 PACK / UNPACK）：三个数字 ↔ 一个向量。
+/// ⚠️ 这里曾经是两个分量（「泰拉只有二维」）—— 原版是三个，向量现在也是三维的。
 /// </summary>
-public sealed class OpConstructVec2 : ConstMediaAction
+public sealed class OpConstructVec : ConstMediaAction
 {
-    public override int Argc => 2;
-
-    public override ActionTypes Types => ActionTypes.Of(IotaTypes.Vec, IotaTypes.Num, IotaTypes.Num);
+    public override int Argc => 3;
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        double x = AsNumber(args[0], "x");
-        double y = AsNumber(args[1], "y");
-        return new Iota[] { new VectorIota(x, y) };
+        double C(int i) => args[i] is DoubleIota d ? d.Value : throw new MishapInvalidIota(args[i], "数字");
+        return new Iota[] { new VectorIota(C(0), C(1), C(2)) };
     }
-
-    private static double AsNumber(Iota iota, string component)
-        => iota is DoubleIota d ? d.Value : throw new MishapInvalidIota(iota, component);
 }
 
-public sealed class OpDeconstructVec2 : ConstMediaAction
+public sealed class OpDeconstructVec : ConstMediaAction
 {
     public override int Argc => 1;
-
-    public override ActionTypes Types => ActionTypes.Of(IotaTypes.List, IotaTypes.Vec);
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         if (args[0] is not VectorIota v)
         {
-            throw new MishapInvalidIota(args[0], "vector");
+            throw new MishapInvalidIota(args[0], "向量");
         }
-        return new Iota[] { new DoubleIota(v.X), new DoubleIota(v.Y) };
+        return new Iota[] { new DoubleIota(v.X), new DoubleIota(v.Y), new DoubleIota(v.Z) };
     }
 }
 
@@ -137,7 +127,7 @@ public static class MathActions
 
         // 注册算术实现（顺序即分派优先级）
         ArithmeticEngine.Register(new DoubleArithmetic());
-        ArithmeticEngine.Register(new Vec2Arithmetic());
+        ArithmeticEngine.Register(new Vec3Arithmetic());
         ArithmeticEngine.Register(new BoolArithmetic());
         ArithmeticEngine.Register(new ListArithmetic());
         ArithmeticEngine.Register(new ListSetArithmetic());
@@ -149,8 +139,8 @@ public static class MathActions
         }
 
         // 二维向量拆装（2 分量版本）
-        PatternRegistry.RegisterAction("hexcasting:construct_vec", new OpConstructVec2());
-        PatternRegistry.RegisterAction("hexcasting:deconstruct_vec", new OpDeconstructVec2());
+        PatternRegistry.RegisterAction("hexcasting:construct_vec", new OpConstructVec());
+        PatternRegistry.RegisterAction("hexcasting:deconstruct_vec", new OpDeconstructVec());
 
         // print：把值发到聊天框
         PatternRegistry.RegisterAction("hexcasting:print", new OpPrint());

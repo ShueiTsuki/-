@@ -63,19 +63,26 @@ public sealed class OpGetEntitiesBy : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "区域中心");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "区域中心");
 
         // 源项目 getPositiveDouble：0 <= x（**含 0**）
         double radius = CastingEnvironment.RequirePositiveDouble(args[1], "非负半径");
 
-        env.AssertVecInRange(x, y);
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
 
         // 筛选与生物分类都交给世界侧 ——
         // Core 层拿不到 Terraria 的 `NPC.CountsAsACritter` / `friendly` 等字段。
         // （早先写过一个静态的分类缓存，那会在不同施法之间串数据，已废弃。）
-        var found = world.QueryEntities(_filter, _negate, x, y, radius);
+        // 源项目 distanceToSqr(pos) 是三维距离；实体都在世界平面上（z = 0），
+        // 所以中心离平面 |z| 时，平面上能选中的圆半径是 √(r² − z²)
+        if (z * z > radius * radius)
+        {
+            return new Iota[] { new ListIota(new List<Iota>()) };
+        }
+        double planeRadius = System.Math.Sqrt(radius * radius - z * z);
+        var found = world.QueryEntities(_filter, _negate, x, y, planeRadius);
 
         var result = new List<Iota>(found.Count);
         foreach (var entity in found)

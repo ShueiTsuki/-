@@ -224,7 +224,7 @@ public static class HexVmState
         NullIota => "null",
         BooleanIota b => b.Value ? "true" : "false",
         DoubleIota d => d.Value.ToString("0.####"),
-        VectorIota v => $"vec({v.X:0.##}, {v.Y:0.##})",
+        VectorIota v => $"vec({v.X:0.##}, {v.Y:0.##}, {v.Z:0.##})",
         PatternIota p => "pattern",
         ListIota l => $"list[{l.Count}]",
         GarbageIota => "garbage",

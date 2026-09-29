@@ -90,8 +90,8 @@ public sealed class OpIgnite : SpellAction
 
             case VectorIota:
             {
-                var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-                env.AssertVecInRange(x, y);
+                var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+                env.AssertVecInRange(x, y, z);
                 return WorldSpell.Make(
                     new WorldSpell.Simple(w => w.IgniteAt(x, y)),
                     MediaConstants.DustUnit);
@@ -120,8 +120,8 @@ public sealed class OpExtinguish : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
             new WorldSpell.Simple(w => w.ExtinguishAt(x, y, MaxCount)),
@@ -141,8 +141,8 @@ public sealed class OpDestroyWater : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
             new WorldSpell.Simple(w => w.DestroyWaterAt(x, y, MaxCount)),
@@ -161,8 +161,8 @@ public sealed class OpCreateWater : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
             new WorldSpell.Simple(w => w.CreateWaterAt(x, y)),
@@ -183,8 +183,8 @@ public sealed class OpLightning : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
             new WorldSpell.Simple(w => w.SpawnLightning(x, y)),
@@ -206,8 +206,8 @@ public sealed class OpBonemeal : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
             new WorldSpell.Simple(w => w.ApplyBonemeal(x, y)),

@@ -8,9 +8,9 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **83** 个可合成物品。
+共 **82** 个可合成物品。
 
-## 肉前（64 项）
+## 肉前（63 项）
 
 紫水晶 → 媒质 → 石板 → 法杖 → 工具与存储。源项目在这一段没有任何进度门槛。
 
@@ -90,7 +90,6 @@
 | `WallScrollFrameSmall` | 2 | Wood×6 + Silk×2 | WorkBenches | 源项目无对应物：泰拉侧为「可放置的壁挂卷轴」补的框，纯肉前木工活 |
 | `WallScrollFrameMedium` | 2 | Wood×12 + Silk×4 | WorkBenches | 同上 |
 | `WallScrollFrameLarge` | 2 | Wood×20 + Silk×8 | WorkBenches | 同上 |
-| `MediaFlask` | 1 | Bottle×1 + Amethyst×1 | Bottles | 源 phial：装地上媒质的瓶子。装填动作 craft/battery 要启蒙，但瓶子本身不要 |
 | `HexBookItem` | 1 | Wood×10 + Hay×10 | Bookcases | 源项目没有这本书：泰拉侧的引导书，让玩家能查到图案怎么画 |
 | `DevStaff` | 1 | Wood×20 | WorkBenches | 开发者工具（泰拉自创，仅用于测试） |
 

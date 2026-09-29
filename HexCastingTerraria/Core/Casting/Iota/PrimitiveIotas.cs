@@ -85,45 +85,50 @@ public sealed class DoubleIota : Iota
 }
 
 /// <summary>
-/// 三维向量 iota。源：Vec3Iota。
+/// 三维向量 iota。源：Vec3Iota（double 三元组）。
 ///
-/// 重要：Terraria 没有 MC 的 Vec3 语义，且 XNA 的 Vector3 是 float，
-/// 而源项目用的是 double。这里保留 double 三元组，避免精度与序列化问题。
+/// 泰拉世界是二维的，但**向量保持三维**，与原版一致：±Z 常量、叉积（得向量）、三分量拆装都能用。
+/// 世界是 z = 0 的平面（方块沿 z 无限延伸）：世界给出的位置 / 视线 / 速度 z 恒为 0；
+/// 作为位置使用时方块查询忽略 z，但施法范围按三维距离算（见 CastingEnvironment.AssertVecInRange）。
+/// ⚠️ 这里曾经砍成二维：±Z 常量删了、叉积改成返回数字、拆装只有两个分量。
 /// </summary>
 public sealed class VectorIota : Iota
 {
     public double X { get; }
     public double Y { get; }
+    public double Z { get; }
 
-    public VectorIota(double x, double y)
+    public VectorIota(double x, double y, double z = 0.0)
     {
-        // NaN 清洗：防止零向量归一化等操作产生的 NaN 污染整个 VM
-        // （见 HexMathUtil 的说明与 TERRARIA_2D_ADAPTATION.md 高危点③）
+        // NaN 清洗（源项目 Vec3Iota 同样对每个分量 fixNAN）
         X = HexMathUtil.FixNaN(x);
         Y = HexMathUtil.FixNaN(y);
+        Z = HexMathUtil.FixNaN(z);
     }
 
-    public static readonly VectorIota Zero = new(0.0, 0.0);
+    public static readonly VectorIota Zero = new(0.0, 0.0, 0.0);
     public static readonly VectorIota UnitX = new(1.0, 0.0);
     public static readonly VectorIota UnitY = new(0.0, 1.0);
+    public static readonly VectorIota UnitZ = new(0.0, 0.0, 1.0);
     public static readonly VectorIota NegUnitX = new(-1.0, 0.0);
     public static readonly VectorIota NegUnitY = new(0.0, -1.0);
+    public static readonly VectorIota NegUnitZ = new(0.0, 0.0, -1.0);
 
     public override IotaKind Kind => IotaKind.Vector;
 
     public override string TypeName => "vector";
 
     public override bool ValueEquals(Iota other)
-        => other is VectorIota v && v.X == X && v.Y == Y;
+        => other is VectorIota v && v.X == X && v.Y == Y && v.Z == Z;
 
     /// <summary>真假值：**非零向量为真**（源项目 `!(x==0 && y==0 && z==0)`）。</summary>
-    public override bool IsTruthy() => X != 0.0 || Y != 0.0;
+    public override bool IsTruthy() => X != 0.0 || Y != 0.0 || Z != 0.0;
 
     public override object? Serialize()
-        => IotaSerializer.Envelope(IotaSerializer.KindVec, new List<object?> { X, Y });
+        => IotaSerializer.Envelope(IotaSerializer.KindVec, new List<object?> { X, Y, Z });
 
     protected override string DescribeValue()
-        => string.Format(CultureInfo.InvariantCulture, "({0:0.##}, {1:0.##})", X, Y);
+        => string.Format(CultureInfo.InvariantCulture, "({0:0.##}, {1:0.##}, {2:0.##})", X, Y, Z);
 }
 
 /// <summary>

@@ -257,127 +257,89 @@ public sealed class BoolArithmetic : IArithmetic
 }
 
 /// <summary>
-/// 二维向量算术。
-///
-/// ⚠️ 3D → 2D 适配要点（见 TERRARIA_2D_ADAPTATION.md）：
-///   - 源项目的 mul 对向量是**点积**，结果仍是标量 → 2D 同样
-///   - 源项目的 div 对向量是**叉积**：3D 得向量，**2D 只得标量**
-///     （u.x*v.y - u.y*v.x）。这里接受这个破坏性变更，返回 number。
-///     若硬造一个向量返回，语义会变成"旋转 90°"，几何法术会静默算错。
-///   - abs 对向量是**长度**，返回 number
-///   - pow（投影）、floor/ceil（分量取整）暂未实现，等核对 Vec3Arithmetic 后再补
+/// 三维向量算术。逐行对齐源项目 Vec3Arithmetic.java + OperatorVec3Delegating：
+///   - add / sub / mod：两边都是向量或向量混数字 → **逐分量**（数字广播到三个分量）
+///   - mul：向量 · 向量 = **点积**（数字）；混数字 → 逐分量（缩放）
+///   - div：向量 × 向量 = **叉积**（向量）；混数字 → 逐分量
+///   - pow：向量 → 向量 = u 在 v 上的**投影**；混数字 → 逐分量乘方
+///   - abs = 长度；floor / ceil = 逐分量
+/// 逐分量运算用数字算术，所以除以零照样是 MishapDivideByZero。
+/// ⚠️ 这里曾经是二维：叉积返回数字（「2D 只得标量，破坏性变更」）、没有 z。原版叉积得向量。
 /// </summary>
-public sealed class Vec2Arithmetic : IArithmetic
+public sealed class Vec3Arithmetic : IArithmetic
 {
-    public string Name => "vec2_math";
-
-    private static bool AllVector(IReadOnlyList<Iota> args)
-    {
-        for (int i = 0; i < args.Count; i++)
-        {
-            if (args[i] is not VectorIota) return false;
-        }
-        return args.Count > 0;
-    }
-
-    private static (double X, double Y) V(Iota i)
-    {
-        var v = (VectorIota)i;
-        return (v.X, v.Y);
-    }
+    public string Name => "vec3_math";
 
     public int Arity(string op) => op switch
     {
-        "add" or "sub" or "mul" or "div" or "pow" => 2,
+        "add" or "sub" or "mul" or "div" or "pow" or "modulo" => 2,
         "abs" or "floor" or "ceil" => 1,
         _ => -1,
     };
 
-    /// <summary>
-    /// 向量与数字混用（至少一个向量、其余是数字）：**逐分量**套数字算术，数字广播到每个分量。
-    /// 源项目 OperatorVec3Delegating：add / sub / mul / div / pow / mod 都走这条
-    ///（向量 × 数字 = 缩放 —— 「视线 × 2」这种最常用的写法全靠它）。
-    /// ⚠️ 这里曾经只认「全是向量」，向量 × 数字直接报「参数类型不对」。
-    /// </summary>
-    private static IReadOnlyList<Iota>? ApplyMixed(string op, IReadOnlyList<Iota> args)
-    {
-        if (args.Count != 2 || op is not ("add" or "sub" or "mul" or "div" or "pow" or "modulo")) return null;
-        bool anyVec = false;
-        foreach (var a in args)
-        {
-            if (a is VectorIota) { anyVec = true; }
-            else if (a is not DoubleIota) { return null; }
-        }
-        if (!anyVec) return null;
+    private static (double X, double Y, double Z) V(Iota i)
+        => i is VectorIota v ? (v.X, v.Y, v.Z) : (((DoubleIota)i).Value, ((DoubleIota)i).Value, ((DoubleIota)i).Value);
 
-        static (double X, double Y) Spread(Iota i) => i is VectorIota v ? (v.X, v.Y) : (((DoubleIota)i).Value, ((DoubleIota)i).Value);
-        var (ax, ay) = Spread(args[0]);
-        var (bx, by) = Spread(args[1]);
+    private static IReadOnlyList<Iota> Vec(double x, double y, double z) => new Iota[] { new VectorIota(x, y, z) };
+
+    /// <summary>源项目 OperatorVec3Delegating 的 fallback：逐分量套数字算术（数字 triplicate）。</summary>
+    private static IReadOnlyList<Iota> Componentwise(string op, Iota a, Iota b)
+    {
+        var (ax, ay, az) = V(a);
+        var (bx, by, bz) = V(b);
         var scalar = new DoubleArithmetic();
-        double C(double a, double b) => ((DoubleIota)scalar.Apply(op, new Iota[] { new DoubleIota(a), new DoubleIota(b) })![0]).Value;
-        return Vec(C(ax, bx), C(ay, by));
+        double C(double p, double q) => ((DoubleIota)scalar.Apply(op, new Iota[] { new DoubleIota(p), new DoubleIota(q) })![0]).Value;
+        return Vec(C(ax, bx), C(ay, by), C(az, bz));
     }
 
     public IReadOnlyList<Iota>? Apply(string op, IReadOnlyList<Iota> args)
     {
-        if (!AllVector(args)) return ApplyMixed(op, args);
-
-        var (ax, ay) = V(args[0]);
-
-        switch (op)
+        if (args.Count == 1)
         {
-            case "abs":
-                return new Iota[] { new DoubleIota(HexMathUtil.Length(ax, ay)) };
-
-            // 分量取整。源项目 Vec3Arithmetic.java:71/73 —— 各分量各自 Math.floor / Math.ceil。
-            // ⚠️ 必须放在下面的双参分支**之前**：它们只吃一个参数。
-            case "floor":
-                return Vec(System.Math.Floor(ax), System.Math.Floor(ay));
-            case "ceil":
-                return Vec(System.Math.Ceiling(ax), System.Math.Ceiling(ay));
-        }
-
-        if (args.Count < 2) return null;
-        var (bx, by) = V(args[1]);
-
-        switch (op)
-        {
-            case "add": return Vec(ax + bx, ay + by);
-            case "sub": return Vec(ax - bx, ay - by);
-
-            // 点积：向量 · 向量 → 标量
-            case "mul": return new Iota[] { new DoubleIota(ax * bx + ay * by) };
-
-            // 叉积的 2D 形式 → 标量（破坏性变更，见类注释）
-            case "div": return new Iota[] { new DoubleIota(ax * by - ay * bx) };
-
-            // u 在 v 上的**投影**（源项目 Vec3Arithmetic.java:69：v.normalize().scale(u.dot(v.normalize()))）。
-            //
-            // 零向量的处理必须与原版一致：MC 的 `Vec3.normalize()` 在长度 < 1e-4 时返回 ZERO，
-            // 于是点积为 0、再缩放仍是 ZERO —— **返回零向量，而不是报错**。
-            // 若改成报错，玩家写 `pow(任意, 零向量)` 会得到一个与原版不同的失败，
-            // 而这类差异在移植里最难被发现：两边都不崩，只是结果不同。
-            case "pow":
+            if (args[0] is not VectorIota v) return null;
+            return op switch
             {
-                double len = HexMathUtil.Length(bx, by);
-                if (len < 1e-4)
-                {
-                    return Vec(0.0, 0.0);
-                }
-                double nx = bx / len;
-                double ny = by / len;
-                double dot = ax * nx + ay * ny;
-                return Vec(nx * dot, ny * dot);
-            }
-
-            // 取余：两边都是向量也逐分量（源项目 MOD 用的就是 make2Fallback）
-            case "modulo": return ApplyMixed(op, args);
-
-            default: return null;
+                "abs" => new Iota[] { new DoubleIota(System.Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z)) },
+                "floor" => Vec(System.Math.Floor(v.X), System.Math.Floor(v.Y), System.Math.Floor(v.Z)),
+                "ceil" => Vec(System.Math.Ceiling(v.X), System.Math.Ceiling(v.Y), System.Math.Ceiling(v.Z)),
+                _ => null,
+            };
         }
-    }
+        if (args.Count != 2) return null;
 
-    private static IReadOnlyList<Iota> Vec(double x, double y) => new Iota[] { new VectorIota(x, y) };
+        // 源项目 ACCEPTS = 至少一个向量、其余是数字
+        bool anyVec = false;
+        foreach (var a in args)
+        {
+            if (a is VectorIota) anyVec = true;
+            else if (a is not DoubleIota) return null;
+        }
+        if (!anyVec) return null;
+
+        if (args[0] is VectorIota u && args[1] is VectorIota w)
+        {
+            switch (op)
+            {
+                case "mul":
+                    return new Iota[] { new DoubleIota(u.X * w.X + u.Y * w.Y + u.Z * w.Z) };
+                case "div":
+                    return Vec(u.Y * w.Z - u.Z * w.Y, u.Z * w.X - u.X * w.Z, u.X * w.Y - u.Y * w.X);
+                case "pow":
+                {
+                    // v.normalize().scale(u.dot(v.normalize()))；MC 的 normalize 在长度 < 1e-4 时返回零向量
+                    double len = System.Math.Sqrt(w.X * w.X + w.Y * w.Y + w.Z * w.Z);
+                    if (len < 1e-4) return Vec(0, 0, 0);
+                    double nx = w.X / len, ny = w.Y / len, nz = w.Z / len;
+                    double dot = u.X * nx + u.Y * ny + u.Z * nz;
+                    return Vec(nx * dot, ny * dot, nz * dot);
+                }
+            }
+        }
+
+        return op is "add" or "sub" or "mul" or "div" or "pow" or "modulo"
+            ? Componentwise(op, args[0], args[1])
+            : null;
+    }
 }
 
 /// <summary>

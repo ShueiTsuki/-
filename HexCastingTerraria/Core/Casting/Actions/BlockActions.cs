@@ -29,8 +29,8 @@ public sealed class OpConjureBlock : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
 
@@ -90,8 +90,8 @@ public sealed class OpBreakBlock : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
 

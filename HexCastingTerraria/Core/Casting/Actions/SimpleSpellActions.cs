@@ -46,8 +46,8 @@ public sealed class OpBeep : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         int instrument = CastingEnvironment.RequireIndex(args[1]);
         if (instrument < 0 || instrument >= InstrumentCount)
@@ -84,8 +84,8 @@ public sealed class OpCreateLava : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
             new WorldSpell.Simple(w => w.CreateLavaAt(x, y)),
@@ -113,8 +113,8 @@ public sealed class OpEdify : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
         if (!world.IsSaplingAt(x, y))
@@ -145,8 +145,8 @@ public sealed class OpPlaceBlock : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
         // 源项目：先找快捷栏物品（找不到 → MishapLackingHotbarItem），再看目标格

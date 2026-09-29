@@ -30,12 +30,23 @@ internal static class RaycastCommon
     public const long MediaCost = MediaConstants.DustUnit / 100;
 
     /// <summary>取两个向量参数并校验起点在范围内。任一失败即抛 mishap。</summary>
+    /// <summary>
+    /// 取起点与方向并校验起点在范围内。
+    /// <paramref name="distance"/>：射线在 xy 平面上的投影长度 —— 源项目射线沿三维方向走 32 格
+    ///（raycastEnd = origin + look.normalize() × 32），世界沿 z 无限延伸，碰撞只看 xy 投影，
+    /// 所以方向带 z 分量时投影会变短；纯 z 方向投影为 0，打不中任何东西。
+    /// </summary>
     public static void ReadArgs(IReadOnlyList<Iota> args, CastingEnvironment env,
-                                out double ox, out double oy, out double lx, out double ly)
+                                out double ox, out double oy, out double lx, out double ly, out double distance)
     {
-        (ox, oy) = CastingEnvironment.RequireVec(args[0], "射线起点");
-        (lx, ly) = CastingEnvironment.RequireVec(args[1], "射线方向");
-        env.AssertVecInRange(ox, oy);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "射线起点");
+        var (dx, dy, dz) = CastingEnvironment.RequireVec3(args[1], "射线方向");
+        env.AssertVecInRange(x, y, z);
+        (ox, oy, lx, ly) = (x, y, dx, dy);
+        double len3 = System.Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        double lenXy = System.Math.Sqrt(dx * dx + dy * dy);
+        // MC 的 normalize：长度 < 1e-4 视为零向量（射线长度为 0，必然落空）
+        distance = len3 < 1e-4 || lenXy < 1e-9 ? 0.0 : DistanceTiles * lenXy / len3;
     }
 
     /// <summary>
@@ -75,9 +86,10 @@ public sealed class OpBlockRaycast : ConstMediaAction
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var world = env.RequireWorld();
-        RaycastCommon.ReadArgs(args, env, out double ox, out double oy, out double lx, out double ly);
+        RaycastCommon.ReadArgs(args, env, out double ox, out double oy, out double lx, out double ly, out double dist);
+        if (dist <= 0) return RaycastCommon.Null();
 
-        var hit = TileRaycast.Cast(world.IsTileSolid, ox, oy, lx, ly, RaycastCommon.DistanceTiles);
+        var hit = TileRaycast.Cast(world.IsTileSolid, ox, oy, lx, ly, dist);
         if (hit == null) return RaycastCommon.Null();
 
         var h = hit.Value;
@@ -105,9 +117,10 @@ public sealed class OpBlockAxisRaycast : ConstMediaAction
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var world = env.RequireWorld();
-        RaycastCommon.ReadArgs(args, env, out double ox, out double oy, out double lx, out double ly);
+        RaycastCommon.ReadArgs(args, env, out double ox, out double oy, out double lx, out double ly, out double dist);
+        if (dist <= 0) return RaycastCommon.Null();
 
-        var hit = TileRaycast.Cast(world.IsTileSolid, ox, oy, lx, ly, RaycastCommon.DistanceTiles);
+        var hit = TileRaycast.Cast(world.IsTileSolid, ox, oy, lx, ly, dist);
         if (hit == null) return RaycastCommon.Null();
 
         var h = hit.Value;
@@ -131,22 +144,23 @@ public sealed class OpEntityRaycast : ConstMediaAction
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var world = env.RequireWorld();
-        RaycastCommon.ReadArgs(args, env, out double ox, out double oy, out double lx, out double ly);
+        RaycastCommon.ReadArgs(args, env, out double ox, out double oy, out double lx, out double ly, out double dist);
+        if (dist <= 0) return RaycastCommon.Null();
 
         if (!RaycastCommon.TryNormalize(lx, ly, out double nx, out double ny))
         {
             return RaycastCommon.Null();
         }
 
-        double endX = ox + nx * RaycastCommon.DistanceTiles;
-        double endY = oy + ny * RaycastCommon.DistanceTiles;
+        double endX = ox + nx * dist;
+        double endY = oy + ny * dist;
 
         // 候选集：射线的包围盒。Core 层不知道世界里有谁，由世界侧枚举。
         var boxes = world.EntitiesInArea(
             System.Math.Min(ox, endX), System.Math.Min(oy, endY),
             System.Math.Max(ox, endX), System.Math.Max(oy, endY));
 
-        var hit = SegmentSweep.Cast(boxes, ox, oy, lx, ly, RaycastCommon.DistanceTiles);
+        var hit = SegmentSweep.Cast(boxes, ox, oy, lx, ly, dist);
         if (hit == null) return RaycastCommon.Null();
 
         // 命中实体也必须仍在范围内（源项目：env.isEntityInRange）

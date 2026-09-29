@@ -34,10 +34,11 @@ public sealed class OpAddMotion : SpellAction
         IReadOnlyList<Iota> args, CastingEnvironment env, CastUserData userData)
     {
         var target = env.ResolveEntity(args[0]);
-        var (mx, my) = CastingEnvironment.RequireVec(args[1], "推力");
+        var (mx, my, mz) = CastingEnvironment.RequireVec3(args[1], "推力");
 
-        // 计价用的是**原始** motion 的长度平方，不是被截断后的
-        double motionForCost = mx * mx + my * my;
+        // 计价用的是**原始** motion 的长度平方（三维，源项目 motion.lengthSqr()），不是被截断后的。
+        // z 分量在二维世界里推不动任何东西，但原版照样按它收费。
+        double motionForCost = mx * mx + my * my + mz * mz;
 
         // 源项目 bug #387 的防刷机制：同一目标重复推动，每次多收 1 粉尘。
         // 没有它，可以用许多次极小的推动把速度堆起来，而每次消耗都趋近于零。

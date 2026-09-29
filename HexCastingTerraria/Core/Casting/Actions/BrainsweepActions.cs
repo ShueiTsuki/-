@@ -29,8 +29,8 @@ public sealed class OpBrainsweep : SpellAction
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var target = env.ResolveEntity(args[0]);
-        var (x, y) = CastingEnvironment.RequireVec(args[1], "位置");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[1], "位置");
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
 

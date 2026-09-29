@@ -31,8 +31,8 @@ public sealed class OpGetEntityAt : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "坐标");
-        env.AssertVecInRange(x, y);
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "坐标");
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
 
@@ -72,12 +72,12 @@ public sealed class OpExplode : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y) = CastingEnvironment.RequireVec(args[0], "爆炸位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "爆炸位置");
 
         // 源项目 getPositiveDoubleUnderInclusive(1, 10.0)：[0, 10] 闭区间（曾经把 0 和 10 都拒掉了）
         double strength = CastingEnvironment.RequirePositiveDoubleUnderInclusive(args[1], MaxStrength, $"0 到 {MaxStrength} 之间的数");
 
-        env.AssertVecInRange(x, y);
+        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
 
