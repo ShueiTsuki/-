@@ -72,11 +72,8 @@ public sealed class OpPotionEffect : SpellAction
             throw new MishapInvalidIota(args[0], "活物（玩家或 NPC）");
         }
 
-        double duration = CastingEnvironment.RequireDouble(args[1], "持续时间");
-        if (duration <= 0 || double.IsNaN(duration) || double.IsInfinity(duration))
-        {
-            throw new MishapInvalidIota(args[1], "正数持续时间");
-        }
+        // 源项目 getPositiveDouble：含 0（0 秒 = 不上 buff、也不花钱）
+        double duration = CastingEnvironment.RequirePositiveDouble(args[1], "非负持续时间");
 
         double potency = 1.0;
         if (_allowPotency)

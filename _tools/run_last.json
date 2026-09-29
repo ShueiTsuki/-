@@ -1,34 +1,22 @@
 {
-    "at":  "2026-09-29 15:47:54",
-    "compile":  {
-                    "ok":  true,
-                    "errors":  0,
-                    "warnings":  0
-                },
+    "at":  "2026-09-29 19:59:35",
     "vmtest":  {
-                   "passed":  450,
+                   "passed":  473,
                    "failed":  0
                },
     "drawtest":  {
-                     "passed":  108,
+                     "passed":  118,
                      "failed":  0
                  },
     "assets":  {
                    "needTexture":  91,
                    "missing":  0
                },
-    "package":  {
-                    "ok":  true,
-                    "bytes":  397545
-                },
-    "server":  {
-                   "ok":  true
-               },
     "tml":  {
                 "commit":  "50cec4c63867ad185fc8ec7d609c2e46abb50a30",
                 "dllBuilt":  "2026-09-29 08:22"
             },
     "skipped":  [
-
+                    "专用服务器加载 + 进入世界"
                 ]
 }

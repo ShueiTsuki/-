@@ -38,6 +38,11 @@ Mods: {
 					Tooltip: Refills your media pool after every cast, so you do not have to keep drinking media flasks while testing.
 				}
 
+				UnlockWholeBook: {
+					Label: Unlock the whole book
+					Tooltip: Book entries normally unlock with progress (amethyst, enlightenment, a failed great spell, surviving an overcast, boss milestones for lore). Turn on to read everything. Also toggleable in the developer panel (F7).
+				}
+
 				NoPackagedCooldown: {
 					Label: No packaged spell cooldown
 					Tooltip: Cypher, trinket and artifact normally have 8 / 5 / 3 tick cooldowns. With this on you can spam right click to test the same spell repeatedly.
@@ -131,6 +136,11 @@ Mods: {
 				WobbleScale: {
 					Label: Wobble strength
 					Tooltip: How much canvas strokes wobble. 1.0 = upstream, 0 = none; default 0.5.
+				}
+
+				BookSize: {
+					Label: Book size
+					Tooltip: 1.0 = the book is about 88% of the screen height (integer scale, sharpest).
 				}
 			}
 

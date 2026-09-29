@@ -95,6 +95,14 @@ public sealed class HexClientSystem : ModSystem
         HexCanvasState.TickMessage();
         HexCanvasState.TickGuard();
 
+        // 开发者面板（F7）与「点世界施放」：画布和书都没开的时候才接鼠标
+        if (!canvas.IsOpen && !HexCanvasState.Book.IsOpen)
+        {
+            HexCanvasState.Dev.HandleInput(
+                leftClick: Main.mouseLeft && Main.mouseLeftRelease,
+                rightClick: Main.mouseRight && Main.mouseRightRelease);
+        }
+
         // 咒法学之书：输入处理放在最前面 —— 它开着的时候要**先**把
         // 鼠标与滚轮吃掉，否则滚动书页会同时切换快捷栏、点选图案会同时挖方块。
         // 「刚按下」= 这一帧按着、上一帧松开（泰拉的惯用判断）
@@ -158,6 +166,14 @@ public sealed class HexClientSystem : ModSystem
                 {
                     Content.Items.DevKit.Give(Main.LocalPlayer);
                     HexCanvasState.SetMessage("已发放开发者测试包");
+                }
+
+                // F7：开发者面板（法术示例 / 调试开关 / 进度）
+                if (HexCastingTerraria.DevPanelKey?.JustPressed == true
+                    && !HexCanvasState.Canvas.IsOpen
+                    && !HexCanvasState.Book.IsOpen)
+                {
+                    HexCanvasState.Dev.Toggle();
                 }
 
                 // H 翻页临摹引导；Shift+H 反向。
@@ -268,6 +284,9 @@ public sealed class HexClientSystem : ModSystem
                     ? (HexClientConfig.Instance.ShowPatternId ? $"识别到：{result.Matched!.Id}" : null)
                     : DescribeUnknownPattern(result.Pattern));
 
+                // 开发者面板的临摹：对一下这条是不是当前这一步（放在识别提示之后，它的提示优先）
+                UI.DevPanel.OnPatternDrawn(result.Pattern);
+
                 // 对齐原作：栈已结算完毕（空栈 + 无括号 + 无待转义）时自动关闭画布。
                 // 只在**求值成功**时关闭，避免画到未实现图案时把界面弹掉。
                 if (result.IsValid
@@ -355,6 +374,9 @@ public sealed class HexClientSystem : ModSystem
 
                 // 咒法学之书（帕秋莉手册）
                 HexCanvasState.Book.Draw(Main.spriteBatch);
+
+                // 开发者面板 / 临摹引导 / 待命施放提示
+                HexCanvasState.Dev.Draw(Main.spriteBatch);
 
                 return true;
             },

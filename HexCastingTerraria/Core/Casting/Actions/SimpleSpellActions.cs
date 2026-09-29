@@ -149,6 +149,12 @@ public sealed class OpPlaceBlock : SpellAction
         env.AssertVecInRange(x, y);
 
         var world = env.RequireWorld();
+        // 源项目：先找快捷栏物品（找不到 → MishapLackingHotbarItem），再看目标格
+        //（这里曾经不检查：没东西可放时照扣媒质、什么也不放）
+        if (!world.HasPlaceableInHotbar())
+        {
+            throw new MishapLackingHotbarItem("可放置的方块");
+        }
         if (!world.IsReplaceable(x, y))
         {
             throw new MishapBadBlock(x, y, "这一格不是可替换的（要空气、草或水）");

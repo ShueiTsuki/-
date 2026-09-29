@@ -25,6 +25,9 @@ public enum ZoneEntityFilter
 
     /// <summary>活物（玩家或 NPC）。</summary>
     Living = 4,
+
+    /// <summary>任意实体（源项目 `zone_entity` 的 `e -> true`：玩家、NPC、掉落物、弹幕都算）。</summary>
+    Any = 5,
 }
 
 /// <summary>
@@ -52,19 +55,18 @@ public sealed class OpGetEntitiesBy : ConstMediaAction
 
     public override int Argc => 2;
 
-    /// <summary>源项目 `MediaConstants.DUST_UNIT` —— 一次区域查询 1 粉尘。</summary>
-    public override long MediaCost => MediaConstants.DustUnit;
+    /// <summary>
+    /// 免费。源项目 OpGetEntitiesBy **没有覆写** mediaCost，ConstMediaAction 的默认值是 0。
+    /// （这里曾写「源项目 DUST_UNIT，一次 1 粉尘」—— 与原版不符）
+    /// </summary>
+    public override long MediaCost => 0;
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var (x, y) = CastingEnvironment.RequireVec(args[0], "区域中心");
 
-        // 源项目用 getPositiveDouble：半径必须为正
-        double radius = CastingEnvironment.RequireDouble(args[1], "半径");
-        if (radius <= 0 || double.IsNaN(radius) || double.IsInfinity(radius))
-        {
-            throw new MishapInvalidIota(args[1], "正数半径");
-        }
+        // 源项目 getPositiveDouble：0 <= x（**含 0**）
+        double radius = CastingEnvironment.RequirePositiveDouble(args[1], "非负半径");
 
         env.AssertVecInRange(x, y);
 
@@ -93,7 +95,8 @@ public static class ZoneActions
     {
         int before = PatternRegistry.RegisteredActionCount;
 
-        Register("hexcasting:zone_entity", ZoneEntityFilter.Living, negate: false);
+        // 「任意」：源项目 e -> true（这里曾经注册成「生物」过滤）
+        Register("hexcasting:zone_entity", ZoneEntityFilter.Any, negate: false);
         Register("hexcasting:zone_entity/animal", ZoneEntityFilter.Animal, negate: false);
         Register("hexcasting:zone_entity/not_animal", ZoneEntityFilter.Animal, negate: true);
         Register("hexcasting:zone_entity/monster", ZoneEntityFilter.Monster, negate: false);

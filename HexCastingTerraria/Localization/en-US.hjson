@@ -538,6 +538,9 @@ Mods: {
 			CycleGuide: {
 				DisplayName: Cycle tracing guide (in canvas, Shift reverses)
 			}
+			DevPanel: {
+				DisplayName: Developer panel (sample hexes / debug toggles)
+			}
 		}
 	}
 }

@@ -91,6 +91,7 @@ public sealed class PatchouliRenderer
     private IBookCanvas _c = null!;
     private BookFrame _frame = null!;
     private float _ox, _oy, _mx, _my;
+    private BookView _view = null!;
 
     public PatchouliRenderer(IBookData data)
     {
@@ -103,17 +104,35 @@ public sealed class PatchouliRenderer
     /// <summary>
     /// 按视口选整数倍率：书占视口约 70%。1080p 下是 4 —— 与 MC 在 1080p 自动界面缩放（4）下的书一样大。
     /// </summary>
-    public static float ChooseUnit(float viewportW, float viewportH)
+    public static float ChooseUnit(float viewportW, float viewportH, float sizeFactor = 1f)
     {
-        float u = System.MathF.Floor(System.MathF.Min(viewportW * 0.7f / FullWidth, viewportH * 0.8f / FullHeight));
-        return System.Math.Clamp(u, 1f, 8f);
+        // 书占视口高度约 88%（1080p、界面缩放 100% 时是 5 倍 = 1360×900）。
+        // 默认取整数倍（像素最规整）；玩家在设置里调了大小时允许半格步进。
+        float target = System.MathF.Min(viewportW * 0.9f / FullWidth, viewportH * 0.88f / FullHeight) * sizeFactor;
+        float u = System.MathF.Abs(sizeFactor - 1f) < 0.001f ? System.MathF.Floor(target) : System.MathF.Floor(target * 2f) / 2f;
+        // 调大了也不能超出屏幕（留 2% 边）
+        float fit = System.MathF.Floor(System.MathF.Min(viewportW * 0.98f / FullWidth, viewportH * 0.98f / FullHeight) * 2f) / 2f;
+        return System.Math.Clamp(System.MathF.Min(u, fit), 1f, 10f);
     }
+
+    /// <summary>书本大小倍率（设置项）。1 = 默认。</summary>
+    public float SizeFactor { get; set; } = 1f;
+
+    private const string LockedText = "锁定";
+
+    /// <summary>条目是否解锁。</summary>
+    public bool IsUnlocked(BookEntry e) => _data.IsUnlocked(e.Advancement);
+
+    /// <summary>分类是否解锁：有任何一个条目（或子分类）解锁即可（Patchouli BookCategory.isLocked）。</summary>
+    public bool IsUnlocked(BookView view, BookCategory c)
+        => c.Entries.Exists(IsUnlocked) || view.Subcategories(c).Exists(s => IsUnlocked(view, s));
 
     public BookFrame Render(IBookCanvas canvas, BookView view, float viewportW, float viewportH, float mouseX, float mouseY)
     {
         _c = canvas;
         _frame = new BookFrame();
-        Unit = ChooseUnit(viewportW, viewportH);
+        Unit = ChooseUnit(viewportW, viewportH, SizeFactor);
+        _view = view;
         _ox = System.MathF.Round((viewportW - (FullWidth * Unit)) / 2f);
         _oy = System.MathF.Round((viewportH - (FullHeight * Unit)) / 2f);
         _mx = mouseX;
@@ -373,35 +392,48 @@ public sealed class PatchouliRenderer
     {
         var rect = R(x, y, 20, 20);
         bool hover = rect.Contains(_mx, _my);
-        Item(cat.IconItem, x + 2, y + 2);
+        bool locked = !IsUnlocked(_view, cat);
+        if (locked)
+        {
+            Tex(BookTextures.Book, x + 2, y + 2, 16, 16, 250, 180, alpha: 0.7f);
+        }
+        else
+        {
+            _c.DrawItem(cat.IconItem, R(x + 2, y + 2, 16, 16), 1f);
+        }
         if (!hover)
         {
             Tex(BookTextures.Book, x, y, 20, 20, x, y, alpha: 0.5f);
         }
         else
         {
-            _frame.Tooltip = cat.DisplayName;
+            _frame.Tooltip = locked ? LockedText : cat.DisplayName;
         }
-        _frame.Hits.Add(new BookHit(rect, BookActionKind.OpenCategory, cat.Id));
+        if (!locked) { _frame.Hits.Add(new BookHit(rect, BookActionKind.OpenCategory, cat.Id)); }
     }
 
     /// <summary>GuiButtonEntry：116×10，半尺寸图标在 (1,1)，名字在 x+12；悬停时铺一条浅灰底。</summary>
     private void EntryButton(BookEntry entry, int x, int y)
     {
         var rect = R(x, y, PageWidth, 10);
-        if (rect.Contains(_mx, _my))
+        bool locked = !IsUnlocked(entry);
+        if (rect.Contains(_mx, _my) && !locked)
         {
             _c.FillRect(rect, new Color32(0, 0, 0, 0x22));
         }
-        if (entry.IconItem.Length > 0)
+        if (locked)
+        {
+            Tex(BookTextures.Book, x + 1f, y + 1f, 16, 16, 250, 180, alpha: 0.7f, drawW: 8, drawH: 8);
+        }
+        else if (entry.IconItem.Length > 0)
         {
             _c.DrawItem(entry.IconItem, R(x + 1f, y + 1f, 8, 8), 1f);
         }
         int color = entry.EntryColor >= 0 ? entry.EntryColor : TextColor;
         float scale = TextScale();
-        string name = FitText(entry.DisplayName, (PageWidth - 12) * Unit, scale);
-        _c.DrawText(name, X(x + 12), Y(y) + TextNudge(scale), Color32.Rgb(color), scale, bold: false);
-        _frame.Hits.Add(new BookHit(rect, BookActionKind.OpenEntry, entry.Id));
+        string name = locked ? LockedText : FitText(entry.DisplayName, (PageWidth - 12) * Unit, scale);
+        _c.DrawText(name, X(x + 12), Y(y) + TextNudge(scale), Color32.Rgb(color, locked ? (byte)0x77 : (byte)0xFF), scale, bold: false);
+        if (!locked) { _frame.Hits.Add(new BookHit(rect, BookActionKind.OpenEntry, entry.Id)); }
     }
 
     /// <summary>GuiBook.drawSeparator：贴图 (140,180,110,3)，页内居中，80% 不透明。</summary>
@@ -586,7 +618,7 @@ public sealed class PatchouliRenderer
                     _c.FillRect(new RectF(lx, ly + lineH - System.MathF.Max(1f, Unit * 0.5f), w, System.MathF.Max(1f, Unit * 0.5f)),
                         Color32.Rgb(rgb, isLink ? (byte)0x90 : (byte)0xFF));
                 }
-                if (isLink)
+                if (isLink && LinkUnlocked(seg.LinkTarget))
                 {
                     _frame.Hits.Add(new BookHit(rect, BookActionKind.Link, seg.LinkTarget));
                     if (hover && seg.LinkTarget.StartsWith("http", System.StringComparison.Ordinal))
@@ -600,16 +632,25 @@ public sealed class PatchouliRenderer
         }
     }
 
+    private bool LinkUnlocked(string target)
+    {
+        if (target.StartsWith("http", System.StringComparison.Ordinal)) { return true; }
+        var e = _view.Document.FindEntry(target.Split('#')[0]);
+        return e is null || IsUnlocked(e);
+    }
+
     // ── 坐标 ────────────────────────────────────────────────────────
 
     private float X(float gx) => _ox + (gx * Unit);
     private float Y(float gy) => _oy + (gy * Unit);
     private RectF R(float gx, float gy, float gw, float gh) => new(X(gx), Y(gy), gw * Unit, gh * Unit);
 
-    private void Tex(string tex, float gx, float gy, int w, int h, int u, int v, float alpha = 1f, int texW = 512, int texH = 256)
+    private void Tex(string tex, float gx, float gy, int w, int h, int u, int v, float alpha = 1f, int texW = 512, int texH = 256,
+        float drawW = -1, float drawH = -1)
     {
         _ = texW;
         _ = texH;
-        _c.DrawImage(tex, new RectF(u, v, w, h), R(gx, gy, w, h), new Color32(255, 255, 255, (byte)(alpha * 255)));
+        _c.DrawImage(tex, new RectF(u, v, w, h), R(gx, gy, drawW < 0 ? w : drawW, drawH < 0 ? h : drawH),
+            new Color32(255, 255, 255, (byte)(alpha * 255)));
     }
 }

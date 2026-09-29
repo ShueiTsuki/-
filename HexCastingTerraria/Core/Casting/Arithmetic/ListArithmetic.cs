@@ -34,14 +34,7 @@ public sealed class ListArithmetic : IArithmetic
     /// 源项目 Iota.tolerates：两个双精度在 TOLERANCE 内视为相等，其余按自身相等性。
     /// 用于 index_of 的查找。
     /// </summary>
-    private static bool Tolerates(Iota a, Iota b)
-    {
-        if (a is DoubleIota da && b is DoubleIota db)
-        {
-            return System.Math.Abs(da.Value - db.Value) <= DoubleIota.Tolerance;
-        }
-        return Equals(a, b);
-    }
+    private static bool Tolerates(Iota a, Iota b) => Iota.Tolerates(a, b);
 
     /// <summary>
     /// 源项目 nextInt：要求是「整数值的双精度」，容差 TOLERANCE，否则报 mishap。
@@ -122,14 +115,15 @@ public sealed class ListArithmetic : IArithmetic
 
                 case "deconstruct":
                 {
-                    // uncons：空列表 → 报错；否则吐 [首元素, 剩余列表]
+                    // 源项目 OperatorUnCons：吐 [剩余列表, 首元素] —— **首元素在栈顶**；
+                    // 空列表**不报错**，吐 [原列表, 空]。（这里曾经顺序反了、空列表还报错）
                     if (list0.Count == 0)
                     {
-                        throw new MishapInvalidOperatorArgs("deconstruct", "空列表无法解构");
+                        return new Iota[] { list0, NullIota.Instance };
                     }
                     var rest = new List<Iota>();
                     for (int i = 1; i < list0.Count; i++) rest.Add(list0.Items[i]);
-                    return new Iota[] { list0.Items[0], new ListIota(rest) };
+                    return new Iota[] { new ListIota(rest), list0.Items[0] };
                 }
             }
         }
@@ -154,12 +148,14 @@ public sealed class ListArithmetic : IArithmetic
             case "index":
             {
                 if (args[1] is not DoubleIota idx) return null;
-                int i = (int)System.Math.Floor(idx.Value);
-                if (i < 0 || i >= list.Count)
+                // 源项目 OperatorIndex：roundToInt（四舍五入），越界返回 Null —— **不报错**
+                //（这里曾经取底并在越界时报错）
+                double r = System.Math.Floor(idx.Value + 0.5);
+                if (r < 0 || r >= list.Count)
                 {
-                    throw new MishapInvalidIota(args[1], $"0..{list.Count - 1} 之间的索引");
+                    return new Iota[] { NullIota.Instance };
                 }
-                return new Iota[] { list.Items[i] };
+                return new Iota[] { list.Items[(int)r] };
             }
 
             case "append":

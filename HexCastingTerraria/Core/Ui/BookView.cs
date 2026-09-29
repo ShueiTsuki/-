@@ -35,6 +35,9 @@ public sealed class BookView
         Document = doc ?? new BookDocument();
     }
 
+    /// <summary>条目是否可打开（未解锁的条目点不开、链接也跳不过去）。默认全部解锁。</summary>
+    public System.Func<BookEntry, bool> EntryUnlocked { get; set; } = _ => true;
+
     public BookDocument Document { get; }
     public BookViewKind Kind { get; private set; } = BookViewKind.Landing;
     public string CategoryId { get; private set; } = string.Empty;
@@ -105,7 +108,7 @@ public sealed class BookView
     public bool OpenEntry(string entryId, string? anchor = null)
     {
         var e = Document.FindEntry(entryId);
-        if (e is null) { return false; }
+        if (e is null || !EntryUnlocked(e)) { return false; }
         Push();
         Kind = BookViewKind.Entry;
         CategoryId = e.CategoryId;

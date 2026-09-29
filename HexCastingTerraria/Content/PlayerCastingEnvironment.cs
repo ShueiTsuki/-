@@ -282,33 +282,30 @@ public class PlayerCastingEnvironment : CastingEnvironment
         }
 
         int lifeBefore = _player.statLife;
+        int lifeAfter = lifeBefore - damage;
         hexPlayer.NoteOvercast(damage);
         if (!HexClientConfig.Instance.NoOvercastDamage)
         {
-            if (lethal)
-            {
-                // 原版 trulyHurt 可以致死（死亡信息「%s的意识消散为了能量」）：只有正好耗尽全部生命时才会发生
-                _player.KillMe(Terraria.DataStructures.PlayerDeathReason.ByCustomReason(
-                    Terraria.Localization.NetworkText.FromLiteral(_player.name + "的意识消散为了能量")), damage, 0);
-                return 0;
-            }
-            _player.statLife -= damage;
-            if (Main.netMode == Terraria.ID.NetmodeID.Server)
-            {
-                NetMessage.SendData(Terraria.ID.MessageID.PlayerLifeMana, -1, -1, null, _player.whoAmI);
-            }
+            // 原版 trulyHurt（无视护甲，可以致死，死亡信息「%s的意识消散为了能量」）。
+            // 走 PlayerEffects：联机时服务端改 statLife 不会到达本人客户端（曾经这样写，联机过载不扣血）
+            PlayerEffects.TrueDamage(_player, damage, _player.name + "的意识消散为了能量");
+            if (lethal) { return 0; }
         }
-        if (_player.whoAmI == Main.myPlayer)
+        else if (_player.whoAmI == Main.myPlayer)
         {
             CombatText.NewText(_player.getRect(), HexColors.Overcast, damage);
         }
 
         // 原版 ENLIGHTEN：这一下用掉 ≥80% 最大生命，且活了下来、只剩不到半颗心
-        int lifeAfter = HexClientConfig.Instance.NoOvercastDamage ? lifeBefore - damage : _player.statLife;
+        if (lifeAfter > 0)
+        {
+            hexPlayer.Overcasted = true;
+        }
         if (Overcast.IsEnlightening(damage, _player.statLifeMax2, lifeAfter))
         {
             hexPlayer.GrantEnlightenment();
         }
+        PlayerEffects.SyncProgress(_player);
         return 0;
     }
 
@@ -375,24 +372,31 @@ public class PlayerCastingEnvironment : CastingEnvironment
         var hp = HexPlayer.Get(_player);
         if (hp.FailedGreatSpell) { return; }
         hp.FailedGreatSpell = true;
+        PlayerEffects.SyncProgress(_player);
         PrintMessage("盲目绘制 —— 法术没能起效，但你隐约察觉到：媒质不够时，也许可以拿生命去换。");
     }
 
     /// <summary>原版 dropHeldItems：把手上的物品丢出去（未启蒙强行施放大法术的代价）。</summary>
+    /// <summary>原版 dropHeldItems：朝视线方向（前方一格）甩出去。</summary>
     public override void DropHeldItems()
-    {
-        var item = _player.inventory[_player.selectedItem];
-        if (item is null || item.IsAir) { return; }
-        int idx = Item.NewItem(_player.GetSource_Misc("HexUnenlightened"), _player.Center, item.Clone());
-        if (idx >= 0 && idx < Main.maxItems)
-        {
-            if (Main.netMode == Terraria.ID.NetmodeID.Server)
-            {
-                NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, idx, 1f);
-            }
-        }
-        item.TurnToAir();
-    }
+        => PlayerEffects.YeetHeld(_player, _player.Center + HexPlayer.Get(_player).Look * 16f);
+
+    // ── mishap 惩罚（原版 PlayerBasedMishapEnv）──────────────────────────
+
+    public override void YeetHeldItemsTowards(double x, double y)
+        => PlayerEffects.YeetHeld(_player, new Microsoft.Xna.Framework.Vector2((float)(x * 16.0), (float)(y * 16.0)));
+
+    /// <summary>原版 damage(p)：trulyHurt(当前生命 × p)。</summary>
+    public override void MishapDamage(double healthProportion)
+        => PlayerEffects.TrueDamage(_player, (int)System.Math.Ceiling(_player.statLife * healthProportion), _player.name + "的咒术反噬了自己");
+
+    public override void MishapDrown() => PlayerEffects.Drown(_player);
+
+    /// <summary>原版失明 → 泰拉「黑暗」（Blackout，视野近乎全黑）。MC 刻 × 3 = 泰拉帧。</summary>
+    public override void MishapBlind(int mcTicks)
+        => TerrariaCastingWorld.AddPlayerBuff(_player, Terraria.ID.BuffID.Blackout, mcTicks * 3);
+
+    public override void MishapDropInventory() => PlayerEffects.DropInventory(_player);
 
     public override int MaxOpCount() => HexClientConfig.Instance.MaxOpCount;
 

@@ -197,6 +197,26 @@ public interface ICastingWorld
     /// <param name="fire">是否留下火焰。</param>
     void Explode(double x, double y, double strength, bool fire);
 
+    /// <summary>
+    /// 不能被闪现 / 传送（源项目 tag hexcasting:cannot_teleport → MishapImmuneEntity）。
+    /// 泰拉侧：Boss 及其身体部件。默认 false。
+    /// </summary>
+    bool IsTeleportImmune(EntityIota entity) => false;
+
+    /// <summary>快捷栏里有可放置的方块（源项目 OpPlaceBlock 找不到就 MishapLackingHotbarItem）。默认 true。</summary>
+    bool HasPlaceableInHotbar() => true;
+
+    // ── mishap 用到的世界效果（默认不做；泰拉世界里实现）─────────────
+
+    /// <summary>MishapBadBlock：0.25 强度的小爆炸，**不破坏方块**（原版 ExplosionInteraction.NONE）。</summary>
+    void MishapExplosion(double x, double y) { }
+
+    /// <summary>MishapBadItem：把那个掉落物往上弹（原版 deltaMovement.y += 0.75）。</summary>
+    void MishapLaunchItem(EntityIota item) { }
+
+    /// <summary>MishapBadBrainsweep / MishapAlreadyBrainswept：伤害（kill=true 时直接杀死）那个生物。</summary>
+    void MishapHurtEntity(EntityIota entity, bool kill) { }
+
     // ── 以下是方块操作（conjure/break/place）──────────────────────
 
     /// <summary>该格是否可以被替换（空气、草、水这类）。对应源项目 `canBeReplaced`。</summary>

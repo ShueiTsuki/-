@@ -57,7 +57,7 @@ public static class ArithmeticEngine
             if (r != null) return r;
         }
 
-        throw new MishapInvalidOperatorArgs(op, DescribeArgs(args));
+        throw new MishapInvalidOperatorArgs(op, DescribeArgs(args), args.Count);
     }
 
     private static string DescribeArgs(IReadOnlyList<Iota> args)
@@ -132,9 +132,10 @@ public sealed class DoubleArithmetic : IArithmetic
                 if (System.Math.Cos(D(args[0])) == 0.0) throw new MishapDivideByZero(D(args[0]), 0.0, "tangent");
                 return One(System.Math.Tan(D(args[0])));
 
-            // 源项目把入参夹到 [-1,1] 再求反三角，避免定义域外返回 NaN
-            case "arcsin": return One(System.Math.Asin(ClampTo(D(args[0]), -1.0, 1.0, 0.0)));
-            case "arccos": return One(System.Math.Acos(ClampTo(D(args[0]), -1.0, 1.0, 0.0)));
+            // 源项目 asDoubleBetween(-1, 1)：定义域外是 MishapInvalidIota，**不是**夹取
+            //（这里曾写「源项目把入参夹到 [-1,1]」并静默夹取 —— 与原版不符）
+            case "arcsin": return One(System.Math.Asin(Between(args[0], -1.0, 1.0)));
+            case "arccos": return One(System.Math.Acos(Between(args[0], -1.0, 1.0)));
             case "arctan": return One(System.Math.Atan(D(args[0])));
 
             // 注意参数顺序：源项目是 atan2(a, b)
@@ -156,8 +157,12 @@ public sealed class DoubleArithmetic : IArithmetic
     private static bool Tolerates(double a, double b)
         => System.Math.Abs(a - b) < DoubleIota.Tolerance;
 
-    private static double ClampTo(double v, double lo, double hi, double fallback)
-        => double.IsNaN(v) ? fallback : System.Math.Clamp(v, lo, hi);
+    private static double Between(Iota iota, double lo, double hi)
+    {
+        double v = D(iota);
+        if (v >= lo && v <= hi) return v;
+        throw new MishapInvalidIota(iota, $"{lo} 到 {hi} 之间的数");
+    }
 
     /// <summary>
     /// 对数。源项目用 OperatorLog（支持任意底数），此处按其语义实现：
@@ -205,7 +210,7 @@ public sealed class BoolArithmetic : IArithmetic
     public int Arity(string op) => op switch
     {
         "and" or "or" or "xor" or "greater" or "less" or "greater_eq" or "less_eq" => 2,
-        "not" => 1,
+        "not" or "abs" => 1,
         _ => -1,
     };
 
@@ -221,11 +226,14 @@ public sealed class BoolArithmetic : IArithmetic
                 case "or": return One(a || ((BooleanIota)args[1]).Value);
                 case "xor": return One(a ^ ((BooleanIota)args[1]).Value);
                 case "not": return One(!a);
+                // 源项目 BoolArithmetic.ABS：真 → 1，假 → 0
+                case "abs": return new Iota[] { new DoubleIota(a ? 1.0 : 0.0) };
             }
         }
 
-        // 比较运算：吃 number，吐 boolean
-        if (AllDouble(args))
+        // 比较运算：吃 number，吐 boolean。只有两个参数时才是比较 ——
+        // 单个数字（如数字的「非」）要交给位运算；这里曾经不看个数直接读 args[1]，数组越界成了内部错误
+        if (args.Count == 2 && AllDouble(args))
         {
             double x = ((DoubleIota)args[0]).Value;
             double y = ((DoubleIota)args[1]).Value;
@@ -285,9 +293,34 @@ public sealed class Vec2Arithmetic : IArithmetic
         _ => -1,
     };
 
+    /// <summary>
+    /// 向量与数字混用（至少一个向量、其余是数字）：**逐分量**套数字算术，数字广播到每个分量。
+    /// 源项目 OperatorVec3Delegating：add / sub / mul / div / pow / mod 都走这条
+    ///（向量 × 数字 = 缩放 —— 「视线 × 2」这种最常用的写法全靠它）。
+    /// ⚠️ 这里曾经只认「全是向量」，向量 × 数字直接报「参数类型不对」。
+    /// </summary>
+    private static IReadOnlyList<Iota>? ApplyMixed(string op, IReadOnlyList<Iota> args)
+    {
+        if (args.Count != 2 || op is not ("add" or "sub" or "mul" or "div" or "pow" or "modulo")) return null;
+        bool anyVec = false;
+        foreach (var a in args)
+        {
+            if (a is VectorIota) { anyVec = true; }
+            else if (a is not DoubleIota) { return null; }
+        }
+        if (!anyVec) return null;
+
+        static (double X, double Y) Spread(Iota i) => i is VectorIota v ? (v.X, v.Y) : (((DoubleIota)i).Value, ((DoubleIota)i).Value);
+        var (ax, ay) = Spread(args[0]);
+        var (bx, by) = Spread(args[1]);
+        var scalar = new DoubleArithmetic();
+        double C(double a, double b) => ((DoubleIota)scalar.Apply(op, new Iota[] { new DoubleIota(a), new DoubleIota(b) })![0]).Value;
+        return Vec(C(ax, bx), C(ay, by));
+    }
+
     public IReadOnlyList<Iota>? Apply(string op, IReadOnlyList<Iota> args)
     {
-        if (!AllVector(args)) return null;
+        if (!AllVector(args)) return ApplyMixed(op, args);
 
         var (ax, ay) = V(args[0]);
 
@@ -337,9 +370,98 @@ public sealed class Vec2Arithmetic : IArithmetic
                 return Vec(nx * dot, ny * dot);
             }
 
+            // 取余：两边都是向量也逐分量（源项目 MOD 用的就是 make2Fallback）
+            case "modulo": return ApplyMixed(op, args);
+
             default: return null;
         }
     }
 
     private static IReadOnlyList<Iota> Vec(double x, double y) => new Iota[] { new VectorIota(x, y) };
+}
+
+/// <summary>
+/// 数字的位运算。逐行对齐源项目 BitwiseSetArithmetic.kt：
+/// 与 / 或 / 异或 / 非 作用在**数字**上时，先 roundToLong（四舍五入）再按位运算。
+/// ⚠️ 这一类曾经整个缺失 —— 数字「与」直接报参数类型不对。
+/// </summary>
+public sealed class BitwiseSetArithmetic : IArithmetic
+{
+    public string Name => "bitwise_set_ops";
+
+    public int Arity(string op) => op switch
+    {
+        "and" or "or" or "xor" => 2,
+        "not" => 1,
+        _ => -1,
+    };
+
+    /// <summary>Kotlin Double.roundToLong = Math.round：floor(x + 0.5)。</summary>
+    private static long L(Iota i) => (long)System.Math.Floor(((DoubleIota)i).Value + 0.5);
+
+    public IReadOnlyList<Iota>? Apply(string op, IReadOnlyList<Iota> args)
+    {
+        if (args.Count == 0) return null;
+        foreach (var a in args)
+        {
+            if (a is not DoubleIota) return null;
+        }
+        long x = L(args[0]);
+        if (op == "not") return new Iota[] { new DoubleIota(~x) };
+        if (args.Count < 2) return null;
+        long y = L(args[1]);
+        return op switch
+        {
+            "and" => new Iota[] { new DoubleIota(x & y) },
+            "or" => new Iota[] { new DoubleIota(x | y) },
+            "xor" => new Iota[] { new DoubleIota(x ^ y) },
+            _ => null,
+        };
+    }
+}
+
+/// <summary>
+/// 列表的集合运算。逐行对齐源项目 ListSetArithmetic.kt（相等用 Iota.tolerates）：
+///   与 = 交集（保留左表顺序）；或 = 左表 + 右表里左表没有的；异或 = 对称差。
+/// 「唯一之纯化」在原版也属于这一类，移植版单独做成了 OpUnique。
+/// ⚠️ 这一类曾经整个缺失。
+/// </summary>
+public sealed class ListSetArithmetic : IArithmetic
+{
+    public string Name => "list_set_ops";
+
+    public int Arity(string op) => op is "and" or "or" or "xor" ? 2 : -1;
+
+    public IReadOnlyList<Iota>? Apply(string op, IReadOnlyList<Iota> args)
+    {
+        if (args.Count != 2 || args[0] is not ListIota l0 || args[1] is not ListIota l1) return null;
+        static bool In(IReadOnlyList<Iota> list, Iota x)
+        {
+            foreach (var y in list)
+            {
+                if (Iota.Tolerates(x, y)) return true;
+            }
+            return false;
+        }
+        var a = l0.Items;
+        var b = l1.Items;
+        var result = new List<Iota>();
+        switch (op)
+        {
+            case "and":
+                foreach (var x in a) { if (In(b, x)) result.Add(x); }
+                break;
+            case "or":
+                result.AddRange(a);
+                foreach (var x in b) { if (!In(a, x)) result.Add(x); }
+                break;
+            case "xor":
+                foreach (var x in a) { if (!In(b, x)) result.Add(x); }
+                foreach (var x in b) { if (!In(a, x)) result.Add(x); }
+                break;
+            default:
+                return null;
+        }
+        return new Iota[] { new ListIota(result) };
+    }
 }

@@ -20,6 +20,60 @@ static class BookTests
         Content(doc, check);
         Navigation(doc, check);
         RenderAll(doc, check);
+        Unlocks(doc, check);
+    }
+
+    static void Unlocks(BookDocument doc, CheckFn check)
+    {
+        var entries = doc.Categories.SelectMany(c => c.Entries).ToList();
+        var everything = new BookProgress { Amethyst = true, FailedGreatSpell = true, Overcasted = true, Enlightened = true };
+        foreach (var (_, m, _) in BookUnlocks.LoreMilestones) { everything.Milestones.Add(m); }
+        var stuck = entries.Where(e => !BookUnlocks.IsUnlocked(e.Advancement, everything)).Select(e => $"{e.Id}({e.Advancement})").ToList();
+        Check(check, "每个条目的解锁条件在泰拉侧都有对应（全部达成 → 全部解锁）", stuck.Count == 0, string.Join(",", stuck.Take(5)));
+
+        var none = new BookProgress();
+        int openAtStart = entries.Count(e => BookUnlocks.IsUnlocked(e.Advancement, none));
+        Check(check, $"新角色：只有无条件的条目可读（{openAtStart} 条）", openAtStart == entries.Count(e => e.Advancement.Length == 0) && openAtStart >= 1);
+
+        var amethyst = new BookProgress { Amethyst = true };
+        int root = entries.Count(e => BookUnlocks.IsUnlocked(e.Advancement, amethyst));
+        Check(check, $"拿到紫水晶：开放 root 条目（{root} 条），大法术 / 传说残页仍锁着",
+            root == entries.Count(e => e.Advancement is "" or "hexcasting:root")
+            && !BookUnlocks.IsUnlocked("hexcasting:enlightenment", amethyst) && !BookUnlocks.IsUnlocked("hexcasting:lore/cardamom1", amethyst));
+
+        var eye = new BookProgress { Amethyst = true };
+        eye.Milestones.Add("boss1");
+        Check(check, "传说残页按 Boss 进度逐篇开放（克眼 → 第 1 篇，第 2 篇还锁着）",
+            BookUnlocks.IsUnlocked("hexcasting:lore/cardamom1", eye) && !BookUnlocks.IsUnlocked("hexcasting:lore/cardamom2", eye));
+        Check(check, "未知的进度条件默认锁着，开发者全部解锁时打开",
+            !BookUnlocks.IsUnlocked("hexcasting:creative_unlocker", everything)
+            && BookUnlocks.IsUnlocked("hexcasting:creative_unlocker", new BookProgress { UnlockAll = true }));
+
+        // 渲染：锁住的分类 / 条目画锁、不可点；链接到锁住条目不可点
+        var data = new FakeData { Progress = amethyst };
+        var r = new PatchouliRenderer(data);
+        var canvas = new RecordingCanvas();
+        var v = new BookView(doc) { EntryUnlocked = r.IsUnlocked };
+        v.Open();
+        var landing = r.Render(canvas, v, 1920, 1080, -1, -1);
+        var lockedCats = v.TopCategories().Where(c => !r.IsUnlocked(v, c)).Select(c => c.Id).ToList();
+        Check(check, $"落地页：锁住的分类（{string.Join(",", lockedCats)}）没有可点的格子",
+            lockedCats.Count > 0 && lockedCats.All(id => !landing.Hits.Any(h => h.Kind == BookActionKind.OpenCategory && h.Arg == id))
+            && landing.Hits.Count(h => h.Kind == BookActionKind.OpenCategory) == v.TopCategories().Count - lockedCats.Count);
+
+        var great = entries.First(e => e.Advancement == "hexcasting:enlightenment");
+        var cat = doc.Categories.First(c => c.Entries.Contains(great));
+        v.OpenCategory(cat.Id);
+        bool sawLocked = false, lockedHit = false;
+        for (int s = 0; s < v.SpreadCount; s++, v.NextSpread())
+        {
+            canvas.Ops.Clear();
+            var f = r.Render(canvas, v, 1920, 1080, -1, -1);
+            sawLocked |= canvas.Ops.Any(o => o.Contains("锁定"));
+            lockedHit |= f.Hits.Any(h => h.Kind == BookActionKind.OpenEntry && h.Arg == great.Id);
+        }
+        Check(check, $"分类页：未解锁条目（{great.Id}）显示「锁定」且点不开", sawLocked && !lockedHit);
+        Check(check, "BookView：直接打开未解锁条目被拒绝", !v.OpenEntry(great.Id));
     }
 
     static void Content(BookDocument doc, CheckFn check)
@@ -117,7 +171,11 @@ static class BookTests
         v.Open();
         Once("landing");
         var landing = r.Render(canvas, v, 1920, 1080, -1, -1);
-        Check(check, $"落地页：书按 {r.Unit} 倍整数放大（1080p 应为 4，与 MC 自动界面缩放一致）", r.Unit == 4f);
+        Check(check, $"落地页：书按 {r.Unit} 倍整数放大（1080p、界面缩放 100% 应为 5：书高 900，约占屏幕 83%）", r.Unit == 5f);
+        Check(check, "书本大小设置：0.8 → 4 倍；1.2 → 放不下 6 倍时缩回能放下的最大半格（5.5）",
+            PatchouliRenderer.ChooseUnit(1920, 1080, 0.8f) == 4f && PatchouliRenderer.ChooseUnit(1920, 1080, 1.2f) == 5.5f,
+            $"{PatchouliRenderer.ChooseUnit(1920, 1080, 0.8f)} {PatchouliRenderer.ChooseUnit(1920, 1080, 1.2f)}");
+        Check(check, "界面缩放 150%（视口 1280×720）→ 3 倍，书仍在视口里", PatchouliRenderer.ChooseUnit(1280, 720) == 3f);
         Check(check, "落地页每个分类都有可点的图标格",
             landing.Hits.Count(h => h.Kind == BookActionKind.OpenCategory) == v.TopCategories().Count);
 
@@ -161,6 +219,10 @@ static class BookTests
 
     sealed class FakeData : IBookData
     {
+        public BookProgress Progress { get; set; } = new() { UnlockAll = true };
+
+        public bool IsUnlocked(string advancement) => BookUnlocks.IsUnlocked(advancement, Progress);
+
         public string ItemName(string itemKey) => itemKey.Length == 0 ? "" : itemKey.Substring(itemKey.IndexOf(':') + 1);
 
         public BookRecipe? FindRecipe(string resultItemKey)

@@ -74,11 +74,8 @@ public sealed class OpExplode : SpellAction
     {
         var (x, y) = CastingEnvironment.RequireVec(args[0], "爆炸位置");
 
-        double strength = CastingEnvironment.RequireDouble(args[1], "强度");
-        if (strength <= 0 || strength >= MaxStrength || double.IsNaN(strength))
-        {
-            throw new MishapInvalidIota(args[1], $"0 到 {MaxStrength} 之间的正数");
-        }
+        // 源项目 getPositiveDoubleUnderInclusive(1, 10.0)：[0, 10] 闭区间（曾经把 0 和 10 都拒掉了）
+        double strength = CastingEnvironment.RequirePositiveDoubleUnderInclusive(args[1], MaxStrength, $"0 到 {MaxStrength} 之间的数");
 
         env.AssertVecInRange(x, y);
 

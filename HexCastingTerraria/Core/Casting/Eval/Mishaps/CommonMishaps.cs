@@ -6,7 +6,7 @@ using HexCastingTerraria.Core.Casting.Math;
 
 namespace HexCastingTerraria.Core.Casting.Eval.Mishaps;
 
-/// <summary>栈上的参数不够。栈不变。</summary>
+/// <summary>栈上的参数不够。惩罚：把缺的那几个补成垃圾值（源项目同）。</summary>
 public sealed class MishapNotEnoughArgs : Mishap
 {
     public int Expected { get; }
@@ -21,7 +21,8 @@ public sealed class MishapNotEnoughArgs : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变（源项目同）
+        // 源项目：repeat(expected - got) { stack.add(GarbageIota()) }（这里曾写「栈不变（源项目同）」）
+        for (int i = Got; i < Expected; i++) stack.Add(GarbageIota.Instance);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -40,7 +41,8 @@ public sealed class MishapNotEnoughMedia : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：env.extractMedia(cost, false) —— 付不起也要把能付的都抽走
+        env.ExtractMedia(Cost, simulate: false);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -61,7 +63,8 @@ public sealed class MishapInvalidPattern : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：stack.add(GarbageIota())
+        stack.Add(GarbageIota.Instance);
     }
 
     /// <summary>
@@ -130,7 +133,8 @@ public sealed class MishapEvalTooMuch : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：env.mishapEnvironment.drown()
+        env.MishapDrown();
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -149,7 +153,7 @@ public sealed class MishapInternalException : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：NO-OP
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -196,7 +200,9 @@ public sealed class MishapDivideByZero : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变。（源项目此处让施法者掉血，等接世界层时补）
+        // 源项目：stack.add(GarbageIota()); env.mishapEnvironment.damage(0.5f) —— 扣掉当前生命的一半
+        stack.Add(GarbageIota.Instance);
+        env.MishapDamage(0.5);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -209,15 +215,23 @@ public sealed class MishapInvalidOperatorArgs : Mishap
     public string Op { get; }
     public string ArgTypes { get; }
 
-    public MishapInvalidOperatorArgs(string op, string argTypes) : base("invalid_operator_args")
+    /// <summary>参与运算的参数个数（惩罚时从栈顶换掉这么多个）。</summary>
+    public int ArgCount { get; }
+
+    public MishapInvalidOperatorArgs(string op, string argTypes, int argCount = 0) : base("invalid_operator_args")
     {
         Op = op;
         ArgTypes = argTypes;
+        ArgCount = argCount;
     }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：把参与运算的每个参数都换成垃圾值（栈顶往下 perpetrators.size 个）
+        for (int i = 0; i < ArgCount && i < stack.Count; i++)
+        {
+            stack[stack.Count - 1 - i] = GarbageIota.Instance;
+        }
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -239,9 +253,26 @@ public sealed class MishapInvalidIota : Mishap
         Expected = expected;
     }
 
+    /// <summary>出错参数离栈顶多远（0 = 栈顶）。不给时按引用在栈上找（参数就是栈上那个对象）。</summary>
+    public int? ReverseIdx { get; init; }
+
+    private static int LocateFromTop(List<Iota> stack, Iota target)
+    {
+        for (int i = stack.Count - 1; i >= 0; i--)
+        {
+            if (ReferenceEquals(stack[i], target)) return stack.Count - 1 - i;
+        }
+        return -1;
+    }
+
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：stack[size - 1 - reverseIdx] = GarbageIota() —— 把出错的那个参数换成垃圾值
+        int idx = ReverseIdx ?? LocateFromTop(stack, Perpetrator);
+        if (idx >= 0 && idx < stack.Count)
+        {
+            stack[stack.Count - 1 - idx] = GarbageIota.Instance;
+        }
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -267,7 +298,7 @@ public sealed class MishapNotImplemented : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 移植版特有（原版没有「未实现」）：不改栈
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -284,7 +315,8 @@ public sealed class MishapNeedsParens : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：把出错的图案压回栈（if (errorCtx.pattern != null) stack.add(PatternIota(pattern))）
+        if (errorCtx.Pattern != null) stack.Add(new PatternIota(errorCtx.Pattern));
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -305,7 +337,7 @@ public sealed class MishapNoWorld : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 移植版特有（离线环境没有世界）：不改栈
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -331,8 +363,8 @@ public sealed class MishapEntityTooFarAway : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 原作：env.mishapEnvironment.yeetHeldItemsTowards(entity.position())
-        // 泰拉侧暂无手持 iota 物品体系，留空。
+        // 源项目：yeetHeldItemsTowards(entity.position())
+        if (env.World is { } w) { var (x, y) = w.FeetPosition(_entity); env.YeetHeldItemsTowards(x, y); }
     }
 
     /// <summary>实体描述（EntityIota.DescribeValue 是 protected，这里自己拼）。</summary>
@@ -363,7 +395,8 @@ public sealed class MishapLocationTooFarAway : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目（1.20 里是 MishapBadLocation "too_far"）：yeetHeldItemsTowards(location)
+        env.YeetHeldItemsTowards(_x, _y);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -393,7 +426,8 @@ public sealed class MishapBadLocation : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：yeetHeldItemsTowards(location)
+        env.YeetHeldItemsTowards(_x, _y);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -413,7 +447,8 @@ public sealed class MishapBadHeldItem : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目 MishapBadOffhandItem：dropHeldItems()
+        env.DropHeldItems();
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -441,7 +476,8 @@ public sealed class MishapBadEntity : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：yeetHeldItemsTowards(entity.position())
+        if (env.World is { } w) { var (x, y) = w.FeetPosition(_entity); env.YeetHeldItemsTowards(x, y); }
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -466,7 +502,8 @@ public sealed class MishapBadItem : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：那个掉落物往上弹一下
+        env.World?.MishapLaunchItem(_entity);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -495,7 +532,8 @@ public sealed class MishapBadBrainsweep : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：trulyHurt(mob, 1f)
+        env.World?.MishapHurtEntity(_entity, kill: false);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -519,7 +557,8 @@ public sealed class MishapAlreadyBrainswept : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：mob.hurt(..., mob.health) —— 直接杀死
+        env.World?.MishapHurtEntity(_entity, kill: true);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -546,7 +585,8 @@ public sealed class MishapNoAkashicRecord : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：removeXp(100)。泰拉没有经验值 → 环境默认不做
+        env.MishapRemoveXp(100);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -566,7 +606,8 @@ public sealed class MishapNoSpellCircle : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：把施法者整个背包（含盔甲，绑定诅咒除外）掉出来
+        env.MishapDropInventory();
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
@@ -595,9 +636,108 @@ public sealed class MishapBadBlock : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        // 源项目：world.explode(null, pos + 0.5, 0.25f, ExplosionInteraction.NONE) —— 小爆炸、不破坏方块
+        env.World?.MishapExplosion(System.Math.Floor(_x) + 0.5, System.Math.Floor(_y) + 0.5);
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
         => $"({_x:0.##}, {_y:0.##}) 这一格不行：{_reason}";
+}
+
+/// <summary>
+/// 目标免疫这个法术（原版 MishapImmuneEntity：tag cannot_teleport 之类）。
+/// 泰拉侧：Boss 与 Boss 的身体部件不能被闪现 / 传送。
+/// 惩罚：手持物品甩向那个实体。
+/// </summary>
+public sealed class MishapImmuneEntity : Mishap
+{
+    private readonly EntityIota _entity;
+
+    public MishapImmuneEntity(EntityIota entity) : base("immune_entity")
+    {
+        _entity = entity;
+    }
+
+    public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
+    {
+        if (env.World is { } w) { var (x, y) = w.FeetPosition(_entity); env.YeetHeldItemsTowards(x, y); }
+    }
+
+    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
+        => $"{_entity.Target}#{_entity.Index} 不受这个法术影响";
+}
+
+/// <summary>
+/// 试图把**别的玩家**的实体引用写进物品 / 阿卡夏 / 打包法术（原版 MishapOthersName —— 保护「真名」）。
+/// 惩罚：失明，写的是自己 5 秒，别人 60 秒。
+/// </summary>
+public sealed class MishapOthersName : Mishap
+{
+    public bool IsSelf { get; }
+
+    public MishapOthersName(bool isSelf) : base("others_name")
+    {
+        IsSelf = isSelf;
+    }
+
+    public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
+        => env.MishapBlind((IsSelf ? 5 : 60) * 20);
+
+    /// <summary>
+    /// 源项目 getTrueNameFromDatum：在 datum（含嵌套列表）里找**玩家**实体引用。
+    /// allowSelf=true 时施法者自己不算（写物品 / 阿卡夏 / 打包法术）；
+    /// false 时连自己也不行（编年史家之策略写实体）。找到就抛。
+    /// </summary>
+    public static void ThrowIfTrueName(Iota datum, EntityIota? caster, bool allowSelf)
+    {
+        var queue = new Queue<Iota>();
+        queue.Enqueue(datum);
+        while (queue.Count > 0)
+        {
+            var d = queue.Dequeue();
+            if (d is EntityIota { Target: EntityIota.EntityKind.Player } e)
+            {
+                bool self = caster is { Target: EntityIota.EntityKind.Player } c && c.Index == e.Index;
+                if (!(allowSelf && self))
+                {
+                    throw new MishapOthersName(self);
+                }
+            }
+            if (d is ListIota list)
+            {
+                foreach (var sub in list.Items) queue.Enqueue(sub);
+            }
+        }
+    }
+
+    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
+        => IsSelf ? "不能这样写下自己的真名" : "不能写下别人的真名";
+}
+
+/// <summary>快捷栏里没有需要的物品（原版 MishapLackingHotbarItem，放置方块时）。惩罚：丢下手持物品。</summary>
+public sealed class MishapLackingHotbarItem : Mishap
+{
+    private readonly string _what;
+
+    public MishapLackingHotbarItem(string what) : base("lacking_hotbar_item")
+    {
+        _what = what;
+    }
+
+    public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
+        => env.DropHeldItems();
+
+    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
+        => $"快捷栏里没有{_what}";
+}
+
+/// <summary>这个图案需要玩家施法者（原版 MishapBadCaster，比如法术环里用哨卫图案）。NO-OP。</summary>
+public sealed class MishapBadCaster : Mishap
+{
+    public MishapBadCaster() : base("bad_caster") { }
+
+    public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack) { }
+
+    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
+        => "这个图案需要由玩家施放";
 }

@@ -140,6 +140,8 @@ public static class MathActions
         ArithmeticEngine.Register(new Vec2Arithmetic());
         ArithmeticEngine.Register(new BoolArithmetic());
         ArithmeticEngine.Register(new ListArithmetic());
+        ArithmeticEngine.Register(new ListSetArithmetic());
+        ArithmeticEngine.Register(new BitwiseSetArithmetic());
 
         foreach (var op in OperatorPatterns)
         {

@@ -119,6 +119,10 @@ public sealed class OpBlink : SpellAction
         var delta = CastingEnvironment.RequireDouble(args[1], "距离");
 
         var world = env.RequireWorld();
+        if (world.IsTeleportImmune(target))
+        {
+            throw new MishapImmuneEntity(target);
+        }
 
         // 源项目：dvec = getEntityLookDirSpecial(target).scale(delta)
         var (lx, ly) = world.Look(target);
@@ -197,6 +201,10 @@ public sealed class OpTeleport : SpellAction
         var (dx, dy) = CastingEnvironment.RequireVec(args[1], "位移");
 
         var world = env.RequireWorld();
+        if (world.IsTeleportImmune(teleportee))
+        {
+            throw new MishapImmuneEntity(teleportee);
+        }
         var (fx, fy) = world.FeetPosition(teleportee);
 
         double targetX = fx + dx;

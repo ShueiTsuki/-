@@ -21,6 +21,9 @@ public sealed class HexBook
     private PatchouliRenderer? _renderer;
     private readonly SpriteBatchBookCanvas _canvas = new();
     private BookFrame? _lastFrame;
+
+    /// <summary>本帧的解锁进度（每帧重算一次：拿到紫水晶、打了 Boss 之后书马上跟着变）。</summary>
+    private static BookProgress _progress = new();
     private int _scrollAccum;
 
     public bool IsOpen { get; private set; }
@@ -50,12 +53,61 @@ public sealed class HexBook
     private void EnsureBuilt()
     {
         if (_view is not null) { return; }
-        _view = new BookView(BookContent.Create());
+        _view = new BookView(Document);
         _renderer = new PatchouliRenderer(new GameBookData(_canvas));
+        _view.EntryUnlocked = _renderer.IsUnlocked;
     }
 
     private static Vector2 UiMouse() => HexClientSystem.RawMouse() / Main.UIScale;
-    private static Vector2 UiViewport() => new(Main.screenWidth / Main.UIScale, Main.screenHeight / Main.UIScale);
+
+    /// <summary>
+    /// 界面缩放空间里的屏幕大小。⚠️ 必须用**真实**屏幕像素再除以 UIScale：
+    /// 绘制界面层时 PlayerInput.SetZoom_UI 已经把 Main.screenWidth 改成了「÷UIScale」之后的值，
+    /// 这里曾经再除一次 —— 界面缩放 150% 时书只按 1080/2.25 = 480 高来排，又小又偏左上。
+    /// </summary>
+    private static Vector2 UiViewport() => new(PlayerInput.RealScreenWidth / Main.UIScale, PlayerInput.RealScreenHeight / Main.UIScale);
+
+    private static BookDocument? _document;
+
+    /// <summary>全书内容（生成一次就缓存：500 多页，别每帧重建）。</summary>
+    public static BookDocument Document => _document ??= BookContent.Create();
+
+    /// <summary>当前玩家的解锁进度（书、开发者面板共用）。</summary>
+    public static BookProgress CurrentProgress()
+    {
+        var p = new BookProgress { UnlockAll = Config.HexClientConfig.Instance.UnlockWholeBook };
+        if (Main.gameMenu || Main.LocalPlayer is not { active: true } player) { return p; }
+        var hp = Content.HexPlayer.Get(player);
+        p.Amethyst = hp.ObtainedAmethyst;
+        p.FailedGreatSpell = hp.FailedGreatSpell;
+        p.Overcasted = hp.Overcasted;
+        p.Enlightened = hp.Enlightened || Config.HexClientConfig.Instance.AlwaysEnlightened;
+        if (NPC.downedBoss1) { p.Milestones.Add("boss1"); }
+        if (NPC.downedBoss2) { p.Milestones.Add("boss2"); }
+        if (NPC.downedBoss3) { p.Milestones.Add("boss3"); }
+        if (Main.hardMode) { p.Milestones.Add("hardmode"); }
+        if (NPC.downedMechBossAny) { p.Milestones.Add("mech"); }
+        if (NPC.downedPlantBoss) { p.Milestones.Add("plantera"); }
+        if (NPC.downedGolemBoss) { p.Milestones.Add("golem"); }
+        if (NPC.downedMoonlord) { p.Milestones.Add("moonlord"); }
+        return p;
+    }
+
+    /// <summary>已解锁 / 总条目数（开发者面板显示用）。</summary>
+    public static (int Unlocked, int Total) UnlockStats()
+    {
+        var progress = CurrentProgress();
+        int n = 0, total = 0;
+        foreach (var c in Document.Categories)
+        {
+            foreach (var e in c.Entries)
+            {
+                total++;
+                if (BookUnlocks.IsUnlocked(e.Advancement, progress)) { n++; }
+            }
+        }
+        return (n, total);
+    }
 
     /// <summary>每帧输入（PostUpdateInput 里调用）。用上一帧画出来的命中区 —— 绘制与命中是同一份几何。</summary>
     public void HandleInput(bool leftClick, bool rightClick)
@@ -127,6 +179,8 @@ public sealed class HexBook
         {
             var vp = UiViewport();
             var mouse = UiMouse();
+            _renderer.SizeFactor = Config.HexClientConfig.Instance.BookSize;
+            _progress = CurrentProgress();
             _lastFrame = _renderer.Render(_canvas, _view, vp.X, vp.Y, mouse.X, mouse.Y);
         }
         finally
@@ -147,6 +201,8 @@ public sealed class HexBook
         private readonly SpriteBatchBookCanvas _canvas;
 
         public GameBookData(SpriteBatchBookCanvas canvas) => _canvas = canvas;
+
+        public bool IsUnlocked(string advancement) => BookUnlocks.IsUnlocked(advancement, _progress);
 
         public string ItemName(string itemKey)
         {

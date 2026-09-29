@@ -111,6 +111,8 @@ public sealed class OpWriteHeld : SpellAction
         }
 
         var value = args[0];
+        // 源项目 OpWrite：不能把别的玩家写进物品（真名保护，联机防恶意）
+        MishapOthersName.ThrowIfTrueName(value, env.World?.Caster, allowSelf: true);
         return EnvSpell.Make(
             new EnvSpell.Simple(castEnv => castEnv.WriteHeldIota(value)),
             cost: 0);
@@ -204,6 +206,9 @@ public sealed class OpWriteEntity : SpellAction
         {
             throw new MishapBadEntity(entity, "可写入的载体");
         }
+
+        // 源项目 OpTheCoolerWrite：getTrueNameFromDatum(datum, null) —— 连自己的名字也不能写进实体
+        MishapOthersName.ThrowIfTrueName(value, world.Caster, allowSelf: false);
 
         return EnvSpell.Make(
             new EnvSpell.Simple(castEnv => castEnv.RequireWorld().WriteEntityIota(entity, value)),

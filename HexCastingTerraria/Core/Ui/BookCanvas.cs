@@ -101,4 +101,10 @@ public interface IBookData
 {
     string ItemName(string itemKey);
     BookRecipe? FindRecipe(string resultItemKey);
+
+    /// <summary>
+    /// 条目的解锁条件（原版 advancement，如 <c>hexcasting:root</c>）是否已达成。
+    /// 空字符串 = 没有条件。未解锁的条目照 Patchouli 显示成锁，点不开。
+    /// </summary>
+    bool IsUnlocked(string advancement);
 }

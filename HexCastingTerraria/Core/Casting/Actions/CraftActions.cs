@@ -79,6 +79,11 @@ public sealed class OpMakePackagedSpell : SpellAction
         }
 
         var patterns = list.Items;
+        // 源项目 OpMakePackagedSpell：getTrueNameFromArgs(patterns, caster)
+        foreach (var p in patterns)
+        {
+            MishapOthersName.ThrowIfTrueName(p, env.World?.Caster, allowSelf: true);
+        }
         return WorldSpell.Make(
             new WorldSpell.Simple(w =>
             {

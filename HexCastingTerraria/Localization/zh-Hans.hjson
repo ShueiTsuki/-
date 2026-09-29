@@ -520,6 +520,9 @@ Mods: {
 			CycleGuide: {
 				DisplayName: 翻页临摹引导（画布内，Shift 反向）
 			}
+			DevPanel: {
+				DisplayName: 开发者面板（法术示例 / 调试开关）
+			}
 		}
 	}
 }

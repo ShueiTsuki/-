@@ -173,6 +173,29 @@ sealed class TestEnv : CastingEnvironment
         return had;
     }
 
+    // ---- mishap 惩罚记录（原版 MishapEnvironment 的各个方法）----
+    public List<(double X, double Y)> Yeets { get; } = new();
+    public List<double> Damages { get; } = new();
+    public int Drowned { get; private set; }
+    public List<int> Blinds { get; } = new();
+    public int InventoryDrops { get; private set; }
+    public override void YeetHeldItemsTowards(double x, double y) => Yeets.Add((x, y));
+    public override void MishapDamage(double healthProportion) => Damages.Add(healthProportion);
+    public override void MishapDrown() => Drowned++;
+    public override void MishapBlind(int mcTicks) => Blinds.Add(mcTicks);
+    public override void MishapDropInventory() => InventoryDrops++;
+
+    /// <summary>每次求值后记下 mishap 的上下文（图案 + 名字），验证聊天提示前缀。</summary>
+    public List<HexCastingTerraria.Core.Casting.Eval.Mishaps.MishapContext> MishapContexts { get; } = new();
+    public override void PostExecution(CastResult result)
+    {
+        base.PostExecution(result);
+        foreach (var e in result.SideEffects)
+        {
+            if (e is HexCastingTerraria.Core.Casting.Eval.SideEffects.DoMishapSideEffect d) MishapContexts.Add(d.ErrorCtx);
+        }
+    }
+
     protected override long ExtractMediaEnvironment(long cost, bool simulate)
     {
         if (cost <= 0) return 0;
@@ -457,6 +480,18 @@ sealed class FakeWorld : ICastingWorld
     public List<((EntityIota.EntityKind, int) Key, Iota Value)> EntityWriteLog { get; } = new();
 
     public bool IsEntityIotaHolder(EntityIota entity) => EntityIotaHolders.ContainsKey(Key(entity));
+
+    // ---- mishap 世界效果 / 免疫 / 快捷栏 ----
+    public bool Placeable { get; set; } = true;
+    public HashSet<(EntityIota.EntityKind, int)> TeleportImmune { get; } = new();
+    public List<(double X, double Y)> MishapExplosions { get; } = new();
+    public List<(EntityIota.EntityKind, int)> Launched { get; } = new();
+    public List<((EntityIota.EntityKind, int) Key, bool Kill)> Hurt { get; } = new();
+    public bool HasPlaceableInHotbar() => Placeable;
+    public bool IsTeleportImmune(EntityIota entity) => TeleportImmune.Contains(Key(entity));
+    public void MishapExplosion(double x, double y) => MishapExplosions.Add((x, y));
+    public void MishapLaunchItem(EntityIota item) => Launched.Add(Key(item));
+    public void MishapHurtEntity(EntityIota entity, bool kill) => Hurt.Add((Key(entity), kill));
 
     public bool IsEntityIotaWritable(EntityIota entity)
         => IsEntityIotaHolder(entity) && EntityIotaWritable.GetValueOrDefault(Key(entity), true);
@@ -745,7 +780,10 @@ static class Program
             var r = Run(env, new CastingImage(), P("hexcasting:const/true"), P("hexcasting:rotate"));
             Check("rotate 缺参数 -> Errored", r.ResolutionType == ResolvedPatternType.Errored,
                 r.ResolutionType.ToString());
-            Check("缺参数时栈被保护（保留原值）", Sig(r.Image) == "[true]", Sig(r.Image));
+            // 原版 MishapNotEnoughArgs.execute：repeat(expected - got) { stack.add(GarbageIota()) }
+            //（这条测试原来断言「栈保持 [true]」，那是移植版空惩罚的行为）
+            Check("缺参数：补上缺的个数的垃圾值（rotate 要 3 个、有 1 个 → 补 2 个）",
+                Sig(r.Image) == "[true, garbage, garbage]", Sig(r.Image));
         }
 
         Console.WriteLine("=== 6. mishap：未实现的图案 ===");
@@ -1166,7 +1204,8 @@ static class Program
             Check("index(list(11,22), 1) = 22", Sig(r.Image) == "[22]", Sig(r.Image));
         }
         {
-            // index 越界
+            // index 越界：原版 OperatorIndex 是 getOrElse { NullIota() } —— 返回空，**不报错**
+            //（这条测试原来断言「越界 -> Errored」，把移植版的错误行为当成了期望值）
             var env = new TestEnv();
             var img = new CastingImage(new Iota[]
             {
@@ -1174,8 +1213,15 @@ static class Program
                 new DoubleIota(5),
             });
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:index") });
-            Check("index 越界 -> Errored", r.ResolutionType == ResolvedPatternType.Errored,
-                r.ResolutionType.ToString());
+            Check("index 越界 -> null（原版 getOrElse）", r.ResolutionType == ResolvedPatternType.Evaluated && Sig(r.Image) == "[null]",
+                $"{r.ResolutionType} {Sig(r.Image)}");
+            var img2 = new CastingImage(new Iota[]
+            {
+                new ListIota(new Iota[] { new DoubleIota(11), new DoubleIota(22) }),
+                new DoubleIota(0.6),
+            });
+            var r2 = new CastingVM(img2, env).QueueExecute(img2, new Iota[] { P("hexcasting:index") });
+            Check("index 0.6 四舍五入到 1（原版 roundToInt）", Sig(r2.Image) == "[22]", Sig(r2.Image));
         }
         {
             // append：末尾追加
@@ -1244,10 +1290,15 @@ static class Program
                 new ListIota(new Iota[] { new DoubleIota(5), new DoubleIota(6) }),
             });
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:deconstruct") });
-            Check("deconstruct(list(5,6)) -> [5, list(1)]",
+            // 原版 OperatorUnCons：listOf(ListIota(list.cdr), list.car) —— 首元素在**栈顶**
+            //（这条测试原来断言 [5, list(1)]，顺序是反的）
+            Check("deconstruct(list(5,6)) -> [list(6), 5]（首元素在栈顶）",
                 r.Image.Stack.Count == 2
-                && r.Image.Stack[0] is DoubleIota { Value: 5 }
-                && r.Image.Stack[1] is ListIota { Count: 1 }, Sig(r.Image));
+                && r.Image.Stack[0] is ListIota { Count: 1 }
+                && r.Image.Stack[1] is DoubleIota { Value: 5 }, Sig(r.Image));
+            var img0 = new CastingImage(new Iota[] { new ListIota(System.Array.Empty<Iota>()) });
+            var r0 = new CastingVM(img0, env).QueueExecute(img0, new Iota[] { P("hexcasting:deconstruct") });
+            Check("deconstruct(空列表) -> [list(0), null]，不报错", Sig(r0.Image) == "[list(0), null]", Sig(r0.Image));
         }
         // ==================== P0-2：列表算子补全（slice/unappend/index_of/remove_from/replace） ====================
         {
@@ -3379,18 +3430,20 @@ static class Program
                 world.Explosions.Count > 0 ? world.Explosions[0].Y.ToString() : "未爆炸");
         }
         {
-            // 强度必须落在 (0, 10) 开区间（源项目 getPositiveDoubleUnderInclusive(10.0)）
+            // 强度落在 [0, 10] 闭区间（源项目 getPositiveDoubleUnderInclusive(1, 10.0)）
+            // ⚠️ 原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
+            //    这条测试原来断言「0 / NaN 必须报错」，把移植版的错误行为当成了期望值。
             var world = new FakeWorld();
             var env = new TestEnv(world: world, media: 100_000_000);
 
-            int bad = 0;
-            foreach (var s in new[] { 0.0, -1.0, 10.0, 11.0, double.NaN })
+            string wrong = "";
+            foreach (var (s, ok) in new[] { (0.0, true), (10.0, true), (double.NaN, true), (-1.0, false), (11.0, false) })
             {
                 var img = new CastingImage(new Iota[] { new VectorIota(0.0, 0.0), new DoubleIota(s) });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:explode") });
-                if (r.ResolutionType != ResolvedPatternType.Errored) bad++;
+                if ((r.ResolutionType == ResolvedPatternType.Evaluated) != ok) wrong += $" {s}->{r.ResolutionType}";
             }
-            Check("explode：0 / 负 / 10 / 11 / NaN 强度全部 Errored", bad == 0, $"漏过 {bad} 个");
+            Check("explode：强度 0 / 10 / NaN(=0) 可以，-1 / 11 报错", wrong.Length == 0, wrong);
         }
         {
             // 爆炸是 SpellAction：先扣媒质、再造成伤害
@@ -3496,14 +3549,16 @@ static class Program
             var env = new TestEnv(world: world, media: 100_000_000);
             var npc = new EntityIota(EntityIota.EntityKind.Npc, 1);
 
-            int bad = 0;
-            foreach (var dur in new[] { 0.0, -1.0, double.NaN })
+            // ⚠️ 原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
+            //    这条测试原来断言「0 / NaN 必须报错」，把移植版的错误行为当成了期望值。
+            string wrong = "";
+            foreach (var (dur, ok) in new[] { (0.0, true), (double.NaN, true), (-1.0, false) })
             {
                 var img = new CastingImage(new Iota[] { npc, new DoubleIota(dur), new DoubleIota(1.0) });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:potion/weakness") });
-                if (r.ResolutionType != ResolvedPatternType.Errored) bad++;
+                if ((r.ResolutionType == ResolvedPatternType.Evaluated) != ok) wrong += $" {dur}->{r.ResolutionType}";
             }
-            Check("potion：非正持续时间全部 Errored", bad == 0, $"漏过 {bad} 个");
+            Check("potion：持续时间 0 / NaN(=0) 可以，负数报错", wrong.Length == 0, wrong);
         }
         {
             // 目标不是活物 -> mishap（物品/弹幕不能吃药水）
@@ -3555,14 +3610,16 @@ static class Program
             var world = new FakeWorld();
             var env = new TestEnv(world: world, media: 1_000_000);
 
-            int bad = 0;
-            foreach (var radius in new[] { 0.0, -1.0, double.NaN, double.PositiveInfinity })
+            // ⚠️ 原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
+            //    这条测试原来断言「0 / NaN 必须报错」，把移植版的错误行为当成了期望值。
+            string wrong = "";
+            foreach (var (radius, ok) in new[] { (0.0, true), (double.NaN, true), (double.PositiveInfinity, true), (-1.0, false) })
             {
                 var img = new CastingImage(new Iota[] { new VectorIota(0.0, 0.0), new DoubleIota(radius) });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:zone_entity") });
-                if (r.ResolutionType != ResolvedPatternType.Errored) bad++;
+                if ((r.ResolutionType == ResolvedPatternType.Evaluated) != ok) wrong += $" {radius}->{r.ResolutionType}";
             }
-            Check("zone_entity：0 / 负 / NaN / 无穷 半径全部 Errored", bad == 0, $"漏过 {bad} 个");
+            Check("zone_entity：半径 0 / NaN / 无穷(=0) 可以，负数报错", wrong.Length == 0, wrong);
         }
         {
             // 区域中心超范围 -> mishap（源项目 assertVecInRange）
@@ -4446,10 +4503,17 @@ static class Program
         }
 
         Console.WriteLine("=== 哨卫（sentinel/*） ===");
+        // 原版哨卫图案先检查 env.castingEntity is ServerPlayer（否则 MishapBadCaster）——下面的用例都要有玩家施法者
+        {
+            var env = new TestEnv(world: new FakeWorld());   // 没有施法者（相当于法术环）
+            var img = new CastingImage(new Iota[] { new VectorIota(1.0, 1.0) });
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:sentinel/create") });
+            Check("sentinel/create：没有玩家施法者 -> MishapBadCaster（Errored）", r.ResolutionType == ResolvedPatternType.Errored, r.ResolutionType.ToString());
+        }
         {
             // ── create：放下哨卫，普通 1 万 / 大哨卫 2 万 ──
             {
-                var env = new TestEnv(world: new FakeWorld());
+                var env = new TestEnv(world: new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) });
                 var img = new CastingImage(new Iota[] { new VectorIota(100, 64) });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:sentinel/create") });
                 Check("sentinel/create：放下哨卫，消耗 1 粉尘单位",
@@ -4458,7 +4522,7 @@ static class Program
                     env.SentinelValue?.ToString() ?? "null");
             }
             {
-                var env = new TestEnv(world: new FakeWorld());
+                var env = new TestEnv(world: new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) });
                 var img = new CastingImage(new Iota[] { new VectorIota(100, 64) });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:sentinel/create/great") });
                 Check("sentinel/create/great：大哨卫贵一倍（2 万）且标记 Great",
@@ -4469,7 +4533,7 @@ static class Program
 
             // ── get_pos：没放哨卫压 null，放了压坐标 ──
             {
-                var env = new TestEnv(world: new FakeWorld());
+                var env = new TestEnv(world: new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) });
                 var img = new CastingImage();
                 var none = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:sentinel/get_pos") });
                 Check("sentinel/get_pos：没放哨卫 -> null（不是报错）",
@@ -4484,7 +4548,7 @@ static class Program
 
             // ── wayfind：单位向量 ──
             {
-                var env = new TestEnv(world: new FakeWorld());
+                var env = new TestEnv(world: new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) });
                 env.SentinelValue = new CastingEnvironment.SentinelState(3, 4, false);
 
                 var img = new CastingImage(new Iota[] { new VectorIota(0, 0) });
@@ -4498,7 +4562,7 @@ static class Program
                 Check("sentinel/wayfind：与哨卫重合 -> 零向量（不产生 NaN）",
                     Sig(r2.Image) == "[(0,0)]", Sig(r2.Image));
 
-                var env2 = new TestEnv(world: new FakeWorld());
+                var env2 = new TestEnv(world: new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) });
                 var img3 = new CastingImage(new Iota[] { new VectorIota(0, 0) });
                 var r3 = new CastingVM(img3, env2).QueueExecute(img3, new Iota[] { P("hexcasting:sentinel/wayfind") });
                 Check("sentinel/wayfind：没放哨卫 -> null",
@@ -4507,7 +4571,7 @@ static class Program
 
             // ── destroy：清掉；即使本来没有也不报错 ──
             {
-                var env = new TestEnv(world: new FakeWorld());
+                var env = new TestEnv(world: new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) });
                 env.SentinelValue = new CastingEnvironment.SentinelState(1, 1, true);
                 var img = new CastingImage();
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:sentinel/destroy") });
@@ -4515,7 +4579,7 @@ static class Program
                     r.ResolutionType == ResolvedPatternType.Evaluated && env.SentinelValue == null,
                     env.SentinelValue?.ToString() ?? "null");
 
-                var env2 = new TestEnv(world: new FakeWorld());
+                var env2 = new TestEnv(world: new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) });
                 var img2 = new CastingImage();
                 var r2 = new CastingVM(img2, env2).QueueExecute(img2, new Iota[] { P("hexcasting:sentinel/destroy") });
                 Check("sentinel/destroy：本来就没哨卫 -> 不报错（源项目同）",
@@ -4524,7 +4588,7 @@ static class Program
 
             // ── 范围延伸：这是大哨卫存在的全部理由，必须钉住 ──
             {
-                var env = new TestEnv(world: new FakeWorld());
+                var env = new TestEnv(world: new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) });
                 Check("范围延伸：没哨卫时远处坐标超范围",
                     !env.IsInSentinelRange(100, 100));
 
@@ -4657,18 +4721,18 @@ static class Program
                     $"消耗 {1_000_000 - env.Media}");
             }
             {
-                // 负数 / 零 / NaN 都要拒绝
-                var world = new FakeWorld();
-                var env = new TestEnv(world: world);
-                var bad = new[] { -1.0, 0.0, double.NaN, double.PositiveInfinity };
-                bool allRejected = bad.All(d =>
+                // 源项目 OpFlight 用 getPositiveDouble：只有负数报错
+                // ⚠️ 原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
+                //    这条测试原来断言「0 / NaN 必须报错」，把移植版的错误行为当成了期望值。
+                string wrong = "";
+                foreach (var (d, ok) in new[] { (0.0, true), (double.NaN, true), (double.PositiveInfinity, true), (-1.0, false) })
                 {
                     var e2 = new TestEnv(world: new FakeWorld());
                     var im = new CastingImage(new Iota[] { new EntityIota(EntityIota.EntityKind.Player, 0), new DoubleIota(d) });
                     var rr = new CastingVM(im, e2).QueueExecute(im, new Iota[] { P("hexcasting:flight/time") });
-                    return rr.ResolutionType == ResolvedPatternType.Errored;
-                });
-                Check("flight/time：非正数 / NaN / 无穷 -> 全部 Errored", allRejected);
+                    if ((rr.ResolutionType == ResolvedPatternType.Evaluated) != ok) wrong += $" {d}->{rr.ResolutionType}";
+                }
+                Check("flight/time：0 / NaN / 无穷(=0) 可以，负数报错", wrong.Length == 0, wrong);
             }
 
             // ── flight/can_fly：只读查询，消耗 0 ──
@@ -5169,6 +5233,212 @@ static class Program
             Check("未启蒙施放大法术：Invalid + 丢下手持物品 + 触发「盲目绘制」",
                 r.ResolutionType == ResolvedPatternType.Invalid && env.DroppedHeld == 1 && env.FailedGreatSpells == 1,
                 $"{r.ResolutionType} drop={env.DroppedHeld} fail={env.FailedGreatSpells}");
+        }
+
+        // ==================== 对照原版审计（AUDIT_VS_ORIGINAL.md）====================
+        // 下面每条的期望值都来自 hexsrc 原版源码，不是移植版现有行为。
+        {
+            var env = new TestEnv();
+            // #3 arcsin/arccos 定义域外 → MishapInvalidIota（原版 asDoubleBetween），参数换成垃圾值
+            var img = new CastingImage(new Iota[] { new DoubleIota(2) });
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:arcsin") });
+            Check("arcsin(2)：定义域外报错，参数换成垃圾值（原版不夹取）",
+                r.ResolutionType == ResolvedPatternType.Errored && Sig(r.Image) == "[garbage]", $"{r.ResolutionType} {Sig(r.Image)}");
+
+            // #4 位运算
+            Check("数字 与：5 & 3 = 1", Sig(Run2(env, new DoubleIota(5), new DoubleIota(3), "hexcasting:and").Image) == "[1]");
+            Check("数字 或：5 | 3 = 7", Sig(Run2(env, new DoubleIota(5), new DoubleIota(3), "hexcasting:or").Image) == "[7]");
+            Check("数字 异或：5 ^ 3 = 6", Sig(Run2(env, new DoubleIota(5), new DoubleIota(3), "hexcasting:xor").Image) == "[6]");
+            var imgNot = new CastingImage(new Iota[] { new DoubleIota(0) });
+            var rNot = new CastingVM(imgNot, env).QueueExecute(imgNot, new Iota[] { P("hexcasting:not") });
+            Check("数字 非：~0 = -1", Sig(rNot.Image) == "[-1]", $"{rNot.ResolutionType} {Sig(rNot.Image)}");
+            Check("位运算先四舍五入：2.6 & 3 = 3", Sig(Run2(env, new DoubleIota(2.6), new DoubleIota(3), "hexcasting:and").Image) == "[3]");
+
+            // #5 列表集合运算
+            ListIota L(params double[] xs) => new ListIota(xs.Select(x => (Iota)new DoubleIota(x)).ToArray());
+            Check("列表 与 = 交集（保左表顺序）", Sig(Run2(env, L(1, 2, 3), L(3, 1), "hexcasting:and").Image) == "[list(2)]"
+                && Run2(env, L(1, 2, 3), L(3, 1), "hexcasting:and").Image.Stack[0] is ListIota { Items: [DoubleIota { Value: 1 }, DoubleIota { Value: 3 }] });
+            var orR = Run2(env, L(1, 2), L(2, 3), "hexcasting:or").Image.Stack[0] as ListIota;
+            Check("列表 或 = 并集（左表 + 右表里没有的）", orR is { Count: 3 } && orR.Items[2] is DoubleIota { Value: 3 });
+            var xorR = Run2(env, L(1, 2), L(2, 3), "hexcasting:xor").Image.Stack[0] as ListIota;
+            Check("列表 异或 = 对称差", xorR is { Count: 2 } && xorR.Items[0] is DoubleIota { Value: 1 } && xorR.Items[1] is DoubleIota { Value: 3 });
+
+            // #6 布尔的长度之纯化
+            var imgAbs = new CastingImage(new Iota[] { BooleanIota.True });
+            var rAbs = new CastingVM(imgAbs, env).QueueExecute(imgAbs, new Iota[] { P("hexcasting:abs") });
+            Check("长度之纯化(true) = 1", Sig(rAbs.Image) == "[1]", Sig(rAbs.Image));
+
+            // 相等容差（原版 Iota.tolerates）
+            Check("相等：向量差 1e-5 视为相等（原版距离² < 1e-8）",
+                Sig(Run2(env, new VectorIota(1, 2), new VectorIota(1.00001, 2), "hexcasting:equals").Image) == "[true]");
+            var pa = PatternRegistry.FindById("hexcasting:get_caster")!.Prototype;
+            HexPattern.TryFromAngles(pa.AnglesSignature(), HexDir.West, out var pb, out _);
+            Check("相等：同一图案换起始方向仍相等（原版只比角度）",
+                Sig(Run2(env, new PatternIota(pa), new PatternIota(pb!), "hexcasting:equals").Image) == "[true]");
+            Check("相等：列表逐项按容差比",
+                Sig(Run2(env, L(1, 2), L(1.00001, 2), "hexcasting:equals").Image) == "[true]");
+        }
+        {
+            // #9 #10 区域之馏化：任意 = 任意实体；免费
+            var world = new FakeWorld();
+            var env = new TestEnv(world: world, media: 1_000);
+            var img = new CastingImage(new Iota[] { new VectorIota(0, 0), new DoubleIota(5) });
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:zone_entity") });
+            Check("zone_entity：筛选是「任意」、不花媒质（原版 ConstMediaAction 默认 0）",
+                r.ResolutionType == ResolvedPatternType.Evaluated && world.LastQueryFilter == ZoneEntityFilter.Any && env.Media == 1_000,
+                $"{world.LastQueryFilter} 媒质 {env.Media}");
+        }
+        {
+            // #12 放置方块：快捷栏没有可放的 → MishapLackingHotbarItem（丢下手持物品），不扣媒质
+            var world = new FakeWorld { Placeable = false };
+            world.Replaceable.Add((3, 3));
+            var env = new TestEnv(world: world, media: 1_000_000);
+            var img = new CastingImage(new Iota[] { new VectorIota(3.5, 3.5) });
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:place_block") });
+            Check("place_block：快捷栏没东西 → 报错 + 丢下手持物品 + 不扣媒质",
+                r.ResolutionType == ResolvedPatternType.Errored && env.DroppedHeld == 1 && env.Media == 1_000_000,
+                $"{r.ResolutionType} drop={env.DroppedHeld} media={env.Media}");
+        }
+        {
+            // #13 mishap 惩罚
+            var env = new TestEnv();
+            var r = Run2(env, new DoubleIota(1), new DoubleIota(0), "hexcasting:div");
+            Check("除以零：压一个垃圾值 + 扣当前生命的一半（原版 damage(0.5)）",
+                Sig(r.Image) == "[1, 0, garbage]" && env.Damages.SequenceEqual(new[] { 0.5 }), $"{Sig(r.Image)} {string.Join(",", env.Damages)}");
+
+            var r2 = Run2(env, BooleanIota.True, new VectorIota(1, 1), "hexcasting:add");
+            Check("运算符参数类型不对：参与的参数全换成垃圾值", Sig(r2.Image) == "[garbage, garbage]", Sig(r2.Image));
+
+            var img3 = new CastingImage(new Iota[] { new DoubleIota(7) });
+            var r3 = new CastingVM(img3, env).QueueExecute(img3, new Iota[] { P("hexcasting:close_paren") });
+            Check("多余的闭括号：把这个图案压回栈（原版 MishapNeedsParens）",
+                r3.Image.Stack.Count == 2 && r3.Image.Stack[1] is PatternIota, Sig(r3.Image));
+
+            // 挑一条合法、没注册、也不是数字 / 掩码的图案
+            HexPattern? junk = null;
+            foreach (var sig in new[] { "qeqeqe", "eqeqeqe", "qqeqqeqq", "eeqeeqee", "qwqwqwqwqa" })
+            {
+                if (HexPattern.TryFromAngles(sig, HexDir.East, out var cand, out _) && cand != null
+                    && PatternRegistry.Match(cand) == null && !SpecialPatterns.TryNumber(sig, out _)
+                    && !SpecialPatterns.TryMask(cand, out _)) { junk = cand; break; }
+            }
+            var img4 = new CastingImage(new Iota[] { new DoubleIota(7) });
+            var r4 = new CastingVM(img4, env).QueueExecute(img4, new Iota[] { new PatternIota(junk!) });
+            Check("无效图案：压一个垃圾值", r4.ResolutionType == ResolvedPatternType.Invalid && Sig(r4.Image) == "[7, garbage]", $"{r4.ResolutionType} {Sig(r4.Image)}");
+
+            var world = new FakeWorld { InWorld = false };
+            var env5 = new TestEnv(world: world);
+            var img5 = new CastingImage(new Iota[] { new VectorIota(9, 9) });
+            new CastingVM(img5, env5).QueueExecute(img5, new Iota[] { P("hexcasting:lightning") });
+            var w6 = new FakeWorld();
+            var env6 = new TestEnv(world: w6, media: 1_000_000);
+            var img6 = new CastingImage(new Iota[] { new VectorIota(4.5, 4.5) });   // 不可替换 → MishapBadBlock
+            new CastingVM(img6, env6).QueueExecute(img6, new Iota[] { P("hexcasting:conjure_block") });
+            Check("方块不对：在那一格中心来一次不破坏方块的小爆炸（原版 0.25、NONE）",
+                w6.MishapExplosions.SequenceEqual(new[] { (4.5, 4.5) }), string.Join(",", w6.MishapExplosions));
+
+            var env7 = new TestEnv(media: 30);
+            var img7 = new CastingImage(new Iota[] { new VectorIota(0, 0), new VectorIota(1, 0) });
+            var r7 = new CastingVM(img7, env7).QueueExecute(img7, new Iota[] { P("hexcasting:raycast") });
+            Check("媒质不够：把能付的都抽走（原版 extractMedia(cost, false)）",
+                r7.ResolutionType == ResolvedPatternType.Errored && env7.Media == 0, $"{r7.ResolutionType} 剩 {env7.Media}");
+        }
+        {
+            // #14 mishap 上下文带图案名
+            var env = new TestEnv();
+            var img = new CastingImage(new Iota[] { new DoubleIota(1), new DoubleIota(0) });
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:div") });
+            var ctx = env.MishapContexts.FirstOrDefault();
+            Check("mishap 上下文带出错图案与中文名（聊天提示前缀）",
+                ctx?.Pattern is not null && ctx.Name == "除法之馏化", ctx?.Name ?? "null");
+        }
+        {
+            // #15 真名保护与传送免疫
+            var caster = new EntityIota(EntityIota.EntityKind.Player, 0);
+            var other = new EntityIota(EntityIota.EntityKind.Player, 1);
+            var world = new FakeWorld { Caster = caster };
+            var env = new TestEnv(world: world) { HeldIota = NullIota.Instance };
+            var img = new CastingImage(new Iota[] { new ListIota(new Iota[] { other }) });
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:write") });
+            Check("把别的玩家（嵌在列表里）写进物品 → MishapOthersName，失明 60 秒",
+                r.ResolutionType == ResolvedPatternType.Errored && env.Blinds.SequenceEqual(new[] { 1200 }), $"{r.ResolutionType} {string.Join(",", env.Blinds)}");
+            var img2 = new CastingImage(new Iota[] { caster });
+            var r2 = new CastingVM(img2, env).QueueExecute(img2, new Iota[] { P("hexcasting:write") });
+            Check("把自己写进物品可以（原版 getTrueNameFromDatum 忽略施法者）", r2.ResolutionType == ResolvedPatternType.Evaluated, r2.ResolutionType.ToString());
+
+            world.EntityIotaHolders[(EntityIota.EntityKind.Item, 3)] = true;
+            var env3 = new TestEnv(world: world);
+            var img3 = new CastingImage(new Iota[] { new EntityIota(EntityIota.EntityKind.Item, 3), caster });
+            var r3 = new CastingVM(img3, env3).QueueExecute(img3, new Iota[] { P("hexcasting:write/entity") });
+            Check("编年史家之策略：连自己也不能写进实体 → 失明 5 秒", r3.ResolutionType == ResolvedPatternType.Errored && env3.Blinds.SequenceEqual(new[] { 100 }),
+                $"{r3.ResolutionType} {string.Join(",", env3.Blinds)}");
+
+            var boss = new EntityIota(EntityIota.EntityKind.Npc, 7);
+            world.TeleportImmune.Add((EntityIota.EntityKind.Npc, 7));
+            var env4 = new TestEnv(world: world, media: 1_000_000);
+            var img4 = new CastingImage(new Iota[] { boss, new DoubleIota(3) });
+            var r4 = new CastingVM(img4, env4).QueueExecute(img4, new Iota[] { P("hexcasting:blink") });
+            Check("闪现 Boss → MishapImmuneEntity，手持物品甩向它", r4.ResolutionType == ResolvedPatternType.Errored && env4.Yeets.Count == 1,
+                $"{r4.ResolutionType} yeets={env4.Yeets.Count}");
+        }
+
+        // ==================== 向量 × 数字（逐分量广播） ====================
+        {
+            var env = new TestEnv();
+            var r1 = Run2(env, new VectorIota(1, -2), new DoubleIota(3), "hexcasting:mul");
+            Check("向量 × 数字 = 缩放（原版 OperatorVec3Delegating）", Sig(r1.Image) == "[(3,-6)]", Sig(r1.Image));
+            var r2 = Run2(env, new DoubleIota(2), new VectorIota(1, 4), "hexcasting:sub");
+            Check("数字 − 向量：数字广播到每个分量", Sig(r2.Image) == "[(1,-2)]", Sig(r2.Image));
+            var r3 = Run2(env, new VectorIota(4, 6), new DoubleIota(2), "hexcasting:div");
+            Check("向量 ÷ 数字", Sig(r3.Image) == "[(2,3)]", Sig(r3.Image));
+            var r4 = Run2(env, new VectorIota(5, 7), new VectorIota(3, 4), "hexcasting:modulo");
+            Check("向量 % 向量：逐分量取余", Sig(r4.Image) == "[(2,3)]", Sig(r4.Image));
+            var r5 = Run2(env, new VectorIota(1, 2), new DoubleIota(0), "hexcasting:div");
+            Check("向量 ÷ 0：除零 mishap", r5.ResolutionType == ResolvedPatternType.Errored, r5.ResolutionType.ToString());
+            var r6 = Run2(env, new VectorIota(1, 2), new VectorIota(3, 4), "hexcasting:mul");
+            Check("向量 × 向量 仍是点积", Sig(r6.Image) == "[11]", Sig(r6.Image));
+        }
+
+        // ==================== 开发者面板：法术示例 ====================
+        {
+            Check("数字编码：半整数先编 2x 再 ÷2（2.5 → …d）",
+                SpecialPatterns.TryNumber(SpecialPatterns.EncodeNumber(2.5)!, out var v25) && v25 == 2.5
+                && SpecialPatterns.TryNumber(SpecialPatterns.EncodeNumber(-7.5)!, out var vn) && vn == -7.5
+                && SpecialPatterns.EncodeNumber(0.25) is null,
+                $"{SpecialPatterns.EncodeNumber(2.5)} {SpecialPatterns.EncodeNumber(-7.5)}");
+            foreach (double n in new[] { 0.0, 1, 2, 3, 4, 10, 30, 37, -12 })
+            {
+                var pat = HexCastingTerraria.Core.Dev.HexStep.N(n).ToPattern();
+                if (pat is null || !SpecialPatterns.TryNumber(pat.AnglesSignature(), out var got) || got != n)
+                {
+                    Check($"示例数字步骤 {n} 编成能画的数字图案", false, pat?.AnglesSignature());
+                }
+            }
+
+            foreach (var sample in HexCastingTerraria.Core.Dev.SampleHexes.All)
+            {
+                var caster = new EntityIota(EntityIota.EntityKind.Player, 0);
+                var world = new FakeWorld { Caster = caster, LookDir = (1.0, 0.0) };
+                world.Solid.Add((14, 19));       // 视线正前方 4 格有一块实心方块
+                world.Replaceable.Add((13, 19));  // 它朝向玩家的那一面是空气
+                var env = new TestEnv(world: world);
+                var img = new CastingImage(System.Array.Empty<Iota>());
+                string fail = "";
+                for (int i = 0; i < sample.Steps.Length && fail.Length == 0; i++)
+                {
+                    var step = sample.Steps[i];
+                    var pat = step.ToPattern();
+                    if (pat is null) { fail = $"第 {i + 1} 步 {step.Label} 画不出来"; break; }
+                    var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { new PatternIota(pat) });
+                    if (r.ResolutionType != ResolvedPatternType.Evaluated)
+                    {
+                        fail = $"第 {i + 1} 步 {step.Label}：{r.ResolutionType} 栈 {Sig(r.Image)}";
+                    }
+                    img = r.Image;
+                }
+                if (fail.Length == 0 && img.Stack.Count != 0) { fail = "施放完栈没清空 " + Sig(img); }
+                Check($"法术示例「{sample.Name}」逐步求值成功且栈清空", fail.Length == 0, fail);
+            }
         }
 
         Console.WriteLine($"================ 通过 {_pass} / 失败 {_fail} ================");

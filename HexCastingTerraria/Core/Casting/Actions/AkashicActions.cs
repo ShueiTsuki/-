@@ -72,6 +72,9 @@ public sealed class OpAkashicWrite : SpellAction
 
         env.AssertVecInRange(x, y);
 
+        // 源项目 OpAkashicWrite：不能把别的玩家写进阿卡夏记录
+        MishapOthersName.ThrowIfTrueName(datum, env.World?.Caster, allowSelf: true);
+
         var world = env.RequireWorld();
         if (!world.IsAkashicRecord(x, y))
         {

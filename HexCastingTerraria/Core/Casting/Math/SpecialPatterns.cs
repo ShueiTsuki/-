@@ -84,6 +84,14 @@ public static class SpecialPatterns
         bool negative = value < 0;
         double remaining = System.Math.Abs(value);
 
+        // 半整数：d 是「÷2」不是「+0.5」（按顺序施加）→ 先编 2x 再接一个 d
+        //（这里曾经写成「整数部分 + d」：2.5 → aqaawwd = (1+1)/2 = 1，错）
+        if (remaining % 1 == 0.5)
+        {
+            string? doubled = EncodeNumber(value * 2);
+            return doubled is null ? null : doubled + "d";
+        }
+
         var sb = new System.Text.StringBuilder(negative ? NumberPrefixNegative : NumberPrefixPositive);
 
         // 贪心：能减 10 就减 10，能减 5 就减 5，剩 1，最后用 d 表示 .5
@@ -91,10 +99,8 @@ public static class SpecialPatterns
         while (remaining >= 5) { sb.Append('q'); remaining -= 5; }
         while (remaining >= 1) { sb.Append('w'); remaining -= 1; }
 
-        if (remaining == 0.5) sb.Append('d');
-
         // 还剩小数（例如 0.25）就用不了这套编码
-        return remaining is 0 or 0.5 ? sb.ToString() : null;
+        return remaining == 0 ? sb.ToString() : null;
     }
 
     // ── 掩码 ───────────────────────────────────────────────────────

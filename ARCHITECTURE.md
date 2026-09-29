@@ -119,6 +119,7 @@
 | `Casting/Math/PatternSuggestion.cs` | 銆屼綘鐢荤殑杩欐潯鏈€鎺ヨ繎鍝釜鍥炬銆嶃€?/// |
 | `Casting/Math/SpecialPatterns.cs` | **鐗规畩鍥炬**锛坰pecial patterns锛夛細涓嶅湪 188 鏉℃敞鍐岃〃閲岋紝浣嗚兘琚瘑鍒垚鍔ㄤ綔鐨勫浘妗堛€?/// 绉绘鑷簮椤圭洰 `SpecialHandler` 鐨勪袱涓疄鐜帮紙`SpecialHandlerNumberLiteral` / `SpecialHandlerMask`锛夈€?/// |
 | `Casting/Math/Vec2f.cs` | 鏈€灏忎簩缁存诞鐐瑰悜閲忥細鍙湁 `Core` 鐪熸鐢ㄥ埌鐨勯偅鍑犱釜鎿嶄綔銆?/// |
+| `Dev/SampleHexes.cs` | 娉曟湳閲岀殑涓€姝ワ細涓€鏉″叿鍚嶅浘妗堬紝鎴栦竴涓暟瀛楀瓧闈㈤噺锛堟暟瀛楀浘妗?aqaa鈥?鐢?<see cref="SpecialPatterns.EncodeNumber"/> 鐢熸垚锛夈€?/summary> |
 | `Media/IMediaStorage.cs` | 濯掕川瀹瑰櫒銆傜Щ妞嶈嚜 at.petrak.hexcasting.api.addldata.ADMediaHolder 涓?/// api.item.MediaHolderItem 鐨勫悎骞惰涔夛紙婧愰」鐩洜瑕侀€傞厤 Forge/Fabric 涓ゅ鑳藉姏绯荤粺 |
 | `Media/MediaConstants.cs` | 濯掕川鍗曚綅鎹㈢畻銆傜Щ妞嶈嚜 at.petrak.hexcasting.api.misc.MediaConstants锛堟暟鍊奸€愰」瀵归綈锛夈€?/// |
 | `Media/MediaPaymentPlanner.cs` | 鑳屽寘閲屼竴鍫嗗彲鎻愪緵濯掕川鐨勭墿鍝併€?/summary> |
@@ -132,6 +133,7 @@
 | `Ui/BookContent.Generated.cs` | 鏈枃浠剁敱 _tools/gen_book_content.py 鐢熸垚锛?*涓嶈鎵嬫敼**锛氭敼鐢熸垚鍣紝鐒跺悗閲嶆柊璺戣剼鏈€?//     鍐呭锛氬師鐗堝拻娉曞鎵嬪唽锛團allingColors/HexMod v0.11.4锛孧IT锛夌殑缁撴瀯 + 瀹樻柟绠€浣撲腑鏂囨鏂囥€?// </auto-generated> |
 | `Ui/BookModel.cs` | 椤甸潰绫诲瀷銆傚搴?Patchouli 娉ㄥ唽鍦?<c>patchouli:鈥?/c> 鍚嶄笅鐨勪竴缁勯〉闈㈢被锛?/// 杩欓噷鍙繚鐣欐嘲鎷変晶**鐪熶細鐢ㄥ埌**鐨勯偅鍑犵锛圡C 鐗规湁鐨勫鏂瑰潡棰勮 / 瀹炰綋棰勮 / 杩涘害浠诲姟宸插墧闄わ級銆?/// </summary> |
 | `Ui/BookText.cs` | 閲忎竴娈垫枃鏈湁澶氬銆傜湡瀹炴覆鏌撴椂浼犲瓧浣撴祴閲忥紝绂荤嚎娴嬭瘯鏃朵紶鍋囧嚱鏁般€?/summary> |
+| `Ui/BookUnlocks.cs` | 鐜╁鍦ㄤ功鐨勮В閿佷笂鐢ㄥ緱鍒扮殑杩涘害銆傛父鎴忓唴鐢?Client 濉紝绂荤嚎娴嬭瘯鎵嬪～銆?/summary> |
 | `Ui/BookView.cs` | 鍒嗙被椤电涓€璺ㄩ〉鍙抽〉鑳芥斁鐨勬潯鐩暟锛圥atchouli ENTRIES_IN_FIRST_PAGE锛夈€?/summary> |
 | `Ui/PatchouliRenderer.cs` | 涔︿笂鍙偣鐨勪笢瑗裤€?/summary> |
 | `World/AmethystLoot.cs` | 鏅剁皣鐨勭敓闀块樁娈点€傚搴?MC 鐨勫洓涓柟鍧椼€?/summary> |
@@ -202,6 +204,7 @@
 | `HexPixel.cs` | 鍏变韩鐨?1脳1 鐧借壊璐村浘锛岀敤浜庣敾绾挎涓庢柟鍧楃偣銆?/// |
 | `HexVec.cs` | `Core` 鐨?<see cref="Vec2f"/> 鈫?XNA 鐨?<see cref="Vector2"/> 浜掕浆銆?/// |
 | `HexVmState.cs` | 瀹㈡埛绔晶鐨?VM 鐘舵€併€?/// |
+| `UI/DevPanel.cs` | 寮€鍙戣€呴潰鏉匡紙榛樿 F7锛夛細涓嶇煡閬撹鏀句粈涔堟硶鏈椂鐢ㄣ€?/// |
 | `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€? |
 | `UI/HexCanvas.cs` | 宸茬敾瀹岀殑涓€鏉″浘妗?+ 娉ㄥ唽琛ㄥ尮閰嶇粨鏋滐紙null = 鏈懡涓級+ 姹傚€肩粨鏋滐紙鍐冲畾棰滆壊锛夈€?/summary> |
 | `UI/PatternIconElement.cs` | 鎶婁竴涓?*鍥炬**鐢绘垚涓€涓?UIElement锛堢缉鐣ュ浘锛夈€?/// |

@@ -37,6 +37,9 @@ namespace HexCastingTerraria
         /// </summary>
         public static ModKeybind? GiveDevKitKey { get; private set; }
 
+        /// <summary>开发者面板（法术示例 / 调试开关 / 进度状态），默认 F7。</summary>
+        public static ModKeybind? DevPanelKey { get; private set; }
+
         /// <summary>模组实例，供其它类写日志用。</summary>
         public static HexCastingTerraria? Instance { get; private set; }
 
@@ -46,6 +49,7 @@ namespace HexCastingTerraria
             ToggleInfiniteMediaKey = KeybindLoader.RegisterKeybind(this, "ToggleInfiniteMedia", Keys.J);
             CycleGuideKey = KeybindLoader.RegisterKeybind(this, "CycleGuide", Keys.H);
             GiveDevKitKey = KeybindLoader.RegisterKeybind(this, "GiveDevKit", Keys.K);
+            DevPanelKey = KeybindLoader.RegisterKeybind(this, "DevPanel", Keys.F7);
 
             // 把服务端配置接进 Core 侧的大法术规则。
             // 用委托而不是值：配置随时可能被改，取的时候再读。
@@ -92,6 +96,7 @@ namespace HexCastingTerraria
             ToggleInfiniteMediaKey = null;
             CycleGuideKey = null;
             GiveDevKitKey = null;
+            DevPanelKey = null;
             PatternRegistry.ClearActions();
         }
 
@@ -266,6 +271,14 @@ namespace HexCastingTerraria
                         return;
                     }
                     Content.Net.HexNetSync.HandlePlayerBuff(reader);
+                    break;
+
+                case Content.Net.HexMessage.OwnerEffect:
+                    if (Main.netMode != NetmodeID.MultiplayerClient)
+                    {
+                        return;
+                    }
+                    Content.PlayerEffects.Handle(reader);
                     break;
 
                 case Content.Net.HexMessage.SpellParticles:

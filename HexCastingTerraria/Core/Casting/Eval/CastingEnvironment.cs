@@ -92,6 +92,27 @@ public abstract class CastingEnvironment
     /// <summary>原版 mishapEnvironment.dropHeldItems：把手上的东西丢出去。没有实体施法者的环境什么都不做。</summary>
     public virtual void DropHeldItems() { }
 
+    // ── mishap 惩罚（源项目 MishapEnvironment / PlayerBasedMishapEnv）───────────
+    // 没有实体施法者的环境（法术环）默认什么都不做；玩家环境在 Content/PlayerCastingEnvironment.cs 里实现。
+
+    /// <summary>原版 yeetHeldItemsTowards：把手上的东西朝某个位置（图格）甩出去。</summary>
+    public virtual void YeetHeldItemsTowards(double x, double y) { }
+
+    /// <summary>原版 damage(healthProportion)：扣掉**当前**生命的这个比例（无视护甲）。</summary>
+    public virtual void MishapDamage(double healthProportion) { }
+
+    /// <summary>原版 drown()：氧气清零；本来就缺氧时再扣一点血。</summary>
+    public virtual void MishapDrown() { }
+
+    /// <summary>原版 blind(ticks)：失明。参数是 MC 游戏刻（20/秒）。</summary>
+    public virtual void MishapBlind(int mcTicks) { }
+
+    /// <summary>原版 removeXp(amount)。泰拉没有经验值 —— 默认不做（见 AUDIT_VS_ORIGINAL.md）。</summary>
+    public virtual void MishapRemoveXp(int amount) { }
+
+    /// <summary>原版 MishapNoSpellCircle：把整个背包（含盔甲）掉出来。</summary>
+    public virtual void MishapDropInventory() { }
+
     /// <summary>
     /// 把一条消息发给施法者（聊天框）。
     /// 对应源项目 CastingEnvironment.printMessage。
@@ -305,6 +326,39 @@ public abstract class CastingEnvironment
             }
         }
         throw new MishapInvalidIota(iota, "整数");
+    }
+
+    /// <summary>
+    /// 源项目 `getPositiveDouble`：`0 <= x`。⚠️ 原版的「positive」**包含 0** ——
+    /// 这里曾在多处手写成 `x <= 0` 报错（爆炸威力、药水时长、区域半径、飞行参数），把 0 错杀了。
+    /// </summary>
+    public static double RequirePositiveDouble(Iota iota, string what)
+    {
+        if (iota is DoubleIota d && d.Value >= 0)
+        {
+            return d.Value;
+        }
+        throw new MishapInvalidIota(iota, what);
+    }
+
+    /// <summary>源项目 `getPositiveDoubleUnderInclusive`：`0 <= x <= max`（闭区间）。</summary>
+    public static double RequirePositiveDoubleUnderInclusive(Iota iota, double max, string what)
+    {
+        if (iota is DoubleIota d && d.Value >= 0 && d.Value <= max)
+        {
+            return d.Value;
+        }
+        throw new MishapInvalidIota(iota, what);
+    }
+
+    /// <summary>源项目 `getDoubleBetween`：`min <= x <= max`（闭区间）。</summary>
+    public static double RequireDoubleBetween(Iota iota, double min, double max, string what)
+    {
+        if (iota is DoubleIota d && d.Value >= min && d.Value <= max)
+        {
+            return d.Value;
+        }
+        throw new MishapInvalidIota(iota, what);
     }
 
     /// <summary>

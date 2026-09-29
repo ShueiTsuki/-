@@ -16,6 +16,9 @@ public static class HexCanvasState
     /// <summary>咒法学之书。与画布共用「同一时间只开一个」的约束。</summary>
     public static UI.HexBook Book { get; } = new UI.HexBook();
 
+    /// <summary>开发者面板（F7）。</summary>
+    public static UI.DevPanel Dev { get; } = new UI.DevPanel();
+
     /// <summary>最近一次操作反馈，用于 HUD 提示。</summary>
     public static string? LastMessage { get; set; }
 

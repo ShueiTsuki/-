@@ -37,6 +37,8 @@ public sealed class OpCreateSentinel : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
+        // 源项目：env.castingEntity !is ServerPlayer → MishapBadCaster（法术环里不能用哨卫）
+        SentinelGuard.RequirePlayerCaster(env);
         var (x, y) = CastingEnvironment.RequireVec(args[0], "位置");
         env.AssertVecInRange(x, y);
 
@@ -60,6 +62,8 @@ public sealed class OpDestroySentinel : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
+        // 源项目：env.castingEntity !is ServerPlayer → MishapBadCaster（法术环里不能用哨卫）
+        SentinelGuard.RequirePlayerCaster(env);
         var particles = env.Sentinel is { } s
             ? new[] { ParticleSpray.Cloud(s.X, s.Y, spread: 2.0f, count: 30) }
             : System.Array.Empty<ParticleSpray>();
@@ -82,12 +86,16 @@ public sealed class OpGetSentinelPos : ConstMediaAction
     public override long MediaCost => MediaConstants.DustUnit / 10;
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
-        => new Iota[]
+    {
+        // 源项目：env.castingEntity !is ServerPlayer → MishapBadCaster
+        SentinelGuard.RequirePlayerCaster(env);
+        return new Iota[]
         {
             env.Sentinel is { } s
                 ? new VectorIota(s.X, s.Y)
                 : NullIota.Instance,
         };
+    }
 }
 
 /// <summary>
@@ -106,6 +114,8 @@ public sealed class OpGetSentinelWayfind : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
+        // 源项目：env.castingEntity !is ServerPlayer → MishapBadCaster（法术环里不能用哨卫）
+        SentinelGuard.RequirePlayerCaster(env);
         var (x, y) = CastingEnvironment.RequireVec(args[0], "起点");
 
         if (env.Sentinel is not { } s)
@@ -142,5 +152,17 @@ public static class SentinelActions
         PatternRegistry.RegisterAction("hexcasting:sentinel/wayfind", new OpGetSentinelWayfind());
 
         return PatternRegistry.RegisteredActionCount - before;
+    }
+}
+
+internal static class SentinelGuard
+{
+    /// <summary>哨卫挂在玩家身上：没有玩家施法者（法术环）就是 MishapBadCaster。</summary>
+    public static void RequirePlayerCaster(CastingEnvironment env)
+    {
+        if (env.World?.Caster is not { Target: EntityIota.EntityKind.Player })
+        {
+            throw new MishapBadCaster();
+        }
     }
 }

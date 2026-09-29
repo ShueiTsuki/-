@@ -243,11 +243,21 @@ public sealed class PatternIota : Iota
                 wipeParens ? vm.Image.WithResetEscape() : null,
                 new OperatorSideEffect[]
                 {
-                    new DoMishapSideEffect(mishap, new MishapContext(Pattern, null)),
+                    new DoMishapSideEffect(mishap, MishapCtx()),
                 },
                 mishap.ResolutionType(vm.Env),
                 EvalSound.Mishap);
         }
+    }
+
+    /// <summary>
+    /// 源项目 PatternIota.execute：Mishap.Context(pattern, castedName) —— 聊天提示前缀「图案名：」。
+    /// 名字曾经一律传 null。
+    /// </summary>
+    private MishapContext MishapCtx()
+    {
+        var def = PatternRegistry.Match(Pattern);
+        return new MishapContext(Pattern, def is null ? null : PatternDisplay.DisplayName(def));
     }
 
     /// <summary>
@@ -267,7 +277,7 @@ public sealed class PatternIota : Iota
             wipeParens ? vm.Image.WithResetEscape() : null,
             new OperatorSideEffect[]
             {
-                new DoMishapSideEffect(mishap, new MishapContext(Pattern, null)),
+                new DoMishapSideEffect(mishap, MishapCtx()),
             },
             mishap.ResolutionType(vm.Env),
             EvalSound.Mishap);

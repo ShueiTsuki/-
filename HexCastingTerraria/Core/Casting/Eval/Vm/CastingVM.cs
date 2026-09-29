@@ -198,7 +198,9 @@ public sealed class CastingVM
                 wipeParens ? Image.WithResetEscape() : null,
                 new OperatorSideEffect[]
                 {
-                    new DoMishapSideEffect(mishap, new MishapContext(null, null)),
+                    // 源项目 PatternIota.execute：Mishap.Context(this.pattern, castedName) ——
+                    // 聊天提示带「图案名：」前缀；MishapNeedsParens 靠它把图案压回栈。（曾经一律传 null）
+                    new DoMishapSideEffect(mishap, ContextFor(iota)),
                 },
                 mishap.ResolutionType(Env),
                 EvalSound.Mishap);
@@ -217,6 +219,16 @@ public sealed class CastingVM
                 ResolvedPatternType.Errored,
                 EvalSound.Mishap);
         }
+    }
+
+    private static MishapContext ContextFor(Iota iota)
+    {
+        if (iota is PatternIota p)
+        {
+            var def = Registry.PatternRegistry.Match(p.Pattern);
+            return new MishapContext(p.Pattern, def is null ? null : Registry.PatternDisplay.DisplayName(def));
+        }
+        return new MishapContext(null, null);
     }
 
     /// <summary>依次执行副作用。</summary>

@@ -567,7 +567,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             if (p is not { active: true } || p.dead) continue;
 
             bool match = filter is Core.Casting.Actions.ZoneEntityFilter.Player
-                         or Core.Casting.Actions.ZoneEntityFilter.Living;
+                         or Core.Casting.Actions.ZoneEntityFilter.Living
+                         or Core.Casting.Actions.ZoneEntityFilter.Any;
             if (match != negate)
             {
                 Consider(new EntityIota(EntityIota.EntityKind.Player, i), p.Center);
@@ -587,6 +588,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 Core.Casting.Actions.ZoneEntityFilter.Animal => isCritter,
                 Core.Casting.Actions.ZoneEntityFilter.Monster => isMonster,
                 Core.Casting.Actions.ZoneEntityFilter.Living => true,
+                Core.Casting.Actions.ZoneEntityFilter.Any => true,
                 _ => false,
             };
 
@@ -597,7 +599,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         }
 
         // 物品：只有「物品」这一个筛选会匹配
-        if ((filter == Core.Casting.Actions.ZoneEntityFilter.Item) != negate)
+        if ((filter is Core.Casting.Actions.ZoneEntityFilter.Item or Core.Casting.Actions.ZoneEntityFilter.Any) != negate)
         {
             for (int i = 0; i < Main.maxItems; i++)
             {
@@ -607,8 +609,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             }
         }
 
-        // 弹幕：源项目没有「弹幕」这个筛选，只有取反时才会被选中（「不是动物」之类）
-        if (negate)
+        // 弹幕：源项目没有「弹幕」这个筛选，只有「任意」或取反时才会被选中（「不是动物」之类）
+        if (negate || filter == Core.Casting.Actions.ZoneEntityFilter.Any)
         {
             for (int i = 0; i < Main.maxProjectiles; i++)
             {
@@ -1219,19 +1221,14 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (!placed) return false;
         SpellSounds.At("spell.place", new Vector2(tx * 16 + 8, ty * 16 + 8));
 
-        // 用掉一件。泰拉的物品消耗要自己写 —— 这里刻意不用 Player.ConsumeItem，
-        // 因为它会顺手触发一堆「拾取/消耗」统计与音效，施法不该有那些副作用。
-        item.stack--;
-        if (item.stack <= 0)
-        {
-            item.TurnToAir();
-        }
+        // 用掉一件。刻意不用 Player.ConsumeItem（会顺手触发拾取 / 消耗统计与音效）。
+        // 走 PlayerEffects：联机时背包归本人客户端管，服务端扣了会被忽略 ——
+        // 这里曾经在服务端扣 + 发 SyncPlayer，结果客户端手里的方块一块不少（刷方块）。
+        PlayerEffects.ConsumeSlot(_caster, slot, 1);
 
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
         {
             Terraria.NetMessage.SendTileSquare(-1, tx, ty, 1);
-            // 背包变了要同步给所有客户端（泰拉用 NetMessage.SendData(MessageID.SyncPlayer, ...) 同步整包玩家状态）
-            NetMessage.SendData(Terraria.ID.MessageID.SyncPlayer, -1, -1, null, _caster.whoAmI);
         }
 
         return true;
@@ -1728,6 +1725,47 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// 旧实现是「伤害 = 威力 × 30、不衰减、不破坏方块」。
     /// </summary>
     public void Explode(double x, double y, double strength, bool fire)
+        => ExplodeCore(x, y, strength, fire, Config.HexServerConfig.Instance.ExplosionsBreakBlocks);
+
+    /// <summary>MishapBadBlock：0.25 强度、不破坏方块（原版 ExplosionInteraction.NONE）。</summary>
+    public void MishapExplosion(double x, double y) => ExplodeCore(x, y, 0.25, fire: false, breakBlocks: false);
+
+    /// <summary>MishapBadItem：掉落物往上弹（原版 +0.75 格/刻 → 16/3 换算 = 4 像素/帧）。</summary>
+    public void MishapLaunchItem(EntityIota item)
+    {
+        if (item.Target != EntityIota.EntityKind.Item || item.Index < 0 || item.Index >= Main.maxItems) return;
+        var it = Main.item[item.Index];
+        if (it is not { active: true }) return;
+        it.velocity.Y -= 0.75f * 16f / 3f;
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, item.Index);
+        }
+    }
+
+    /// <summary>MishapBadBrainsweep（伤 1/20 生命）/ MishapAlreadyBrainswept（直接杀死）。</summary>
+    public void MishapHurtEntity(EntityIota entity, bool kill)
+    {
+        if (entity.Target != EntityIota.EntityKind.Npc || entity.Index < 0 || entity.Index >= Main.maxNPCs) return;
+        var n = Main.npc[entity.Index];
+        if (n is not { active: true }) return;
+        if (kill) { n.StrikeInstantKill(); }
+        else { n.SimpleStrikeNPC(System.Math.Max(1, n.lifeMax / 20), 0); }
+    }
+
+    /// <summary>源项目 tag cannot_teleport（末影龙、凋灵这类）→ 泰拉：Boss、Boss 的身体部件、传送器不能传的 NPC（NPCID.Sets.TeleportationImmune）。</summary>
+    public bool IsTeleportImmune(EntityIota entity)
+    {
+        if (entity.Target != EntityIota.EntityKind.Npc || entity.Index < 0 || entity.Index >= Main.maxNPCs) return false;
+        var n = Main.npc[entity.Index];
+        if (n is not { active: true }) return false;
+        if (n.boss || Terraria.ID.NPCID.Sets.TeleportationImmune[n.type]) return true;   // 泰拉传送器的免疫集合，语义最接近
+        return n.realLife >= 0 && n.realLife < Main.maxNPCs && Main.npc[n.realLife] is { active: true, boss: true };
+    }
+
+    public bool HasPlaceableInHotbar() => _caster is not null && FindPlaceableSlot(_caster) >= 0;
+
+    private void ExplodeCore(double x, double y, double strength, bool fire, bool breakBlocks)
     {
         if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
 
@@ -1767,7 +1805,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             if (fire) AddPlayerBuff(p, Terraria.ID.BuffID.OnFire, 300);
         }
 
-        if (Config.HexServerConfig.Instance.ExplosionsBreakBlocks)
+        if (breakBlocks)
         {
             int r = (int)System.Math.Ceiling(strength);
             int ix = (int)System.Math.Floor(x), iy = (int)System.Math.Floor(y);
@@ -1811,7 +1849,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// 给玩家加 buff。联机时服务端的 AddBuff 只改服务端那份，不会到达玩家客户端（buff 归客户端管）；
     /// 原版唯一的「给别的玩家加 buff」消息（AddPlayerBuffPvP）只认 PvP buff，所以走自己的包。
     /// </summary>
-    private static void AddPlayerBuff(Player p, int buffType, int ticks)
+    internal static void AddPlayerBuff(Player p, int buffType, int ticks)
     {
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
         {

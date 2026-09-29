@@ -144,8 +144,9 @@ public sealed class OpFlight : SpellAction
             throw new MishapInvalidIota(args[0], "玩家");
         }
 
-        double amount = CastingEnvironment.RequireDouble(args[1], "半径 / 秒数");
-        if (amount <= 0 || double.IsNaN(amount) || double.IsInfinity(amount))
+        // 源项目 getPositiveDouble：含 0
+        double amount = CastingEnvironment.RequirePositiveDouble(args[1], "非负的半径 / 秒数");
+        if (double.IsInfinity(amount))
         {
             throw new MishapInvalidIota(args[1], "正数");
         }

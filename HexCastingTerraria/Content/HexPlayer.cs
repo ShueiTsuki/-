@@ -50,6 +50,15 @@ public sealed class HexPlayer : ModPlayer
     /// </summary>
     public bool FailedGreatSpell { get; set; }
 
+    /// <summary>
+    /// 拿到过紫水晶（原版进度 root —— 书里大部分条目以它解锁）。
+    /// 原版标签 grants_root_advancement = 紫水晶粉 / 紫水晶碎片 / 充能紫水晶；泰拉侧碎片 = 紫晶宝石或模组碎片。
+    /// </summary>
+    public bool ObtainedAmethyst { get; set; }
+
+    /// <summary>过载后活了下来（原版进度 opened_eyes「睁开双眼」）。</summary>
+    public bool Overcasted { get; set; }
+
     /// <summary>最近一次过载消耗的生命值，供 HUD 显示。</summary>
     public long LastOvercastHealthCost { get; private set; }
 
@@ -326,6 +335,8 @@ public sealed class HexPlayer : ModPlayer
         tag["media"] = _media.Media;
         tag["enlightened"] = Enlightened;
         tag["failedGreatSpell"] = FailedGreatSpell;
+        tag["obtainedAmethyst"] = ObtainedAmethyst;
+        tag["overcasted"] = Overcasted;
         tag["ravenmindCount"] = RavenmindCount;
         tag["infiniteMedia"] = InfiniteMedia;
         tag["pigmentDye"] = PigmentDyeType;
@@ -348,6 +359,9 @@ public sealed class HexPlayer : ModPlayer
         {
             Enlightened = enlightened;
         }
+        FailedGreatSpell = tag.GetBool("failedGreatSpell");
+        ObtainedAmethyst = tag.GetBool("obtainedAmethyst");
+        Overcasted = tag.GetBool("overcasted");
         if (tag.TryGet("ravenmindCount", out long count))
         {
             RavenmindCount = count;
@@ -465,6 +479,15 @@ public sealed class HexPlayer : ModPlayer
         }
 
         ResolveLook();
+
+        if (!ObtainedAmethyst
+            && (Player.HasItem(Terraria.ID.ItemID.Amethyst)
+                || Player.HasItem(ModContent.ItemType<Items.AmethystDust>())
+                || Player.HasItem(ModContent.ItemType<Items.AmethystShard>())
+                || Player.HasItem(ModContent.ItemType<Items.ChargedAmethyst>())))
+        {
+            ObtainedAmethyst = true;
+        }
 
         bool canvasOpen = Client.HexCanvasState.Canvas.IsOpen;
         bool bookOpen = Client.HexCanvasState.Book.IsOpen;

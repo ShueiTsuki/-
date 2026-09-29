@@ -61,6 +61,10 @@ public sealed class HexClientConfig : ModConfig
     [DefaultValue(false)]
     public bool RefillMediaAfterCast { get; set; }
 
+    /// <summary>咒法学之书全部解锁（正常按进度解锁，见 Core/Ui/BookUnlocks.cs）。</summary>
+    [DefaultValue(false)]
+    public bool UnlockWholeBook { get; set; }
+
     // ── 开发者：放宽机制限制 ───────────────────────────────────────
 
     /// <summary>打包法术无冷却。</summary>
@@ -185,4 +189,13 @@ public sealed class HexClientConfig : ModConfig
     [Increment(0.05f)]
     [DefaultValue(0.5f)]
     public float WobbleScale { get; set; } = 0.5f;
+
+    /// <summary>
+    /// 咒法学之书的大小。1.0 = 书高占屏幕约 88%（按整数倍放大，像素最清楚）；
+    /// 其它值按半格步进，太大放不下时自动缩回。
+    /// </summary>
+    [Range(0.5f, 1.2f)]
+    [Increment(0.05f)]
+    [DefaultValue(1.0f)]
+    public float BookSize { get; set; } = 1.0f;
 }

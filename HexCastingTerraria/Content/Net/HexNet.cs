@@ -59,6 +59,12 @@ internal enum HexMessage : byte
 
     /// <summary>服务端 → 被作用的玩家客户端：加一个 buff（buff 归玩家客户端管，服务端加了不算）。</summary>
     PlayerBuff = 16,
+
+    /// <summary>
+    /// 服务端 → 那个玩家的客户端：动玩家自己的东西（扣血、丢手持物品、溺水、掉背包、扣背包格子、进度标记）。
+    /// 这些由本人客户端做主，服务端改了会被忽略，见 Content/PlayerEffects.cs。
+    /// </summary>
+    OwnerEffect = 17,
 }
 
 /// <summary>

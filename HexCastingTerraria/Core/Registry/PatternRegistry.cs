@@ -192,6 +192,17 @@ public static class PatternRegistry
         return map;
     }
 
+    /// <summary>按 id（如 <c>hexcasting:blink</c>）查图案；查不到返回 null。</summary>
+    public static PatternDef? FindById(string id)
+    {
+        EnsureLoaded();
+        foreach (var def in AllList)
+        {
+            if (def.Id == id) { return def; }
+        }
+        return null;
+    }
+
     public static PatternDef? Match(HexPattern pattern)
     {
         EnsureLoaded();
