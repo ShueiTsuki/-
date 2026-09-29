@@ -12,16 +12,16 @@ namespace HexCastingTerraria.Core.Casting.Eval.SideEffects;
 /// </summary>
 public sealed class ParticleSpray
 {
-    /// <summary>喷发位置的 X（世界像素）。</summary>
+    /// <summary>喷发位置的 X（法术坐标：方块）。</summary>
     public required float X { get; init; }
 
-    /// <summary>喷发位置的 Y（世界像素）。</summary>
+    /// <summary>喷发位置的 Y（法术坐标：方块，Y 朝上）。表现层（SpellVisuals）换成世界像素。</summary>
     public required float Y { get; init; }
 
-    /// <summary>扩散半径（像素）。</summary>
+    /// <summary>扩散半径（方块）。</summary>
     public float Spread { get; init; }
 
-    /// <summary>初速度（像素/帧）。</summary>
+    /// <summary>初速度（方块/刻）。</summary>
     public float Speed { get; init; }
 
     /// <summary>粒子数量。</summary>

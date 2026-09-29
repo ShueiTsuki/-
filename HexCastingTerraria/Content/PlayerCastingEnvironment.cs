@@ -204,7 +204,7 @@ public class PlayerCastingEnvironment : CastingEnvironment
     /// 世界图案（`get_caster` / `entity_pos/*` / `get_entity_*`）通过它取值。
     /// 之前这里是 null，世界图案一律报 MishapNoWorld —— 现在补上了。
     /// </summary>
-    public override ICastingWorld World => _world ??= new TerrariaCastingWorld(_player);
+    public override ICastingWorld World => _world ??= new HexSpaceWorld(new TerrariaCastingWorld(_player));
 
     private ICastingWorld? _world;
 

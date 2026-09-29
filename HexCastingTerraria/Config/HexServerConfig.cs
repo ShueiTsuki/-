@@ -41,4 +41,11 @@ public sealed class HexServerConfig : ModConfig
     /// </summary>
     [DefaultValue(true)]
     public bool ExplosionsBreakBlocks { get; set; } = true;
+
+    /// <summary>
+    /// 原版 trueNameHasAmbit（默认开）：玩家的「真名」不受施法范围限制 —— 拿到某个玩家的引用，
+    /// 就能在任何距离对他施法（区域查询除外）。关掉后玩家和其它实体一样受 32 格范围限制。
+    /// </summary>
+    [DefaultValue(true)]
+    public bool TrueNameHasAmbit { get; set; } = true;
 }

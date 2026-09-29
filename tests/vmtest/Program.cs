@@ -5416,6 +5416,22 @@ static class Program
                 && r.Image.Stack[0] is ListIota { Items: [NullIota] }, $"{r.ResolutionType} {Sig(r.Image)}");
         }
 
+        // ==================== 法术坐标 ↔ 泰拉坐标（HexAxes，Y 朝上） ====================
+        {
+            const int H = 1200;
+            // 站在地上：地面是泰拉图格 700，脚底像素在它的上边 → 泰拉 y = 700 → 法术 y = 500（整数）
+            double feet = HexAxes.FlipPosition(700, H);
+            Check("脚底 y 为整数时：原版 floor(y) 是脚所在的空气格 = 泰拉 699（地面上方那格）",
+                feet == 500 && HexAxes.TileOfPoint(feet, H) == 699, $"{HexAxes.TileOfPoint(feet, H)}");
+            Check("换成连续图格坐标后 floor 与之一致（整数边界不差一格）",
+                (int)System.Math.Floor(HexAxes.PointToTileY(feet, H)) == 699
+                && (int)System.Math.Floor(HexAxes.PointToTileY(499.5, H)) == 700);
+            Check("方块下标往返一致、方块中心往返一致",
+                HexAxes.FlipBlock(HexAxes.FlipBlock(123, H), H) == 123
+                && HexAxes.TileOfPoint(HexAxes.FlipBlock(700, H) + 0.5, H) == 700);
+            Check("方向：泰拉向下 = 法术 −Y", HexAxes.FlipDirection(1) == -1);
+        }
+
         // ==================== 向量 × 数字（逐分量广播） ====================
         {
             var env = new TestEnv();

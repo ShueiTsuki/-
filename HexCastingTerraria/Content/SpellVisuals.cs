@@ -44,23 +44,27 @@ internal static class SpellVisuals
             if (count <= 0) continue;
             if (spawned + count > budget) count = budget - spawned;
 
-            var center = new Vector2(spray.X, spray.Y);
+            // Core 给的是法术坐标（方块、Y 朝上）—— 换成世界像素。
+            // ⚠️ 这里曾经直接当像素用：所有法术粒子都画在世界左上角附近，扩散也只有一两个像素。
+            var center = HexSpaceWorld.ToWorldPixels(spray.X, spray.Y);
+            float spreadPx = spray.Spread * 16f;
+            float speedPx = spray.Speed * 16f / 3f;   // 方块/刻 → 像素/帧
 
             for (int n = 0; n < count; n++)
             {
                 // 扩散：以 spread 为半径均匀撒点（spread=0 时就喷在一个点上）
-                var offset = spray.Spread <= 0f
+                var offset = spreadPx <= 0f
                     ? Vector2.Zero
                     : new Vector2(
-                        Main.rand.NextFloat(-spray.Spread, spray.Spread),
-                        Main.rand.NextFloat(-spray.Spread, spray.Spread));
+                        Main.rand.NextFloat(-spreadPx, spreadPx),
+                        Main.rand.NextFloat(-spreadPx, spreadPx));
 
                 var position = center + offset;
 
                 var dust = Dust.NewDustPerfect(
                     position,
                     Terraria.ID.DustID.PurpleTorch,
-                    offset.SafeNormalize(Vector2.Zero) * spray.Speed,
+                    offset.SafeNormalize(Vector2.Zero) * speedPx,
                     0,
                     color,
                     1.0f);
@@ -68,7 +72,7 @@ internal static class SpellVisuals
                 dust.noGravity = true;
 
                 // 扩散大的（爆开类）让它飞出去；扩散小的（云雾类）原地停住
-                if (spray.Spread > 0.5f)
+                if (spray.Spread > 0.5f)   // 方块
                 {
                     dust.velocity = offset * 0.12f;
                 }

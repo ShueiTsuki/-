@@ -25,6 +25,12 @@ public sealed class CircleState
     public required int MinY { get; init; }
     public required int MaxX { get; init; }
     public required int MaxY { get; init; }
+
+    /// <summary>
+    /// 坐标系 Y 朝上（原版的约定；泰拉侧由 HexSpaceWorld 换算过来）。
+    /// 此时 <see cref="ImpetusDir"/> 的上下要翻过来才是法术里的方向（CircleDir 按泰拉图格定义，Up = y−1）。
+    /// </summary>
+    public bool YUp { get; init; }
 }
 
 /// <summary>
@@ -105,7 +111,7 @@ public static class CircleActions
         {
             var state = RequireCircle(env);
             var (x, y) = state.ImpetusDir.ToVector();
-            return new Iota[] { new VectorIota(x, y) };
+            return new Iota[] { new VectorIota(x, state.YUp ? -y : y) };
         }
     }
 

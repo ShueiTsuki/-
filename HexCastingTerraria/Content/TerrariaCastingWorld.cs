@@ -67,6 +67,9 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         /// <summary>脚底中心（对应 MC 的 position()）。</summary>
         public required Vector2 FeetTile { get; init; }
 
+        /// <summary>眼睛（对应 MC 的 eyePosition = 脚底 + eyeHeight）。</summary>
+        public required Vector2 EyeTile { get; init; }
+
         /// <summary>图格/帧。</summary>
         public required Vector2 VelocityTiles { get; init; }
 
@@ -95,7 +98,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 if (iota.Index < 0 || iota.Index >= Main.maxPlayers) return false;
                 var p = Main.player[iota.Index];
                 if (p is not { active: true } || p.dead) return false;
-                reading = Make(p.Center, p.Bottom, p.velocity, HexPlayer.Get(p).Look, p.height);
+                reading = Make(p.Center, p.Bottom, p.velocity, HexPlayer.Get(p).Look, p.height, PlayerEyeFraction);
                 return true;
             }
 
@@ -141,11 +144,19 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// 像素 → 图格的唯一换算点。
     /// 泰拉实体的宽度/高度是 int 像素，速度是像素/帧，位置是像素。
     /// </summary>
-    private static Reading Make(Vector2 center, Vector2 bottom, Vector2 velocity, Vector2 look, int height)
+    /// <summary>MC 玩家眼高 1.62 / 身高 1.8。</summary>
+    private const float PlayerEyeFraction = 0.9f;
+
+    /// <summary>MC 一般实体的默认眼高 = 身高 × 0.85（Entity.getEyeHeight 的默认实现）。</summary>
+    private const float DefaultEyeFraction = 0.85f;
+
+    private static Reading Make(Vector2 center, Vector2 bottom, Vector2 velocity, Vector2 look, int height,
+        float eyeFraction = DefaultEyeFraction)
         => new()
         {
             CenterTile = center / HexUnits.PixelsPerTile,
             FeetTile = bottom / HexUnits.PixelsPerTile,
+            EyeTile = new Vector2(bottom.X, bottom.Y - height * eyeFraction) / HexUnits.PixelsPerTile,
             VelocityTiles = velocity / HexUnits.PixelsPerTile,
             Look = look,
             HeightTiles = height / HexUnits.PixelsPerTile,
@@ -154,10 +165,11 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     public bool IsAlive(EntityIota entity) => TryRead(entity, out _);
 
     /// <summary>施法者中心（图格）。范围判定全部以它为圆心。</summary>
-    private (float X, float Y) CasterCenterTiles()
+    /// <summary>源项目 ambit 的圆心是 caster.position() —— **脚底**（曾经用身体中心）。</summary>
+    private (float X, float Y) CasterFeetTiles()
         => _caster == null
             ? (0f, 0f)   // 环环境不会走到这里（InRange 优先用包围盒）
-            : (_caster.Center.X / HexUnits.PixelsPerTile, _caster.Center.Y / HexUnits.PixelsPerTile);
+            : (_caster.Bottom.X / HexUnits.PixelsPerTile, _caster.Bottom.Y / HexUnits.PixelsPerTile);
 
     /// <summary>
     /// 点是否在施法范围内。用平方比较省一次开方。
@@ -172,15 +184,17 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         // 法术环：范围 = 环的包围盒（源项目 CircleCastEnv 的语义）
         if (_circleBounds is { } b)
         {
-            return tileX >= b.MinX - 0.5 && tileX <= b.MaxX + 1.5
-                && tileY >= b.MinY - 0.5 && tileY <= b.MaxY + 1.5;
+            // 源项目 bounds.contains(vec)：[min, max + 1)，不多放半格（这里曾经四周各放宽半格）
+            return tileX >= b.MinX && tileX < b.MaxX + 1
+                && tileY >= b.MinY && tileY < b.MaxY + 1;
         }
 
         // 大哨卫：以哨卫为心 16 格（对齐 DEFAULT_SENTINEL_RADIUS）
         if (_caster is not null && HexPlayer.Get(_caster).Sentinel is { Great: true } s)
         {
+            // 哨卫存的是法术坐标（Y 朝上），换回泰拉图格
             double sdx = tileX - s.X;
-            double sdy = tileY - s.Y;
+            double sdy = tileY - HexSpaceWorld.TileY(s.Y);
             const double sr = CastingEnvironment.SentinelRadiusTiles;
             if (sdx * sdx + sdy * sdy <= sr * sr + 1e-10)
             {
@@ -189,15 +203,23 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         }
 
         // 玩家：以自身为中心 32 格半径
-        var (cx, cy) = CasterCenterTiles();
+        var (cx, cy) = CasterFeetTiles();
         double dx = tileX - cx;
         double dy = tileY - cy;
         const double r = HexUnits.AmbitRadiusTiles;
         return dx * dx + dy * dy <= r * r;
     }
 
+    /// <summary>
+    /// 源项目 isEntityInRange：玩家有「真名」，默认**永远在范围内**（HexConfig trueNameHasAmbit = true）；
+    /// 其它实体看脚底（e.position()）在不在范围里。
+    /// </summary>
     public bool IsInRange(EntityIota entity)
-        => TryRead(entity, out var reading) && InRange(reading.CenterTile.X, reading.CenterTile.Y);
+    {
+        if (!TryRead(entity, out var reading)) return false;
+        if (entity.Target == EntityIota.EntityKind.Player && Config.HexServerConfig.Instance.TrueNameHasAmbit) return true;
+        return InRange(reading.FeetTile.X, reading.FeetTile.Y);
+    }
 
     public bool IsVecInRange(double x, double y) => InRange(x, y);
 
@@ -279,8 +301,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         => TryRead(entity, out var r) ? (r.FeetTile.X, r.FeetTile.Y) : (0.0, 0.0);
 
     public (double X, double Y) EyePosition(EntityIota entity)
-        // 2D 侧视下「眼高」对应物不明确，取中心（见 LOOK_DIRECTION_DESIGN.md 第四节）
-        => TryRead(entity, out var r) ? (r.CenterTile.X, r.CenterTile.Y) : (0.0, 0.0);
+        // 原版 eyePosition = 脚底 + 眼高（曾经取身体中心 —— 射线从胸口打出去）
+        => TryRead(entity, out var r) ? (r.EyeTile.X, r.EyeTile.Y) : (0.0, 0.0);
 
     public (double X, double Y) Velocity(EntityIota entity)
         => TryRead(entity, out var r) ? (r.VelocityTiles.X, r.VelocityTiles.Y) : (0.0, 0.0);
@@ -546,10 +568,12 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         void Consider(EntityIota iota, Microsoft.Xna.Framework.Vector2 center)
         {
             if (!TryRead(iota, out var reading)) return;
-            if (!IsInRange(iota)) return;
+            // 源项目 isReasonablySelectable：isEntityInRange(e, ignoreTruename = true) —— 这里不放玩家特权
+            if (!InRange(reading.FeetTile.X, reading.FeetTile.Y)) return;
 
-            double dx = reading.CenterTile.X - x;
-            double dy = reading.CenterTile.Y - y;
+            // 源项目 it.distanceToSqr(pos)：实体位置 = 脚底
+            double dx = reading.FeetTile.X - x;
+            double dy = reading.FeetTile.Y - y;
             double d2 = dx * dx + dy * dy;
             if (d2 > r2) return;
 
@@ -1714,13 +1738,13 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         {
             var p = Main.player[i];
             if (p is not { active: true } || p.dead) continue;
-            if (Near(p.Center.X / HexUnits.PixelsPerTile, p.Center.Y / HexUnits.PixelsPerTile)) return true;
+            if (TryRead(new EntityIota(EntityIota.EntityKind.Player, i), out var rp) && Near(rp.EyeTile.X, rp.EyeTile.Y)) return true;
         }
         for (int i = 0; i < Main.maxNPCs; i++)
         {
             var n = Main.npc[i];
             if (n is not { active: true }) continue;
-            if (Near(n.Center.X / HexUnits.PixelsPerTile, n.Center.Y / HexUnits.PixelsPerTile)) return true;
+            if (TryRead(new EntityIota(EntityIota.EntityKind.Npc, i), out var rn) && Near(rn.EyeTile.X, rn.EyeTile.Y)) return true;
         }
 
         return false;

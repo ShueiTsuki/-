@@ -272,16 +272,18 @@ public sealed class HexImpetusEntity : ModTileEntity
         _closure = closure;
 
         // 建立环的施法环境：媒质取自本原动力、范围 = 包围盒、**无施法者**
-        var circleWorld = TerrariaCastingWorld.ForCircle(
-            closure.MinX, closure.MinY, closure.MaxX, closure.MaxY);
+        var circleWorld = new HexSpaceWorld(TerrariaCastingWorld.ForCircle(
+            closure.MinX, closure.MinY, closure.MaxX, closure.MaxY));
 
+        // 给法术看的坐标一律是法术坐标（Y 朝上，见 HexSpaceWorld）：上下翻转后，泰拉的 MaxY 变成最小的那个
         var state = new CircleState
         {
             ImpetusX = Position.X,
-            ImpetusY = Position.Y,
+            ImpetusY = HexSpaceWorld.BlockY(Position.Y),
             ImpetusDir = StartDir,
-            MinX = closure.MinX, MinY = closure.MinY,
-            MaxX = closure.MaxX, MaxY = closure.MaxY,
+            YUp = true,
+            MinX = closure.MinX, MinY = HexSpaceWorld.BlockY(closure.MaxY),
+            MaxX = closure.MaxX, MaxY = HexSpaceWorld.BlockY(closure.MinY),
         };
 
         _env = new CircleCastingEnvironment(circleWorld, state, ExtractMedia);

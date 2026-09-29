@@ -161,6 +161,11 @@ Mods: {
 					Label: Explosions break blocks
 					Tooltip: Explosion spells destroy blocks using Terraria bomb rules (upstream explosions break blocks). Off = damage only.
 				}
+
+				TrueNameHasAmbit: {
+					Label: True names ignore ambit
+					Tooltip: Upstream default: a reference to a player can be targeted from any distance (zone queries excepted). Turn off to apply the 32-block ambit to players too.
+				}
 			}
 		}
 	}
