@@ -16,9 +16,8 @@ namespace HexCastingTerraria.Content;
 /// 对应源项目 api/casting/eval/env/PlayerBasedCastEnv + StaffCastEnv。
 ///
 /// 与源项目的差异（有意为之）：
-///   - 媒质来源：源项目扫背包里的紫水晶粉等容器；泰拉侧先用玩家媒质池（HexPlayer），
-///     之后再接「从背包媒质物品扣取」
-///   - 过载：源项目需要成就才能过载；泰拉侧由配置项/生命值决定
+///   - 媒质来源：与源项目一致，只从背包里的媒质物品扣（见 ExtractMediaEnvironment）
+///   - 过载：与源项目一致，先失败过一次大法术（进度「盲目绘制」）才能过载
 /// </summary>
 public class PlayerCastingEnvironment : CastingEnvironment
 {
@@ -113,17 +112,24 @@ public class PlayerCastingEnvironment : CastingEnvironment
     public override bool CraftBatteryHeld(long media)
     {
         if (!IsHeldPhialBase()) return false;
-
-        var held = _player.HeldItem;
-        held.SetDefaults(ModContent.ItemType<MediaFlask>());
-
-        if (held.ModItem is MediaFlask flask)
-        {
-            flask.SetStoredMedia(media);
-        }
-
+        // 手持物品归本人客户端 —— 走 PlayerEffects（联机时服务端直接改会被忽略）
+        PlayerEffects.MakeFlask(_player, _player.selectedItem, media);
         return true;
     }
+
+    /// <summary>手上的可充能物品还能装多少：媒质瓶，或装过法术的打包法术（源项目 canRecharge）。</summary>
+    public override long HeldRechargeSpace()
+    {
+        return _player.HeldItem.ModItem switch
+        {
+            MediaFlask f => f.MaxMedia - f.Media,
+            ItemPackagedSpell p when p.MaxMedia > 0 => p.MaxMedia - p.Media,
+            _ => -1,
+        };
+    }
+
+    public override void ChargeHeld(long media)
+        => PlayerEffects.BatteryDelta(_player, _player.selectedItem, media);
 
     public override bool HeldHasVariants() => _player.HeldItem.ModItem is ItemPackagedSpell;
 
@@ -203,18 +209,14 @@ public class PlayerCastingEnvironment : CastingEnvironment
     private ICastingWorld? _world;
 
     /// <summary>
-    /// 媒质扣除。**顺序必须是 池 → 背包物品 → 过载**：
+    /// 媒质扣除。移植自源项目 PlayerBasedCastEnv.extractMediaFromInventory：
     ///
-    ///   ① 玩家自身媒质池
-    ///   ② 背包里的媒质材料（紫水晶粉 / 碎片 / 充能紫水晶 / 淬灵晶碎片）
-    ///      —— 这是源项目的核心经济：媒质来自**背包物品**，不是凭空来的
-    ///   ③ 仍不足则过载（用生命抵）
+    ///   ① 背包里的媒质来源，按原版优先级（媒质瓶 → 粉 → 碎片 → 充能紫水晶 → 淬灵碎片，同级存量大的先扣）；
+    ///      堆叠物品整件扣，多付的浪费（原版同）；媒质瓶按量扣
+    ///   ② 仍不足且能过载 → 用生命抵
     ///
-    /// 整件消耗造成的多付会**退回池中**（泰拉堆叠物品没有单件独立数据，
-    /// 做不到源项目那样把一件粉尘扣到只剩 5,000）。
     /// 付不起时与源项目相同：物品照扣，能过载就按全部缺口扣血（可以致死），从不退款。
-    ///
-    /// 返回**还未付清**的量（<=0 表示够）。
+    /// 返回**还未付清**的量（&lt;=0 表示够）。
     /// </summary>
     protected override long ExtractMediaEnvironment(long cost, bool simulate)
     {
@@ -225,13 +227,13 @@ public class PlayerCastingEnvironment : CastingEnvironment
 
         var hexPlayer = HexPlayer.Get(_player);
 
-        // 创造模式（无限媒质）：直接视为够用
+        // 创造模式（无限媒质）：直接视为够用（源项目 StaffCastEnv 在创造模式下同样不扣）
         if (hexPlayer.InfiniteMedia || HexClientConfig.Instance.InfiniteMedia)
         {
             return 0;
         }
 
-        var plan = MediaPaymentPlanner.Plan(cost, hexPlayer.Media, CollectMediaItems());
+        var plan = MediaPaymentPlanner.Plan(cost, hexPlayer.CollectMediaSources());
         long shortfall = plan.Shortfall;
 
         if (simulate)
@@ -247,24 +249,13 @@ public class PlayerCastingEnvironment : CastingEnvironment
         }
 
         // ---- 真正扣除 ----
-        // 源项目 extractMediaFromInventory：物品**照扣不误**（付不起也扣光），再用生命抵剩下的，**从不退款**。
-        //（这里曾经「付不起就把已扣的退回去」—— 于是 MishapNotEnoughMedia 的「抽干」惩罚、
-        //   以及原版「过载超过剩余生命会死」都不会发生）
-        // 联机：背包与媒质池都归本人客户端，走 PlayerEffects（服务端直接改会被忽略 / 刷媒质）。
-        if (plan.FromPool > 0)
+        // 物品**照扣不误**（付不起也扣光），再用生命抵剩下的，**从不退款**。
+        // 联机：背包归本人客户端，走 PlayerEffects（服务端直接改会被忽略 / 刷媒质）。
+        foreach (var w in plan.Withdrawals)
         {
-            hexPlayer.MediaStorage.Withdraw(plan.FromPool);
+            if (w.Items > 0) { PlayerEffects.ConsumeSlot(_player, w.Slot, w.Items); }
+            if (w.BatteryMedia > 0) { PlayerEffects.BatteryDelta(_player, w.Slot, -w.BatteryMedia); }
         }
-        for (int i = 0; i < plan.FromItems.Count; i++)
-        {
-            var (slot, count) = plan.FromItems[i];
-            PlayerEffects.ConsumeSlot(_player, slot, count);
-        }
-        if (plan.Change > 0)
-        {
-            hexPlayer.MediaStorage.Insert(plan.Change);   // 整件消耗的多付退回池中
-        }
-        PlayerEffects.SyncMedia(_player);
 
         if (shortfall <= 0 || !CanOvercast())
         {
@@ -298,33 +289,6 @@ public class PlayerCastingEnvironment : CastingEnvironment
         }
         PlayerEffects.SyncProgress(_player);
         return System.Math.Max(0, shortfall - gained);
-    }
-
-    /// <summary>
-    /// 收集背包里所有媒质材料。
-    ///
-    /// 只认 MediaMaterial **类型**，不按名字判定 ——
-    /// 名字判定会被其它模组的同名物品骗到。
-    /// </summary>
-    private System.Collections.Generic.List<MediaStack> CollectMediaItems()
-    {
-        var list = new System.Collections.Generic.List<MediaStack>();
-
-        for (int i = 0; i < _player.inventory.Length; i++)
-        {
-            var item = _player.inventory[i];
-            if (item.IsAir || item.stack <= 0) continue;
-            if (item.ModItem is not MediaMaterial material) continue;
-
-            list.Add(new MediaStack
-            {
-                Slot = i,
-                UnitValue = material.MediaValue,
-                Count = item.stack,
-            });
-        }
-
-        return list;
     }
 
     /// <summary>是否已启蒙（可施放大法术）。对应源项目的 enlightenment 成就。</summary>
@@ -383,9 +347,7 @@ public class PlayerCastingEnvironment : CastingEnvironment
         // 调试开关：每次求值后把媒质补满（连续测法术时不用一直补）
         if (HexClientConfig.Instance.RefillMediaAfterCast)
         {
-            var hexPlayer = HexPlayer.Get(_player);
-            hexPlayer.MediaStorage.Insert(hexPlayer.MaxMedia);
-            PlayerEffects.SyncMedia(_player);
+            PlayerEffects.RefillFlasks(_player);
         }
 
         for (int i = 0; i < result.SideEffects.Count; i++)

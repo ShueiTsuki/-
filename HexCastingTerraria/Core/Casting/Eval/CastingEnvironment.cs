@@ -59,7 +59,7 @@ public abstract class CastingEnvironment
         return ExtractMediaEnvironment(cost, simulate);
     }
 
-    /// <summary>具体环境的媒质扣除（玩家媒质池 / 物品 / 法术环等）。</summary>
+    /// <summary>具体环境的媒质扣除（玩家背包里的媒质物品 / 打包法术自带的媒质 / 法术环的原动力等）。</summary>
     protected abstract long ExtractMediaEnvironment(long cost, bool simulate);
 
     /// <summary>是否能施放「大法术」（源项目里对应 enlightenment 成就）。</summary>
@@ -243,6 +243,15 @@ public abstract class CastingEnvironment
 
     /// <summary>把手持的空瓶换成一个装满的媒质瓶（`craft/battery`）。返回是否成功。</summary>
     public virtual bool CraftBatteryHeld(long media) => false;
+
+    /// <summary>
+    /// 手上可充能物品（媒质瓶 / 装过法术的打包法术）还能装多少媒质（源项目 canRecharge + insertMedia(-1, true)）。
+    /// 手上没有可充能物品 → -1。
+    /// </summary>
+    public virtual long HeldRechargeSpace() => -1;
+
+    /// <summary>往手上的可充能物品里装媒质（`recharge`），装不下的截掉。</summary>
+    public virtual void ChargeHeld(long media) { }
 
     /// <summary>
     /// 把手持物品的「变体编号」推进一格（`cycle_variant`）。

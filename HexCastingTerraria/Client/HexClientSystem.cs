@@ -396,18 +396,20 @@ public sealed class HexClientSystem : ModSystem
         float x = 18f;
         float y = 18f;
 
-        // ===== 媒质指示：环形进度 + 数值（配色逐行对齐原作 MediaHelper.mediaBarColor）=====
-        // 源项目只要玩家身上存在可提供媒质的物品就会显示媒质信息（scanPlayerForMediaStuff），
-        // 所以这里不限于「正在手持法杖」——身上有媒质就显示。可用设置关闭。
+        // ===== 媒质指示：背包里的媒质（配色对齐原作 MediaHelper.mediaBarColor）=====
+        // 原版没有媒质条（媒质就在背包的物品里）；这只是个信息显示，可在设置里关掉。
+        // 环 = 背包里媒质瓶的存量 / 上限；数字 = 背包里所有媒质来源的总量（与原版扣费时能用到的一致）。
         bool holdingStaff = player.HeldItem != null && player.HeldItem.type == ModContent.ItemType<Content.Items.DevStaff>();
+        long invMedia = hexPlayer.InventoryMedia();
+        var (flaskStored, flaskMax) = hexPlayer.FlaskMedia();
         bool shouldShowMedia = HexClientConfig.Instance.ShowMediaRing
-            && (holdingStaff || canvas.IsOpen || hexPlayer.Media > 0);
+            && (holdingStaff || canvas.IsOpen || invMedia > 0);
         if (shouldShowMedia)
         {
             float ringRadius = 26f;
             var center = new Vector2(x + ringRadius, y + ringRadius);
 
-            float fullness = hexPlayer.MaxMedia == 0 ? 0f : (float)hexPlayer.Media / hexPlayer.MaxMedia;
+            float fullness = flaskMax == 0 ? (invMedia > 0 ? 1f : 0f) : (float)flaskStored / flaskMax;
 
             // 底环 + 按储量填充的彩色环（无限媒质时满环）
             float ringFullness = hexPlayer.InfiniteMedia ? 1f : fullness;
@@ -418,7 +420,7 @@ public sealed class HexClientSystem : ModSystem
             // 无限媒质时直接显示 ∞，避免误导
             string amount = hexPlayer.InfiniteMedia
                 ? "∞"
-                : (hexPlayer.Media / (double)MediaConstants.DustUnit).ToString("#,###");
+                : (invMedia / (double)MediaConstants.DustUnit).ToString("#,##0.#");
             var amountSize = Terraria.GameContent.FontAssets.MouseText.Value.MeasureString(amount);
             Terraria.Utils.DrawBorderString(sb, amount,
                 new Vector2(center.X - amountSize.X * 0.42f, center.Y - amountSize.Y * 0.62f),
@@ -433,7 +435,9 @@ public sealed class HexClientSystem : ModSystem
                 MediaBarColor(fullness), 0.55f);
 
             // 环右侧：容量上限与图案数
-            Terraria.Utils.DrawBorderString(sb, $"上限 {(hexPlayer.MaxMedia / (double)MediaConstants.DustUnit):#,###} 粉",
+            Terraria.Utils.DrawBorderString(sb, flaskMax > 0
+                    ? $"媒质瓶 {flaskStored / (double)MediaConstants.DustUnit:#,##0.#} / {flaskMax / (double)MediaConstants.DustUnit:#,##0} 粉"
+                    : "背包媒质（粉）",
                 new Vector2(x + ringRadius * 2 + 12, y + 6), MediaColor, 0.75f);
             Terraria.Utils.DrawBorderString(sb, $"图案 {canvas.Patterns.Count} 条",
                 new Vector2(x + ringRadius * 2 + 12, y + 26), new Color(190, 184, 210), 0.7f);

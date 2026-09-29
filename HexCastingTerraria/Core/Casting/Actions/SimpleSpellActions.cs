@@ -170,16 +170,10 @@ public sealed class OpPlaceBlock : SpellAction
 }
 
 /// <summary>
-/// `recharge`：把**掉在地上的媒质物品**里的媒质抽进施法者。
-/// 移植自源项目 `OpRecharge`。
+/// `recharge`：从地上的媒质物品里抽媒质，装进**手上的可充能物品**（媒质瓶 / 打包法术）。
+/// 移植自源项目 OpRecharge：只抽够填满的量（堆叠物品整件扣，多出的浪费），消耗 SHARD_UNIT。
 ///
-/// 消耗 `SHARD_UNIT`（5 万）。
-///
-/// ⚠️ **与源项目的差异（重要）**：源项目要求施法者**手持**一个「可充能的媒质容器」
-/// （法杖/媒质瓶），媒质是抽进**那个物品**里的。
-/// 泰拉侧我们的媒质池挂在**玩家身上**（`HexPlayer.Media`），
-/// 所以「可充能的容器」就退化成玩家自己 —— 抽满即止。
-/// 语义（把地上的粉变成自己的媒质）保留，容器这一层没有了。
+/// ⚠️ 这里曾经把媒质抽进「玩家媒质池」—— 原版没有那个池子，已按原版改回。
 /// </summary>
 public sealed class OpRecharge : SpellAction
 {
@@ -195,14 +189,26 @@ public sealed class OpRecharge : SpellAction
             throw new MishapBadItem(entity, "装着媒质的掉落物");
         }
 
-        // 先试算：抽不出东西（不是媒质物品 / 已经满了）就报 mishap，别扣媒质
-        if (world.ExtractMediaFromItem(entity, simulate: true) <= 0)
+        // 源项目：先找手上的可充能物品（还有空间的），找不到 → MishapBadOffhandItem("rechargable")
+        long space = env.HeldRechargeSpace();
+        if (space <= 0)
         {
-            throw new MishapBadItem(entity, "装着媒质的掉落物（或媒质已满）");
+            throw new MishapBadHeldItem();
+        }
+
+        if (world.ItemEntityMedia(entity, forBattery: false) <= 0)
+        {
+            throw new MishapBadItem(entity, "装着媒质的掉落物");
         }
 
         return WorldSpell.Make(
-            new WorldSpell.Simple(w => w.ExtractMediaFromItem(entity, simulate: false)),
+            new WorldSpell.Simple(w =>
+            {
+                long room = env.HeldRechargeSpace();
+                if (room <= 0) return;
+                long got = w.DrainItemEntity(entity, room, forBattery: false);
+                if (got > 0) env.ChargeHeld(System.Math.Min(got, room));
+            }),
             MediaConstants.ShardUnit,
             new[] { ParticleSpray.Burst(world.FeetPosition(entity).X, world.FeetPosition(entity).Y, spread: 0.5f, count: 20) });
     }

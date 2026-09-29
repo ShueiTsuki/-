@@ -8,15 +8,11 @@ using Terraria.ModLoader;
 namespace HexCastingTerraria.Content.Items;
 
 /// <summary>
-/// 媒质材料物品的基类。
+/// 媒质材料物品的基类（源项目 CCMediaHolder.Static）。
 ///
-/// 对应源项目的四个媒质容器物品：它们既是**合成材料**，也是**媒质来源** ——
-/// 施法时若玩家自身媒质池不足，会从背包里的这些物品扣取（源项目
-/// `ItemMediaHolder` + `MediaHolderEnv`）。
-///
-/// 本类先实现「右键使用 → 蓄入自身媒质池」这一半；
-/// 「施法时自动从背包扣取」是 M-6，需要改 <see cref="HexPlayer"/> 的
-/// `ExtractMediaEnvironment`。
+/// 它们既是**合成材料**，也是**媒质来源**：施法时直接从背包里按整件扣
+///（优先级：粉 3000 &gt; 碎片 2000 &gt; 充能紫水晶 1000 &gt; 淬灵碎片 900，见 <see cref="MediaPriority"/>）。
+/// 原版不能「右键使用」—— 这里曾经能右键把媒质倒进一个「玩家媒质池」，原版没有那个池子，已删除。
 ///
 /// 数值严格对齐 <see cref="MediaConstants"/>，与源项目 `HexItems` 一致。
 /// </summary>
@@ -24,6 +20,9 @@ public abstract class MediaMaterial : ModItem
 {
     /// <summary>单件蕴含的媒质量。</summary>
     public abstract long MediaValue { get; }
+
+    /// <summary>扣费优先级（源项目 ADMediaHolder.*_PRIORITY）。</summary>
+    public abstract int Priority { get; }
 
     /// <summary>是否使用源项目的「可堆叠上限」（粉/碎晶 64，晶体/淬灵 16）。</summary>
     public virtual int StackSize => 64;
@@ -37,14 +36,7 @@ public abstract class MediaMaterial : ModItem
     {
         Item.width = 16;
         Item.height = 16;
-        Item.useStyle = ItemUseStyleID.HoldUp;
-        Item.useTime = 15;
-        Item.useAnimation = 15;
-        Item.useTurn = true;
-        Item.autoReuse = true;
         Item.maxStack = StackSize;
-        Item.consumable = true;
-        Item.noMelee = true;
         Item.value = Item.sellPrice(copper: (int)System.Math.Max(1, MediaValue / 1_000));
         Item.rare = RarityFor(MediaValue);
     }
@@ -57,37 +49,6 @@ public abstract class MediaMaterial : ModItem
         if (media >= MediaConstants.ShardUnit) return ItemRarityID.Blue;
         return ItemRarityID.White;
     }
-
-    /// <summary>
-    /// 右键：把这件材料蓄入玩家媒质池。
-    ///
-    /// 池满时**不消耗**物品并给出提示 —— 与 <see cref="MediaFlask"/> 一致。
-    /// 直接吞掉物品却不给媒质是最容易招致差评的交互。
-    /// </summary>
-    public override bool? UseItem(Player player)
-    {
-        var hexPlayer = HexPlayer.Get(player);
-
-        long gained = hexPlayer.MediaStorage.Insert(MediaValue);
-
-        if (gained <= 0)
-        {
-            if (player.whoAmI == Main.myPlayer)
-            {
-                HexCanvasState.SetMessage(
-                    $"媒质已满：{MediaConstants.Format(hexPlayer.Media)} / {MediaConstants.Format(hexPlayer.MaxMedia)}");
-            }
-            return false;   // 不消耗
-        }
-
-        if (player.whoAmI == Main.myPlayer)
-        {
-            HexCanvasState.SetMessage(
-                $"+{MediaConstants.Format(gained)} 媒质  →  {MediaConstants.Format(hexPlayer.Media)} / {MediaConstants.Format(hexPlayer.MaxMedia)}");
-        }
-
-        return true;
-    }
 }
 
 /// <summary>
@@ -99,6 +60,8 @@ public abstract class MediaMaterial : ModItem
 /// </summary>
 public sealed class AmethystDust : MediaMaterial
 {
+    public override int Priority => MediaPriority.AmethystDust;
+
     public override long MediaValue => MediaConstants.DustUnit;
 
     public override void AddRecipes()
@@ -120,6 +83,8 @@ public sealed class AmethystDust : MediaMaterial
 /// </summary>
 public sealed class AmethystShard : MediaMaterial
 {
+    public override int Priority => MediaPriority.AmethystShard;
+
     public override long MediaValue => MediaConstants.ShardUnit;
 
     public override void SetDefaults()
@@ -153,6 +118,8 @@ public sealed class AmethystShard : MediaMaterial
 /// </summary>
 public sealed class ChargedAmethyst : MediaMaterial
 {
+    public override int Priority => MediaPriority.ChargedAmethyst;
+
     public override long MediaValue => MediaConstants.CrystalUnit;
 
     public override int StackSize => 16;
@@ -199,6 +166,8 @@ public sealed class ChargedAmethyst : MediaMaterial
 /// </summary>
 public sealed class QuenchedAllayShard : MediaMaterial
 {
+    public override int Priority => MediaPriority.QuenchedShard;
+
     public override long MediaValue => MediaConstants.QuenchedShardUnit;
 
     public override int StackSize => 16;

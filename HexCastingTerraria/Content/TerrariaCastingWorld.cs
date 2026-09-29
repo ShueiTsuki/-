@@ -1255,55 +1255,65 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         return -1;
     }
 
-    /// <summary>
-    /// 把掉落物里的媒质抽给施法者（`recharge`）。
-    ///
-    /// 两条与源项目不同、但必须说清楚的取舍：
-    ///  1. **整件抽取**：泰拉的堆叠物品没有「单件独立媒质」，
-    ///     做不到源项目那样把一撮粉抽到只剩一半 —— 所以只在**放得下整件**时才抽。
-    ///     放不下就不抽（而不是抽一半扔一半），避免玩家白亏。
-    ///  2. 抽出来的媒质进玩家的媒质池（源项目是进手持的法杖/媒质瓶）。
-    /// </summary>
-    public long ExtractMediaFromItem(EntityIota itemEntity, bool simulate)
+    /// <summary>地上那个掉落物（活着的）；不是掉落物 → null。</summary>
+    private static WorldItem? GroundItem(EntityIota e)
     {
-        if (_caster is null) return 0;
-        if (itemEntity.Target != EntityIota.EntityKind.Item) return 0;
-        if (itemEntity.Index < 0 || itemEntity.Index >= Main.maxItems) return 0;
-
+        if (e.Target != EntityIota.EntityKind.Item || e.Index < 0 || e.Index >= Main.maxItems) return null;
         // 存活标记在 WorldItem 外壳上（1.4.5 起 Item.active 已移除）
-        WorldItem world = Main.item[itemEntity.Index];
-        if (world is null || !world.active || world.IsAir) return 0;
-        Item item = world.inner;
-        if (item.ModItem is not Items.MediaMaterial material) return 0;
+        WorldItem w = Main.item[e.Index];
+        return w is null || !w.active || w.IsAir ? null : w;
+    }
 
-        var hexPlayer = HexPlayer.Get(_caster);
-        long room = hexPlayer.MaxMedia - hexPlayer.Media;
-        long value = material.MediaValue;
+    /// <summary>源项目 withdrawMedia(-1, simulate)：媒质材料 = 单件 × 数量；媒质瓶 = 存量（造瓶 / 打包时不算瓶子）。</summary>
+    public long ItemEntityMedia(EntityIota itemEntity, bool forBattery)
+    {
+        var w = GroundItem(itemEntity);
+        if (w is null) return 0;
+        return w.inner.ModItem switch
+        {
+            Items.MediaMaterial m => m.MediaValue * w.inner.stack,
+            Items.MediaFlask f when !forBattery => f.Media,
+            _ => 0,
+        };
+    }
 
-        if (room < value) return 0;   // 放不下整件 -> 不抽（见上面的取舍 ①）
-
-        if (simulate) return value;
-
+    /// <summary>
+    /// 源项目 extractMedia(stack, cost, drainForBatteries)：媒质材料按整件扣（ceil(cost / 单件)，多的浪费），
+    /// 媒质瓶按量扣；cost &lt; 0 = 全部。抽空了掉落物消失。
+    /// </summary>
+    public long DrainItemEntity(EntityIota itemEntity, long cost, bool forBattery)
+    {
         if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return 0;
-
-        long gained = hexPlayer.MediaStorage.Insert(value);
-        PlayerEffects.SyncMedia(_caster!);
-        if (gained <= 0) return 0;
-
-        item.stack--;
+        var w = GroundItem(itemEntity);
+        if (w is null) return 0;
+        Item item = w.inner;
+        long got;
+        switch (item.ModItem)
+        {
+            case Items.MediaMaterial m:
+            {
+                long unit = m.MediaValue;
+                int used = cost < 0 ? item.stack : (int)System.Math.Min((cost + unit - 1) / unit, item.stack);
+                item.stack -= used;
+                got = used * unit;
+                break;
+            }
+            case Items.MediaFlask f when !forBattery:
+                got = f.Withdraw(cost < 0 ? f.Media : cost);
+                break;
+            default:
+                return 0;
+        }
         if (item.stack <= 0)
         {
             // 必须对外壳调用：inner.TurnToAir() 不会让地上的掉落物实体失活
-            world.TurnToAir();
+            w.TurnToAir();
         }
-
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
         {
-            // 掉落物少了一件，同步给所有客户端
             NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, itemEntity.Index);
         }
-
-        return gained;
+        return got;
     }
 
     // ── 咒法飞行（flight 系列）────────────────────────────────────

@@ -359,7 +359,7 @@ public sealed class DevPanel
         var actions = new (string Label, Action Act, string Tip)[]
         {
             ("发测试包", () => { Content.Items.DevKit.Give(player); HexCanvasState.SetMessage("已发放开发者测试包"); }, "每个子系统的代表物品各一份 + 补满媒质（快捷键 K）"),
-            ("补满媒质", () => hp.MediaStorage.Insert(hp.MaxMedia), "把媒质池补满"),
+            ("补满媒质瓶", () => Content.PlayerEffects.RefillFlasks(player), "背包里的媒质瓶全部补满（没有瓶子就先发测试包）"),
             ("获得启蒙", () => { hp.GrantEnlightenment(); hp.FailedGreatSpell = true; hp.Overcasted = true; }, "等于走完一次「过载到只剩半颗心」：启蒙 + 盲目绘制 + 睁开双眼"),
             ("重置进度", () =>
             {
@@ -379,7 +379,7 @@ public sealed class DevPanel
         var (unlocked, total) = HexBook.UnlockStats();
         string Mark(bool b) => b ? "✓" : "✗";
         Terraria.Utils.DrawBorderString(sb,
-            $"媒质 {hp.Media / (double)Core.Media.MediaConstants.DustUnit:0.#}/{hp.MaxMedia / (double)Core.Media.MediaConstants.DustUnit:0} 粉   "
+            $"背包媒质 {hp.InventoryMedia() / (double)Core.Media.MediaConstants.DustUnit:0.#} 粉   "
             + $"紫水晶 {Mark(p.Amethyst)}   盲目绘制 {Mark(p.FailedGreatSpell)}   睁开双眼 {Mark(p.Overcasted)}   启蒙 {Mark(p.Enlightened)}   "
             + $"书 {unlocked}/{total} 条",
             new Vector2(x, y), Text, 0.72f);

@@ -74,6 +74,21 @@ sealed class TestEnv : CastingEnvironment
 
     public override bool IsHeldPhialBase() => HeldPhialBase;
 
+    /// <summary>手上可充能物品的剩余空间（-1 = 手上没有可充能物品）。</summary>
+    public long HeldRechargeRoom { get; set; } = -1;
+
+    /// <summary>装进手上物品的媒质（按顺序）。</summary>
+    public List<long> Charged { get; } = new();
+
+    public override long HeldRechargeSpace() => HeldRechargeRoom;
+
+    public override void ChargeHeld(long media)
+    {
+        long put = System.Math.Min(media, System.Math.Max(0, HeldRechargeRoom));
+        Charged.Add(put);
+        HeldRechargeRoom -= put;
+    }
+
     public override bool FillHeldPackagedSpell(IReadOnlyList<Iota> patterns, long media)
     {
         if (HeldEmptyPackaged is null) return false;
@@ -544,28 +559,40 @@ sealed class FakeWorld : ICastingWorld
         return true;
     }
 
-    /// <summary>掉落物里能抽出的媒质。</summary>
+    /// <summary>掉落物里的媒质总量。</summary>
     public Dictionary<int, long> ItemMedia { get; } = new();
 
-    /// <summary>施法者媒质池剩余空间（0 = 满）。</summary>
-    public long MediaRoom { get; set; } = long.MaxValue;
+    /// <summary>掉落物的单件媒质（有 = 堆叠媒质材料，按整件扣；没有 = 按量扣，像媒质瓶）。</summary>
+    public Dictionary<int, long> ItemUnit { get; } = new();
 
-    public List<long> Recharged { get; } = new();
+    /// <summary>掉落物是媒质瓶（造瓶 / 打包时不算，源项目 drainForBatteries）。</summary>
+    public HashSet<int> ItemIsFlask { get; } = new();
 
-    public long ExtractMediaFromItem(EntityIota itemEntity, bool simulate)
+    public long ItemEntityMedia(EntityIota itemEntity, bool forBattery)
     {
         if (itemEntity.Target != EntityIota.EntityKind.Item) return 0;
-        if (MediaRoom <= 0) return 0;
-        if (!ItemMedia.TryGetValue(itemEntity.Index, out var have) || have <= 0) return 0;
+        if (forBattery && ItemIsFlask.Contains(itemEntity.Index)) return 0;
+        return ItemMedia.TryGetValue(itemEntity.Index, out var have) ? System.Math.Max(0, have) : 0;
+    }
 
-        long amount = System.Math.Min(have, MediaRoom);
-        if (!simulate)
+    public long DrainItemEntity(EntityIota itemEntity, long cost, bool forBattery)
+    {
+        long have = ItemEntityMedia(itemEntity, forBattery);
+        if (have <= 0) return 0;
+        long got;
+        if (ItemUnit.TryGetValue(itemEntity.Index, out var unit) && unit > 0)
         {
-            ItemMedia[itemEntity.Index] = have - amount;
-            MediaRoom -= amount;
-            Recharged.Add(amount);
+            long count = have / unit;
+            long used = cost < 0 ? count : System.Math.Min((cost + unit - 1) / unit, count);
+            got = used * unit;
         }
-        return amount;
+        else
+        {
+            got = cost < 0 ? have : System.Math.Min(cost, have);
+        }
+        ItemMedia[itemEntity.Index] = have - got;
+        Trace.Add("drain");
+        return got;
     }
 
     // ---- 咒法飞行 ----
@@ -2229,87 +2256,40 @@ static class Program
                 r.ResolutionType == ResolvedPatternType.Errored && world.Trace.Count == 0,
                 "轨迹: " + string.Join(",", world.Trace));
         }
-        // ==================== M-6 媒质支付规划（池 → 背包物品 → 过载） ====================
+        // ==================== M-6 媒质支付规划（源项目 extractMediaFromInventory） ====================
+        // 这组测试原来围绕「玩家媒质池 → 物品 → 找零回池」—— 原版没有媒质池，已按原版改写。
         {
-            // 池足够 -> 只动池，不碰背包
-            var plan = MediaPaymentPlanner.Plan(
-                cost: 50_000, poolMedia: 100_000,
-                items: new[] { new MediaStack { Slot = 0, UnitValue = 10_000, Count = 5 } });
-            Check("支付：池足够 -> 不消耗物品",
-                plan.FromPool == 50_000 && plan.FromItems.Count == 0
-                && plan.Change == 0 && plan.Shortfall == 0, $"池 {plan.FromPool} 件 {plan.FromItems.Count}");
-        }
-        {
-            // 池不够 -> 从背包补，整件消耗，多付的算作找零
-            // 需要 15,000；池 0；粉尘 10,000/件 -> 拿 2 件 = 20,000，找零 5,000
-            var plan = MediaPaymentPlanner.Plan(
-                cost: 15_000, poolMedia: 0,
-                items: new[] { new MediaStack { Slot = 3, UnitValue = 10_000, Count = 5 } });
-            Check("支付：整件消耗 -> 取 2 件，找零 5000",
-                plan.FromItems.Count == 1 && plan.FromItems[0] == (3, 2)
-                && plan.Change == 5_000 && plan.Shortfall == 0,
-                $"件 {plan.FromItems.Count} 找零 {plan.Change} 缺口 {plan.Shortfall}");
-        }
-        {
-            // 面额升序：有小额就先用小额，别为了 1 万拆掉 30 万的淬灵晶
-            var plan = MediaPaymentPlanner.Plan(
-                cost: 10_000, poolMedia: 0,
-                items: new[]
-                {
-                    new MediaStack { Slot = 0, UnitValue = 300_000, Count = 1 },  // 淬灵晶
-                    new MediaStack { Slot = 1, UnitValue = 10_000, Count = 1 },   // 粉尘
-                });
-            Check("支付：优先用面额小的（用粉尘而非淬灵晶）",
-                plan.FromItems.Count == 1 && plan.FromItems[0] == (1, 1) && plan.Change == 0,
-                string.Join(",", plan.FromItems));
-        }
-        {
-            // 池 + 物品仍不足 -> 剩余算作缺口（由过载承担）
-            var plan = MediaPaymentPlanner.Plan(
-                cost: 100_000, poolMedia: 30_000,
-                items: new[] { new MediaStack { Slot = 0, UnitValue = 10_000, Count = 2 } });
-            Check("支付：池+物品不足 -> 缺口 50000",
-                plan.FromPool == 30_000 && plan.Change == 0 && plan.Shortfall == 50_000,
-                $"缺口 {plan.Shortfall}");
-        }
-        {
-            // 池刚好用尽且物品刚好补齐 -> 无找零无缺口
-            var plan = MediaPaymentPlanner.Plan(
-                cost: 30_000, poolMedia: 10_000,
-                items: new[] { new MediaStack { Slot = 0, UnitValue = 10_000, Count = 2 } });
-            Check("支付：刚好补齐 -> 无找零无缺口",
-                plan.FromPool == 10_000 && plan.FromItems.Count == 1
-                && plan.FromItems[0] == (0, 2) && plan.Change == 0 && plan.Shortfall == 0,
-                $"件 {string.Join(",", plan.FromItems)} 找零 {plan.Change}");
-        }
-        {
-            // 空背包 + 无池 -> 全额缺口
-            var plan = MediaPaymentPlanner.Plan(
-                cost: 5_000, poolMedia: 0, items: System.Array.Empty<MediaStack>());
-            Check("支付：什么都没有 -> 全额缺口 5000",
-                plan.Shortfall == 5_000 && plan.FromItems.Count == 0 && plan.FromPool == 0,
-                $"缺口 {plan.Shortfall}");
-        }
-        {
-            // 费用为 0 -> 什么都不动（不能因为 cost=0 就白拿一件物品）
-            var plan = MediaPaymentPlanner.Plan(
-                cost: 0, poolMedia: 0,
-                items: new[] { new MediaStack { Slot = 0, UnitValue = 10_000, Count = 3 } });
-            Check("支付：费用为 0 -> 不消耗任何东西",
-                plan.FromPool == 0 && plan.FromItems.Count == 0
-                && plan.Change == 0 && plan.Shortfall == 0, string.Join(",", plan.FromItems));
-        }
-        {
-            // TotalAvailable 应当把池与所有物品都算进去（供快速判断）
-            var plan = MediaPaymentPlanner.Plan(
-                cost: 1, poolMedia: 7,
-                items: new[]
-                {
-                    new MediaStack { Slot = 0, UnitValue = 10_000, Count = 2 },
-                    new MediaStack { Slot = 1, UnitValue = 100_000, Count = 1 },
-                });
-            Check("支付：TotalAvailable = 池 + 物品总价值",
-                plan.TotalAvailable == 7 + 20_000 + 100_000, plan.TotalAvailable.ToString());
+            MediaSource Dust(int slot, int n) => new() { Slot = slot, Priority = MediaPriority.AmethystDust, UnitValue = MediaConstants.DustUnit, Count = n };
+            MediaSource Charged(int slot, int n) => new() { Slot = slot, Priority = MediaPriority.ChargedAmethyst, UnitValue = MediaConstants.CrystalUnit, Count = n };
+            MediaSource Quenched(int slot, int n) => new() { Slot = slot, Priority = MediaPriority.QuenchedShard, UnitValue = MediaConstants.QuenchedShardUnit, Count = n };
+            MediaSource Flask(int slot, long m) => new() { Slot = slot, Priority = MediaPriority.Battery, Stored = m };
+
+            var p1 = MediaPaymentPlanner.Plan(50_000, new[] { Dust(0, 9), Flask(5, 100_000) });
+            Check("支付：媒质瓶优先级最高，按量扣（不碰粉）",
+                p1.Withdrawals.SequenceEqual(new[] { new MediaWithdrawal(5, 0, 50_000) }) && p1.Wasted == 0 && p1.Shortfall == 0,
+                string.Join(";", p1.Withdrawals));
+
+            var p2 = MediaPaymentPlanner.Plan(15_000, new[] { Dust(3, 5) });
+            Check("支付：堆叠物品整件扣，多付的浪费（原版不找零）",
+                p2.Withdrawals.SequenceEqual(new[] { new MediaWithdrawal(3, 2, 0) }) && p2.Wasted == 5_000 && p2.Shortfall == 0,
+                $"{string.Join(";", p2.Withdrawals)} 浪费 {p2.Wasted}");
+
+            var p3 = MediaPaymentPlanner.Plan(10_000, new[] { Quenched(0, 1), Charged(1, 1), Dust(2, 1) });
+            Check("支付：优先级 粉 > 充能紫水晶 > 淬灵碎片",
+                p3.Withdrawals.Count == 1 && p3.Withdrawals[0].Slot == 2, string.Join(";", p3.Withdrawals));
+
+            var p4 = MediaPaymentPlanner.Plan(10_000, new[] { Dust(0, 2), Dust(1, 7) });
+            Check("支付：同优先级存量大的先扣", p4.Withdrawals[0].Slot == 1, string.Join(";", p4.Withdrawals));
+
+            var p5 = MediaPaymentPlanner.Plan(100_000, new[] { Flask(0, 30_000), Dust(1, 2) });
+            Check("支付：都扣光仍不够 → 缺口 50000（交给过载）",
+                p5.Shortfall == 50_000 && p5.Withdrawals.Count == 2, $"缺口 {p5.Shortfall}");
+
+            var p6 = MediaPaymentPlanner.Plan(0, new[] { Dust(0, 3) });
+            Check("支付：费用 0 → 什么都不扣", p6.Withdrawals.Count == 0 && p6.Shortfall == 0);
+
+            var p7 = MediaPaymentPlanner.Plan(1, new[] { Dust(0, 2), Charged(1, 1), Flask(2, 7) });
+            Check("支付：TotalAvailable = 所有来源总和", p7.TotalAvailable == 20_000 + 100_000 + 7, p7.TotalAvailable.ToString());
         }
         // ==================== M-3 晶洞掉落表（移植最容易静默走样的地方） ====================
         // 掉落表的分支在游戏里长得一模一样，只有数字不同 —— 不做确定性测试根本发现不了。
@@ -4455,53 +4435,57 @@ static class Program
                     Sig(r.Image));
             }
 
-            // ── recharge：把掉落物里的媒质抽给自己 ──
+            // ── recharge：从掉落物抽媒质，装进**手上的可充能物品**（源项目 OpRecharge）──
+            //（这组测试原来断言「抽进玩家媒质池」—— 原版没有那个池子）
             {
                 var world = new FakeWorld();
                 var dropped = new EntityIota(EntityIota.EntityKind.Item, 2);
                 world.ItemMedia[2] = MediaConstants.CrystalUnit;
-                var env = new TestEnv(world: world);
+                var env = new TestEnv(world: world) { HeldRechargeRoom = MediaConstants.CrystalUnit };
                 var img = new CastingImage(new Iota[] { dropped });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:recharge") });
-                Check("recharge：抽出掉落物里的媒质，消耗 5 万（SHARD）",
-                    world.Recharged.Count == 1 && world.Recharged[0] == MediaConstants.CrystalUnit
+                Check("recharge：抽掉落物的媒质装进手上的瓶子，消耗 5 万（SHARD）",
+                    env.Charged.SequenceEqual(new[] { MediaConstants.CrystalUnit }) && world.ItemMedia[2] == 0
                     && 1_000_000 - env.Media == MediaConstants.ShardUnit,
-                    $"抽到 {world.Recharged.FirstOrDefault()}");
+                    $"{r.ResolutionType} 装入 {string.Join(",", env.Charged)}");
             }
             {
-                // 身上满了 -> 报 mishap，且**不能**扣媒质（否则是纯亏）
-                var world = new FakeWorld { MediaRoom = 0 };
-                var dropped = new EntityIota(EntityIota.EntityKind.Item, 2);
-                world.ItemMedia[2] = 1000;
-                var env = new TestEnv(world: world);
-                var img = new CastingImage(new Iota[] { dropped });
-                var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:recharge") });
-                Check("recharge：媒质已满 -> Errored 且不扣媒质",
-                    r.ResolutionType == ResolvedPatternType.Errored && env.Media == 1_000_000,
-                    $"媒质 {env.Media}");
+                // 手上没有可充能物品 / 已经满了 -> 报 mishap，不扣媒质、不动掉落物
+                foreach (var room in new long[] { -1, 0 })
+                {
+                    var world = new FakeWorld();
+                    var dropped = new EntityIota(EntityIota.EntityKind.Item, 2);
+                    world.ItemMedia[2] = 1000;
+                    var env = new TestEnv(world: world) { HeldRechargeRoom = room };
+                    var img = new CastingImage(new Iota[] { dropped });
+                    var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:recharge") });
+                    Check($"recharge：手上{(room < 0 ? "没有可充能物品" : "的瓶子已满")} -> Errored，不扣媒质",
+                        r.ResolutionType == ResolvedPatternType.Errored && env.Media == 1_000_000 && world.ItemMedia[2] == 1000,
+                        $"媒质 {env.Media}");
+                }
             }
             {
                 // 不是媒质物品 -> mishap
                 var world = new FakeWorld();
                 var dropped = new EntityIota(EntityIota.EntityKind.Item, 3);
-                var env = new TestEnv(world: world);
+                var env = new TestEnv(world: world) { HeldRechargeRoom = 1000 };
                 var img = new CastingImage(new Iota[] { dropped });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:recharge") });
                 Check("recharge：不是媒质物品 -> Errored",
                     r.ResolutionType == ResolvedPatternType.Errored, Sig(r.Image));
             }
             {
-                // 抽的时候最多抽到「池满为止」，不能凭空溢出
-                var world = new FakeWorld { MediaRoom = 300 };
+                // 源项目：只抽够填满的量，但堆叠物品按整件扣 —— 空间 300，扣掉 1 整件粉（1 万），多的浪费
+                var world = new FakeWorld();
                 var dropped = new EntityIota(EntityIota.EntityKind.Item, 2);
-                world.ItemMedia[2] = 1000;
-                var env = new TestEnv(world: world);
+                world.ItemMedia[2] = 5 * MediaConstants.DustUnit;
+                world.ItemUnit[2] = MediaConstants.DustUnit;
+                var env = new TestEnv(world: world) { HeldRechargeRoom = 300 };
                 var img = new CastingImage(new Iota[] { dropped });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:recharge") });
-                Check("recharge：只抽到池满为止（300）",
-                    world.Recharged.Count == 1 && world.Recharged[0] == 300
-                    && world.ItemMedia[2] == 700,
-                    $"抽到 {world.Recharged.FirstOrDefault()}，剩余 {world.ItemMedia[2]}");
+                Check("recharge：空间 300 → 扣 1 整件粉、装进 300（多的浪费，原版同）",
+                    env.Charged.SequenceEqual(new[] { 300L }) && world.ItemMedia[2] == 4 * MediaConstants.DustUnit,
+                    $"装入 {string.Join(",", env.Charged)}，剩余 {world.ItemMedia[2]}");
             }
 
             if (lastFail != null) Fail(lastFail);

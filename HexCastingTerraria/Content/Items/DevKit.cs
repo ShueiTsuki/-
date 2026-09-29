@@ -32,10 +32,10 @@ internal static class DevKit
             GiveOne(player, type);
         }
 
-        // 媒质也给足：测法术最常卡住的就是「媒质不够」
-        //（用 Insert 而不是 SetMedia —— IMediaStorage 只保证 Insert/Withdraw）
-        var hexPlayer = HexPlayer.Get(player);
-        hexPlayer.MediaStorage.Insert(hexPlayer.MaxMedia);
+        // 媒质也给足：一个 10 晶体的满媒质瓶（媒质只来自背包物品，与原版一致）
+        var flask = new Item(ModContent.ItemType<MediaFlask>());
+        (flask.ModItem as MediaFlask)!.SetMedia(10 * Core.Media.MediaConstants.CrystalUnit, 10 * Core.Media.MediaConstants.CrystalUnit);
+        player.QuickSpawnItem(player.GetSource_Misc("HexDevKit"), flask);
     }
 
     /// <summary>测试包的内容。新增子系统时**记得往这里加一件**代表物。</summary>
@@ -50,7 +50,6 @@ internal static class DevKit
         yield return ModContent.ItemType<AmethystShard>();
         yield return ModContent.ItemType<ChargedAmethyst>();
         yield return ModContent.ItemType<QuenchedAllayShard>();
-        yield return ModContent.ItemType<MediaFlask>();
 
         // 数据载体（读写图案的三种）
         yield return ModContent.ItemType<Focus>();

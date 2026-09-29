@@ -177,8 +177,8 @@ Mods: {
 				DisplayName: Media Flask
 				Tooltip:
 					'''
-					Restores 100,000 media (1 crystal)
-					1 amethyst dust = 10,000 media
+					Media is drawn from here first when casting
+					Made with Craft Phial from media on the ground; refill with Recharge Item
 					'''
 			}
 
@@ -188,7 +188,7 @@ Mods: {
 					'''
 					Holds 10,000 media
 					The base unit of media -- every hex starts here
-					Right click to charge your own media pool
+					Spent straight from your inventory when casting
 					'''
 			}
 
@@ -197,7 +197,7 @@ Mods: {
 				Tooltip:
 					'''
 					Holds 50,000 media (5 dust)
-					Right click to charge your own media pool
+					Spent straight from your inventory when casting
 					'''
 			}
 
@@ -207,7 +207,7 @@ Mods: {
 					'''
 					Holds 100,000 media (10 dust)
 					A thought not yet dispersed, sealed in crystal
-					Right click to charge your own media pool
+					Spent straight from your inventory when casting
 					'''
 			}
 
@@ -217,7 +217,7 @@ Mods: {
 					'''
 					Holds 300,000 media (30 dust)
 					Something once joyful, now only cold peace
-					Right click to charge your own media pool
+					Spent straight from your inventory when casting
 					'''
 			}
 		}

@@ -73,7 +73,8 @@ public sealed class OpMakePackagedSpell : SpellAction
         }
 
         var world = env.RequireWorld();
-        if (world.ExtractMediaFromItem(entity, simulate: true) <= 0)
+        // 源项目：isMediaItem && extractMedia(entity.item, drainForBatteries = true, simulate = true) > 0
+        if (world.ItemEntityMedia(entity, forBattery: true) <= 0)
         {
             throw new MishapBadItem(entity, "装着媒质的掉落物");
         }
@@ -87,7 +88,8 @@ public sealed class OpMakePackagedSpell : SpellAction
         return WorldSpell.Make(
             new WorldSpell.Simple(w =>
             {
-                long media = w.ExtractMediaFromItem(entity, simulate: false);
+                // 源项目：把整堆抽干装进去（extractMedia(entityStack, drainForBatteries = true)）
+                long media = w.DrainItemEntity(entity, cost: -1, forBattery: true);
                 if (media > 0)
                 {
                     env.FillHeldPackagedSpell(patterns, media);
@@ -124,15 +126,17 @@ public sealed class OpMakeBattery : SpellAction
         }
 
         var world = env.RequireWorld();
-        if (world.ExtractMediaFromItem(entity, simulate: true) <= 0)
+        if (world.ItemEntityMedia(entity, forBattery: true) <= 0)
         {
             throw new MishapBadItem(entity, "装着媒质的掉落物");
         }
 
+        // 源项目：整堆抽干，做出「存量 = 上限 = 抽到的量」的媒质瓶
+        //（这里曾经先把媒质抽进玩家池子、再造一个同样满的瓶子 —— 媒质算了两遍）
         return WorldSpell.Make(
             new WorldSpell.Simple(w =>
             {
-                long media = w.ExtractMediaFromItem(entity, simulate: false);
+                long media = w.DrainItemEntity(entity, cost: -1, forBattery: true);
                 if (media > 0)
                 {
                     env.CraftBatteryHeld(media);

@@ -11,32 +11,56 @@ namespace HexCastingTerraria.Content;
 /// <summary>
 /// 玩家侧咒术数据。
 ///
-/// 媒质储量默认存在玩家身上（决策点 D3），但通过 <see cref="IMediaStorage"/> 抽象，
-/// 后续可以改成「从背包里的媒质物品扣取」而不影响调用方。
-///
-/// 存档：媒质必须持久化（Phase 1 验收项），这里用 SaveData/LoadData 实现。
+/// 媒质**不存在玩家身上**：与原版一致，全部来自背包里的媒质物品（媒质瓶、紫水晶粉……），
+/// 见 <see cref="CollectMediaSources"/>。这里曾经有一个 12 晶体上限的「玩家媒质池」（决策点 D3 未定时的临时方案），
+/// 已按原版删除；旧存档里池子的媒质会在进世界时折成一个媒质瓶发还（见 <see cref="OnEnterWorld"/>）。
 /// </summary>
 public sealed class HexPlayer : ModPlayer
 {
+    /// <summary>旧存档里「玩家媒质池」的余额，进世界时折成媒质瓶发还。</summary>
+    private long _legacyPoolMedia;
+
     /// <summary>
-    /// 玩家自身媒质上限。
-    /// 原作里玩家本身不存媒质——媒质来自背包里的紫水晶粉/充能紫水晶/淬灵晶簇。
-    /// 泰拉侧先给一个基础储池，由媒质瓶等物品充能；后续可再接「直接从背包物品扣取」。
-    /// 12 晶体 = 1,200,000，与源项目 QuenchedBlockUnit 同量级。
+    /// 背包里所有媒质来源（源项目 scanPlayerForMediaStuff）：媒质瓶按量、媒质材料按整件。
+    /// 0..57 = 背包 + 钱币 + 弹药（58 是鼠标上拿着的，不算）。
     /// </summary>
-    public const long BaseMaxMedia = 12 * MediaConstants.CrystalUnit;
+    public System.Collections.Generic.List<MediaSource> CollectMediaSources()
+    {
+        var list = new System.Collections.Generic.List<MediaSource>();
+        for (int i = 0; i < 58 && i < Player.inventory.Length; i++)
+        {
+            var item = Player.inventory[i];
+            if (item is null || item.IsAir || item.stack <= 0) continue;
+            if (item.ModItem is Items.MediaFlask flask)
+            {
+                list.Add(new MediaSource { Slot = i, Priority = MediaPriority.Battery, Stored = flask.Media });
+            }
+            else if (item.ModItem is Items.MediaMaterial material)
+            {
+                list.Add(new MediaSource { Slot = i, Priority = material.Priority, UnitValue = material.MediaValue, Count = item.stack });
+            }
+        }
+        return list;
+    }
 
-    private readonly MediaPool _media = new(BaseMaxMedia, initial: MediaConstants.CrystalUnit);
+    /// <summary>背包里的媒质总量（HUD 显示用）。</summary>
+    public long InventoryMedia()
+    {
+        long total = 0;
+        foreach (var s in CollectMediaSources()) total += s.Total;
+        return total;
+    }
 
-    /// <summary>玩家媒质池。</summary>
-    public IMediaStorage MediaStorage => _media;
-
-    public long Media => _media.Media;
-
-    public long MaxMedia => _media.MaxMedia;
-
-    /// <summary>联机：服务端施法改了媒质池，把结果同步过来（见 PlayerEffects.SyncMedia）。</summary>
-    public void SetMediaFromServer(long media) => _media.SetMedia(media);
+    /// <summary>背包里所有媒质瓶的（存量, 上限）之和（HUD 的环用）。</summary>
+    public (long Stored, long Max) FlaskMedia()
+    {
+        long stored = 0, max = 0;
+        for (int i = 0; i < 58 && i < Player.inventory.Length; i++)
+        {
+            if (Player.inventory[i]?.ModItem is Items.MediaFlask f) { stored += f.Media; max += f.MaxMedia; }
+        }
+        return (stored, max);
+    }
 
     /// <summary>
     /// 是否已「启蒙」。
@@ -335,7 +359,6 @@ public sealed class HexPlayer : ModPlayer
 
     public override void SaveData(TagCompound tag)
     {
-        tag["media"] = _media.Media;
         tag["enlightened"] = Enlightened;
         tag["failedGreatSpell"] = FailedGreatSpell;
         tag["obtainedAmethyst"] = ObtainedAmethyst;
@@ -354,10 +377,8 @@ public sealed class HexPlayer : ModPlayer
 
     public override void LoadData(TagCompound tag)
     {
-        if (tag.TryGet("media", out long media))
-        {
-            _media.SetMedia(media);
-        }
+        // 旧存档：玩家媒质池的余额（进世界时折成媒质瓶发还）
+        _legacyPoolMedia = tag.TryGet("media", out long media) ? System.Math.Max(0, media) : 0;
         if (tag.TryGet("enlightened", out bool enlightened))
         {
             Enlightened = enlightened;
@@ -407,6 +428,16 @@ public sealed class HexPlayer : ModPlayer
         if (Player.whoAmI != Main.myPlayer)
         {
             return;
+        }
+
+        // 旧存档里「玩家媒质池」的余额 → 一个同样多的媒质瓶（池子已按原版删除）
+        if (_legacyPoolMedia > 0)
+        {
+            var flask = new Item(ModContent.ItemType<Items.MediaFlask>());
+            (flask.ModItem as Items.MediaFlask)!.SetMedia(_legacyPoolMedia, _legacyPoolMedia);
+            Player.QuickSpawnItem(Player.GetSource_Misc("HexLegacyMedia"), flask);
+            Main.NewText($"咒法学：媒质不再存在玩家身上（与原版一致），原来的 {MediaConstants.Format(_legacyPoolMedia)} 媒质已装进一个媒质瓶还给你。", HexColors.Media);
+            _legacyPoolMedia = 0;
         }
 
         // 咒法学之书：**开局必带**（用户要求）。

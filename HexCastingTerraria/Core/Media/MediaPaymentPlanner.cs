@@ -3,142 +3,140 @@ using System.Collections.Generic;
 
 namespace HexCastingTerraria.Core.Media;
 
-/// <summary>背包里一堆可提供媒质的物品。</summary>
-public readonly struct MediaStack
+/// <summary>
+/// 扣费优先级。逐字照抄源项目 ADMediaHolder：数值越大越先扣。
+/// </summary>
+public static class MediaPriority
 {
-    /// <summary>背包槽位下标。</summary>
+    public const int QuenchedAllay = 800;
+    public const int QuenchedShard = 900;
+    public const int ChargedAmethyst = 1000;
+    public const int AmethystShard = 2000;
+    public const int AmethystDust = 3000;
+    public const int Battery = 4000;
+}
+
+/// <summary>
+/// 背包里一个可提供媒质的物品槽（源项目 ADMediaHolder）。两种：
+///   - 堆叠物品（粉、碎片、充能紫水晶……）：<see cref="UnitValue"/> × <see cref="Count"/>，**按整件扣**；
+///   - 媒质瓶（battery）：<see cref="UnitValue"/> = 0，按 <see cref="Stored"/> **按量扣**。
+/// </summary>
+public readonly struct MediaSource
+{
     public required int Slot { get; init; }
 
-    /// <summary>单件蕴含的媒质量。</summary>
-    public required long UnitValue { get; init; }
+    public required int Priority { get; init; }
 
-    /// <summary>该槽位的堆叠数量。</summary>
-    public required int Count { get; init; }
+    /// <summary>堆叠物品的单件媒质；媒质瓶为 0。</summary>
+    public long UnitValue { get; init; }
+
+    /// <summary>堆叠数量（媒质瓶忽略）。</summary>
+    public int Count { get; init; }
+
+    /// <summary>媒质瓶当前存量（堆叠物品忽略）。</summary>
+    public long Stored { get; init; }
+
+    public bool IsBattery => UnitValue <= 0;
+
+    /// <summary>源项目 withdrawMedia(-1, simulate=true)：这一槽总共能出多少。</summary>
+    public long Total => IsBattery ? Math.Max(0, Stored) : UnitValue * Math.Max(0, Count);
 }
+
+/// <summary>从某一槽扣多少：堆叠物品扣 <see cref="Items"/> 件，媒质瓶扣 <see cref="BatteryMedia"/>。</summary>
+public readonly record struct MediaWithdrawal(int Slot, int Items, long BatteryMedia);
 
 /// <summary>一次媒质支付方案。</summary>
 public sealed class MediaPaymentPlan
 {
-    /// <summary>从玩家自身媒质池扣除的量。</summary>
-    public required long FromPool { get; init; }
-
-    /// <summary>要从背包扣除的物品（槽位, 件数）。</summary>
-    public required IReadOnlyList<(int Slot, int Count)> FromItems { get; init; }
+    public required IReadOnlyList<MediaWithdrawal> Withdrawals { get; init; }
 
     /// <summary>
-    /// 物品**多付**的部分，应当退回媒质池。
-    ///
-    /// 为什么会有多付：泰拉的堆叠物品没有「单件独立数据」，
-    /// 没法像源项目那样把一件粉尘扣到只剩 5,000。
-    /// 所以只能整件消耗 —— 多出来的量退回池中，玩家不亏。
+    /// 整件扣多出来的部分。源项目里**直接浪费**（stack.shrink 整件，多出的媒质不找零）。
     /// </summary>
-    public required long Change { get; init; }
+    public required long Wasted { get; init; }
 
-    /// <summary>仍未付清的缺口，由过载（扣血）承担。</summary>
+    /// <summary>仍未付清的缺口（由调用方决定要不要过载）。</summary>
     public required long Shortfall { get; init; }
 
-    /// <summary>池 + 背包物品的媒质总量。用于快速判断「够不够」。</summary>
+    /// <summary>所有来源的媒质总量。</summary>
     public required long TotalAvailable { get; init; }
-
-    /// <summary>是否完全不用过载。</summary>
-    public bool CoveredWithoutOvercast => Shortfall <= 0;
 }
 
 /// <summary>
-/// 媒质支付规划。移植自源项目 `MediaHolderEnv` 的取值逻辑
-/// （那里是为 `ItemMediaHolder` 逐个 `withdrawMedia`）。
+/// 媒质支付规划。移植自源项目 PlayerBasedCastEnv.extractMediaFromInventory + MediaHelper：
 ///
-/// 放在 Core 且写成纯函数，是因为这里有真实的边界情况值得离线钉住：
-/// 整件消耗造成的多付、缺口如何划分、以及**顺序必须是池 → 物品 → 过载**。
+///   1. scanPlayerForMediaStuff：按 compareMediaItem 排序 —— **优先级高的先扣**
+///     （媒质瓶 4000 → 紫水晶粉 3000 → 碎片 2000 → 充能紫水晶 1000 → 淬灵碎片 900），
+///      同优先级时**总量大的先扣**；
+///   2. 逐个 withdrawMedia：堆叠物品 itemsUsed = min(ceil(剩余 / 单件), 数量)，整件扣、多付浪费；
+///      媒质瓶扣 min(剩余, 存量)；
+///   3. 还不够的部分交给过载。
+///
+/// ⚠️ 这里曾经有一个「玩家媒质池」最先扣、整件多付的部分找零回池 —— 原版没有这个池子，已删除。
 /// </summary>
 public static class MediaPaymentPlanner
 {
-    /// <summary>
-    /// 规划一次支付。
-    ///
-    /// 取值顺序：
-    ///   ① 自身媒质池
-    ///   ② 背包物品，**按面额升序** —— 优先用小的，
-    ///      否则为了 1 万媒质就得拆掉一个 30 万的淬灵晶
-    ///   ③ 剩余缺口（由调用方决定是否过载）
-    /// </summary>
-    /// <param name="cost">需要的媒质总量。</param>
-    /// <param name="poolMedia">玩家自身池中的媒质。</param>
-    /// <param name="items">背包中的媒质材料。</param>
-    public static MediaPaymentPlan Plan(long cost, long poolMedia, IReadOnlyList<MediaStack> items)
+    public static MediaPaymentPlan Plan(long cost, IReadOnlyList<MediaSource> sources)
     {
-        if (items == null) throw new ArgumentNullException(nameof(items));
+        if (sources == null) throw new ArgumentNullException(nameof(sources));
+        cost = Math.Max(0, cost);
 
-        cost = System.Math.Max(0, cost);
-        poolMedia = System.Math.Max(0, poolMedia);
-
-        long totalAvailable = poolMedia;
-        for (int i = 0; i < items.Count; i++)
+        var usable = new List<MediaSource>();
+        long total = 0;
+        foreach (var s in sources)
         {
-            if (items[i].Count > 0 && items[i].UnitValue > 0)
-            {
-                totalAvailable += items[i].UnitValue * items[i].Count;
-            }
+            if (s.Total <= 0) continue;
+            usable.Add(s);
+            total += s.Total;
         }
 
         if (cost == 0)
         {
             return new MediaPaymentPlan
             {
-                FromPool = 0,
-                FromItems = Array.Empty<(int, int)>(),
-                Change = 0,
+                Withdrawals = Array.Empty<MediaWithdrawal>(),
+                Wasted = 0,
                 Shortfall = 0,
-                TotalAvailable = totalAvailable,
+                TotalAvailable = total,
             };
         }
 
-        long remaining = cost;
-
-        // ① 自身池
-        long fromPool = System.Math.Min(remaining, poolMedia);
-        remaining -= fromPool;
-
-        // ② 背包物品：面额升序
-        var candidates = new List<MediaStack>();
-        for (int i = 0; i < items.Count; i++)
+        // 源项目：sortWith(compareMediaItem) 再 reverse → 优先级高的在前；同优先级总量大的在前。
+        // 槽位作为最后的决胜，保证结果确定。
+        usable.Sort((a, b) =>
         {
-            var it = items[i];
-            if (it.Count > 0 && it.UnitValue > 0)
-            {
-                candidates.Add(it);
-            }
-        }
-        candidates.Sort((a, b) =>
-        {
-            int c = a.UnitValue.CompareTo(b.UnitValue);
-            return c != 0 ? c : a.Slot.CompareTo(b.Slot);   // 同面额按槽位，保证确定性
+            int c = b.Priority.CompareTo(a.Priority);
+            if (c != 0) return c;
+            c = b.Total.CompareTo(a.Total);
+            return c != 0 ? c : a.Slot.CompareTo(b.Slot);
         });
 
-        var taken = new List<(int Slot, int Count)>();
-        for (int i = 0; i < candidates.Count && remaining > 0; i++)
+        long remaining = cost;
+        var taken = new List<MediaWithdrawal>();
+        foreach (var s in usable)
         {
-            var it = candidates[i];
-
-            // 需要几件？向上取整
-            long need = (remaining + it.UnitValue - 1) / it.UnitValue;
-            int take = (int)System.Math.Min(need, it.Count);
-            if (take <= 0) continue;
-
-            taken.Add((it.Slot, take));
-            remaining -= (long)take * it.UnitValue;
+            if (remaining <= 0) break;
+            if (s.IsBattery)
+            {
+                long take = Math.Min(remaining, s.Stored);
+                taken.Add(new MediaWithdrawal(s.Slot, 0, take));
+                remaining -= take;
+            }
+            else
+            {
+                long need = (remaining + s.UnitValue - 1) / s.UnitValue;
+                int items = (int)Math.Min(need, s.Count);
+                taken.Add(new MediaWithdrawal(s.Slot, items, 0));
+                remaining -= items * s.UnitValue;
+            }
         }
-
-        long change = remaining < 0 ? -remaining : 0;
-        long shortfall = remaining > 0 ? remaining : 0;
 
         return new MediaPaymentPlan
         {
-            FromPool = fromPool,
-            FromItems = taken,
-            Change = change,
-            Shortfall = shortfall,
-            TotalAvailable = totalAvailable,
+            Withdrawals = taken,
+            Wasted = remaining < 0 ? -remaining : 0,
+            Shortfall = remaining > 0 ? remaining : 0,
+            TotalAvailable = total,
         };
     }
 }

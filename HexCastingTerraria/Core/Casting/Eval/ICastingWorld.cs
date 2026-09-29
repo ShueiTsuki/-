@@ -346,12 +346,18 @@ public interface ICastingWorld
     bool PlaceBlockAt(double x, double y);
 
     /// <summary>
-    /// 把掉落在地上的媒质物品里的媒质抽给施法者（`recharge`）。
-    /// <paramref name="simulate"/> 为真时只查询不抽走。
-    ///
-    /// 返回能抽出/已抽出的媒质量，0 表示抽不出来（不是媒质物品，或施法者已经满了）。
+    /// 地上这个掉落物一共能出多少媒质（源项目 withdrawMedia(-1, simulate=true)）。不是媒质物品 → 0。
+    /// <paramref name="forBattery"/>：只算「能用来造媒质瓶 / 打包法术」的媒质（源项目 drainForBatteries：
+    /// 粉、碎片、充能紫水晶这类可以，媒质瓶本身不行）。
     /// </summary>
-    long ExtractMediaFromItem(EntityIota itemEntity, bool simulate);
+    long ItemEntityMedia(EntityIota itemEntity, bool forBattery);
+
+    /// <summary>
+    /// 从地上这个掉落物抽媒质（源项目 extractMedia(stack, cost, drainForBatteries)）：
+    /// <paramref name="cost"/> &lt; 0 = 全部抽干；堆叠物品按整件扣（可能多于 cost），媒质瓶按量扣。
+    /// 抽空了掉落物就消失。返回实际抽出的量。
+    /// </summary>
+    long DrainItemEntity(EntityIota itemEntity, long cost, bool forBattery);
 
     // ── 以下是咒法飞行（flight 系列）──────────────────────────────
 

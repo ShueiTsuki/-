@@ -1,5 +1,3 @@
-using HexCastingTerraria.Client;
-using HexCastingTerraria.Content;
 using HexCastingTerraria.Core.Media;
 using Microsoft.Xna.Framework;
 using Terraria;
@@ -9,93 +7,99 @@ using Terraria.ModLoader;
 namespace HexCastingTerraria.Content.Items;
 
 /// <summary>
-/// 媒质瓶：把宝石蓄入自身的媒质池。
+/// 媒质瓶（源项目 ItemMediaBattery，「媒质之瓶 / phial of media」）。
 ///
-/// 对应源项目的媒质来源物品（紫水晶粉 / 充能紫水晶 / 淬灵晶簇），
-/// 它们都是「可提供媒质的容器」。泰拉侧没有紫水晶簇，用紫晶（Amethyst）作为对应物。
+/// 与原版一致：
+///   - **每瓶自带存量与上限**，不可堆叠；
+///   - 施法时它是**最先扣**的媒质来源（优先级 4000），按量扣，不是整瓶消耗；
+///   - 只能用法术「制作试剂瓶」（craft/battery）把地上的一堆媒质装进空瓶得到，存量 = 上限 = 装进去的量；
+///   - 用「重新充能」（recharge）补到上限；
+///   - 没有合成配方，也不能喝。
 ///
-/// 数值对齐源项目 MediaConstants：
-///   1 紫水晶粉 = 10,000
-///   1 充能紫水晶 = 100,000（= 1 晶体）
-/// 因此一个媒质瓶按「1 晶体」计，回复 100,000。
+/// ⚠️ 这里曾经是「可合成、可堆叠 99、右键喝掉把媒质倒进玩家媒质池」—— 原版没有玩家媒质池，已按原版改回。
 /// </summary>
 public class MediaFlask : ModItem
 {
-    /// <summary>单次回复的媒质量（1 晶体 = 10 粉）。没被 `craft/battery` 改过时的默认值。</summary>
-    public const long RestoreAmount = MediaConstants.CrystalUnit;
+    /// <summary>当前存量。</summary>
+    public long Media { get; private set; }
 
-    /// <summary>
-    /// 这个瓶子里实际装了多少媒质。
-    ///
-    /// 为什么要可变：`craft/battery` 是「把地上那份媒质装进瓶子」，
-    /// 装多少就该是多少（源项目 `withMedia(stack, mediamount, mediamount)`）。
-    /// 固定成 1 晶体的话，往地上放 3 个充能紫水晶再装瓶会白白亏掉 2/3。
-    /// </summary>
-    public long StoredMedia { get; private set; } = RestoreAmount;
+    /// <summary>上限（制作时装了多少就是多少）。</summary>
+    public long MaxMedia { get; private set; }
 
-    public void SetStoredMedia(long media) => StoredMedia = System.Math.Max(0, media);
+    /// <summary>源项目 ItemMediaHolder.withMedia(stack, media, max)。</summary>
+    public void SetMedia(long media, long max)
+    {
+        MaxMedia = System.Math.Max(0, max);
+        Media = System.Math.Clamp(media, 0, MaxMedia);
+    }
+
+    /// <summary>扣掉一部分（施法付费）。返回实际扣掉的量。</summary>
+    public long Withdraw(long amount)
+    {
+        long take = System.Math.Clamp(amount, 0, Media);
+        Media -= take;
+        return take;
+    }
+
+    /// <summary>补充（重新充能）。返回实际装进去的量。</summary>
+    public long Insert(long amount)
+    {
+        long put = System.Math.Clamp(amount, 0, MaxMedia - Media);
+        Media += put;
+        return put;
+    }
 
     public override void ModifyTooltips(System.Collections.Generic.List<TooltipLine> tooltips)
     {
         tooltips.Add(new TooltipLine(Mod, "HexFlaskMedia",
-            $"蕴含媒质：{MediaConstants.Format(StoredMedia)}"));
+            $"媒质：{MediaConstants.Format(Media)} / {MediaConstants.Format(MaxMedia)}"));
     }
 
-    public override void SaveData(Terraria.ModLoader.IO.TagCompound tag) => tag["media"] = StoredMedia;
+    // 源项目在物品栏里画一条媒质条（ItemMediaHolder 的 barWidth / barColor）
+    public override void PostDrawInInventory(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch, Vector2 position,
+        Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
+    {
+        if (MaxMedia <= 0) return;
+        float fill = (float)Media / MaxMedia;
+        var tex = Client.HexPixel.Value;
+        float w = 26f * Main.inventoryScale, h = 2f * Main.inventoryScale;
+        var at = position + new Vector2(-w / 2f, 12f * Main.inventoryScale);
+        spriteBatch.Draw(tex, at, null, new Color(20, 16, 30, 220), 0f, Vector2.Zero, new Vector2(w, h + 1), Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 0f);
+        spriteBatch.Draw(tex, at, null, Client.HexClientSystem.MediaBarColor(fill), 0f, Vector2.Zero, new Vector2(w * fill, h), Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 0f);
+    }
+
+    public override void SaveData(Terraria.ModLoader.IO.TagCompound tag)
+    {
+        tag["media"] = Media;
+        tag["maxMedia"] = MaxMedia;
+    }
 
     public override void LoadData(Terraria.ModLoader.IO.TagCompound tag)
     {
-        StoredMedia = tag.TryGet("media", out long media) ? System.Math.Max(0, media) : RestoreAmount;
+        long media = tag.TryGet("media", out long m) ? m : 0;
+        // 旧存档的瓶子没有上限字段：上限就按当时装的量
+        long max = tag.TryGet("maxMedia", out long mx) ? mx : media;
+        SetMedia(media, max);
+    }
+
+    public override void NetSend(System.IO.BinaryWriter writer)
+    {
+        writer.Write(Media);
+        writer.Write(MaxMedia);
+    }
+
+    public override void NetReceive(System.IO.BinaryReader reader)
+    {
+        long media = reader.ReadInt64();
+        SetMedia(media, reader.ReadInt64());
     }
 
     public override void SetDefaults()
     {
         Item.width = 20;
         Item.height = 20;
-        Item.useStyle = ItemUseStyleID.DrinkLiquid;
-        Item.useTime = 20;
-        Item.useAnimation = 20;
-        Item.useTurn = true;
-        Item.autoReuse = false;
-        Item.maxStack = 99;
-        Item.consumable = true;
+        Item.maxStack = 1;
         Item.value = Item.buyPrice(silver: 20);
         Item.rare = ItemRarityID.LightPurple;
-        Item.UseSound = SoundID.Item3;
-        Item.noMelee = true;
-    }
-
-    public override bool? UseItem(Player player)
-    {
-        var hexPlayer = HexPlayer.Get(player);
-
-        long before = hexPlayer.Media;
-        long gained = hexPlayer.MediaStorage.Insert(StoredMedia);
-        long after = hexPlayer.Media;
-
-        if (player.whoAmI == Main.myPlayer)
-        {
-            if (gained <= 0)
-            {
-                HexCanvasState.SetMessage(
-                    $"媒质已满：{MediaConstants.Format(after)} / {MediaConstants.Format(hexPlayer.MaxMedia)}");
-                // 满了就不消耗物品
-                return false;
-            }
-
-            HexCanvasState.SetMessage(
-                $"+{MediaConstants.Format(gained)} 媒质  →  {MediaConstants.Format(after)} / {MediaConstants.Format(hexPlayer.MaxMedia)}");
-        }
-
-        return true;
-    }
-
-    public override void AddRecipes()
-    {
-        CreateRecipe()
-            .AddIngredient(ItemID.Bottle, 1)
-            .AddIngredient(ItemID.Amethyst, 1)
-            .AddTile(TileID.Bottles)
-            .Register();
     }
 }

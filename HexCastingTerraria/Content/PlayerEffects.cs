@@ -27,7 +27,9 @@ public static class PlayerEffects
         DropInventory = 3,
         ConsumeSlot = 4,
         Progress = 5,
-        Media = 6,
+        BatteryDelta = 6,
+        MakeFlask = 7,
+        RefillFlasks = 8,
     }
 
     // ── 对外 ─────────────────────────────────────────────────────────
@@ -80,14 +82,26 @@ public static class PlayerEffects
     }
 
     /// <summary>
-    /// 服务端改了玩家的媒质池（施法扣费、找零、充能）后同步给本人客户端 ——
-    /// 池子存档在客户端，HUD 也读客户端那份；不同步的话联机施法不花媒质（下线再上又是满的）。
+    /// 媒质瓶（或打包法术）的存量增减：施法扣费（负）、重新充能（正）。越界截断。
     /// </summary>
-    public static void SyncMedia(Player p)
+    public static void BatteryDelta(Player p, int slot, long delta)
     {
-        if (Main.netMode != NetmodeID.Server) { return; }
-        long media = HexPlayer.Get(p).Media;
-        Route(p, Kind.Media, w => w.Write(media));
+        if (Route(p, Kind.BatteryDelta, w => { w.Write((short)slot); w.Write(delta); })) { return; }
+        ApplyBatteryDelta(p, slot, delta);
+    }
+
+    /// <summary>把某格的空瓶换成一个存量 = 上限 = <paramref name="media"/> 的媒质瓶（craft/battery）。</summary>
+    public static void MakeFlask(Player p, int slot, long media)
+    {
+        if (Route(p, Kind.MakeFlask, w => { w.Write((short)slot); w.Write(media); })) { return; }
+        ApplyMakeFlask(p, slot, media);
+    }
+
+    /// <summary>开发者：背包里所有媒质瓶补满。</summary>
+    public static void RefillFlasks(Player p)
+    {
+        if (Route(p, Kind.RefillFlasks, _ => { })) { return; }
+        ApplyRefillFlasks(p);
     }
 
     // ── 联机转发 ─────────────────────────────────────────────────────
@@ -138,12 +152,23 @@ public static class PlayerEffects
                 if (p is { active: true }) { ApplyConsumeSlot(p, slot, count); }
                 break;
             }
-            case Kind.Media:
+            case Kind.BatteryDelta:
             {
-                long media = r.ReadInt64();
-                if (p is { active: true }) { HexPlayer.Get(p).SetMediaFromServer(media); }
+                int slot = r.ReadInt16();
+                long delta = r.ReadInt64();
+                if (p is { active: true }) { ApplyBatteryDelta(p, slot, delta); }
                 break;
             }
+            case Kind.MakeFlask:
+            {
+                int slot = r.ReadInt16();
+                long media = r.ReadInt64();
+                if (p is { active: true }) { ApplyMakeFlask(p, slot, media); }
+                break;
+            }
+            case Kind.RefillFlasks:
+                if (p is { active: true }) { ApplyRefillFlasks(p); }
+                break;
             case Kind.Progress:
             {
                 bool enlightened = r.ReadBoolean(), failed = r.ReadBoolean(), overcasted = r.ReadBoolean();
@@ -223,6 +248,37 @@ public static class PlayerEffects
             it.TurnToAir();
         }
         Main.mouseItem = new Item();
+    }
+
+    private static void ApplyBatteryDelta(Player p, int slot, long delta)
+    {
+        if (slot < 0 || slot >= p.inventory.Length) { return; }
+        switch (p.inventory[slot].ModItem)
+        {
+            case Items.MediaFlask f:
+                if (delta >= 0) { f.Insert(delta); } else { f.Withdraw(-delta); }
+                break;
+            case Items.ItemPackagedSpell pk:
+                if (delta >= 0) { pk.Refund(delta); } else { pk.Spend(-delta); }
+                break;
+        }
+    }
+
+    private static void ApplyMakeFlask(Player p, int slot, long media)
+    {
+        if (slot < 0 || slot >= p.inventory.Length) { return; }
+        ref Item it = ref p.inventory[slot];
+        if (it is null || it.IsAir || it.type != ItemID.Bottle) { return; }
+        it.SetDefaults(Terraria.ModLoader.ModContent.ItemType<Items.MediaFlask>());
+        (it.ModItem as Items.MediaFlask)?.SetMedia(media, media);
+    }
+
+    private static void ApplyRefillFlasks(Player p)
+    {
+        for (int i = 0; i < 58 && i < p.inventory.Length; i++)
+        {
+            if (p.inventory[i]?.ModItem is Items.MediaFlask f) { f.SetMedia(f.MaxMedia, f.MaxMedia); }
+        }
     }
 
     private static void ApplyConsumeSlot(Player p, int slot, int count)
