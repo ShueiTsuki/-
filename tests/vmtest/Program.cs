@@ -5382,6 +5382,51 @@ static class Program
                 $"{r4.ResolutionType} yeets={env4.Yeets.Count}");
         }
 
+        // ==================== 对照原版审计：VM 与栈操作 ====================
+        {
+            // 骗徒之策略：原版阶乘序列 1,1,2,6…（从 0! 开始）。期望值按 OpAlwinfyHasAscendedToABeingOfPureMath 手推
+            var env = new TestEnv();
+            Iota A = new DoubleIota(1), B = new DoubleIota(2), C = new DoubleIota(3);
+            CastingImage Img(params Iota[] xs) => new CastingImage(xs);
+            var r1 = new CastingVM(Img(A, B, new DoubleIota(1)), env).QueueExecute(Img(A, B, new DoubleIota(1)), new Iota[] { P("hexcasting:swizzle") });
+            Check("骗徒之策略 码 1：交换栈顶两项（原版；曾经什么都不做）", Sig(r1.Image) == "[2, 1]", Sig(r1.Image));
+            var i2 = Img(A, B, C, new DoubleIota(2));
+            var r2 = new CastingVM(i2, env).QueueExecute(i2, new Iota[] { P("hexcasting:swizzle") });
+            Check("骗徒之策略 码 2：[1,2,3] → [2,1,3]", Sig(r2.Image) == "[2, 1, 3]", Sig(r2.Image));
+            var i5 = Img(A, B, C, new DoubleIota(5));
+            var r5 = new CastingVM(i5, env).QueueExecute(i5, new Iota[] { P("hexcasting:swizzle") });
+            Check("骗徒之策略 码 5：[1,2,3] → [3,2,1]（完全逆序）", Sig(r5.Image) == "[3, 2, 1]", Sig(r5.Image));
+            var i0 = Img(new DoubleIota(0));
+            var r0 = new CastingVM(i0, env).QueueExecute(i0, new Iota[] { P("hexcasting:swizzle") });
+            Check("骗徒之策略 码 0：空栈也不报错（原版不碰栈）", r0.ResolutionType == ResolvedPatternType.Evaluated && Sig(r0.Image) == "[]", $"{r0.ResolutionType} {Sig(r0.Image)}");
+
+            var dn = Run2(env, A, new DoubleIota(-1), "hexcasting:duplicate_n");
+            Check("双子之策略 负数：报错（原版 getPositiveInt）", dn.ResolutionType == ResolvedPatternType.Errored, dn.ResolutionType.ToString());
+
+            var ln = Img(A, B, new DoubleIota(5));
+            var rl = new CastingVM(ln, env).QueueExecute(ln, new Iota[] { P("hexcasting:last_n_list") });
+            Check("群体之策略 个数超出：把「个数」那一项换成垃圾值", Sig(rl.Image) == "[1, 2, garbage]", Sig(rl.Image));
+        }
+        {
+            // 栈过大：原版 isTooLargeToSerialize —— 从 1 开始累加，总数 ≥ 1024 就算太大
+            var env = new TestEnv();
+            var items = Enumerable.Range(0, 1021).Select(i => (Iota)new DoubleIota(i)).ToArray();
+            var ok = new CastingVM(new CastingImage(items), env).QueueExecute(new CastingImage(items), new Iota[] { P("hexcasting:const/true") });
+            Check("栈上 1022 项（1+1022=1023）：不算太大", ok.ResolutionType == ResolvedPatternType.Evaluated, ok.ResolutionType.ToString());
+            var items2 = Enumerable.Range(0, 1022).Select(i => (Iota)new DoubleIota(i)).ToArray();
+            var bad = new CastingVM(new CastingImage(items2), env).QueueExecute(new CastingImage(items2), new Iota[] { P("hexcasting:const/true") });
+            Check("栈上 1023 项（1+1023=1024）：太大 → 清空只剩一个垃圾值", bad.ResolutionType == ResolvedPatternType.Errored && Sig(bad.Image) == "[garbage]",
+                $"{bad.ResolutionType} {bad.Image.Stack.Count}");
+        }
+        {
+            // 插嵌：拿着空载体 → 插入空值，不报错（原版 readIota ?: emptyIota）
+            var env = new TestEnv { HasStorage = true };
+            var img = new CastingImage(System.Array.Empty<Iota>());
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:open_paren"), P("hexcasting:read_into_parens"), P("hexcasting:close_paren") });
+            Check("插嵌：空载体插入 null", r.ResolutionType == ResolvedPatternType.Evaluated && Sig(r.Image) == "[list(1)]"
+                && r.Image.Stack[0] is ListIota { Items: [NullIota] }, $"{r.ResolutionType} {Sig(r.Image)}");
+        }
+
         // ==================== 向量 × 数字（逐分量广播） ====================
         {
             var env = new TestEnv();

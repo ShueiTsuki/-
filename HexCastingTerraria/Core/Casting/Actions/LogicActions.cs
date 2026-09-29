@@ -128,14 +128,14 @@ public sealed class OpLastNToList : IAction
             return OperationResult.Fail(m, image);
         }
 
+        var countIota = stack[stack.Count - 1];
         stack.RemoveAt(stack.Count - 1);
 
-        // 源项目 getPositiveIntUnderInclusive(0, stack.size - 1)
+        // 源项目 getPositiveIntUnderInclusive(0, stack.size - 1)。出错的是**个数那一项**（栈顶）——
+        // 这里曾经把它下面那一项当成出错参数，惩罚会把错的那项换成垃圾值
         if (n < 0 || n > stack.Count)
         {
-            return OperationResult.Fail(
-                new MishapInvalidIota(stack.Count > 0 ? stack[^1] : NullIota.Instance,
-                    $"0 到 {stack.Count} 之间的整数"), image);
+            return OperationResult.Fail(new MishapInvalidIota(countIota, $"0 到 {stack.Count} 之间的整数"), image);
         }
 
         var output = new List<Iota>(n);
@@ -189,19 +189,17 @@ public sealed class OpSwizzle : IAction
 
         stack.RemoveAt(stack.Count - 1);
 
-        // 取阶乘序列：1!, 2!, ... 直到超过 code
+        // 源项目 FactorialIter：0!, 1!, 2!, 3!… = 1, 1, 2, 6, 24…，取所有 ≤ code 的。
+        // ⚠️ 这里曾经从 1! 开始（漏了 0! 那个 1），所有置换码都错一位 ——
+        //    code=1 在原版是「交换栈顶两项」，这里什么都不做；code=0 原版不碰栈，这里却要求栈上至少一项。
         var strides = new List<long>();
-        long fact = 1;
-        for (int i = 2; fact <= code && i < 40; i++)
+        long acc = 1, n = 1;
+        while (acc <= code)
         {
-            strides.Add(fact);
-            // 防溢出
-            if (fact > long.MaxValue / i) break;
-            fact *= i;
-        }
-        if (strides.Count == 0)
-        {
-            strides.Add(1);   // code = 0 时也要有一个「不进位」的位
+            strides.Add(acc);
+            if (acc > long.MaxValue / n) break;   // 防溢出
+            acc *= n;
+            n++;
         }
 
         if (strides.Count > stack.Count)

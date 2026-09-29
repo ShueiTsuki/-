@@ -28,7 +28,12 @@ public sealed class OpReadIntoParens : IAction
     public ParenthesizedOperationResult OperateInParens(
         CastingEnvironment env, CastingImage image, SpellContinuation continuation, Iota thisIota)
     {
-        var datum = env.ReadHeldIota() ?? throw new MishapBadHeldItem();
+        // 源项目：readIota ?: emptyIota ?: mishap —— 拿着**空**载体时插入空值，不报错（这里曾经直接报错）
+        if (!env.HasHeldStorage())
+        {
+            throw new MishapBadHeldItem();
+        }
+        var datum = env.ReadHeldIota() ?? NullIota.Instance;
 
         var image2 = image.WithUsedOp().WithNewParenthesized(datum, escaped: true);
 

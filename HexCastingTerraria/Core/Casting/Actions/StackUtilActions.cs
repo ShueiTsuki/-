@@ -125,8 +125,9 @@ public sealed class OpDuplicateN : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
+        // 源项目 getPositiveInt：负数是 MishapInvalidIota（这里曾经当成 0 处理）
         int count = CastingEnvironment.RequireIndex(args[1]);
-        if (count < 0) count = 0;
+        if (count < 0) throw new MishapInvalidIota(args[1], "非负整数");
 
         // 截断而不是报错 —— 理由见类型注释
         if (count > MaxCount) count = MaxCount;

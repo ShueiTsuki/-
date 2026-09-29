@@ -241,45 +241,37 @@ public sealed class CastingVM
     }
 
     /// <summary>
-    /// 栈是否大到无法序列化。
-    /// 源项目用 IotaType.isTooLargeToSerialize（深度 256 / 总量 1024）。
+    /// 源项目 IotaType.isTooLargeToSerialize(stack)：从 1 开始累加每个 iota 的 size()，
+    /// 总数 **≥** 1024 算太大；任一 iota 的 depth() **≥** 256 也算太大。
+    /// size：普通 iota 1，列表 = 1 + 子项 size 之和；depth：普通 iota 1，列表 = 1 + 子项最大 depth。
+    ///（这里曾用「总数 > 1024」「嵌套层数 > 256」，与原版各差一两个）
     /// </summary>
     private static bool IsStackTooLarge(IReadOnlyList<Iota> stack)
     {
-        int total = 0;
+        int total = 1;
         for (int i = 0; i < stack.Count; i++)
         {
-            total += EstimateSize(stack[i], 0);
-            if (total > Iota.MaxSerializationTotal)
-            {
-                return true;
-            }
+            var (size, depth) = Measure(stack[i]);
+            if (depth >= Iota.MaxSerializationDepth) return true;
+            total += size;
+            if (total >= Iota.MaxSerializationTotal) return true;
         }
         return false;
     }
 
-    private static int EstimateSize(Iota iota, int depth)
+    private static (int Size, int Depth) Measure(Iota iota)
     {
-        if (depth > Iota.MaxSerializationDepth)
+        if (iota is not ListIota list) return (1, 1);
+        int size = 1, maxChild = 0;
+        foreach (var sub in list.Items)
         {
-            return Iota.MaxSerializationTotal + 1;
+            var (s, d) = Measure(sub);
+            size += s;
+            if (d > maxChild) maxChild = d;
+            // 早停：已经确定太大就不必把一棵巨树走完
+            if (size >= Iota.MaxSerializationTotal || maxChild >= Iota.MaxSerializationDepth) break;
         }
-
-        if (iota is ListIota list)
-        {
-            int sum = 1;
-            foreach (var sub in list.Items)
-            {
-                sum += EstimateSize(sub, depth + 1);
-                if (sum > Iota.MaxSerializationTotal)
-                {
-                    return sum;
-                }
-            }
-            return sum;
-        }
-
-        return 1;
+        return (size, maxChild + 1);
     }
 }
 
