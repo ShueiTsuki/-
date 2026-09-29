@@ -671,7 +671,7 @@ public sealed class HexClientSystem : ModSystem
         PatternRenderer.DrawStaticPreview(
             (a, b, wd, c) => DrawSegmentForPreview(sb, a, b, wd, c),
             (p, r, c) => DrawDotForPreview(sb, p, r, c),
-            def.Prototype, new Vector2(cx, cy), size, new Color(120, 200, 255));
+            PatternRegistry.PatternInThisWorld(def), new Vector2(cx, cy), size, new Color(120, 200, 255));
 
         string title = $"临摹目标 {idx + 1}/{all.Count}   {def.DisplayName()}";
         Terraria.Utils.DrawBorderString(sb, title,
@@ -798,7 +798,7 @@ public sealed class HexClientSystem : ModSystem
             PatternRenderer.DrawStaticPreview(
                 (a, b, wd, c) => DrawSegmentForPreview(sb, a, b, wd, c),
                 (p, r, c) => DrawDotForPreview(sb, p, r, c),
-                def.Prototype, center, previewSize, new Color(120, 200, 255));
+                PatternRegistry.PatternInThisWorld(def), center, previewSize, new Color(120, 200, 255));
 
             Terraria.Utils.DrawBorderString(sb, def.DisplayName(),
                 new Vector2(center.X - previewSize, center.Y + previewSize * 0.7f), MediaColor, 0.6f);

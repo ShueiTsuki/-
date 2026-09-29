@@ -86,6 +86,9 @@ public sealed class HexPlayer : ModPlayer
     /// <summary>过载后活了下来（原版进度 opened_eyes「睁开双眼」）。</summary>
     public bool Overcasted { get; set; }
 
+    /// <summary>读过的传说篇章（原版 lore/* 进度；读「故事残卷」随机获得一篇）。</summary>
+    public System.Collections.Generic.HashSet<string> FoundLore { get; } = new();
+
     /// <summary>最近一次过载消耗的生命值，供 HUD 显示。</summary>
     public long LastOvercastHealthCost { get; private set; }
 
@@ -363,6 +366,7 @@ public sealed class HexPlayer : ModPlayer
         tag["failedGreatSpell"] = FailedGreatSpell;
         tag["obtainedAmethyst"] = ObtainedAmethyst;
         tag["overcasted"] = Overcasted;
+        tag["foundLore"] = new System.Collections.Generic.List<string>(FoundLore);
         tag["ravenmindCount"] = RavenmindCount;
         tag["infiniteMedia"] = InfiniteMedia;
         tag["pigmentDye"] = PigmentDyeType;
@@ -386,6 +390,8 @@ public sealed class HexPlayer : ModPlayer
         FailedGreatSpell = tag.GetBool("failedGreatSpell");
         ObtainedAmethyst = tag.GetBool("obtainedAmethyst");
         Overcasted = tag.GetBool("overcasted");
+        FoundLore.Clear();
+        foreach (var lore in tag.GetList<string>("foundLore")) { FoundLore.Add(lore); }
         if (tag.TryGet("ravenmindCount", out long count))
         {
             RavenmindCount = count;

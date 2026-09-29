@@ -146,6 +146,9 @@ public abstract class ItemPackagedSpell : ModItem
     /// <summary>推进变体编号。对应源项目 `variant = (variant + 1) % numVariants()`。</summary>
     public void CycleVariant() => Variant = (Variant + 1) % NumVariants;
 
+    /// <summary>直接设外观变体（远古杂件生成时随机一个）。</summary>
+    protected void SetVariant(int variant) => Variant = System.Math.Clamp(variant, 0, NumVariants - 1);
+
     /// <summary>池子里取出媒质。返回实际取到的量。</summary>
     public long Spend(long amount)
     {

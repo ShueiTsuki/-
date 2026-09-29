@@ -364,9 +364,20 @@ public sealed class DevPanel
             ("重置进度", () =>
             {
                 hp.Enlightened = false; hp.FailedGreatSpell = false; hp.Overcasted = false; hp.ObtainedAmethyst = false;
-                HexCanvasState.SetMessage("已重置咒法学进度（紫水晶 / 盲目绘制 / 睁开双眼 / 启蒙）");
+                hp.FoundLore.Clear();
+                HexCanvasState.SetMessage("已重置咒法学进度（紫水晶 / 盲目绘制 / 睁开双眼 / 启蒙 / 已读传说）");
             }, "清掉本角色的咒法学进度标记（背包里还有紫水晶的话马上又会记上）"),
             ("清空栈", () => { HexVmState.Reset(); HexCanvasState.Canvas.Reset(); StopTracing(); }, "清空 VM 栈与画布（等于潜行 + 右键法杖）"),
+            ("发远古卷轴", () =>
+            {
+                foreach (var id in Core.Registry.PatternRegistry.PerWorldIds)
+                {
+                    var item = new Item(Terraria.ModLoader.ModContent.ItemType<Content.Items.AncientScroll>());
+                    (item.ModItem as Content.Items.AncientScroll)!.SetOp(id);
+                    player.QuickSpawnItem(player.GetSource_Misc("HexDevScrolls"), item);
+                }
+                HexCanvasState.SetMessage("已发放 14 张远古卷轴（本世界所有大法术的笔顺）");
+            }, "大法术的笔顺每个世界不同：一次发齐本世界全部 14 张远古卷轴（正常只能在箱子里找）"),
         };
         for (int i = 0; i < actions.Length; i++)
         {
@@ -384,11 +395,8 @@ public sealed class DevPanel
             + $"书 {unlocked}/{total} 条",
             new Vector2(x, y), Text, 0.72f);
         y += 20;
-        var sbm = new System.Text.StringBuilder("传说残页进度：");
-        foreach (var (_, milestone, desc) in BookUnlocks.LoreMilestones)
-        {
-            sbm.Append(p.Milestones.Contains(milestone) ? "✓" : "✗").Append(desc.Replace("击败", "")).Append("  ");
-        }
+        var sbm = new System.Text.StringBuilder($"已读传说 {p.FoundLore.Count}/{BookUnlocks.LoreIds.Length} 篇（读「故事残卷」随机解锁一篇）   本世界大法术笔顺：");
+        sbm.Append(Core.Registry.PatternRegistry.PerWorldTable.Count).Append(" 条（书里只画形状，笔顺看远古卷轴）");
         Terraria.Utils.DrawBorderString(sb, sbm.ToString(), new Vector2(x, y), Dim, 0.62f);
     }
 

@@ -46,6 +46,8 @@
 | `Client/UI/BookAtlas/patchi_book.png`、`patchi_filler.png` | FallingColors/HexMod v0.11.4：`textures/gui/` | MIT |
 | `Client/UI/BookAtlas/crafting.png` | VazkiiMods/Patchouli：`textures/gui/crafting.png` | CC BY-NC-SA 3.0 |
 | `Core/Ui/PatchouliRenderer.cs` 的布局常量 | VazkiiMods/Patchouli：`GuiBook*` / `GuiButton*` / `Page*` | CC BY-NC-SA 3.0 |
+| `Content/Items/LoreFragment.png`、`ScrollLargeAncient.png` | FallingColors/HexMod：`textures/item/lore_fragment.png`、`scroll_ancient_large.png`（取自本地的原版 jar，最近邻放大 2 倍） | MIT |
+| `Content/Items/AncientLoot.cs` 的远古杂件预设咒术 | FallingColors/HexMod：`AddHexToAncientCypherFunc.LOOT_HEXES` | MIT |
 
 生成器：`_tools/gen_book_content.py`（原始文件放在仓库外的 `D:\DeepSeekHarness\hexsrc_assets`）。
 

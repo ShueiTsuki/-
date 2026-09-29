@@ -95,6 +95,38 @@ public static class PatternRegistry
         "hexcasting:potion/strength",
     };
 
+    /// <summary>
+    /// 「每个世界笔顺不同」的图案（源项目标签 hexcasting:per_world_pattern，与上面 14 个大法术是同一批）。
+    /// 它们**不进普通查找表**：标准笔顺在原版里根本不被识别，只认本世界的笔顺（由世界种子生成，
+    /// 形状与标准图案相同、笔顺不同，见 <see cref="EulerPathFinder"/>）。玩家要从古卷里学本世界的画法。
+    /// 没有世界时（离线测试、主菜单）本世界表就是标准笔顺。
+    /// </summary>
+    public static readonly IReadOnlySet<string> PerWorldIds = new HashSet<string>
+    {
+        "hexcasting:lightning",
+        "hexcasting:flight",
+        "hexcasting:create_lava",
+        "hexcasting:teleport/great",
+        "hexcasting:sentinel/create/great",
+        "hexcasting:dispel_rain",
+        "hexcasting:summon_rain",
+        "hexcasting:brainsweep",
+        "hexcasting:craft/battery",
+        "hexcasting:potion/regeneration",
+        "hexcasting:potion/night_vision",
+        "hexcasting:potion/absorption",
+        "hexcasting:potion/haste",
+        "hexcasting:potion/strength",
+    };
+
+    public static bool IsPerWorld(PatternDef def) => PerWorldIds.Contains(def.Id);
+
+    /// <summary>本世界的笔顺：签名 → 图案定义。</summary>
+    private static readonly Dictionary<string, PatternDef> PerWorldLookup = new();
+
+    /// <summary>本世界的笔顺：图案 id → 本世界的画法（起始方向 + 角度）。</summary>
+    private static readonly Dictionary<string, HexPattern> PerWorldById = new();
+
     private static readonly Dictionary<string, PatternDef> Lookup = new();
     private static readonly List<PatternDef> AllList = new();
     private static bool _initialized;
@@ -142,18 +174,25 @@ public static class PatternRegistry
                 RequiresEnlightenment = EnlightenmentRequired.Contains(data.Id),
             };
 
+            AllList.Add(def);
+            if (IsPerWorld(def))
+            {
+                result.Loaded++;
+                continue;   // 每个世界的图案不进普通查找表（源项目 processRegistry 同样跳过它们）
+            }
+
             if (Lookup.ContainsKey(def.MatchKey))
             {
                 result.DuplicateSignatures.Add($"{def.MatchKey} 被 {def.Id} 覆盖（原：{Lookup[def.MatchKey].Id}）");
             }
 
             Lookup[def.MatchKey] = def;
-            AllList.Add(def);
             result.Loaded++;
         }
 
         LoadResult = result;
         _initialized = true;
+        ResetPerWorldToCanonical();
         return result;
     }
 
@@ -203,11 +242,67 @@ public static class PatternRegistry
         return null;
     }
 
-    public static PatternDef? Match(HexPattern pattern)
+    public static PatternDef? Match(HexPattern pattern) => Match(pattern.MatchKey());
+
+    // ── 每个世界的笔顺 ─────────────────────────────────────────────
+
+    /// <summary>没有世界时：本世界表 = 标准笔顺。</summary>
+    public static void ResetPerWorldToCanonical()
     {
         EnsureLoaded();
-        return Lookup.TryGetValue(pattern.MatchKey(), out var def) ? def : null;
+        var table = new Dictionary<string, HexPattern>();
+        foreach (var def in AllList)
+        {
+            if (IsPerWorld(def)) table[def.Id] = def.Prototype;
+        }
+        SetPerWorld(table);
     }
+
+    /// <summary>设置本世界的笔顺（id → 画法）。世界存档 / 联机同步时调用。</summary>
+    public static void SetPerWorld(IReadOnlyDictionary<string, HexPattern> table)
+    {
+        PerWorldLookup.Clear();
+        PerWorldById.Clear();
+        foreach (var (id, pattern) in table)
+        {
+            var def = FindById(id);
+            if (def is null || !IsPerWorld(def)) continue;
+            PerWorldLookup[pattern.MatchKey()] = def;
+            PerWorldById[id] = pattern;
+        }
+    }
+
+    /// <summary>
+    /// 源项目 ScrungledPatternsSave.createFromScratch(seed)：每个大法术用 EulerPathFinder 从标准图案 + 世界种子生成本世界的笔顺。
+    /// 另加一条保护：生成的签名不能与普通图案、数字、掩码撞车（源项目注释写着「没有撞车保护，别那么做」），
+    /// 撞了就换一条路径 —— 否则那个大法术在这个世界里会永远画不出来。
+    /// </summary>
+    public static Dictionary<string, HexPattern> GeneratePerWorld(long seed)
+    {
+        EnsureLoaded();
+        var table = new Dictionary<string, HexPattern>();
+        var taken = new HashSet<string>();
+        foreach (var def in AllList)
+        {
+            if (!IsPerWorld(def)) continue;
+            var pat = EulerPathFinder.FindAltDrawing(def.Prototype, seed, p =>
+            {
+                string sig = p.AnglesSignature();
+                return !Lookup.ContainsKey(sig) && !taken.Contains(sig)
+                    && !SpecialPatterns.TryNumber(sig, out _) && !SpecialPatterns.TryMask(p, out _);
+            });
+            taken.Add(pat.AnglesSignature());
+            table[def.Id] = pat;
+        }
+        return table;
+    }
+
+    /// <summary>这个大法术在本世界的画法（不是大法术则是标准画法）。</summary>
+    public static HexPattern PatternInThisWorld(PatternDef def)
+        => IsPerWorld(def) && PerWorldById.TryGetValue(def.Id, out var p) ? p : def.Prototype;
+
+    /// <summary>本世界的全部大法术画法（存档用）。</summary>
+    public static IReadOnlyDictionary<string, HexPattern> PerWorldTable => PerWorldById;
 
     /// <summary>
     /// 按角度签名匹配。
@@ -217,14 +312,17 @@ public static class PatternRegistry
     public static PatternDef? Match(string angles)
     {
         EnsureLoaded();
-        return Lookup.TryGetValue(angles, out var def) ? def : null;
+        // 源项目 matchPattern：先普通图案，再本世界的大法术（特殊图案在更后面，由调用方处理）
+        if (Lookup.TryGetValue(angles, out var def)) return def;
+        return PerWorldLookup.TryGetValue(angles, out var pw) ? pw : null;
     }
 
     /// <summary>判断匹配类型，对应源项目 matchPattern 的返回语义。</summary>
     public static (PatternMatchKind Kind, PatternDef? Def) MatchPattern(HexPattern pattern)
     {
         var def = Match(pattern);
-        return def is null ? (PatternMatchKind.Nothing, null) : (PatternMatchKind.Normal, def);
+        return def is null ? (PatternMatchKind.Nothing, null)
+            : (IsPerWorld(def) ? PatternMatchKind.PerWorld : PatternMatchKind.Normal, def);
     }
 
     // ==================== 图案行为（Action）注册 ====================

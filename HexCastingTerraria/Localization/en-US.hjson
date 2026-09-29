@@ -173,6 +173,30 @@ Mods: {
 					'''
 			}
 
+			AncientScroll: {
+				DisplayName: Ancient Scroll
+				Tooltip:
+					'''
+					Holds this world's stroke order for one Great Spell
+					Only found in chests
+					'''
+			}
+			AncientCypher: {
+				DisplayName: Ancient Cypher
+				Tooltip:
+					'''
+					A hex left behind by someone long gone; carries its own media and breaks when used
+					Only found in chests
+					'''
+			}
+			LoreFragment: {
+				DisplayName: Lore Fragment
+				Tooltip:
+					'''
+					Read it to unlock a lore entry in the Hex Book
+					Only found in chests
+					'''
+			}
 			MediaFlask: {
 				DisplayName: Media Flask
 				Tooltip:

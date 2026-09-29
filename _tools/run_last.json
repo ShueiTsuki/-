@@ -1,11 +1,16 @@
 {
-    "at":  "2026-09-29 19:59:35",
+    "at":  "2026-09-30 01:02:37",
+    "compile":  {
+                    "ok":  true,
+                    "errors":  0,
+                    "warnings":  0
+                },
     "vmtest":  {
-                   "passed":  473,
+                   "passed":  533,
                    "failed":  0
                },
     "drawtest":  {
-                     "passed":  118,
+                     "passed":  119,
                      "failed":  0
                  },
     "assets":  {
@@ -17,6 +22,6 @@
                 "dllBuilt":  "2026-09-29 08:22"
             },
     "skipped":  [
-                    "专用服务器加载 + 进入世界"
+                    "打包 + 专用服务器加载"
                 ]
 }

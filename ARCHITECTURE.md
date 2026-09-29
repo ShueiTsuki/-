@@ -80,15 +80,15 @@
 | `Casting/Castables/Action.cs` | 一条图案的行为。 |
 | `Casting/Castables/ActionTypes.cs` | 涓€鏉″浘妗堢殑**鍙傛暟绫诲瀷濂戠害**锛氬畠娑堣€椾粈涔堢被鍨嬨€佷骇鍑轰粈涔堢被鍨嬨€?/// |
 | `Casting/Castables/SpellAction.cs` | 会**作用于世界**的图案的行为基类。 |
-| `Casting/Circles/CircleCastingEnvironment.cs` | 娉曟湳鐜殑鎵ц鐘舵€侊紙渚?`circle/*` 涓変釜鍥炬璇诲彇锛夈€? |
+| `Casting/Circles/CircleCastingEnvironment.cs` | 娉曟湳鐜殑鎵ц鐘舵€侊紙渚?`circle/*` 涓変釜鍥炬璇诲彇锛夈€?/// 瀵瑰簲婧愰」鐩?`CircleExecutionState` 閲岃鍥炬鐢ㄥ埌鐨勯偅鍑犱釜瀛楁銆?/// </summary> |
 | `Casting/Circles/CircleComponent.cs` | 鏂瑰悜闆嗗悎鐨勪綅鎺╃爜銆?/summary> |
 | `Casting/Circles/CircleDir.cs` | 娉曟湳鐜帶鍒舵祦鐨?*鏂瑰悜**銆?/// |
 | `Casting/Circles/CircleMessages.cs` | 法术环的消息出口。 |
-| `Casting/Circles/CircleTraversal.cs` | 娉曟湳鐜涓栫晫鐨勮闂€? |
+| `Casting/Circles/CircleTraversal.cs` | 娉曟湳鐜涓栫晫鐨勮闂€?/// |
 | `Casting/Eval/CastingEnvironment.cs` | 鎵撳寘娉曟湳鐨勭绫汇€傚搴旀簮椤圭洰鐨勪笁涓墿鍝侊細cypher锛堢绾革紝涓€娆℃€э級銆? |
 | `Casting/Eval/CastResult.cs` | 瀵规柦娉?VM 鍋氫竴娆℃搷浣滅殑缁撴灉銆?/// 绉绘鑷?at.petrak.hexcasting.api.casting.eval.CastResult銆?/// |
-| `Casting/Eval/ICastingWorld.cs` | 鏂芥硶鐜瀵广€屼笘鐣屻€嶇殑**鍙**璁块棶鎶借薄銆? |
-| `Casting/Eval/Mishaps/CommonMishaps.cs` | 鏍堜笂鐨勫弬鏁颁笉澶熴€傛爤涓嶅彉銆?/summary> |
+| `Casting/Eval/ICastingWorld.cs` | 鏂芥硶鐜瀵广€屼笘鐣屻€嶇殑**鍙**璁块棶鎶借薄銆?/// |
+| `Casting/Eval/Mishaps/CommonMishaps.cs` | 鏍堜笂鐨勫弬鏁颁笉澶熴€傛儵缃氾細鎶婄己鐨勯偅鍑犱釜琛ユ垚鍨冨溇鍊硷紙婧愰」鐩悓锛夈€?/summary> |
 | `Casting/Eval/Mishaps/Mishap.cs` | mishap 鐨勪笂涓嬫枃锛氬嚭閿欑殑鍥炬涓庯紙鍙兘鐨勶級鍥炬鍚嶃€?/// 绉绘鑷?at.petrak.hexcasting.api.casting.mishaps.Mishap.Context銆?/// </summary> |
 | `Casting/Eval/OperationResult.cs` | 鍥炬鎵ц鍚庣殑閫氱敤缁撴灉鎺ュ彛銆?/// 绉绘鑷?at.petrak.hexcasting.api.casting.eval.IOperationResult銆?/// </summary> |
 | `Casting/Eval/ResolvedPatternType.cs` | 涓€鏉″浘妗堣姹傚€煎悗鐨勮В鏋愮姸鎬併€?/// 绉绘鑷?at.petrak.hexcasting.api.casting.eval.ResolvedPatternType銆?/// </summary> |
@@ -106,10 +106,11 @@
 | `Casting/HexMathUtil.cs` | 鏁板€煎畨鍏ㄥ伐鍏枫€?/// |
 | `Casting/HexUnits.cs` | 鍗曚綅鎹㈢畻甯搁噺銆?/// |
 | `Casting/Iota/CompositeIotas.cs` | 鍒楄〃 iota銆傛簮锛歀istIota銆?/// |
-| `Casting/Iota/Iota.cs` | Iota 绫诲瀷鏍囩銆傚搴旀簮椤圭洰 IotaType 鍗曚緥鐨勯泦鍚堬紙娉ㄥ唽浜?HexIotaTypes.java锛夈€? |
-| `Casting/Iota/IotaSerializer.cs` | iota 鐨勫簭鍒楀寲涓庡弽搴忓垪鍖栥€? |
+| `Casting/Iota/Iota.cs` | Iota 绫诲瀷鏍囩銆傚搴旀簮椤圭洰 IotaType 鍗曚緥鐨勯泦鍚堬紙娉ㄥ唽浜?HexIotaTypes.java锛夈€?/// |
+| `Casting/Iota/IotaSerializer.cs` | iota 鐨勫簭鍒楀寲涓庡弽搴忓垪鍖栥€?/// |
 | `Casting/Iota/PrimitiveIotas.cs` | 绌哄€?iota銆傛簮锛歂ullIota銆傚崟渚嬨€?/summary> |
 | `Casting/Iota/StoragePolicy.cs` | 鏁版嵁杞戒綋鐨勫瓨鍌ㄧ瓥鐣ャ€?/summary> |
+| `Casting/Math/EulerPathFinder.cs` | 缁欎竴涓浘妗堟壘鍙︿竴绉嶇敾娉曪細**褰㈢姸锛堣竟闆嗭級瀹屽叏鐩稿悓锛岀瑪椤轰笉鍚?*銆?/// 绉绘鑷簮椤圭洰 EulerPathFinder.kt 鈥斺€?澶ф硶鏈殑銆屾瘡涓笘鐣岀殑绗旈『銆嶅氨鏄敤瀹冧粠鏍囧噯鍥炬 + 涓栫晫绉嶅瓙鐢熸垚鐨勩€?/// |
 | `Casting/Math/HexAngle.cs` | 鍏杞悜瑙掋€傞『搴忎笌婧愰」鐩竴鑷达紝搴忓彿鍙備笌妯¤繍绠楋紝涓嶅彲閲嶆帓銆?/// 婧愶細at.petrak.hexcasting.api.casting.math.HexAngle |
 | `Casting/Math/HexCoord.cs` | 鍏竟褰㈢綉鏍间笂鐨勮酱鍧愭爣锛坅xial coordinate锛夈€?/// 婧愶細at.petrak.hexcasting.api.casting.math.HexCoord |
 | `Casting/Math/HexDir.cs` | 鍏竟褰㈢綉鏍肩殑鍏釜鏂瑰悜銆傞『搴忎笌婧愰」鐩竴鑷达紙椤烘椂閽堬紝浠庝笢鍖楀紑濮嬶級锛?/// 搴忓彿鍙備笌妯¤繍绠楋紝涓嶅彲閲嶆帓銆?/// 婧愶細at.petrak.hexcasting.api.casting.math.HexDir |
@@ -120,10 +121,8 @@
 | `Casting/Math/SpecialPatterns.cs` | **鐗规畩鍥炬**锛坰pecial patterns锛夛細涓嶅湪 188 鏉℃敞鍐岃〃閲岋紝浣嗚兘琚瘑鍒垚鍔ㄤ綔鐨勫浘妗堛€?/// 绉绘鑷簮椤圭洰 `SpecialHandler` 鐨勪袱涓疄鐜帮紙`SpecialHandlerNumberLiteral` / `SpecialHandlerMask`锛夈€?/// |
 | `Casting/Math/Vec2f.cs` | 鏈€灏忎簩缁存诞鐐瑰悜閲忥細鍙湁 `Core` 鐪熸鐢ㄥ埌鐨勯偅鍑犱釜鎿嶄綔銆?/// |
 | `Dev/SampleHexes.cs` | 娉曟湳閲岀殑涓€姝ワ細涓€鏉″叿鍚嶅浘妗堬紝鎴栦竴涓暟瀛楀瓧闈㈤噺锛堟暟瀛楀浘妗?aqaa鈥?鐢?<see cref="SpecialPatterns.EncodeNumber"/> 鐢熸垚锛夈€?/summary> |
-| `Media/IMediaStorage.cs` | 濯掕川瀹瑰櫒銆傜Щ妞嶈嚜 at.petrak.hexcasting.api.addldata.ADMediaHolder 涓?/// api.item.MediaHolderItem 鐨勫悎骞惰涔夛紙婧愰」鐩洜瑕侀€傞厤 Forge/Fabric 涓ゅ鑳藉姏绯荤粺 |
 | `Media/MediaConstants.cs` | 濯掕川鍗曚綅鎹㈢畻銆傜Щ妞嶈嚜 at.petrak.hexcasting.api.misc.MediaConstants锛堟暟鍊奸€愰」瀵归綈锛夈€?/// |
-| `Media/MediaPaymentPlanner.cs` | 鑳屽寘閲屼竴鍫嗗彲鎻愪緵濯掕川鐨勭墿鍝併€?/summary> |
-| `Media/MediaPool.cs` | 涓€涓畝鍗曠殑濯掕川姹犲疄鐜般€傜帺瀹惰嚜韬殑濯掕川鍌ㄩ噺銆佺墿鍝佸唴鐨勫獟璐ㄩ兘澶嶇敤瀹冦€?/// </summary> |
+| `Media/MediaPaymentPlanner.cs` | 鎵ｈ垂浼樺厛绾с€傞€愬瓧鐓ф妱婧愰」鐩?ADMediaHolder锛氭暟鍊艰秺澶ц秺鍏堟墸銆?/// </summary> |
 | `Media/Overcast.cs` | 杩囪浇锛堢敤鐢熷懡鎹㈠獟璐級涓庛€屽惎钂欍€嶇殑鍒ゅ畾锛岀収鍘熺増 PlayerBasedCastEnv.extractMediaFromInventory |
 | `Registry/GeneratedPatternData.cs` | 鍥炬鐨勯潤鎬佹暟鎹細id銆佽搴︾鍚嶃€佽捣濮嬫柟鍚戙€佹簮瀹炵幇绫诲悕銆?/summary> |
 | `Registry/PatternDisplay.cs` | 鍥炬鐨?*鏄剧ず鍚?*銆傜晫闈竴寰嬭蛋杩欓噷锛屼笉瑕佸悇鑷嫾 `Id.Replace("hexcasting:", "")`銆?/// |
@@ -137,6 +136,7 @@
 | `Ui/BookView.cs` | 鍒嗙被椤电涓€璺ㄩ〉鍙抽〉鑳芥斁鐨勬潯鐩暟锛圥atchouli ENTRIES_IN_FIRST_PAGE锛夈€?/summary> |
 | `Ui/PatchouliRenderer.cs` | 涔︿笂鍙偣鐨勪笢瑗裤€?/summary> |
 | `World/AmethystLoot.cs` | 鏅剁皣鐨勭敓闀块樁娈点€傚搴?MC 鐨勫洓涓柟鍧椼€?/summary> |
+| `World/HexAxes.cs` | 娉曟湳鍧愭爣锛堝師鐗堢害瀹氾細鏂瑰潡鍗曚綅銆?Y 鏈濅笂锛変笌娉版媺鍥炬牸鍧愭爣锛?Y 鏈濅笅锛変箣闂寸殑鎹㈢畻鍏紡銆?/// 绾嚱鏁帮紝H = 涓栫晫楂樺害锛堝浘鏍兼暟锛夈€傛嘲鎷変晶鐨?HexSpaceWorld 鐢?Main.maxTilesY 璋冨畠浠紱绂荤嚎娴嬭瘯鐩存帴璋冦€?/// |
 | `World/LookResolver.cs` | 瑙嗙嚎瑙ｆ瀽鐨勮緭鍏ャ€?/// |
 | `World/SegmentSweep.cs` | 涓€涓疄浣撶殑鍒ゅ畾绠憋紝鍧愭爣鍗曚綅锛?*鍥炬牸**銆?/// 鐢辨父鎴忎晶濉ソ鍚庝氦缁?<see cref="SegmentSweep"/>锛屼簬鏄壂鎺犻€昏緫鍙互绂荤嚎娴嬭瘯銆?/// </summary> |
 | `World/TileRaycast.cs` | 浜岀淮鍥炬牸缃戞牸涓婄殑灏勭嚎姹備氦锛圓manatides &amp; Woo 鐨?DDA 绠楁硶锛夈€?/// |
@@ -146,10 +146,13 @@
 | 文件 | 职责 |
 |---|---|
 | `DevTextureDump.cs` | 寮€鍙戠敤锛氭妸**鍘熺増娉版媺鐨?UI 璐村浘**瀵煎嚭鎴?PNG锛屼緵绂荤嚎姣斿銆?/// |
+| `HexChestLoot.cs` | 寰€涓栫晫閲岀殑绠卞瓙濉炲師鐗堢殑涓夌鎴樺埄鍝侊紙婧愰」鐩?HexLootHandler锛夛細 |
 | `HexGlobalNPC.cs` | 涓烘瘡涓?NPC 缁存姢涓€涓寔涔呫€岃绾挎柟鍚戙€嶃€?/// |
 | `HexGlobalProjectile.cs` | 涓烘瘡涓脊骞曠淮鎶や竴涓寔涔呫€岃绾挎柟鍚戙€嶏紝鍗抽琛屾柟鍚戙€?/// |
 | `HexPlayer.cs` | 鐜╁渚у拻鏈暟鎹€?/// |
+| `HexSpaceWorld.cs` | 娉曟湳鍧愭爣 鈫?娉版媺鍧愭爣鐨?*鍞竴**鎹㈢畻灞傦紙濂楀湪 <see cref="TerrariaCastingWorld"/> 澶栭潰锛夈€?/// |
 | `Items/Abacus.cs` | 闃垮崱澶忚褰曠殑**鐗╁搧褰㈡€?*銆?/// |
+| `Items/AncientLoot.cs` | 杩滃彜鍗疯酱锛堟簮椤圭洰 ItemScroll + TAG_OP_ID锛屻€?s涔嬭繙鍙ゅ嵎杞淬€嶏級锛氬啓鐫€**鏈笘鐣?*鏌愪釜澶ф硶鏈殑绗旈『銆?/// 澶ф硶鏈殑绗旈『姣忎釜涓栫晫涓嶅悓锛堣 PatternRegistry.PerWorldIds锛夛紝涔﹂噷鍙敾褰㈢姸 鈥斺€?鏈笘鐣岀殑鐢绘硶瑕侀潬瀹冨銆?/// 鍙湪绠卞瓙閲屾壘寰楀埌锛堣 HexChestLoot锛夛紝娌℃湁閰嶆柟銆?/// |
 | `Items/DevKit.cs` | 寮€鍙戣€呮祴璇曞寘锛氫竴娆℃妸姣忎釜瀛愮郴缁熺殑浠ｈ〃鎬х墿鍝佸悇鍙戜竴浠姐€?/// |
 | `Items/DevStaff.cs` | 寮€鍙戣€呮硶鏉栵紙Dev Staff锛夈€?/// |
 | `Items/EdifiedFurniture.cs` | 鍚开鏈ㄧ殑銆屽鍏峰瑁呫€嶏細鐢ㄥ惎杩湪鏉垮幓鍚堟垚**鍘熺増瀹跺叿**銆?/// |
@@ -165,8 +168,8 @@
 | `Items/ItemPackagedSpell.cs` | 鎵撳寘娉曟湳鐗╁搧鐨勫熀绫伙細鎶婁竴涓插浘妗堜笌涓€浠藉獟璐ㄥ皝鍦ㄩ噷闈紝鍙抽敭鍗冲彲鏂芥斁銆?/// 绉绘鑷簮椤圭洰 `common/items/magic/ItemPackagedHex.java`銆?/// |
 | `Items/ItemScroll.cs` | 鍗疯酱銆傜Щ妞嶈嚜婧愰」鐩?`common/items/storage/ItemScroll.java`銆?/// |
 | `Items/JewelerHammer.cs` | 鐝犲疂鍖犻敜銆傚搴旀簮椤圭洰 `hexcasting:jeweler_hammer`銆?/// |
-| `Items/MediaFlask.cs` | 濯掕川鐡讹細鎶婂疂鐭宠搫鍏ヨ嚜韬殑濯掕川姹犮€?/// |
-| `Items/MediaMaterials.cs` | 濯掕川鏉愭枡鐗╁搧鐨勫熀绫汇€?/// |
+| `Items/MediaFlask.cs` | 濯掕川鐡讹紙婧愰」鐩?ItemMediaBattery锛屻€屽獟璐ㄤ箣鐡?/ phial of media銆嶏級銆?/// |
+| `Items/MediaMaterials.cs` | 濯掕川鏉愭枡鐗╁搧鐨勫熀绫伙紙婧愰」鐩?CCMediaHolder.Static锛夈€?/// |
 | `Items/MiscDecoItems.cs` | 鍗疯酱绾革紙鐗╁搧锛夈€?/summary> |
 | `Items/PackagedSpellCast.cs` | 鎵撳寘娉曟湳涓撶敤鐜锛氬獟璐?*浠庣墿鍝佽嚜宸辩殑姹犲瓙閲屾墸**锛屼笉鏄粠鐜╁韬笂銆?/// 绉绘鑷簮椤圭洰 `ItemPackagedHex` 閲岀殑 `PackagedHexCastEnv`銆?/// |
 | `Items/ScryingLens.cs` | 鎺㈡湳閫忛暅銆傚搴旀簮椤圭洰 `hexcasting:lens`锛坄ItemLens`锛岃澶囧湪**澶撮儴**瑁呭浣嶏級銆?/// |
@@ -175,7 +178,9 @@
 | `Net/HexNet.cs` | 缃戠粶娑堟伅绫诲瀷銆?/// </summary> |
 | `Net/HexNetSync.cs` | 鏂瑰潡浜や簰鐨勪笂鎶ヨ緟鍔┿€? |
 | `Net/ServerCastState.cs` | **鏈嶅姟绔?*鐨勬柦娉曠姸鎬侊細姣忎釜鐜╁涓€浠?VM銆?/// |
+| `PerWorldPatternSystem.cs` | 澶ф硶鏈€屾瘡涓笘鐣岀殑绗旈『銆嶇殑瀛樻。涓庡悓姝ワ紙婧愰」鐩?ScrungledPatternsSave锛夈€?/// |
 | `PlayerCastingEnvironment.cs` | 鐜╁鏂芥硶鐜锛氭妸 VM 鐨勬娊璞￠渶姹傛帴鍒版嘲鎷夌帺瀹惰韩涓娿€?/// |
+| `PlayerEffects.cs` | 浣滅敤鍦ㄣ€岀帺瀹惰嚜宸辩殑涓滆タ銆嶄笂鐨勬晥鏋滐細鐢熷懡銆佽儗鍖呫€佹墜鎸佺墿鍝併€佹哀姘斻€?/// |
 | `SpellSounds.cs` | 鍜掓硶瀛︾殑闊虫晥灞傘€?/// |
 | `SpellVisuals.cs` | 娉曟湳绮掑瓙鐨勮〃鐜板眰锛氭妸 Core 绠楀嚭鏉ョ殑 <see cref="ParticleSpray"/> 鍙樻垚鐪熸鐨?dust銆?/// |
 | `TerrariaCastingWorld.cs` | <see cref="ICastingWorld"/> 鐨勬嘲鎷夌憺浜氬疄鐜般€?/// |

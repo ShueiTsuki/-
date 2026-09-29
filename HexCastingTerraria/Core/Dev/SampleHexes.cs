@@ -41,7 +41,9 @@ public readonly record struct HexStep(string? PatternId, double Number)
     {
         if (!IsNumber)
         {
-            return PatternRegistry.FindById(PatternId!)?.Prototype;
+            // 大法术取**本世界**的笔顺（每个世界不同，见 PatternRegistry.PerWorldIds）
+            var def = PatternRegistry.FindById(PatternId!);
+            return def is null ? null : PatternRegistry.PatternInThisWorld(def);
         }
         string? sig = SpecialPatterns.EncodeNumber(Number);
         if (sig is null) { return null; }

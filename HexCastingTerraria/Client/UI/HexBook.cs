@@ -82,14 +82,7 @@ public sealed class HexBook
         p.FailedGreatSpell = hp.FailedGreatSpell;
         p.Overcasted = hp.Overcasted;
         p.Enlightened = hp.Enlightened || Config.HexClientConfig.Instance.AlwaysEnlightened;
-        if (NPC.downedBoss1) { p.Milestones.Add("boss1"); }
-        if (NPC.downedBoss2) { p.Milestones.Add("boss2"); }
-        if (NPC.downedBoss3) { p.Milestones.Add("boss3"); }
-        if (Main.hardMode) { p.Milestones.Add("hardmode"); }
-        if (NPC.downedMechBossAny) { p.Milestones.Add("mech"); }
-        if (NPC.downedPlantBoss) { p.Milestones.Add("plantera"); }
-        if (NPC.downedGolemBoss) { p.Milestones.Add("golem"); }
-        if (NPC.downedMoonlord) { p.Milestones.Add("moonlord"); }
+        foreach (var lore in hp.FoundLore) { p.FoundLore.Add(lore); }
         return p;
     }
 

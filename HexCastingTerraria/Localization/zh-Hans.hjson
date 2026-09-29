@@ -169,6 +169,30 @@ Mods: {
 					画布内：左键拖拽绘制 · 右键撤销 · Esc 关闭 · F1 调试面板
 					'''
 			}
+			AncientScroll: {
+				DisplayName: 远古卷轴
+				Tooltip:
+					'''
+					写着本世界某个大法术的笔顺（大法术的笔顺每个世界都不一样）
+					只能在箱子里找到
+					'''
+			}
+			AncientCypher: {
+				DisplayName: 远古杂件
+				Tooltip:
+					'''
+					封着一段古人留下的咒术，自带媒质，用完即毁
+					只能在箱子里找到
+					'''
+			}
+			LoreFragment: {
+				DisplayName: 故事残卷
+				Tooltip:
+					'''
+					阅读后，咒法学之书里会多出一篇传说
+					只能在箱子里找到
+					'''
+			}
 			MediaFlask: {
 				DisplayName: 媒质瓶
 				Tooltip:

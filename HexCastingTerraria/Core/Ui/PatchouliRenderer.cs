@@ -323,14 +323,19 @@ public sealed class PatchouliRenderer
                 patterns.Add(hp);
             }
         }
+        bool strokeOrder = true;
         if (patterns.Count == 0 && page.PatternId.Length > 0)
         {
-            foreach (var def in PatternRegistry.All)
+            var def = PatternRegistry.FindById(page.PatternId);
+            if (def is not null)
             {
-                if (def.Id == page.PatternId) { patterns.Add(def.Prototype); break; }
+                patterns.Add(def.Prototype);
+                // 源项目 LookupPatternComponent：每个世界笔顺不同的大法术**不显示笔顺**（静态画法、没有起笔点），
+                // 书只告诉你形状，本世界的画法要从古卷里学
+                strokeOrder = !PatternRegistry.IsPerWorld(def);
             }
         }
-        DrawPatternGrid(patterns, px, py);
+        DrawPatternGrid(patterns, px, py, strokeOrder);
 
         bool sig = page.Input.Length > 0 || page.Output.Length > 0;
         if (sig)
@@ -475,7 +480,7 @@ public sealed class PatchouliRenderer
     /// AbstractPatternComponent：x∈[0,116]、y∈[16,80] 按 √n 分格，每格居中适配（边距 2、格距上限 16），
     /// 笔画 fromStroke(4)：浅色外描边 4、深色内线 1.6；起点蓝点、顶点灰点；READABLE 的静态电光（抖动 0.5、转角内收 0.2、末段 0.8）。
     /// </summary>
-    private void DrawPatternGrid(List<HexPattern> patterns, int px, int py)
+    private void DrawPatternGrid(List<HexPattern> patterns, int px, int py, bool strokeOrder = true)
     {
         if (patterns.Count == 0) { return; }
         int cols = (int)System.Math.Ceiling(System.Math.Sqrt(patterns.Count));
@@ -486,11 +491,11 @@ public sealed class PatchouliRenderer
         {
             float cx = px + (cellW * (p % cols));
             float cy = py + 16 + (cellH * (p / cols));
-            DrawBookPattern(patterns[p], cx, cy, cellW, cellH);
+            DrawBookPattern(patterns[p], cx, cy, cellW, cellH, strokeOrder);
         }
     }
 
-    private void DrawBookPattern(HexPattern pattern, float x, float y, float w, float h)
+    private void DrawBookPattern(HexPattern pattern, float x, float y, float w, float h, bool strokeOrder = true)
     {
         var raw = HexGrid.PatternLinePoints(pattern, HexCoord.Origin, 1f, Vec2f.Zero);
         float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
@@ -507,15 +512,20 @@ public sealed class PatchouliRenderer
         var pts = new List<Vec2f>(raw.Count);
         foreach (var v in raw) { pts.Add(new Vec2f(X(offX + (v.X * size)), Y(offY + (v.Y * size)))); }
 
+        // 源项目 ZappySettings：READABLE（带笔顺偏移）/ STATIC（readabilityOffset 0、末段比例 1）
         var zappy = PatternGeometry.MakeZappy(pts, PatternGeometry.FindDupIndices(pattern.Positions()), 10, 0.5f, 0f, 0.2f,
-            PatternGeometry.DefaultReadabilityOffset, PatternGeometry.DefaultLastSegmentLenProportion, 0, 0);
+            strokeOrder ? PatternGeometry.DefaultReadabilityOffset : 0f,
+            strokeOrder ? PatternGeometry.DefaultLastSegmentLenProportion : 1f, 0, 0);
         Polyline(zappy, 4f * Unit, Color32.Rgb(0xd2c8c8));
         Polyline(zappy, 1.6f * Unit, Color32.Rgb(0x554d54));
         for (int i = 1; i < pts.Count; i++)
         {
             _c.FillCircle(pts[i].X, pts[i].Y, 0.64f * Unit * 1.5f, Color32.Rgb(0xd2c8c8, 0x80));
         }
-        _c.FillCircle(pts[0].X, pts[0].Y, 1.28f * Unit * 1.5f, Color32.Rgb(0x5b7bd7));
+        if (strokeOrder)
+        {
+            _c.FillCircle(pts[0].X, pts[0].Y, 1.28f * Unit * 1.5f, Color32.Rgb(0x5b7bd7));
+        }
     }
 
     private void Polyline(List<Vec2f> pts, float width, Color32 color)

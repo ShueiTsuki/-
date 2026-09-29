@@ -39,6 +39,23 @@ public abstract class ItemScroll : ItemIotaStorage
     {
         base.ModifyTooltips(tooltips);
         tooltips.Add(new TooltipLine(Mod, "HexScrollHint", $"只能存图案（壁挂宽度 {BlockSize} 格）"));
+        if (Read() is Core.Casting.Iotas.PatternIota)
+        {
+            // 占几行空白，下面在这块地方画出图案（源项目的卷轴提示框里就是一张带笔顺的图）
+            tooltips.Add(new TooltipLine(Mod, "HexScrollPattern", "　\n　\n　\n　"));
+        }
+    }
+
+    /// <summary>提示框里画出卷轴上的图案：红点是起笔处，箭头是第一笔的方向（大法术的笔顺就靠这个学）。</summary>
+    public override void PostDrawTooltipLine(DrawableTooltipLine line)
+    {
+        if (line.Name != "HexScrollPattern" || Read() is not Core.Casting.Iotas.PatternIota p) return;
+        var sb = Main.spriteBatch;
+        var center = new Microsoft.Xna.Framework.Vector2(line.X + 60, line.Y + 44);
+        Client.UI.PatternRenderer.DrawStaticPreview(
+            (a, b, w, c) => Client.HexPixel.DrawLine(sb, a, b, w, c),
+            (pt, r, c) => Client.HexPixel.DrawDot(sb, pt, r, c),
+            p.Pattern, center, 34f, new Microsoft.Xna.Framework.Color(200, 170, 255));
     }
 }
 

@@ -27,7 +27,7 @@ static class BookTests
     {
         var entries = doc.Categories.SelectMany(c => c.Entries).ToList();
         var everything = new BookProgress { Amethyst = true, FailedGreatSpell = true, Overcasted = true, Enlightened = true };
-        foreach (var (_, m, _) in BookUnlocks.LoreMilestones) { everything.Milestones.Add(m); }
+        foreach (var id in BookUnlocks.LoreIds) { everything.FoundLore.Add(id); }
         var stuck = entries.Where(e => !BookUnlocks.IsUnlocked(e.Advancement, everything)).Select(e => $"{e.Id}({e.Advancement})").ToList();
         Check(check, "每个条目的解锁条件在泰拉侧都有对应（全部达成 → 全部解锁）", stuck.Count == 0, string.Join(",", stuck.Take(5)));
 
@@ -42,9 +42,14 @@ static class BookTests
             && !BookUnlocks.IsUnlocked("hexcasting:enlightenment", amethyst) && !BookUnlocks.IsUnlocked("hexcasting:lore/cardamom1", amethyst));
 
         var eye = new BookProgress { Amethyst = true };
-        eye.Milestones.Add("boss1");
-        Check(check, "传说残页按 Boss 进度逐篇开放（克眼 → 第 1 篇，第 2 篇还锁着）",
-            BookUnlocks.IsUnlocked("hexcasting:lore/cardamom1", eye) && !BookUnlocks.IsUnlocked("hexcasting:lore/cardamom2", eye));
+        eye.FoundLore.Add("hexcasting:lore/experiment1");
+        Check(check, "传说篇章按读过的残卷解锁（原版：残卷随机给一篇，不按顺序）",
+            BookUnlocks.IsUnlocked("hexcasting:lore/experiment1", eye) && !BookUnlocks.IsUnlocked("hexcasting:lore/cardamom1", eye));
+        var rng = new System.Random(7);
+        var got = new HashSet<string>();
+        for (int i = 0; i < 8; i++) { got.Add(BookUnlocks.PickUnfoundLore(got, rng)!); }
+        Check(check, "故事残卷：读 8 次恰好集齐 8 篇，第 9 次提示已找齐（null）",
+            got.Count == 8 && BookUnlocks.PickUnfoundLore(got, rng) is null);
         Check(check, "未知的进度条件默认锁着，开发者全部解锁时打开",
             !BookUnlocks.IsUnlocked("hexcasting:creative_unlocker", everything)
             && BookUnlocks.IsUnlocked("hexcasting:creative_unlocker", new BookProgress { UnlockAll = true }));

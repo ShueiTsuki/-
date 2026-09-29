@@ -5435,6 +5435,32 @@ static class Program
             Check("方向：泰拉向下 = 法术 −Y", HexAxes.FlipDirection(1) == -1);
         }
 
+        // ==================== 大法术：每个世界的笔顺（源项目 per_world_pattern） ====================
+        {
+            var t1 = PatternRegistry.GeneratePerWorld(12345);
+            var t1b = PatternRegistry.GeneratePerWorld(12345);
+            var t2 = PatternRegistry.GeneratePerWorld(98765);
+            Check("每个世界的笔顺：14 个大法术都有", t1.Count == 14, t1.Count.ToString());
+            Check("同一种子结果相同（存档可复现）", t1.All(kv => t1b[kv.Key].AnglesSignature() == kv.Value.AnglesSignature()));
+            Check("不同种子至少有一半不同", t1.Count(kv => t2[kv.Key].AnglesSignature() != kv.Value.AnglesSignature()) >= 7);
+            bool sameShape = t1.All(kv =>
+            {
+                var proto = PatternRegistry.FindById(kv.Key)!.Prototype;
+                return EulerPathFinder.EdgeSet(proto).SetEquals(EulerPathFinder.EdgeSet(kv.Value));
+            });
+            Check("形状（边集）与标准图案完全相同，只是笔顺不同", sameShape);
+
+            PatternRegistry.SetPerWorld(t1);
+            var lightning = PatternRegistry.FindById("hexcasting:lightning")!;
+            var world = t1["hexcasting:lightning"];
+            bool canonicalDead = world.AnglesSignature() == lightning.Angles || PatternRegistry.Match(lightning.Prototype) == null;
+            Check("本世界笔顺识别为召雷；标准笔顺（若不同）不再识别",
+                PatternRegistry.Match(world)?.Id == "hexcasting:lightning" && canonicalDead);
+            Check("普通图案不受影响", PatternRegistry.Match(PatternRegistry.FindById("hexcasting:get_caster")!.Prototype)?.Id == "hexcasting:get_caster");
+            PatternRegistry.ResetPerWorldToCanonical();
+            Check("没有世界时回到标准笔顺", PatternRegistry.Match(lightning.Prototype)?.Id == "hexcasting:lightning");
+        }
+
         // ==================== 三维向量（原版 Vec3） ====================
         {
             var env = new TestEnv();

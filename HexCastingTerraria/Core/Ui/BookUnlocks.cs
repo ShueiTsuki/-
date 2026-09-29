@@ -16,8 +16,8 @@ public sealed class BookProgress
 
     public bool Enlightened { get; set; }
 
-    /// <summary>已达成的泰拉里程碑（见 <see cref="BookUnlocks.LoreMilestones"/>）。</summary>
-    public HashSet<string> Milestones { get; } = new();
+    /// <summary>读过的传说篇章（原版 lore/* 进度，读「故事残卷」随机获得一篇）。</summary>
+    public HashSet<string> FoundLore { get; } = new();
 
     /// <summary>开发者：全部解锁。</summary>
     public bool UnlockAll { get; set; }
@@ -32,23 +32,23 @@ public sealed class BookProgress
 /// | enlightenment（11） | 启蒙 | 启蒙（Core/Media/Overcast.cs） |
 /// | y_u_no_cast_angy（1） | 失败一次大法术 | 同 |
 /// | opened_eyes（1） | 过载且活下来 | 同 |
-/// | lore/*（8） | 在遗迹箱子里捡到传说残页 | **泰拉没有这些遗迹** → 按 Boss 进度逐篇解锁（见下表） |
+/// | lore/*（8） | 读「故事残卷」（在箱子里找到），**随机**得到一篇没读过的 | 同（残卷放在泰拉的箱子里，见 Content/HexChestLoot.cs） |
 ///
-/// 传说残页是一段按顺序读的故事（卡达蒙的日记 → 实验记录 → 遗物清单），
-/// 所以把它们按顺序挂在泰拉的 Boss 里程碑上：肉前 4 篇、肉后 3 篇、月后 1 篇。
+/// ⚠️ 这里曾经把传说篇章按 Boss 进度逐篇解锁（理由是「泰拉没有遗迹」）—— 泰拉有箱子，按原版改回残卷。
 /// </summary>
 public static class BookUnlocks
 {
-    public static readonly (string Advancement, string Milestone, string Description)[] LoreMilestones =
+    /// <summary>原版 ItemLoreFragment.NAMES。</summary>
+    public static readonly string[] LoreIds =
     {
-        ("hexcasting:lore/cardamom1", "boss1", "击败克苏鲁之眼"),
-        ("hexcasting:lore/cardamom2", "boss2", "击败世界吞噬怪或克苏鲁之脑"),
-        ("hexcasting:lore/cardamom3", "boss3", "击败骷髅王"),
-        ("hexcasting:lore/cardamom4", "hardmode", "击败血肉墙（进入肉后）"),
-        ("hexcasting:lore/cardamom5", "mech", "击败任意一个机械 Boss"),
-        ("hexcasting:lore/experiment1", "plantera", "击败世纪之花"),
-        ("hexcasting:lore/experiment2", "golem", "击败石巨人"),
-        ("hexcasting:lore/inventory", "moonlord", "击败月亮领主"),
+        "hexcasting:lore/cardamom1",
+        "hexcasting:lore/cardamom2",
+        "hexcasting:lore/cardamom3",
+        "hexcasting:lore/cardamom4",
+        "hexcasting:lore/cardamom5",
+        "hexcasting:lore/experiment1",
+        "hexcasting:lore/experiment2",
+        "hexcasting:lore/inventory",
     };
 
     public static bool IsUnlocked(string advancement, BookProgress p)
@@ -61,11 +61,31 @@ public static class BookUnlocks
             case "hexcasting:y_u_no_cast_angy": return p.FailedGreatSpell;
             case "hexcasting:opened_eyes": return p.Overcasted;
         }
-        foreach (var (adv, milestone, _) in LoreMilestones)
+        if (System.Array.IndexOf(LoreIds, advancement) >= 0)
         {
-            if (adv == advancement) { return p.Milestones.Contains(milestone); }
+            return p.FoundLore.Contains(advancement);
         }
         // 泰拉侧没有对应物的进度（如创造模式物品）：只有开发者全部解锁时才开
         return false;
+    }
+
+    /// <summary>
+    /// 原版 ItemLoreFragment.use：打乱顺序，挑第一篇还没读过的。全都读过 → null
+    ///（原版提示「似乎我已找齐了此世界上的所有故事。」并给 20 经验，泰拉没有经验）。
+    /// </summary>
+    public static string? PickUnfoundLore(IReadOnlyCollection<string> found, System.Random rand)
+    {
+        var shuffled = new List<string>(LoreIds);
+        for (int i = shuffled.Count - 1; i > 0; i--)
+        {
+            int j = rand.Next(i + 1);
+            (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
+        }
+        var set = new HashSet<string>(found);
+        foreach (var id in shuffled)
+        {
+            if (!set.Contains(id)) return id;
+        }
+        return null;
     }
 }

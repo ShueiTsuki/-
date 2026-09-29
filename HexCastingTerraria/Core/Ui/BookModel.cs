@@ -246,6 +246,19 @@ public sealed class BookDocument
     public BookEntry? FindEntry(string id)
         => EntryById.TryGetValue(id, out var e) ? e : null;
 
+    /// <summary>按解锁条件（原版 advancement）找条目，比如 hexcasting:lore/cardamom1。</summary>
+    public BookEntry? FindEntryByAdvancement(string advancement)
+    {
+        foreach (var c in Categories)
+        {
+            foreach (var e in c.Entries)
+            {
+                if (e.Advancement == advancement) return e;
+            }
+        }
+        return null;
+    }
+
     /// <summary>重建 id 索引，并按 <c>SortNum</c> 给分类与条目排序（稳定排序，同号保持加载顺序）。</summary>
     public void RebuildIndex()
     {
