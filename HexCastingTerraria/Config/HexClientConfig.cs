@@ -189,4 +189,13 @@ public sealed class HexClientConfig : ModConfig
     [Increment(0.05f)]
     [DefaultValue(0.5f)]
     public float StrokeScale { get; set; } = 0.5f;
+
+    /// <summary>
+    /// 电光抖动强度。1.0 = 原版（variance 2.5）。抖动幅度按线段长度算、与线宽无关，
+    /// 线调细以后同样的抖动显得更强，所以默认也取 0.5。0 = 完全不抖。
+    /// </summary>
+    [Range(0f, 1.5f)]
+    [Increment(0.05f)]
+    [DefaultValue(0.5f)]
+    public float WobbleScale { get; set; } = 0.5f;
 }

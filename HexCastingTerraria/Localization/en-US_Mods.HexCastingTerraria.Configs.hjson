@@ -138,6 +138,11 @@ exactly (upstream default). Above 0.5 the pattern lags one step behind and tends
 					Label: Stroke thickness
 					Tooltip: Thickness of canvas lines, nodes and guide dots. 1.0 matches upstream at GUI scale 4; default 0.5.
 				}
+
+				WobbleScale: {
+					Label: Wobble strength
+					Tooltip: How much canvas strokes wobble. 1.0 = upstream, 0 = none; default 0.5.
+				}
 			}
 		}
 	}

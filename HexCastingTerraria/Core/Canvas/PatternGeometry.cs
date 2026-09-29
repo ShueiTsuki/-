@@ -286,10 +286,11 @@ public static class PatternGeometry
     /// </summary>
     public static void PatternFromPoints(List<ColoredVertex> o, IReadOnlyList<Vec2f> points, ISet<int>? dupIndices,
         bool drawLast, uint tail, uint head, float flowIrregular, float readabilityOffset,
-        float lastSegmentLenProportion, double seed, double time, float unit, bool showStrokeOrder)
+        float lastSegmentLenProportion, double seed, double time, float unit, bool showStrokeOrder,
+        float variance = Variance)
     {
         if (points.Count == 0) return;
-        var zappy = MakeZappy(points, dupIndices, Hops, Variance, Speed, flowIrregular, readabilityOffset,
+        var zappy = MakeZappy(points, dupIndices, Hops, variance, Speed, flowIrregular, readabilityOffset,
             lastSegmentLenProportion, seed, time);
         LineSeq(o, zappy, 5f * unit, tail, head, showStrokeOrder);
         LineSeq(o, zappy, 2f * unit, ScreenCol(tail), ScreenCol(head), showStrokeOrder);

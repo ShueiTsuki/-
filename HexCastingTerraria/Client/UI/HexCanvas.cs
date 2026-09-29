@@ -63,6 +63,9 @@ public sealed class HexCanvas
     /// <summary>笔迹粗细倍率（设置项 StrokeScale）。线宽、节点、引导点一起缩放。</summary>
     public float StrokeScale { get; set; } = 0.5f;
 
+    /// <summary>电光抖动强度倍率（设置项 WobbleScale）。1.0 = 原版 variance 2.5。</summary>
+    public float WobbleScale { get; set; } = 0.5f;
+
     public bool IsOpen { get; private set; }
 
     public IReadOnlyList<ResolvedPattern> Patterns => _resolved;
@@ -175,7 +178,8 @@ public sealed class HexCanvas
             var pts = HexGrid.PatternLinePoints(rp.Pattern, rp.Origin, size, offset);
             PatternGeometry.PatternFromPoints(_verts, pts, PatternGeometry.FindDupIndices(positions), true,
                 color | 0xC8000000u, fade | 0xC8000000u, success ? 0.2f : 0.9f,
-                PatternGeometry.DefaultReadabilityOffset, 1f, idx, Tick, unit, showStrokeOrder);
+                PatternGeometry.DefaultReadabilityOffset, 1f, idx, Tick, unit, showStrokeOrder,
+                PatternGeometry.Variance * WobbleScale);
         }
 
         // ---- 正在画的图案：已吸附的格点 + 鼠标当前位置 ----
@@ -196,7 +200,8 @@ public sealed class HexCanvas
             pts.Add(mouse);
             // 以图案条数为种子：收笔变成已画图案时电光不会跳
             PatternGeometry.PatternFromPoints(_verts, pts, dup, false, PatternGeometry.WipTail, PatternGeometry.WipHead,
-                0.1f, PatternGeometry.DefaultReadabilityOffset, 1f, _resolved.Count, Tick, unit, showStrokeOrder);
+                0.1f, PatternGeometry.DefaultReadabilityOffset, 1f, _resolved.Count, Tick, unit, showStrokeOrder,
+                PatternGeometry.Variance * WobbleScale);
         }
 
         PrimitiveBatch.Flush(_verts, spriteBatchTransform);
