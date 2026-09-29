@@ -170,16 +170,17 @@ public sealed class HexClientConfig : ModConfig
     public float GridZoom { get; set; } = 1.0f;
 
     /// <summary>
-    /// 画布吸附阈值。对应源项目 `gridSnapThreshold`，原版**默认 0.5**。
+    /// 画布吸附阈值。对应源项目 `gridSnapThreshold`（原版默认 0.5，范围 0.5~1.0）。
     ///
-    /// 每记一步所需的鼠标拖拽距离 = hexSize × √(2 × 阈值)。
-    /// 0.5 → 恰好 1 个格距，鼠标走到哪图案画到哪（跟手）。
-    /// 1.0 → 1.41 个格距，图案会比鼠标慢一拍，容易少记最后一段，不建议。
+    /// 每记一步所需的拖拽距离 = hexSize × √(2 × 阈值)；相邻格点相距 √3 × hexSize。
+    /// 0.5 → 走到格距的 58% 就提交（原版默认，玩家反馈太容易碰到点画错）；
+    /// 1.0 → 82%（本模组默认）；1.15 → 88%（上限，再高带手抖的画法会出错，见 PatternDrawer）。
+    /// ⚠️ 这里曾写「0.5 = 恰好 1 个格距、1.0 = 1.41 个格距」—— 把 hexSize 当成了格距，是错的。
     /// </summary>
-    [Range(0.5f, 1.0f)]
+    [Range(Core.Canvas.PatternDrawer.MinSnapThreshold, Core.Canvas.PatternDrawer.MaxSnapThreshold)]
     [Increment(0.05f)]
-    [DefaultValue(0.5f)]
-    public float GridSnapThreshold { get; set; } = 0.5f;
+    [DefaultValue(1.0f)]
+    public float GridSnapThreshold { get; set; } = 1.0f;
 
     /// <summary>
     /// 画布笔迹粗细（线宽、节点、背景引导点一起缩放）。

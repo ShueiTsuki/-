@@ -130,8 +130,7 @@ Mods: {
 
 				GridSnapThreshold: {
 					Label: Snap threshold
-					Tooltip: '''How far you must drag before a step is recorded. 0.5 = the pattern follows the cursor
-exactly (upstream default). Above 0.5 the pattern lags one step behind and tends to drop the last segment.'''
+					Tooltip: How far you must drag before a segment is committed. 0.5 = 58% of the dot spacing (upstream default, easy to misfire); 1.0 = 82% (default); 1.15 = 88% (maximum).
 				}
 
 				StrokeScale: {

@@ -62,8 +62,18 @@ public sealed class PatternDrawer
     private HexCoord _current;
     private HexPattern? _wip;
 
-    /// <summary>吸附阈值，原版 `gridSnapThreshold`，默认 0.5，使用时 clamp 到 [0.5, 1]。</summary>
-    public float SnapThreshold { get; set; } = 0.5f;
+    /// <summary>
+    /// 吸附阈值，原版 `gridSnapThreshold`（原版默认 0.5、范围 [0.5, 1]）。
+    /// 提交一笔所需的拖拽距离 = size·√(2·阈值)，而相邻格点相距 √3·size，所以：
+    /// 0.5 → 格距的 58%；1.0 → 82%；1.15 → 88%。
+    /// 玩家反馈原版 0.5 太容易「碰到点」画错，所以默认 1.0、上限放宽到 1.15。
+    /// 上限不能再高：drawtest 实测 1.2 起带手抖的画法开始出错（锚点落后太多，拐角被切），
+    /// 1.5 时连「正好停在终点上松手」都会因浮点误差少一笔。
+    /// </summary>
+    public float SnapThreshold { get; set; } = 1.0f;
+
+    public const float MinSnapThreshold = 0.5f;
+    public const float MaxSnapThreshold = 1.15f;
 
     public DrawPhase Phase { get; private set; } = DrawPhase.BetweenPatterns;
     public IReadOnlyList<DrawnPattern> Patterns => _patterns;
@@ -110,7 +120,7 @@ public sealed class PatternDrawer
 
         var anchorCoord = Phase == DrawPhase.JustStarted ? _start : _current;
         var anchor = HexGrid.CoordToPx(anchorCoord, hexSize, offset);
-        float snapDist = hexSize * hexSize * 2f * System.Math.Clamp(SnapThreshold, 0.5f, 1f);
+        float snapDist = hexSize * hexSize * 2f * System.Math.Clamp(SnapThreshold, MinSnapThreshold, MaxSnapThreshold);
         if (anchor.DistanceSquaredTo(mouse) < snapDist) return MoveResult.None;
 
         var delta = mouse - anchor;

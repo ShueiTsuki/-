@@ -16,6 +16,9 @@ static class CanvasFeelTests
         Console.WriteLine("\n=== ③b 快速画：一帧只有一个鼠标位置时，沿路径补采样 ===");
         FastStrokes(size, check);
 
+        Console.WriteLine("\n=== ③e 吸附阈值（玩家反馈：0.5 太容易碰到点画错）===");
+        SnapThresholds(size, check);
+
         Console.WriteLine("\n=== ③c 状态机细节（落笔 / 回退 / 已用格点 / 撤销上色）===");
         StateMachine(size, check);
 
@@ -77,6 +80,59 @@ static class CanvasFeelTests
                     string.Join(", ", newBadNames.Take(8)));
             }
             check($"每帧 {hexPerFrame} 格：沿路径采样不比旧做法差", newBad <= oldBad, $"新 {newBad} > 旧 {oldBad}");
+        }
+    }
+
+    static void SnapThresholds(float size, CheckFn check)
+    {
+        float spacing = size * HexGrid.Sqrt3;
+        var o = HexCoord.Origin;
+        var start = Px(o, size);
+        var east = Px(o + HexDir.East, size);
+
+        // 朝东边的点走 65% 格距就停：这是「本来没想画这一笔」的情形
+        foreach (var (t, expectCommit) in new[] { (0.5f, true), (1.0f, false), (PatternDrawer.MaxSnapThreshold, false) })
+        {
+            var d = new PatternDrawer { SnapThreshold = t };
+            d.Begin(start, size, Vec2f.Zero);
+            d.MoveAlong(start, start + (east - start) * 0.65f, size, Vec2f.Zero);
+            bool committed = d.Phase == DrawPhase.Drawing;
+            check($"阈值 {t}：朝邻点走 65% 格距{(expectCommit ? "就" : "不")}提交这一笔", committed == expectCommit,
+                $"实际{(committed ? "提交了" : "没提交")}");
+        }
+
+        // 允许范围内（0.5 ~ 上限 1.15；1.2 起手抖会出错，这是上限的来源）任何阈值下，沿折线规规矩矩画（松手时停在终点上）都要全对，带手抖也要全对
+        foreach (float t in new[] { 0.5f, 1.0f, PatternDrawer.MaxSnapThreshold })
+        {
+            int bad = 0, badWobble = 0;
+            float phase = 0f;
+            foreach (var def in PatternRegistry.All)
+            {
+                var poly = HexGrid.PatternLinePoints(def.Prototype, HexCoord.Origin, size, Vec2f.Zero);
+                var frames = FramesAlong(poly, spacing * 0.2f);
+
+                var d = new PatternDrawer { SnapThreshold = t };
+                d.Begin(frames[0], size, Vec2f.Zero);
+                for (int i = 1; i < frames.Count; i++) d.MoveAlong(frames[i - 1], frames[i], size, Vec2f.Zero);
+                if (d.Wip?.AnglesSignature() != def.Angles) bad++;
+
+                var w = new PatternDrawer { SnapThreshold = t };
+                var prev = frames[0];
+                w.Begin(prev, size, Vec2f.Zero);
+                for (int i = 1; i < frames.Count; i++)
+                {
+                    // 平滑手抖 ±12% 格距；最后一帧落在终点上
+                    phase += 0.9f;
+                    var jitter = i == frames.Count - 1 ? Vec2f.Zero
+                        : new Vec2f(MathF.Sin(phase) * spacing * 0.12f, MathF.Cos(phase * 1.37f) * spacing * 0.12f);
+                    var cur = frames[i] + jitter;
+                    w.MoveAlong(prev, cur, size, Vec2f.Zero);
+                    prev = cur;
+                }
+                if (w.Wip?.AnglesSignature() != def.Angles) badWobble++;
+            }
+            check($"阈值 {t}：188 条图案沿折线画全对", bad == 0, $"错 {bad}");
+            check($"阈值 {t}：带 ±12% 格距手抖仍全对", badWobble == 0, $"错 {badWobble}");
         }
     }
 

@@ -261,14 +261,14 @@ Write-Host "`n⑤ 单一真源：关键常量不许在别处重新定义"
 # 而且抄错了原版的 0.5 —— 这类"同一个东西定义两遍"是最容易出静默错误的地方。
 $snapDefs = New-Object System.Collections.Generic.List[string]
 foreach ($f in (AllCs $mod)) {
-    $hits = Select-String -LiteralPath $f.FullName -Pattern 'SnapThreshold\s*(\{\s*get;\s*set;\s*\})?\s*=\s*([0-9.]+)f'
+    $hits = Select-String -LiteralPath $f.FullName -Pattern 'SnapThreshold\s*\{\s*get;\s*set;\s*\}\s*=\s*([0-9.]+)f'
     foreach ($h in $hits) { $snapDefs.Add((Rel $f.FullName $mod) + ' → ' + $h.Line.Trim()) }
 }
 Check "吸附阈值默认值只有一处字面量（另一处引用它）" ($snapDefs.Count -le 2) ($snapDefs -join ' | ')
 
 $snapValues = @()
 foreach ($f in (AllCs $mod)) {
-    $hits = Select-String -LiteralPath $f.FullName -Pattern 'SnapThreshold\s*(\{\s*get;\s*set;\s*\})?\s*=\s*([0-9.]+)f'
+    $hits = Select-String -LiteralPath $f.FullName -Pattern 'SnapThreshold\s*\{\s*get;\s*set;\s*\}\s*=\s*([0-9.]+)f'
     foreach ($h in $hits) {
         # ⚠️ $Matches 由 -match 填充，Select-String 不会填 —— 必须自己再 match 一次
         if ($h.Line -match '=\s*([0-9.]+)f') { $snapValues += $Matches[1] }
@@ -278,8 +278,10 @@ foreach ($f in (AllCs $mod)) {
 # 只匹配到一个值时这条断言就会莫名其妙地红，而且看起来像代码的问题。
 # 断言本身写错比没有断言更坏 —— 它把时间浪费在错误的方向上。
 $snapValues = @($snapValues | Select-Object -Unique)
-$snapOk = ($snapValues.Count -le 1) -and (($snapValues.Count -eq 0) -or ($snapValues[0] -eq '0.5'))
-Check "吸附阈值两处默认值一致且等于原版的 0.5" $snapOk ("实测值: " + ($snapValues -join ', '))
+# 本模组默认 1.0，**有意**偏离原版 0.5：玩家实测 0.5（走到格距 58% 就提交）太容易误碰格点画错。
+# 注意换算：拖拽距离 = size·√(2·阈值)，格距 = √3·size（以前的注释把 size 当成格距，结论是反的）。
+$snapOk = ($snapValues.Count -le 1) -and (($snapValues.Count -eq 0) -or ($snapValues[0] -eq '1.0'))
+Check "吸附阈值各处默认值一致且等于 1.0（有意偏离原版 0.5，见注释）" $snapOk ("实测值: " + ($snapValues -join ', '))
 
 # ─────────────────────────────────────────────────────────────────────
 Write-Host "`n⑥ 图案数据自检（与运行时实测对拍）"
