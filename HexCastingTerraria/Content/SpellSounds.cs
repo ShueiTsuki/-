@@ -65,6 +65,14 @@ internal static class SpellSounds
         // ── 飞行 ──
         ("flight.start", SoundID.Item4, 0.50f, 0.35f),
         ("flight.finish", SoundID.MenuClose, 0.50f, 0.20f),
+
+        // ── 世界法术（原版用 MC 的方块/天气音效，这里取泰拉里对应的那一个）──
+        ("spell.lightning", SoundID.Thunder, 1.00f, 0.00f),
+        ("spell.explode", SoundID.Item14, 0.90f, 0.00f),
+        ("spell.place", SoundID.Dig, 0.80f, 0.00f),
+        ("spell.liquid", SoundID.Splash, 0.70f, 0.00f),
+        ("spell.teleport", SoundID.Item8, 0.60f, 0.00f),
+        ("spell.grow", SoundID.Item2, 0.50f, 0.40f),
     };
 
     /// <summary>取一个语义音效。找不到就返回 null（不静默回落到某个无关音效）。</summary>
@@ -145,6 +153,13 @@ internal static class SpellSounds
 
             packet.Send(i);
         }
+    }
+
+    /// <summary>在世界某处放音效：单机直接播，服务端广播给附近玩家。</summary>
+    public static void At(string name, Vector2 position)
+    {
+        if (Main.netMode == NetmodeID.Server) { Broadcast(name, position.X, position.Y); }
+        else { Play(name, position); }
     }
 
     /// <summary>客户端：接收广播来的音效。</summary>

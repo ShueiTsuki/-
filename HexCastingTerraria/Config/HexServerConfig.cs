@@ -34,4 +34,11 @@ public sealed class HexServerConfig : ModConfig
     [DefaultValue(10000.0)]
     [Range(100, 1000000)]
     public double GreatTeleportDropDivisor { get; set; } = 10000.0;
+
+    /// <summary>
+    /// 爆炸法术是否破坏方块。原版就是真的 MC 爆炸（允许破坏时会炸掉方块），默认开启；
+    /// 按泰拉炸弹的规则判定（地牢砖、神庙砖、箱子等炸不动）。不想让法术拆家可以关掉。
+    /// </summary>
+    [DefaultValue(true)]
+    public bool ExplosionsBreakBlocks { get; set; } = true;
 }

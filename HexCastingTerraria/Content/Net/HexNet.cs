@@ -50,6 +50,15 @@ internal enum HexMessage : byte
 
     /// <summary>服务端 → 附近客户端：一个语义音效（纯表现）。</summary>
     SpellSound = 14,
+
+    /// <summary>
+    /// 服务端 → 被法术作用的那个玩家的客户端：推一下（加速度）或传送到某处。
+    /// 泰拉的玩家移动由**自己的客户端**说了算，服务端改 velocity / position 不会生效。
+    /// </summary>
+    PlayerMotion = 15,
+
+    /// <summary>服务端 → 被作用的玩家客户端：加一个 buff（buff 归玩家客户端管，服务端加了不算）。</summary>
+    PlayerBuff = 16,
 }
 
 /// <summary>

@@ -252,6 +252,22 @@ namespace HexCastingTerraria
                     Content.SpellSounds.Receive(reader);
                     break;
 
+                case Content.Net.HexMessage.PlayerMotion:
+                    if (Main.netMode != NetmodeID.MultiplayerClient)
+                    {
+                        return;
+                    }
+                    Content.Net.HexNetSync.HandlePlayerMotion(reader);
+                    break;
+
+                case Content.Net.HexMessage.PlayerBuff:
+                    if (Main.netMode != NetmodeID.MultiplayerClient)
+                    {
+                        return;
+                    }
+                    Content.Net.HexNetSync.HandlePlayerBuff(reader);
+                    break;
+
                 case Content.Net.HexMessage.SpellParticles:
                     if (Main.netMode != NetmodeID.MultiplayerClient)
                     {

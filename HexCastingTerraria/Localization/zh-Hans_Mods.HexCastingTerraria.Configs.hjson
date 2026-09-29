@@ -133,6 +133,25 @@ Mods: {
 					Tooltip: 画布笔迹的电光抖动幅度。1.0 = 原版，0 = 不抖，默认 0.5。
 				}
 			}
+
+			HexServerConfig: {
+				DisplayName: 咒法学 · 服务端（世界规则）
+
+				GreatTeleportDropsItems: {
+					Label: 大传送震落物品
+					Tooltip: 大传送会按距离概率把施法者的物品震落（原版 doesGreaterTeleportSplatItems，默认开）。
+				}
+
+				GreatTeleportDropDivisor: {
+					Label: 大传送掉落分母
+					Tooltip: 掉落概率 = 传送距离（格）/ 这个数。原版 10000。
+				}
+
+				ExplosionsBreakBlocks: {
+					Label: 爆炸破坏方块
+					Tooltip: 爆炸法术会按泰拉炸弹的规则炸掉方块（原版就会破坏方块）。关掉则只造成伤害。
+				}
+			}
 		}
 	}
 }

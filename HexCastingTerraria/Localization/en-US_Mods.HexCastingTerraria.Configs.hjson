@@ -133,6 +133,25 @@ Mods: {
 					Tooltip: How much canvas strokes wobble. 1.0 = upstream, 0 = none; default 0.5.
 				}
 			}
+
+			HexServerConfig: {
+				DisplayName: Hex Casting · Server (world rules)
+
+				GreatTeleportDropsItems: {
+					Label: Greater Teleport drops items
+					Tooltip: Greater Teleport may knock items out of the caster's inventory based on distance (upstream doesGreaterTeleportSplatItems, on by default).
+				}
+
+				GreatTeleportDropDivisor: {
+					Label: Greater Teleport drop divisor
+					Tooltip: Drop chance = distance (tiles) / this value. Upstream: 10000.
+				}
+
+				ExplosionsBreakBlocks: {
+					Label: Explosions break blocks
+					Tooltip: Explosion spells destroy blocks using Terraria bomb rules (upstream explosions break blocks). Off = damage only.
+				}
+			}
 		}
 	}
 }

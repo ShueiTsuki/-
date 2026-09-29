@@ -336,7 +336,9 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 if (entity.Index < 0 || entity.Index >= Main.maxPlayers) return;
                 var p = Main.player[entity.Index];
                 if (p is not { active: true } || p.dead) return;
-                p.velocity += delta;
+                // 泰拉的玩家移动由本人客户端说了算：服务端改 velocity 不会生效，要发给那个客户端
+                if (Main.netMode == Terraria.ID.NetmodeID.Server) { Net.HexNetSync.SendPlayerMotion(p.whoAmI, delta.X, delta.Y, false); }
+                else { p.velocity += delta; }
                 break;
             }
 
@@ -366,10 +368,12 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>
     /// 瞬移一段位移（图格 → 像素）。
     ///
-    /// 「不塞进墙里」的处理：先按目标位置试放，若该处是实心的则**取消这次传送**
-    /// 而不是硬塞 —— 硬塞会让玩家卡在方块里窒息，比传送失败糟糕得多。
-    /// 源项目用 `teleportRespectSticky` 做了更复杂的处理（连带乘客、碰撞搜索），
-    /// 那依赖 MC 的实体挂载体系，泰拉侧先做保守版本。
+    /// 泰拉的玩家碰撞箱（约 1.25×2.6 格）比 MC（0.6×1.8 格）大得多，按原位落点一塞就容易卡墙。
+    /// 做法：落点被挡时，在**附近几格**（先往上 1~3 格，再下 1 格、左右 1 格）找一个放得下的位置；
+    /// 都放不下才取消。以前是被挡就静默取消 —— 而媒质已经扣了，表现为「闪现没反应」。
+    ///
+    /// 玩家走 <see cref="Player.Teleport"/>：它会重置坠落起点（否则闪现下崖后落地，
+    /// 摔伤按**闪现前的高度**算）、解除钩爪；联机时由该玩家的客户端执行。
     /// </summary>
     public void TeleportBy(EntityIota entity, double dx, double dy)
     {
@@ -379,20 +383,46 @@ public sealed class TerrariaCastingWorld : ICastingWorld
 
         if (!TryGetEntity(entity, out var target) || target == null) return;
 
-        var destination = target.Center + offset;
-
-        // 目的地必须整体可站立，否则放弃这次传送
-        if (!IsAreaClear(destination, target.width, target.height)) return;
-
-        target.Center = destination;
-
-        if (entity.Target == EntityIota.EntityKind.Npc)
+        var wanted = target.Center + offset;
+        Vector2? destination = null;
+        foreach (var (ox, oy) in new[] { (0, 0), (0, -1), (0, -2), (0, -3), (0, 1), (-1, 0), (1, 0) })
         {
-            Main.npc[entity.Index].netUpdate = true;
+            var c = wanted + new Vector2(ox * HexUnits.PixelsPerTile, oy * HexUnits.PixelsPerTile);
+            if (IsAreaClear(c, target.width, target.height)) { destination = c; break; }
         }
-        else if (entity.Target == EntityIota.EntityKind.Projectile)
+        if (destination is not { } dest) return;
+
+        var topLeft = dest - new Vector2(target.width / 2f, target.height / 2f);
+        switch (entity.Target)
         {
-            Main.projectile[entity.Index].netUpdate = true;
+            case EntityIota.EntityKind.Player:
+            {
+                var p = (Player)target;
+                if (Main.netMode == Terraria.ID.NetmodeID.Server) { Net.HexNetSync.SendPlayerMotion(p.whoAmI, topLeft.X, topLeft.Y, true); }
+                else { TeleportPlayerLocal(p, topLeft); }
+                break;
+            }
+            case EntityIota.EntityKind.Npc:
+                target.Center = dest;
+                Main.npc[entity.Index].netUpdate = true;
+                break;
+            case EntityIota.EntityKind.Projectile:
+                target.Center = dest;
+                Main.projectile[entity.Index].netUpdate = true;
+                break;
+        }
+        SpellSounds.At("spell.teleport", dest);
+    }
+
+    /// <summary>在本地执行玩家传送（单机，或联机时玩家自己的客户端）。保留速度 —— 原版闪现也不清速度。</summary>
+    internal static void TeleportPlayerLocal(Player p, Vector2 topLeft)
+    {
+        var velocity = p.velocity;
+        p.Teleport(topLeft, 1);
+        p.velocity = velocity;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient)
+        {
+            NetMessage.SendData(Terraria.ID.MessageID.TeleportEntity, -1, -1, null, 0, p.whoAmI, topLeft.X, topLeft.Y, 1);
         }
     }
 
@@ -774,7 +804,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             case EntityIota.EntityKind.Player:
                 if (entity.Index >= 0 && entity.Index < Main.maxPlayers)
                 {
-                    Main.player[entity.Index].AddBuff(Terraria.ID.BuffID.OnFire, 300);
+                    AddPlayerBuff(Main.player[entity.Index], Terraria.ID.BuffID.OnFire, 300);
                 }
                 break;
             case EntityIota.EntityKind.Npc:
@@ -868,6 +898,10 @@ public sealed class TerrariaCastingWorld : ICastingWorld
 
         tile.LiquidAmount = 255;
         tile.LiquidType = Terraria.ID.LiquidID.Water;
+        // 只改数值不会让液体流动：要登记给液体模拟、并刷新周围的方块外观
+        Liquid.AddWater(tx, ty);
+        WorldGen.SquareTileFrame(tx, ty, true);
+        SpellSounds.At("spell.liquid", new Vector2(tx * 16 + 8, ty * 16 + 8));
 
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
         {
@@ -902,6 +936,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             if (tile.HasTile || tile.LiquidAmount == 0) continue;
 
             tile.LiquidAmount = 0;
+            WorldGen.SquareTileFrame(cx, cy, true);   // 邻格的液体要重新计算流向
             drained++;
 
             if (cx < minX) minX = cx;
@@ -922,7 +957,14 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         }
     }
 
-    /// <summary>召下一道闪电。用泰拉现成的天气闪电系统。</summary>
+    /// <summary>
+    /// 召下一道闪电。泰拉没有可生成的闪电实体（`Main.lightning` 只是背景闪光强度），
+    /// 所以用「雷声 + 闪光 + 从天而降的电光 + 伤害」组合。
+    ///
+    /// 原版是一道真正的 MC 闪电：劈中范围内**所有**生物（包括施法者自己）造成伤害并点燃。
+    /// 伤害按比例换算：MC 闪电 5 点 = 满血 20 的 25%，这里对玩家取最大生命的 25%；
+    /// 对 NPC 取 80（旧实现的数值，早中期怪一击重伤、后期只是点燃）。
+    /// </summary>
     public void SpawnLightning(double x, double y)
     {
         if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
@@ -930,80 +972,101 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         float cx = (float)(x * HexUnits.PixelsPerTile);
         float cy = (float)(y * HexUnits.PixelsPerTile);
 
-        // 泰拉没有可生成的闪电实体；`Main.lightning` 是**背景闪光强度**（float），
-        // 不是对象数组。所以用「闪光 + 粒子 + 伤害」组合来表现一道落雷。
         Main.lightning = 1f;
+        SpellSounds.At("spell.lightning", new Vector2(cx, cy));
 
+        // 电光：从上方 30 格斜劈下来的一串电火花
+        float topY = cy - (30 * HexUnits.PixelsPerTile);
+        float xOff = 0f;
+        for (float py = topY; py < cy; py += 6f)
+        {
+            xOff += Main.rand.NextFloat(-3f, 3f);
+            var d = Terraria.Dust.NewDustPerfect(new Vector2(cx + xOff * (cy - py) / (cy - topY), py),
+                Terraria.ID.DustID.Electric, Vector2.Zero, 0, default, 1.3f);
+            d.noGravity = true;
+        }
         for (int k = 0; k < 25; k++)
         {
             var d = Terraria.Dust.NewDustPerfect(
-                new Microsoft.Xna.Framework.Vector2(cx + Main.rand.Next(-6, 7), cy + Main.rand.Next(-30, 7)),
+                new Vector2(cx + Main.rand.Next(-10, 11), cy + Main.rand.Next(-10, 6)),
                 Terraria.ID.DustID.Electric,
-                new Microsoft.Xna.Framework.Vector2(0f, -Main.rand.NextFloat() * 3f));
+                new Vector2(Main.rand.NextFloat(-3f, 3f), -Main.rand.NextFloat() * 3f));
             d.noGravity = true;
         }
 
-        // 伤害：小范围内造成一次打击
         foreach (var entity in QueryEntities(
-            Core.Casting.Actions.ZoneEntityFilter.Monster, negate: false, x, y, 2.0))
+            Core.Casting.Actions.ZoneEntityFilter.Living, negate: false, x, y, 2.0))
         {
-            if (entity.Target != EntityIota.EntityKind.Npc) continue;
-            var npc = Main.npc[entity.Index];
-            npc.SimpleStrikeNPC(80, 0, false, 0f);
-            npc.AddBuff(Terraria.ID.BuffID.OnFire, 300);
+            if (entity.Target == EntityIota.EntityKind.Npc)
+            {
+                var npc = Main.npc[entity.Index];
+                if (npc.dontTakeDamage) continue;
+                npc.SimpleStrikeNPC(80, 0, false, 0f);
+                npc.AddBuff(Terraria.ID.BuffID.OnFire, 300);
+            }
+            else if (entity.Target == EntityIota.EntityKind.Player)
+            {
+                var p = Main.player[entity.Index];
+                p.Hurt(Terraria.DataStructures.PlayerDeathReason.ByCustomReason(
+                    Terraria.Localization.NetworkText.FromLiteral(p.name + "被雷劈中了")),
+                    System.Math.Max(1, p.statLifeMax2 / 4), 0);
+                AddPlayerBuff(p, Terraria.ID.BuffID.OnFire, 300);
+            }
         }
     }
 
     /// <summary>
-    /// 催熟。对应源项目的骨粉效果：
-    ///   - 树苗 → 长成树
-    ///   - 草药 → 推进生长帧
+    /// 催熟（原版 edify 以外的「骨粉」效果：BoneMealItem.growCrop）。泰拉的对应物：
+    ///   - 树苗 → 长成树（原版树苗生长逻辑）
+    ///   - 未成熟草药（ImmatureHerbs）→ 成熟草药（MatureHerbs）：泰拉草药按**方块类型**分阶段，
+    ///     帧 X 表示的是**草药种类**
+    ///   - 草地（上方为空）→ 长出一株草（原版骨粉撒在草方块上会冒花草）
+    ///
+    /// ⚠️ 旧实现把「任意非实心方块」的帧 X 减 36 当作「推进生长」：
+    /// 对椅子、桌子、门、火把会把贴图帧改坏；对草药会把一种草药变成另一种。
     /// </summary>
     public void ApplyBonemeal(double x, double y)
     {
-        int sx = (int)System.Math.Floor(x);
-        int sy = (int)System.Math.Floor(y);
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
 
-        if (!WorldGen.InWorld(sx, sy, 1)) return;
+        if (!WorldGen.InWorld(tx, ty, 1)) return;
         if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
 
-        // 3×3 范围，与原版骨粉的作用范围量级一致
-        for (int dx = -1; dx <= 1; dx++)
+        var tile = Main.tile[tx, ty];
+        bool changed = false;
+
+        if (tile.HasTile && Terraria.ID.TileID.Sets.CommonSapling[tile.TileType])
         {
-            for (int dy = -1; dy <= 1; dy++)
+            changed = WorldGen.AttemptToGrowTreeFromSapling(tx, ty, false);
+        }
+        else if (tile.HasTile && tile.TileType == Terraria.ID.TileID.ImmatureHerbs)
+        {
+            tile.TileType = Terraria.ID.TileID.MatureHerbs;
+            WorldGen.SquareTileFrame(tx, ty, true);
+            changed = true;
+        }
+        else
+        {
+            // 瞄准草方块本身，或草方块上方的空格：在草上长一株草
+            int gy = tile.HasTile && tile.TileType == Terraria.ID.TileID.Grass ? ty : ty + 1;
+            if (WorldGen.InWorld(tx, gy, 1) && Main.tile[tx, gy].HasTile && Main.tile[tx, gy].TileType == Terraria.ID.TileID.Grass
+                && !Main.tile[tx, gy - 1].HasTile)
             {
-                int tx = sx + dx;
-                int ty = sy + dy;
-                if (!WorldGen.InWorld(tx, ty, 1)) continue;
-
-                var tile = Main.tile[tx, ty];
-                if (!tile.HasTile) continue;
-
-                int type = tile.TileType;
-
-                // 树苗 -> 树
-                if (Terraria.ID.TileID.Sets.CommonSapling[type])
-                {
-                    WorldGen.AttemptToGrowTreeFromSapling(tx, ty, false);
-                    continue;
-                }
-
-                // 草药/花草：推进到成熟帧。
-                // 泰拉的植物生长用 TileFrameX 分档（每档 18），满档即成熟。
-                if (Terraria.ID.TileID.Sets.BasicChest[type]) continue;   // 排除箱子
-
-                if (!Main.tileSolid[type] && tile.TileFrameX > 0)
-                {
-                    // 往前推两档；推到负数就停在 0（成熟）
-                    int next = tile.TileFrameX - 36;
-                    tile.TileFrameX = (short)(next < 0 ? 0 : next);
-
-                    if (Main.netMode == Terraria.ID.NetmodeID.Server)
-                    {
-                        Terraria.NetMessage.SendTileSquare(-1, tx, ty, 1);
-                    }
-                }
+                changed = WorldGen.PlaceTile(tx, gy - 1, Terraria.ID.TileID.Plants, true, false, -1, Main.rand.Next(6, 11));
+                ty = gy - 1;
             }
+        }
+
+        if (!changed) return;
+        SpellSounds.At("spell.grow", new Vector2(tx * 16 + 8, ty * 16 + 8));
+        for (int k = 0; k < 8; k++)
+        {
+            Terraria.Dust.NewDust(new Vector2(tx * 16, ty * 16), 16, 16, Terraria.ID.DustID.GrassBlades);
+        }
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Terraria.NetMessage.SendTileSquare(-1, tx - 1, ty - 1, 3);
         }
     }
 
@@ -1087,6 +1150,10 @@ public sealed class TerrariaCastingWorld : ICastingWorld
 
         tile.LiquidAmount = 255;
         tile.LiquidType = Terraria.ID.LiquidID.Lava;
+        // 只改数值不会让液体流动：要登记给液体模拟、并刷新周围的方块外观
+        Liquid.AddWater(tx, ty);
+        WorldGen.SquareTileFrame(tx, ty, true);
+        SpellSounds.At("spell.liquid", new Vector2(tx * 16 + 8, ty * 16 + 8));
 
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
         {
@@ -1150,6 +1217,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             plr: _caster.whoAmI, style: style);
 
         if (!placed) return false;
+        SpellSounds.At("spell.place", new Vector2(tx * 16 + 8, ty * 16 + 8));
 
         // 用掉一件。泰拉的物品消耗要自己写 —— 这里刻意不用 Player.ConsumeItem，
         // 因为它会顺手触发一堆「拾取/消耗」统计与音效，施法不该有那些副作用。
@@ -1169,19 +1237,21 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         return true;
     }
 
-    /// <summary>找背包里第一件「可放置」的物品。找不到返回 -1。</summary>
+    /// <summary>
+    /// 找要放的方块。照原版 CastingEnvironment.getUsableStacksForPlayer(QUERY)：
+    /// **只看快捷栏**，从手持物品（法杖）**右边一格**开始往右绕一圈 —— 玩家把想放的方块摆在法杖右边就行。
+    /// 旧实现扫整个背包取第一个可放置物，结果可能是箱子、雕像、家具。
+    /// </summary>
     private static int FindPlaceableSlot(Player player)
     {
-        for (int i = 0; i < player.inventory.Length; i++)
+        const int hotbar = 10;
+        for (int d = 1; d <= hotbar; d++)
         {
+            int i = (player.selectedItem + d) % hotbar;
             Item item = player.inventory[i];
-            if (item is null || item.IsAir) continue;
-
-            // `createTile` 的「不可放置」值是 -1（原版 Item.createTile 的约定）。
-            // 写成 == -1 而不是 < 0：分析器会把这里的 0 当成「方块 ID 字面量」而报警。
+            if (item is null || item.IsAir || item.stack <= 0) continue;
+            // `createTile` 的「不可放置」值是 -1（原版 Item.createTile 的约定）
             if (item.createTile == -1) continue;
-            if (item.stack <= 0) continue;
-
             return i;
         }
 
@@ -1476,6 +1546,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         tile.HasTile = true;
         tile.TileType = (ushort)(light ? ModContent.TileType<ConjuredLight>() : ModContent.TileType<ConjuredBlock>());
 
+        WorldGen.SquareTileFrame(tx, ty, true);   // 直接写方块数据后要刷新帧，否则和邻格的外观接不上
         ConjuredBlocks.Track(tx, ty, (int)(ConjuredBlocks.DefaultLifetimeSeconds * 60));
 
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
@@ -1648,71 +1719,107 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     }
 
     /// <summary>
-    /// 制造爆炸：**只造成伤害与击退，不破坏方块**。
-    ///
-    /// 为什么不用泰拉现成的 `Projectile.ExplodeTiles`：那个会**炸掉图格**。
-    /// 源项目在 `cast` 里先查 `env.canEditBlockAt(pos)`，
-    /// 无权限时直接不爆炸 —— 说明作者也在意「法术不该随便拆家」。
-    /// 泰拉侧干脆做成纯伤害版：既不会把玩家的房子炸没，也不受权限系统影响。
-    ///
-    /// 强度 → 伤害的换算：1 强度 ≈ 30 伤害、2 图格半径。
-    /// 源项目的 strength 是 MC 的爆炸威力单位，两边量纲不同，这里是按手感定的。
+    /// 爆炸。照原版（MC 的 Explosion）：
+    ///   - 伤害随距离衰减：impact = 1 - 距离/(2×威力)，伤害 = (impact² + impact)/2 × 7 × 2×威力 + 1（MC 生命点）
+    ///     换算到泰拉：MC 满血 20 → 这里按「玩家最大生命的比例」算；对 NPC 按 100 生命制（×5）算。
+    ///   - **会炸掉方块**（原版在允许破坏时就是这样）：按泰拉炸弹的规则（地牢砖、神庙砖、箱子等炸不动），
+    ///     范围 = 威力格。服务端设置「爆炸破坏方块」可以关掉。
+    ///   - 火焰爆炸额外点燃。
+    /// 旧实现是「伤害 = 威力 × 30、不衰减、不破坏方块」。
     /// </summary>
     public void Explode(double x, double y, double strength, bool fire)
     {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
         float cx = (float)(x * HexUnits.PixelsPerTile);
         float cy = (float)(y * HexUnits.PixelsPerTile);
-        float radiusPx = (float)(strength * 2.0 * HexUnits.PixelsPerTile);
-        if (radiusPx < 8f) radiusPx = 8f;
+        double reach = 2.0 * strength;   // 伤害半径（格）
+        float reachPx = (float)(reach * HexUnits.PixelsPerTile);
 
-        int damage = (int)(strength * 30.0);
-        if (damage < 1) damage = 1;
+        double McDamage(float distPx)
+        {
+            double impact = 1.0 - (distPx / HexUnits.PixelsPerTile) / reach;
+            if (impact <= 0) return 0;
+            return ((impact * impact + impact) / 2.0 * 7.0 * reach) + 1.0;
+        }
 
-        // NPC
         for (int i = 0; i < Main.maxNPCs; i++)
         {
             var n = Main.npc[i];
-            if (n is not { active: true } || n.friendly || n.dontTakeDamage) continue;
-
-            float dx = n.Center.X - cx;
-            float dy = n.Center.Y - cy;
-            if (dx * dx + dy * dy > radiusPx * radiusPx) continue;
-
-            int dir = dx >= 0 ? 1 : -1;
-            n.SimpleStrikeNPC(damage, dir, false, (float)strength * 2f);
-
+            if (n is not { active: true } || n.dontTakeDamage) continue;
+            float dist = Vector2.Distance(n.Center, new Vector2(cx, cy));
+            double dmg = McDamage(dist);
+            if (dmg <= 0) continue;
+            n.SimpleStrikeNPC((int)System.Math.Ceiling(dmg * 5.0), n.Center.X >= cx ? 1 : -1, false, (float)strength * 2f);
             if (fire) n.AddBuff(Terraria.ID.BuffID.OnFire, 300);
         }
 
-        // 玩家（不含自己以外的 —— 这里对所有玩家生效，包括施法者，与原版一致）
         for (int i = 0; i < Main.maxPlayers; i++)
         {
             var p = Main.player[i];
             if (p is not { active: true } || p.dead || p.creativeGodMode) continue;
-
-            float dx = p.Center.X - cx;
-            float dy = p.Center.Y - cy;
-            if (dx * dx + dy * dy > radiusPx * radiusPx) continue;
-
-            int dir = dx >= 0 ? 1 : -1;
-            p.Hurt(Terraria.DataStructures.PlayerDeathReason.LegacyDefault(), damage, dir);
-
-            if (fire) p.AddBuff(Terraria.ID.BuffID.OnFire, 300);
+            float dist = Vector2.Distance(p.Center, new Vector2(cx, cy));
+            double dmg = McDamage(dist);
+            if (dmg <= 0) continue;
+            int hurt = System.Math.Max(1, (int)System.Math.Ceiling(dmg / 20.0 * p.statLifeMax2));
+            p.Hurt(Terraria.DataStructures.PlayerDeathReason.ByCustomReason(
+                Terraria.Localization.NetworkText.FromLiteral(p.name + "被炸飞了")), hurt, p.Center.X >= cx ? 1 : -1);
+            if (fire) AddPlayerBuff(p, Terraria.ID.BuffID.OnFire, 300);
         }
 
-        // 视觉：用 dust 表现爆炸。
-        // **不用 `Projectile.ExplodeTiles`** —— 那个会真的炸掉图格，
-        // 与「只造成伤害不拆家」的设计相悖。
+        if (Config.HexServerConfig.Instance.ExplosionsBreakBlocks)
+        {
+            int r = (int)System.Math.Ceiling(strength);
+            int ix = (int)System.Math.Floor(x), iy = (int)System.Math.Floor(y);
+            var rules = new Projectile();   // CanExplodeTile 只读图格数据，借一个空弹幕实例来问泰拉的炸弹规则
+            for (int tx = ix - r; tx <= ix + r; tx++)
+            {
+                for (int ty = iy - r; ty <= iy + r; ty++)
+                {
+                    if (!WorldGen.InWorld(tx, ty, 2)) continue;
+                    if ((tx - x) * (tx - x) + (ty - y) * (ty - y) > strength * strength) continue;
+                    var t = Main.tile[tx, ty];
+                    if (!t.HasTile || !rules.CanExplodeTile(tx, ty)) continue;
+                    WorldGen.KillTile(tx, ty, false, false, false);
+                    if (!Main.tile[tx, ty].HasTile && Main.netMode == Terraria.ID.NetmodeID.Server)
+                    {
+                        NetMessage.SendData(Terraria.ID.MessageID.TileManipulation, -1, -1, null, 0, tx, ty);
+                    }
+                }
+            }
+        }
+
+        SpellSounds.At("spell.explode", new Vector2(cx, cy));
         for (int k = 0; k < 30; k++)
         {
-            var vel = new Microsoft.Xna.Framework.Vector2(
+            var vel = new Vector2(
                 (float)(Main.rand.NextDouble() * 2 - 1),
-                (float)(Main.rand.NextDouble() * 2 - 1)) * (float)strength;
-            var d = Terraria.Dust.NewDustPerfect(
-                new Microsoft.Xna.Framework.Vector2(cx, cy),
-                fire ? Terraria.ID.DustID.Torch : Terraria.ID.DustID.Smoke,
-                vel, 0, default, 1.4f);
+                (float)(Main.rand.NextDouble() * 2 - 1)) * (float)strength * 2f;
+            var d = Terraria.Dust.NewDustPerfect(new Vector2(cx, cy),
+                fire ? Terraria.ID.DustID.Torch : Terraria.ID.DustID.Smoke, vel, 0, default, 1.6f);
             d.noGravity = true;
+        }
+        for (int g = 0; g < 3; g++)
+        {
+            Gore.NewGore(new Terraria.DataStructures.EntitySource_Misc("HexExplode"), new Vector2(cx - 24, cy - 24),
+                new Vector2(Main.rand.NextFloat(-1f, 1f), Main.rand.NextFloat(-1f, 1f)), Main.rand.Next(61, 64));
+        }
+        _ = reachPx;
+    }
+
+    /// <summary>
+    /// 给玩家加 buff。联机时服务端的 AddBuff 只改服务端那份，不会到达玩家客户端（buff 归客户端管）；
+    /// 原版唯一的「给别的玩家加 buff」消息（AddPlayerBuffPvP）只认 PvP buff，所以走自己的包。
+    /// </summary>
+    private static void AddPlayerBuff(Player p, int buffType, int ticks)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Net.HexNetSync.SendPlayerBuff(p.whoAmI, buffType, ticks);
+        }
+        else
+        {
+            p.AddBuff(buffType, ticks);
         }
     }
 
@@ -1753,7 +1860,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 if (entity.Index < 0 || entity.Index >= Main.maxPlayers) return;
                 var p = Main.player[entity.Index];
                 if (p is not { active: true } || p.dead) return;
-                p.AddBuff(buffType, ticks);
+                AddPlayerBuff(p, buffType, ticks);
                 break;
             }
 

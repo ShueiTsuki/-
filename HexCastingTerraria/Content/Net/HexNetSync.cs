@@ -166,6 +166,48 @@ internal static class HexNetSync
         }
     }
 
+    /// <summary>服务端 → 该玩家的客户端：加速度（<paramref name="teleport"/> = false）或传送到左上角坐标（true）。</summary>
+    public static void SendPlayerMotion(int player, float x, float y, bool teleport)
+    {
+        if (Main.netMode != Terraria.ID.NetmodeID.Server) return;
+        var packet = HexCastingTerraria.Instance?.GetPacket();
+        if (packet == null) return;
+        packet.Write((byte)HexMessage.PlayerMotion);
+        packet.Write(teleport);
+        packet.Write(x);
+        packet.Write(y);
+        packet.Send(player);
+    }
+
+    /// <summary>客户端：对本地玩家执行服务端算好的推动 / 传送。</summary>
+    public static void HandlePlayerMotion(System.IO.BinaryReader reader)
+    {
+        bool teleport = reader.ReadBoolean();
+        var v = new Microsoft.Xna.Framework.Vector2(reader.ReadSingle(), reader.ReadSingle());
+        var p = Main.LocalPlayer;
+        if (p is not { active: true } || p.dead) return;
+        if (teleport) { TerrariaCastingWorld.TeleportPlayerLocal(p, v); }
+        else { p.velocity += v; }
+    }
+
+    public static void SendPlayerBuff(int player, int buffType, int ticks)
+    {
+        if (Main.netMode != Terraria.ID.NetmodeID.Server) return;
+        var packet = HexCastingTerraria.Instance?.GetPacket();
+        if (packet == null) return;
+        packet.Write((byte)HexMessage.PlayerBuff);
+        packet.Write(buffType);
+        packet.Write(ticks);
+        packet.Send(player);
+    }
+
+    public static void HandlePlayerBuff(System.IO.BinaryReader reader)
+    {
+        int type = reader.ReadInt32();
+        int ticks = reader.ReadInt32();
+        if (Main.LocalPlayer is { active: true, dead: false } p) { p.AddBuff(type, ticks); }
+    }
+
     /// <summary>客户端处理：播放广播来的音符。</summary>
     public static void HandleBeep(System.IO.BinaryReader reader)
     {

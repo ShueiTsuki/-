@@ -41,7 +41,7 @@
 | 文件 | 职责 |
 |---|---|
 | `HexClientConfig.cs` | 妯＄粍鐨勫鎴风閰嶇疆锛屼細鍑虹幇鍦?tModLoader 鐨勩€岃缃?鈫?妯＄粍閰嶇疆銆嶉噷銆?/// |
-| `HexServerConfig.cs` | 鏈嶅姟绔厤缃€? |
+| `HexServerConfig.cs` | 鏈嶅姟绔厤缃€?/// |
 
 ### Core/
 
