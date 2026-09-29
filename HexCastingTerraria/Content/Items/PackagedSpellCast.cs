@@ -22,10 +22,12 @@ namespace HexCastingTerraria.Content.Items;
 public sealed class PackagedSpellEnvironment : PlayerCastingEnvironment
 {
     private readonly ItemPackagedSpell _storage;
+    private readonly int _slot;
 
-    public PackagedSpellEnvironment(Player player, ItemPackagedSpell storage) : base(player)
+    public PackagedSpellEnvironment(Player player, ItemPackagedSpell storage, int slot) : base(player)
     {
         _storage = storage;
+        _slot = slot;
         CanFallBackToPlayer = storage.CanDrawFromInventory;
     }
 
@@ -55,7 +57,8 @@ public sealed class PackagedSpellEnvironment : PlayerCastingEnvironment
 
         if (fromItem > 0)
         {
-            _storage.Spend(fromItem);
+            // 物品归本人客户端：服务端那份照扣、客户端那份转发（见 PlayerEffects）
+            PlayerEffects.BatteryDelta(Player, _slot, -fromItem);
         }
 
         if (remaining <= 0)
@@ -93,7 +96,9 @@ internal static class PackagedSpellCast
         if (item.ModItem is not ItemPackagedSpell storage || storage.IsEmpty) return;
         if (Main.netMode == NetmodeID.MultiplayerClient) return;
 
-        var env = new PackagedSpellEnvironment(player, storage);
+        int slot = System.Array.IndexOf(player.inventory, item);
+        if (slot < 0) return;
+        var env = new PackagedSpellEnvironment(player, storage, slot);
 
         // 冷却：源项目用 MC 的 item cooldown，泰拉这边手动记一个 tick
         if (player.GetModPlayer<HexPlayer>().PackagedCooldown > 0) return;
@@ -101,11 +106,7 @@ internal static class PackagedSpellCast
         var vm = CastingVM.Empty(env);
         var image = vm.Image;
 
-        var queue = new List<Iota>(storage.Patterns.Count);
-        foreach (var pattern in storage.Patterns)
-        {
-            queue.Add(new PatternIota(pattern));
-        }
+        var queue = new List<Iota>(storage.Program);
 
         if (queue.Count == 0) return;
 
@@ -118,14 +119,9 @@ internal static class PackagedSpellCast
         // 即「池子空了」才算用完 —— 而不是「放了一次就消失」。
         if (storage.BreakAfterDepletion && storage.Media == 0)
         {
-            item.TurnToAir();
+            PlayerEffects.ConsumeSlot(player, slot, item.stack);
         }
 
         HexPlayer.Get(player).StartPackagedCooldown(storage.CooldownTicks);
-
-        if (Main.netMode == NetmodeID.Server)
-        {
-            NetMessage.SendData(MessageID.SyncPlayer, -1, -1, null, player.whoAmI);
-        }
     }
 }

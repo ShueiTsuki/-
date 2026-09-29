@@ -71,9 +71,17 @@ public sealed class AncientScroll : ItemScroll
         _opId = tag.TryGet("opId", out string id) ? id : string.Empty;
     }
 
-    public override void NetSend(System.IO.BinaryWriter writer) => writer.Write(_opId);
+    public override void NetSend(System.IO.BinaryWriter writer)
+    {
+        base.NetSend(writer);
+        writer.Write(_opId);
+    }
 
-    public override void NetReceive(System.IO.BinaryReader reader) => _opId = reader.ReadString();
+    public override void NetReceive(System.IO.BinaryReader reader)
+    {
+        base.NetReceive(reader);
+        _opId = reader.ReadString();
+    }
 }
 
 /// <summary>
@@ -130,7 +138,7 @@ public sealed class AncientCypher : ItemPackagedSpell
             if (HexPattern.TryFromAnglesUnchecked(parts[1], dir, out var p, out _) && p != null) iotas.Add(new PatternIota(p));
         }
         Fill(iotas, 32 * MediaConstants.ShardUnit);
-        SetVariant(rand.Next(NumVariants));
+        SetVariant(rand.Next(NumVariantsConst));
         _hexName = key;
     }
 
@@ -155,6 +163,18 @@ public sealed class AncientCypher : ItemPackagedSpell
     {
         base.LoadData(tag);
         _hexName = tag.TryGet("hexName", out string n) ? n : string.Empty;
+    }
+
+    public override void NetSend(System.IO.BinaryWriter writer)
+    {
+        base.NetSend(writer);
+        writer.Write(_hexName);
+    }
+
+    public override void NetReceive(System.IO.BinaryReader reader)
+    {
+        base.NetReceive(reader);
+        _hexName = reader.ReadString();
     }
 }
 

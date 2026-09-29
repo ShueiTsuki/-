@@ -28,23 +28,21 @@ namespace HexCastingTerraria.Content.Items;
 /// 为什么符纸用完就没了：它是「一次性咒符」，代价最低（1 晶体）。
 /// 法器最贵（10 晶体）但最省心 —— 这就是三档的取舍。
 /// </summary>
-public abstract class ItemPackagedSpell : ModItem
+public abstract class ItemPackagedSpell : ModItem, IHexVariantItem
 {
     /// <summary>变体数量。源项目 `ItemFocus.NUM_VARIANTS = 8`。</summary>
-    public const int NumVariants = 8;
+    public const int NumVariantsConst = 8;
 
     /// <summary>
-    /// 封在里面的图案。空 = 还没封东西（`craft/*` 图案只认空的）。
+    /// 封在里面的咒术（原版 TAG_PROGRAM）。空 = 还没封东西（`craft/*` 图案只认空的）。
+    /// 原版存的是**任意 iota 的列表**（craft/* 不检查每一项是不是图案），执行时整串入队。
     ///
-    /// 注意这里是**显式字段 + 只读属性**，不是自动属性：
-    /// tModLoader 的「引用字段可能在克隆间不安全」检查看的是**字段**，
-    /// 而自动属性的字段是编译器生成的（`<Patterns>k__BackingField`），
-    /// 在那个字段上标 `[CloneByReference]` 是标不上去的 —— 警告不会消失。
+    /// 显式字段 + [CloneByReference]：列表只整体替换、不就地改，克隆间共享安全。
     /// </summary>
     [CloneByReference]
-    private List<HexPattern> _patterns = new();
+    private List<Iota> _program = new();
 
-    public IReadOnlyList<HexPattern> Patterns => _patterns;
+    public IReadOnlyList<Iota> Program => _program;
 
     /// <summary>里面还剩多少媒质。</summary>
     public long Media { get; private set; }
@@ -54,6 +52,10 @@ public abstract class ItemPackagedSpell : ModItem
 
     /// <summary>外观变体编号（`cycle_variant` 改的就是它）。</summary>
     public int Variant { get; private set; }
+
+    public int NumVariants => ItemPackagedSpell.NumVariantsConst;
+
+    public void SetVariant(int variant) => Variant = System.Math.Clamp(variant, 0, NumVariantsConst - 1);
 
     public abstract PackagedSpellKind Kind { get; }
 
@@ -72,7 +74,7 @@ public abstract class ItemPackagedSpell : ModItem
     public virtual bool CanDrawFromInventory => Kind == PackagedSpellKind.Artifact;
 
     /// <summary>是不是「空的」（`craft/*` 只认它）。</summary>
-    public bool IsEmpty => Patterns.Count == 0;
+    public bool IsEmpty => _program.Count == 0;
 
     public override void SetDefaults()
     {
@@ -112,42 +114,34 @@ public abstract class ItemPackagedSpell : ModItem
         }
         else
         {
-            tooltips.Add(new TooltipLine(mod, "HexPackagedCount", $"封有 {Patterns.Count} 个图案"));
+            tooltips.Add(new TooltipLine(mod, "HexPackagedCount", $"封有 {_program.Count} 个 iota"));
             tooltips.Add(new TooltipLine(mod, "HexPackagedMedia",
                 $"媒质：{MediaConstants.Format(Media)} / {MediaConstants.Format(MaxMedia)}"));
         }
 
         // 变体目前只体现在这一行 —— 贴图是欠账（见 TODO_PLAN.md 的美术章节）
-        tooltips.Add(new TooltipLine(mod, "HexPackagedVariant", $"外观变体 {Variant + 1} / {NumVariants}"));
+        tooltips.Add(new TooltipLine(mod, "HexPackagedVariant", $"外观变体 {Variant + 1} / {NumVariantsConst}"));
     }
 
     // ── 供 craft/* 图案与 cycle_variant 使用 ────────────────────────
 
-    /// <summary>把图案与媒质封进来。只有**空**物品能封。</summary>
-    public bool Fill(IReadOnlyList<Iota> patterns, long media)
+    /// <summary>把咒术与媒质封进来（原版 writeHex）。只有**空**物品能封。</summary>
+    public bool Fill(IReadOnlyList<Iota> program, long media)
     {
-        if (!IsEmpty) return false;
-
-        var list = new List<HexPattern>(patterns.Count);
-        foreach (var iota in patterns)
-        {
-            if (iota is not PatternIota p) return false;
-            list.Add(p.Pattern);
-        }
-
-        if (list.Count == 0) return false;
-
-        _patterns = list;
+        if (!IsEmpty || program.Count == 0) return false;
+        _program = new List<Iota>(program);
         Media = media;
         MaxMedia = media;
         return true;
     }
 
-    /// <summary>推进变体编号。对应源项目 `variant = (variant + 1) % numVariants()`。</summary>
-    public void CycleVariant() => Variant = (Variant + 1) % NumVariants;
-
-    /// <summary>直接设外观变体（远古杂件生成时随机一个）。</summary>
-    protected void SetVariant(int variant) => Variant = System.Math.Clamp(variant, 0, NumVariants - 1);
+    /// <summary>原版 clearHex（`erase`）：咒术、媒质、上限全清，变回空的。</summary>
+    public void ClearHex()
+    {
+        _program = new List<Iota>();
+        Media = 0;
+        MaxMedia = 0;
+    }
 
     /// <summary>池子里取出媒质。返回实际取到的量。</summary>
     public long Spend(long amount)
@@ -185,12 +179,10 @@ public abstract class ItemPackagedSpell : ModItem
 
     public override void SaveData(TagCompound tag)
     {
-        if (Patterns.Count > 0)
+        if (_program.Count > 0)
         {
-            // 复用 iota 的信封格式装一串图案 —— 它本来就只含 TagCompound 原生类型
-            var list = new List<Iota>(Patterns.Count);
-            foreach (var p in Patterns) list.Add(new PatternIota(p));
-            tag["patterns"] = new ListIota(list).Serialize();
+            // 复用 iota 的信封格式（键名沿用旧存档的 "patterns"）
+            tag["patterns"] = new ListIota(_program).Serialize();
         }
 
         tag["media"] = Media;
@@ -200,7 +192,7 @@ public abstract class ItemPackagedSpell : ModItem
 
     public override void LoadData(TagCompound tag)
     {
-        _patterns = new List<HexPattern>();
+        _program = new List<Iota>();
         Media = 0;
         MaxMedia = 0;
         Variant = 0;
@@ -209,10 +201,7 @@ public abstract class ItemPackagedSpell : ModItem
             && IotaSerializer.TryDeserialize(envelope, out var iota)
             && iota is ListIota list)
         {
-            foreach (var item in list.Items)
-            {
-                if (item is PatternIota p) _patterns.Add(p.Pattern);
-            }
+            _program = new List<Iota>(list.Items);
         }
 
         tag.TryGet("media", out long media);
@@ -221,7 +210,28 @@ public abstract class ItemPackagedSpell : ModItem
 
         Media = media;
         MaxMedia = maxMedia;
-        Variant = System.Math.Clamp(variant, 0, NumVariants - 1);
+        Variant = System.Math.Clamp(variant, 0, NumVariantsConst - 1);
+    }
+
+    // 联机：背包同步只带 NetSend 写的东西 —— 之前没写，服务端手里的打包法术永远是空的，联机放不出来
+    public override void NetSend(System.IO.BinaryWriter writer)
+    {
+        writer.Write((ushort)_program.Count);
+        foreach (var iota in _program) Content.Net.IotaWire.Write(writer, iota);
+        writer.Write(Media);
+        writer.Write(MaxMedia);
+        writer.Write((byte)Variant);
+    }
+
+    public override void NetReceive(System.IO.BinaryReader reader)
+    {
+        int n = reader.ReadUInt16();
+        var list = new List<Iota>(n);
+        for (int i = 0; i < n; i++) list.Add(Content.Net.IotaWire.Read(reader));
+        _program = list;
+        Media = reader.ReadInt64();
+        MaxMedia = reader.ReadInt64();
+        Variant = System.Math.Clamp((int)reader.ReadByte(), 0, NumVariantsConst - 1);
     }
 }
 

@@ -57,19 +57,17 @@ public sealed class OpMakePackagedSpell : SpellAction
             throw new MishapInvalidIota(args[1], "图案列表");
         }
 
-        // 列表里必须全是图案：源项目写入时也只接受图案
-        // （`ItemPackagedHex.writeHex` 存的就是图案列表）。
-        for (int i = 0; i < list.Count; i++)
-        {
-            if (list.Items[i] is not PatternIota)
-            {
-                throw new MishapInvalidIota(list.Items[i], "图案");
-            }
-        }
+        // 原版 args.getList(1)：任意 iota 的列表都收（writeHex 原样存下，放的时候整串入队）
 
         if (env.HeldEmptyPackagedSpell != _kind)
         {
-            throw new MishapBadHeldItem();
+            // 原版：没有「空的这种物品」→ 报物品名（手上那件装过咒术的另报 iota.write，这里并成一句）
+            throw new MishapBadHeldItem(_kind switch
+            {
+                PackagedSpellKind.Cypher => "一张空的符纸",
+                PackagedSpellKind.Trinket => "一个空的饰品",
+                _ => "一件空的法器",
+            });
         }
 
         var world = env.RequireWorld();
@@ -120,9 +118,15 @@ public sealed class OpMakeBattery : SpellAction
             throw new MishapBadItem(entity, "装着媒质的掉落物");
         }
 
-        if (!env.IsHeldPhialBase())
+        // 原版：先找玻璃瓶（泰拉：空瓶），再要求恰好 1 个
+        int bottles = env.HeldPhialCount();
+        if (bottles <= 0)
         {
-            throw new MishapBadHeldItem();
+            throw new MishapBadHeldItem(MishapBadHeldItem.Need.Bottle);
+        }
+        if (bottles != 1)
+        {
+            throw new MishapBadHeldItem(MishapBadHeldItem.Need.OnlyOne);
         }
 
         var world = env.RequireWorld();
@@ -152,8 +156,7 @@ public sealed class OpMakeBattery : SpellAction
 /// 移植自源项目 `OpCycleVariant`。
 ///
 /// 消耗 `DUST_UNIT / 10`（1 千）。
-/// 原版里只有打包法术那三件东西有变体（决定贴图/模型的变化），
-/// 所以这个图案的实际用途是「把符纸换成另一种花纹」。
+/// 原版有变体的物品：符纸、饰品、法器、核心、法术书（VariantItem；封了的核心 / 书页不变，但法术照放）。
 ///
 /// ⚠️ 泰拉侧目前的变体**只影响 tooltip 上显示的编号**，贴图还没做 ——
 /// 这属于「美术最后统一处理」的欠账，机制本身是完整的
@@ -168,7 +171,7 @@ public sealed class OpCycleVariant : SpellAction
         // 求值阶段只**检查**：真正推进变体要等媒质扣完（否则媒质不够时变体已经转了）
         if (!env.HeldHasVariants())
         {
-            throw new MishapBadHeldItem();
+            throw new MishapBadHeldItem(MishapBadHeldItem.Need.Variant);
         }
 
         return EnvSpell.Make(

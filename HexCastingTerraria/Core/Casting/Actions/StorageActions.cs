@@ -28,12 +28,8 @@ public sealed class OpReadIntoParens : IAction
     public ParenthesizedOperationResult OperateInParens(
         CastingEnvironment env, CastingImage image, SpellContinuation continuation, Iota thisIota)
     {
-        // 源项目：readIota ?: emptyIota ?: mishap —— 拿着**空**载体时插入空值，不报错（这里曾经直接报错）
-        if (!env.HasHeldStorage())
-        {
-            throw new MishapBadHeldItem();
-        }
-        var datum = env.ReadHeldIota() ?? NullIota.Instance;
+        // 源项目：readIota ?: emptyIota ?: mishap —— 原版没有哪个物品定义了 emptyIota，空载体同样报错
+        var datum = env.ReadHeldIota() ?? throw new MishapBadHeldItem(MishapBadHeldItem.Need.Read);
 
         var image2 = image.WithUsedOp().WithNewParenthesized(datum, escaped: true);
 
@@ -43,36 +39,6 @@ public sealed class OpReadIntoParens : IAction
             continuation,
             EvalSound.NormalExecute,
             ResolvedPatternType.Evaluated);
-    }
-}
-
-/// <summary>
-/// `write_iota`（源项目 `OpWriteIota`）：把栈顶的 iota 写进手持的数据载体。
-///
-/// 与 <see cref="OpReadIntoParens"/> 配对 —— 有读就得有写，
-/// 否则玩家只能读到预置的内容，无法把自己的计算结果存下来复用。
-/// </summary>
-public sealed class OpWriteIota : IAction
-{
-    public OperationResult Operate(CastingEnvironment env, CastingImage image, SpellContinuation continuation)
-    {
-        var stack = new List<Iota>(image.Stack);
-        if (stack.Count == 0)
-        {
-            return OperationResult.Fail(new MishapNotEnoughArgs(1, 0), image);
-        }
-
-        var value = stack[stack.Count - 1];
-        stack.RemoveAt(stack.Count - 1);
-
-        if (!env.WriteHeldIota(value))
-        {
-            return OperationResult.Fail(new MishapBadHeldItem(), image);
-        }
-
-        var image2 = image.WithStack(stack).WithUsedOp();
-        return new OperationResult(image2, System.Array.Empty<OperatorSideEffect>(),
-            continuation, EvalSound.NormalExecute);
     }
 }
 

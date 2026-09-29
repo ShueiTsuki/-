@@ -435,15 +435,28 @@ public sealed class MishapBadLocation : Mishap
 }
 
 /// <summary>
-/// 手上没有可用的数据载体。
-/// 移植自源项目 `MishapBadOffhandItem`（那边查的是副手，泰拉侧查手持）。
+/// 「另一只手」里没有需要的东西。移植自源项目 `MishapBadOffhandItem`。
 ///
-/// 触发场景：用了 `read_into_parens`，但手上没拿着聚念核心之类的可读物品。
-/// 消息必须说清楚「该拿什么」，否则玩家只会觉得这个图案坏了。
+/// 泰拉没有副手：「另一只手」= 快捷栏里施法物品右边那一格（见 PlayerCastingEnvironment.PrimarySlots），
+/// 其次才是手上拿着的。消息照原版的几种说法（bad_item.offhand + 各 key 的中文）。
 /// </summary>
 public sealed class MishapBadHeldItem : Mishap
 {
-    public MishapBadHeldItem() : base("bad_held_item") { }
+    /// <summary>原版 MishapBadOffhandItem 的 wanted key。</summary>
+    public enum Need { Storage, Read, Write, ReadOnly, Eraseable, Colorizer, Variant, Bottle, OnlyOne, Rechargeable }
+
+    private readonly Need? _need;
+    private readonly Iota? _datum;
+    private readonly string? _desc;
+
+    public MishapBadHeldItem(Need need, Iota? datum = null) : base("bad_held_item")
+    {
+        _need = need;
+        _datum = datum;
+    }
+
+    /// <summary>直接给出「需要什么」（原版 craft/* 用物品名，例如「一张空的符纸」）。</summary>
+    public MishapBadHeldItem(string wanted) : base("bad_held_item") => _desc = wanted;
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
@@ -451,8 +464,22 @@ public sealed class MishapBadHeldItem : Mishap
         env.DropHeldItems();
     }
 
+    private string Wanted => _desc ?? _need switch
+    {
+        Need.Read => "一个可以读出iota的地方",
+        Need.Write => "一个可以写入iota的地方",
+        Need.ReadOnly => $"一个能够接受{_datum}的地方",
+        Need.Eraseable => "一个可清除的物品",
+        Need.Colorizer => "一个染色剂",
+        Need.Variant => "一个有变种的物品",
+        Need.Bottle => "一个玻璃瓶",
+        Need.OnlyOne => "仅一个物品",
+        Need.Rechargeable => "一个可重新充能的物品",
+        _ => "一个可以存储iota的地方",
+    };
+
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "手上没有可读取的物品（需要拿一个能存 iota 的东西，例如聚念核心）";
+        => $"需要在另一只手里持有{Wanted}（泰拉：快捷栏里施法物品右边那一格，或者手上）";
 }
 
 /// <summary>

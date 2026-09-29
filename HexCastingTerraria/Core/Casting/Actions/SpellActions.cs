@@ -266,7 +266,9 @@ public sealed class OpTeleport : SpellAction
 
             // 代价：按距离震落施法者自己的物品。
             // 只在启用时执行 —— 这是世界规则，由服务端配置决定。
-            if (GreatTeleportRules.DropsItems())
+            // 原版 `teleportee is ServerPlayer && teleportee == env.castingEntity`：只有传送**自己**才掉，
+            // 把别人传走不会震落别人的东西。
+            if (GreatTeleportRules.DropsItems() && world.Caster is { } caster && caster.ValueEquals(_target))
             {
                 world.ScatterInventory(_target, _distance);
             }

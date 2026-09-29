@@ -181,36 +181,40 @@ public abstract class CastingEnvironment
         }
     }
 
-    /// <summary>
-    /// 读取施法者**手持**的数据载体物品里的一个 iota。
-    /// 对应源项目 `env.getHeldItemToOperateOn` + `DataHolder.readIota`。
-    ///
-    /// 返回 null 表示「手上没有可读的东西」，调用方应当报 mishap。
-    /// 默认环境（纯 VM）没有手持物品，返回 null。
-    /// </summary>
+    // ── 手持数据载体（read / write / erase …）──────────────────────────
+    //
+    // 原版 getHeldItemToOperateOn(谓词)：按 [另一只手, 施法的手] 的顺序，找第一个满足谓词的物品。
+    // 下面每个方法都是「在这两个位置里找」—— 具体是哪两格由环境决定
+    //（玩家：见 PlayerCastingEnvironment.PrimarySlots；法术环没有手，全是默认值）。
+    //
+    // 载体的规则照原版 IotaHolderItem：
+    //   readIota     —— 存着的东西；原版没有哪个物品定义「空值」（emptyIota），空载体 read 就是 mishap
+    //   writeable()  —— `writable` 图案问的就是它
+    //   canWrite(d)  —— 肯不肯收 d；d = null 表示清除（核心：封了也能清，清完顺带解封；念珠：不能清）
+
+    /// <summary>`read`：第一个**读得出东西**的载体里的 iota。都读不出 → null（调用方报 mishap）。</summary>
     public virtual Iota? ReadHeldIota() => null;
 
-    /// <summary>
-    /// 把一个 iota 写进手持的数据载体。返回 false 表示写不进去。
-    /// </summary>
+    /// <summary>手上（两个位置之一）有没有数据载体，不管空不空。</summary>
+    public virtual bool HasHeldStorage() => false;
+
+    /// <summary>`writable`：第一个载体的 writeable()。</summary>
+    public virtual bool IsHeldWritable() => false;
+
+    /// <summary>有没有载体肯收 <paramref name="datum"/>（原版 writeIota(datum, simulate: true)）。null = 清除。</summary>
+    public virtual bool CanWriteHeld(Iota? datum) => false;
+
+    /// <summary>`write`：写进第一个肯收的载体。返回是否写进去了。</summary>
     public virtual bool WriteHeldIota(Iota value) => false;
 
     /// <summary>
-    /// 手上是否拿着一个**数据载体**（不管里面有没有东西）。
-    ///
-    /// `readable` / `writable` 必须区分「没拿载体」与「拿了但内容是空的」——
-    /// 只看 <see cref="ReadHeldIota"/> 的话两者都是 null，判定会错。
+    /// `erase` 的目标：第一个「装着咒术的打包法术」或「肯被清除的载体」。
+    /// 返回它的堆叠数（原版消耗 = 粉尘 × 堆叠数），0 = 没有可清除的东西。
     /// </summary>
-    public virtual bool HasHeldStorage() => false;
+    public virtual int HeldEraseableCount() => 0;
 
-    /// <summary>手持载体是否**可写**。只读载体（卷轴）返回 false，对应源项目 `writeable()`。</summary>
-    public virtual bool IsHeldWritable() => false;
-
-    /// <summary>
-    /// 清空手持载体里的 iota（`erase` 图案）。
-    /// 返回是否有东西被清掉 —— 空载体应当报 mishap 而不是静默成功。
-    /// </summary>
-    public virtual bool ClearHeldIota() => false;
+    /// <summary>`erase`：清掉那个目标里的咒术和 / 或 iota。</summary>
+    public virtual void EraseHeld() { }
 
     /// <summary>
     /// 施法者的「哨卫」（`sentinel/*` 图案）。
@@ -235,8 +239,8 @@ public abstract class CastingEnvironment
     /// </summary>
     public virtual PackagedSpellKind? HeldEmptyPackagedSpell => null;
 
-    /// <summary>手持的是不是「空瓶」一类的可充能容器。对应源项目 `PHIAL_BASE` 标签。</summary>
-    public virtual bool IsHeldPhialBase() => false;
+    /// <summary>手上（两个位置之一）第一个「空瓶」的堆叠数；没有 → 0。对应源项目 `PHIAL_BASE` 标签 + `count != 1` 检查。</summary>
+    public virtual int HeldPhialCount() => 0;
 
     /// <summary>把图案与媒质装进手持的打包法术物品。返回是否成功。</summary>
     public virtual bool FillHeldPackagedSpell(System.Collections.Generic.IReadOnlyList<Iota> patterns, long media)

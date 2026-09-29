@@ -65,6 +65,12 @@ internal enum HexMessage : byte
     /// 这些由本人客户端做主，服务端改了会被忽略，见 Content/PlayerEffects.cs。
     /// </summary>
     OwnerEffect = 17,
+
+    /// <summary>
+    /// 双向：玩家存档里的咒法学状态（进度、哨卫、配色）。客户端进服 / 本地改动时报给服务端，
+    /// 服务端施法改了之后发给所有人。见 HexPlayer.HandleState。
+    /// </summary>
+    PlayerState = 18,
 }
 
 /// <summary>
@@ -185,7 +191,7 @@ internal static class IotaWire
                 string angles = r.ReadString();
                 byte dir = r.ReadByte();
                 if (dir > (byte)Core.Casting.Math.HexDir.NorthWest) return GarbageIota.Instance;
-                if (!Core.Casting.Math.HexPattern.TryFromAngles(
+                if (!Core.Casting.Math.HexPattern.TryFromAnglesUnchecked(
                         angles, (Core.Casting.Math.HexDir)dir, out var parsed, out _) || parsed == null)
                 {
                     return GarbageIota.Instance;
@@ -223,7 +229,7 @@ internal static class IotaWire
         string angles = r.ReadString();
         byte dir = r.ReadByte();
         if (dir > (byte)Core.Casting.Math.HexDir.NorthWest) return null;
-        if (!Core.Casting.Math.HexPattern.TryFromAngles(
+        if (!Core.Casting.Math.HexPattern.TryFromAnglesUnchecked(
                 angles, (Core.Casting.Math.HexDir)dir, out var parsed, out _) || parsed == null)
         {
             return null;

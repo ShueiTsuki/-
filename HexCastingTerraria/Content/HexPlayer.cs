@@ -360,6 +360,164 @@ public sealed class HexPlayer : ModPlayer
     /// <summary>取玩家身上的 HexPlayer 实例。</summary>
     public static HexPlayer Get(Player player) => player.GetModPlayer<HexPlayer>();
 
+    /// <summary>真实的 Shift 按键状态（画布开着时 controlDown 之类不更新，不能用）。</summary>
+    public static bool ShiftHeld()
+        => Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift)
+           || Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightShift);
+
+    private static bool CtrlHeld()
+        => Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl)
+           || Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightControl);
+
+    /// <summary>
+    /// 滚轮拨算盘 / 翻法术书（原版 ShiftScrollListener + MsgShiftScrollC2S）：
+    ///   - 平时：**潜行 + 滚轮**；画布开着时不用潜行（原版施法界面里直接滚）
+    ///   - 手上是算盘 / 法术书就拨手上的，否则拨「另一只手」（快捷栏里手上这格右边那格）的
+    ///   - 吃掉这次滚轮 —— 泰拉在 SetControls 之后才用滚轮切快捷栏，所以快捷栏不会跟着切
+    /// 物品归本地客户端：直接改，NetStateChanged 让它同步给服务端。
+    /// </summary>
+    public override void SetControls()
+    {
+        if (Player.whoAmI != Main.myPlayer || Terraria.GameInput.PlayerInput.ScrollWheelDelta == 0) return;
+        bool canvas = Client.HexCanvasState.Canvas.IsOpen;
+        if (!canvas && (!ShiftHeld() || Main.playerInventory || Main.mapFullscreen)) return;
+
+        static bool Scrollable(Item? it) => it is { IsAir: false, ModItem: Items.Spellbook or Items.Abacus };
+        bool mainHand = Scrollable(Player.HeldItem);
+        int sel = Player.selectedItem;
+        Item? target = mainHand ? Player.HeldItem
+            : sel is >= 0 and < 10 && Scrollable(Player.inventory[(sel + 1) % 10]) ? Player.inventory[(sel + 1) % 10] : null;
+        if (target is null) return;
+
+        int delta = Terraria.GameInput.PlayerInput.ScrollWheelDelta;
+        Terraria.GameInput.PlayerInput.ScrollWheelDelta = 0;
+        // 原版 increase = delta < 0（滚轮向下是加）；scale = max(floor(|格数|), 1)
+        int notches = System.Math.Max(System.Math.Abs(delta) / 120, 1) * (delta < 0 ? 1 : -1);
+
+        switch (target.ModItem)
+        {
+            case Items.Spellbook book:
+                book.RotatePage(notches > 0);
+                target.NetStateChanged();
+                Client.HexCanvasState.SetMessage(book.PageLine());
+                break;
+            case Items.Abacus abacus:
+                abacus.Scroll(notches, mainHand, CtrlHeld());
+                break;
+        }
+    }
+
+    // ── 联机：存档里的咒法学状态 ─────────────────────────────────────
+    //
+    // 进度（启蒙 / 盲目绘制 / 睁开双眼 / 紫水晶）、哨卫、配色都存在**客户端**的角色存档里，
+    // 而施法在**服务端**跑。之前完全不同步：联机时服务端眼里谁都没启蒙（大法术一律失败）、
+    // 谁都没失败过大法术（不能过载）、没有哨卫；服务端放下的哨卫客户端也不知道，下线就丢。
+    //
+    //   客户端 → 服务端：进服时（SyncPlayer）+ 本地有改动时（SendClientChanges）；服务端再转给其他人
+    //   服务端 → 所有人：施法改了这些之后（SyncFromServer）。本人客户端收到时进度只**置真**不清除
+
+    private void WriteState(System.IO.BinaryWriter w)
+    {
+        w.Write(Enlightened);
+        w.Write(FailedGreatSpell);
+        w.Write(Overcasted);
+        w.Write(ObtainedAmethyst);
+        w.Write(InfiniteMedia);
+        w.Write(PigmentDyeType);
+        w.Write(Sentinel.HasValue);
+        if (Sentinel is { } s)
+        {
+            w.Write(s.X);
+            w.Write(s.Y);
+            w.Write(s.Great);
+        }
+    }
+
+    private void ReadState(System.IO.BinaryReader r, bool fromServerToOwner)
+    {
+        bool enlightened = r.ReadBoolean(), failed = r.ReadBoolean(), overcasted = r.ReadBoolean(), amethyst = r.ReadBoolean();
+        bool infinite = r.ReadBoolean();
+        int pigment = r.ReadInt32();
+        Core.Casting.Eval.CastingEnvironment.SentinelState? sentinel = r.ReadBoolean()
+            ? new(r.ReadDouble(), r.ReadDouble(), r.ReadBoolean())
+            : null;
+
+        if (fromServerToOwner)
+        {
+            if (failed) FailedGreatSpell = true;
+            if (overcasted) Overcasted = true;
+            if (amethyst) ObtainedAmethyst = true;
+            if (enlightened) GrantEnlightenment();   // 本地调用才会在聊天框出「获得启迪」
+            if (pigment != PigmentDyeType) HexPigment.Refresh(pigment);
+        }
+        else
+        {
+            Enlightened = enlightened;
+            FailedGreatSpell = failed;
+            Overcasted = overcasted;
+            ObtainedAmethyst = amethyst;
+            InfiniteMedia = infinite;
+        }
+        PigmentDyeType = pigment;
+        Sentinel = sentinel;
+    }
+
+    private void SendState(int toWho, int ignoreWho)
+    {
+        var packet = Mod.GetPacket();
+        packet.Write((byte)Net.HexMessage.PlayerState);
+        packet.Write((byte)Player.whoAmI);
+        WriteState(packet);
+        packet.Send(toWho, ignoreWho);
+    }
+
+    /// <summary>服务端改了进度 / 哨卫 / 配色：发给所有人（本人客户端存档，其他人画配色）。单人不用发。</summary>
+    public void SyncFromServer()
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.Server) SendState(-1, -1);
+    }
+
+    /// <summary>收到 <see cref="Net.HexMessage.PlayerState"/>。</summary>
+    public static void HandleState(System.IO.BinaryReader r, int whoAmI)
+    {
+        int index = r.ReadByte();
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            // 客户端只能报自己的
+            var hp = Get(Main.player[whoAmI]);
+            hp.ReadState(r, fromServerToOwner: false);
+            hp.SendState(-1, whoAmI);
+            return;
+        }
+        if (index < 0 || index >= Main.maxPlayers) return;
+        Get(Main.player[index]).ReadState(r, fromServerToOwner: index == Main.myPlayer);
+    }
+
+    public override void SyncPlayer(int toWho, int fromWho, bool newPlayer) => SendState(toWho, fromWho);
+
+    public override void CopyClientState(ModPlayer targetCopy)
+    {
+        var t = (HexPlayer)targetCopy;
+        t.Enlightened = Enlightened;
+        t.FailedGreatSpell = FailedGreatSpell;
+        t.Overcasted = Overcasted;
+        t.ObtainedAmethyst = ObtainedAmethyst;
+        t.InfiniteMedia = InfiniteMedia;
+        t.PigmentDyeType = PigmentDyeType;
+        t.Sentinel = Sentinel;
+    }
+
+    public override void SendClientChanges(ModPlayer clientPlayer)
+    {
+        var c = (HexPlayer)clientPlayer;
+        if (c.Enlightened != Enlightened || c.FailedGreatSpell != FailedGreatSpell || c.Overcasted != Overcasted
+            || c.ObtainedAmethyst != ObtainedAmethyst || c.InfiniteMedia != InfiniteMedia
+            || c.PigmentDyeType != PigmentDyeType || c.Sentinel != Sentinel)
+        {
+            SendState(-1, -1);
+        }
+    }
+
     public override void SaveData(TagCompound tag)
     {
         tag["enlightened"] = Enlightened;

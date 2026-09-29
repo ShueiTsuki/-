@@ -281,6 +281,10 @@ namespace HexCastingTerraria
                     Content.PlayerEffects.Handle(reader);
                     break;
 
+                case Content.Net.HexMessage.PlayerState:
+                    Content.HexPlayer.HandleState(reader, whoAmI);
+                    break;
+
                 case Content.Net.HexMessage.SpellParticles:
                     if (Main.netMode != NetmodeID.MultiplayerClient)
                     {

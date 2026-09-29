@@ -75,6 +75,7 @@
 | `ScryingLens` | 1 | AmethystDust×1 + Glass×4 | WorkBenches | 源 153 ringCornerless：玻璃 ×4 + 粉 ×1 |
 | `Focus` | 1 | ChargedAmethyst×1 + FallenStar×4 + Silk×4 | WorkBenches | 源 98-117：萤石粉 ×4 + 皮革 ×2 + 纸 ×2 + 充能紫水晶 ×1 |
 | `ThoughtKnot` | 1 | AmethystDust×1 + Silk×1 | Loom | 源 93-97：粉 ×1 + 线 ×1（徒手；泰拉用织布机） |
+| `ThoughtKnot` | 1 | Hive×1 | WorkBenches | 源 93-97：粉 ×1 + 线 ×1（徒手；泰拉用织布机） |
 | `Abacus` | 1 | Amethyst×2 + 〔RecipeGroups.Wood〕×6 | WorkBenches | 源 156-163 "WAW"/"SAS"/"WAW"：木板 ×4 + 紫水晶碎片 ×2 + 木棍 ×2 |
 | `Cypher` | 1 | AmethystDust×1 + CopperBar×4 | WorkBenches | 源 131-135 ringCornerless：铜锭 ×4 + 粉 ×1 |
 | `Trinket` | 1 | AmethystShard×1 + 〔RecipeGroups.IronBar〕×4 | Anvils | 源 137-141 ringCornerless：铁锭 ×4 + 紫水晶碎片 ×1 |

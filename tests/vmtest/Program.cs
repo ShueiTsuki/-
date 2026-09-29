@@ -55,8 +55,8 @@ sealed class TestEnv : CastingEnvironment
     /// <summary>手持的空打包法术物品是哪一种（null = 没有）。</summary>
     public PackagedSpellKind? HeldEmptyPackaged { get; set; }
 
-    /// <summary>手持的是不是空瓶。</summary>
-    public bool HeldPhialBase { get; set; }
+    /// <summary>手上空瓶的数量（0 = 没有）。</summary>
+    public int HeldPhials { get; set; }
 
     /// <summary>被装进打包法术物品的内容：(图案数, 媒质)。</summary>
     public List<(int PatternCount, long Media)> FilledPackaged { get; } = new();
@@ -72,7 +72,7 @@ sealed class TestEnv : CastingEnvironment
 
     public override PackagedSpellKind? HeldEmptyPackagedSpell => HeldEmptyPackaged;
 
-    public override bool IsHeldPhialBase() => HeldPhialBase;
+    public override int HeldPhialCount() => HeldPhials;
 
     /// <summary>手上可充能物品的剩余空间（-1 = 手上没有可充能物品）。</summary>
     public long HeldRechargeRoom { get; set; } = -1;
@@ -99,9 +99,9 @@ sealed class TestEnv : CastingEnvironment
 
     public override bool CraftBatteryHeld(long media)
     {
-        if (!HeldPhialBase) return false;
+        if (HeldPhials != 1) return false;
         CraftedBatteries.Add(media);
-        HeldPhialBase = false;
+        HeldPhials = 0;
         return true;
     }
 
@@ -152,8 +152,14 @@ sealed class TestEnv : CastingEnvironment
     /// <summary>手持载体可不可写。</summary>
     public bool HeldWritable { get; set; } = true;
 
-    /// <summary>清空手持载体时调用的钩子；返回「原来有没有东西」。</summary>
-    public Func<bool>? OnClearHeld { get; set; }
+    /// <summary>载体肯不肯收某个值（原版 canWrite；null 参数 = 清除）。不设 = 「可写，或者是清除」。</summary>
+    public Func<Iota?, bool>? HeldCanWrite { get; set; }
+
+    /// <summary>手上装着咒术的打包法术（erase 的另一种目标）。</summary>
+    public bool HeldHasHex { get; set; }
+
+    /// <summary>erase 实际执行的次数。</summary>
+    public int Erased { get; private set; }
 
     /// <summary>被写进手持载体的值（按顺序）。</summary>
     public List<Iota> HeldWrites { get; } = new();
@@ -168,9 +174,12 @@ sealed class TestEnv : CastingEnvironment
 
     public override Iota? ReadHeldIota() => EffectiveHasStorage ? HeldIota : null;
 
+    public override bool CanWriteHeld(Iota? datum)
+        => EffectiveHasStorage && (HeldCanWrite?.Invoke(datum) ?? (datum == null || HeldWritable));
+
     public override bool WriteHeldIota(Iota value)
     {
-        if (!EffectiveHasStorage || !HeldWritable) return false;
+        if (!CanWriteHeld(value)) return false;
         HeldIota = value;
         HeldWrites.Add(value);
         return true;
@@ -180,12 +189,13 @@ sealed class TestEnv : CastingEnvironment
 
     public override bool IsHeldWritable() => EffectiveHasStorage && HeldWritable;
 
-    public override bool ClearHeldIota()
+    public override int HeldEraseableCount() => HeldHasHex || CanWriteHeld(null) ? 1 : 0;
+
+    public override void EraseHeld()
     {
-        if (!EffectiveHasStorage) return false;
-        bool had = OnClearHeld?.Invoke() ?? HeldIota != null;
-        HeldIota = null;
-        return had;
+        Erased++;
+        HeldHasHex = false;
+        if (CanWriteHeld(null)) HeldIota = null;
     }
 
     // ---- mishap 惩罚记录（原版 MishapEnvironment 的各个方法）----
@@ -514,9 +524,15 @@ sealed class FakeWorld : ICastingWorld
     public Iota? ReadEntityIota(EntityIota entity)
         => EntityIotas.TryGetValue(Key(entity), out var v) ? v : null;
 
+    /// <summary>实体载体肯不肯收某个值（原版 canWrite）。不设 = 看可不可写。</summary>
+    public Func<Iota, bool>? EntityCanWrite { get; set; }
+
+    public bool CanWriteEntityIota(EntityIota entity, Iota datum)
+        => IsEntityIotaWritable(entity) && (EntityCanWrite?.Invoke(datum) ?? true);
+
     public bool WriteEntityIota(EntityIota entity, Iota value)
     {
-        if (!IsEntityIotaWritable(entity)) return false;
+        if (!CanWriteEntityIota(entity, value)) return false;
         EntityIotas[Key(entity)] = value;
         EntityWriteLog.Add((Key(entity), value));
         return true;
@@ -2514,13 +2530,23 @@ static class Program
             // 掉落代价：距离决定了掉率，且**永不掉落主手**
             // 这里只验证「距离被正确传给世界侧」，具体掉落由泰拉实现负责
             var target = new EntityIota(EntityIota.EntityKind.Player, 0);
-            var world = new FakeWorld();
+            var world = new FakeWorld { Caster = target };
             var env = new TestEnv(world: world, media: 5_000_000) { Enlightened = true };
             var img = new CastingImage(new Iota[] { target, new VectorIota(3.0, 4.0) });   // 距离 = 5
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:teleport/great") });
-            Check("teleport/great：把传送距离(5)交给世界侧结算掉落",
+            Check("teleport/great：传送自己 -> 把传送距离(5)交给世界侧结算掉落",
                 System.Math.Abs(world.LastScatterDistance - 5.0) < 1e-6,
                 world.LastScatterDistance.ToString());
+        }
+        {
+            // 原版 `teleportee == env.castingEntity`：把**别人**传走不会震落别人的东西
+            var other = new EntityIota(EntityIota.EntityKind.Player, 1);
+            var world = new FakeWorld { Caster = new EntityIota(EntityIota.EntityKind.Player, 0) };
+            var env = new TestEnv(world: world, media: 5_000_000) { Enlightened = true };
+            var img = new CastingImage(new Iota[] { other, new VectorIota(3.0, 4.0) });
+            new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:teleport/great") });
+            Check("teleport/great：传送别人 -> 不震落任何人的东西",
+                world.LastScatterDistance == 0, world.LastScatterDistance.ToString());
         }
         // ==================== P2-3b iota 序列化往返 ====================
         // 早期版本的裸值格式**不可往返**：NullIota 与 GarbageIota 都写成 null、
@@ -2690,6 +2716,14 @@ static class Program
                 r.ResolutionType == ResolvedPatternType.Errored, Sig(r.Image));
         }
         {
+            // 空载体：原版 OpReadIntoParens 同样是 readIota ?: emptyIota ?: mishap
+            var env = new TestEnv { HasStorage = true };
+            var img = new CastingImage(System.Array.Empty<Iota>(), parenCount: 1);
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:read_into_parens") });
+            Check("read_into_parens：空载体 -> Errored（原版没有 emptyIota）",
+                r.ResolutionType == ResolvedPatternType.Errored, Sig(r.Image));
+        }
+        {
             // 转义的项不参与括号计数调整：读入一个「开括号图案」后 undo，计数必须不变。
             // 这条把「escaped」这个标记的**实际后果**钉住了 ——
             // 只断言 Escaped==true 是不够的，那只是标记，这里验证它的语义。
@@ -2712,39 +2746,15 @@ static class Program
             Check("WriteHeldIota：能写入并读回",
                 ok && env.HeldIota is VectorIota { X: 1, Y: 2 }, env.HeldIota?.ToString() ?? "null");
         }
-        // ==================== P2-3b 数据载体存储策略 ====================
-        {
-            // 卷轴只能存图案 —— 不能变成「存了一个数字的卷轴」
-            Check("存储策略：卷轴只接受图案",
-                StoragePolicy.CanStore(StorageKind.PatternOnly, P("hexcasting:add"))
-                && !StoragePolicy.CanStore(StorageKind.PatternOnly, new DoubleIota(1))
-                && !StoragePolicy.CanStore(StorageKind.PatternOnly, NullIota.Instance)
-                && !StoragePolicy.CanStore(StorageKind.PatternOnly, new VectorIota(1, 0)));
-        }
-        {
-            // 聚念核心什么都能存（含 null 与垃圾）
-            Check("存储策略：聚念核心接受任意 iota",
-                StoragePolicy.CanStore(StorageKind.Any, P("hexcasting:eval"))
-                && StoragePolicy.CanStore(StorageKind.Any, new DoubleIota(1))
-                && StoragePolicy.CanStore(StorageKind.Any, NullIota.Instance)
-                && StoragePolicy.CanStore(StorageKind.Any, GarbageIota.Instance));
-        }
         {
             // 存进卷轴的图案必须能读回来且一致（存储 → 序列化 → 反序列化 → 相等）
             var pattern = P("hexcasting:teleport/great");
-            if (StoragePolicy.CanStore(StorageKind.PatternOnly, pattern))
-            {
-                bool ok = IotaSerializer.TryDeserialize(pattern.Serialize(), out var back);
-                Check("存储策略：卷轴存的图案能完整往返",
-                    ok && back is PatternIota bp
-                    && bp.Pattern.AnglesSignature() == pattern.Pattern.AnglesSignature()
-                    && bp.Pattern.StartDir == pattern.Pattern.StartDir,
-                    back?.ToString() ?? "失败");
-            }
-            else
-            {
-                Check("存储策略：卷轴存的图案能完整往返", false, "策略拒绝了图案，应该接受的");
-            }
+            bool ok = IotaSerializer.TryDeserialize(pattern.Serialize(), out var back);
+            Check("卷轴存的图案能完整往返（序列化）",
+                ok && back is PatternIota bp
+                && bp.Pattern.AnglesSignature() == pattern.Pattern.AnglesSignature()
+                && bp.Pattern.StartDir == pattern.Pattern.StartDir,
+                back?.ToString() ?? "失败");
         }
         // ==================== P2-4 阿卡夏记录 ====================
         {
@@ -4182,11 +4192,12 @@ static class Program
                 Check("read：读出载体里的 7", Sig(r.Image) == "[7]", Sig(r.Image));
             }
             {
-                // 手里拿着**空**载体：read 应当压一个 null，而不是报 mishap
+                // 手里拿着**空**载体：原版 readIota ?: emptyIota ?: mishap，而没有哪个物品定义 emptyIota —— 报错
                 var env = new TestEnv { HasStorage = true };
                 var img = new CastingImage();
                 var r = Run(env, img, P("hexcasting:read"));
-                Check("read：空载体 -> 压入 null（不是报错）", Sig(r.Image) == "[null]", Sig(r.Image));
+                Check("read：空载体 -> Errored（原版 OpRead：没有 emptyIota 就是「需要可以读出 iota 的地方」）",
+                    r.ResolutionType == ResolvedPatternType.Errored, Sig(r.Image));
             }
             {
                 // 手上什么都没有：必须报 mishap，且**不能**静默读出 null
@@ -4198,12 +4209,13 @@ static class Program
             }
             {
                 var img = new CastingImage();
-                var has = Run(new TestEnv { HasStorage = true }, img, P("hexcasting:readable"));
+                var has = Run(new TestEnv { HeldIota = new DoubleIota(1) }, img, P("hexcasting:readable"));
+                var empty = Run(new TestEnv { HasStorage = true }, new CastingImage(), P("hexcasting:readable"));
                 var not = Run(new TestEnv { HeldIota = new DoubleIota(1), ForceHasStorage = false }, new CastingImage(),
                     P("hexcasting:readable"));
-                Check("readable：拿着载体 -> true；拿着普通物品 -> false",
-                    Sig(has.Image) == "[true]" && Sig(not.Image) == "[false]",
-                    $"{Sig(has.Image)} / {Sig(not.Image)}");
+                Check("readable：有内容的载体 -> true；空载体 -> false（原版 OpReadable）；普通物品 -> false",
+                    Sig(has.Image) == "[true]" && Sig(empty.Image) == "[false]" && Sig(not.Image) == "[false]",
+                    $"{Sig(has.Image)} / {Sig(empty.Image)} / {Sig(not.Image)}");
             }
             {
                 var env = new TestEnv { HasStorage = true };
@@ -4240,12 +4252,45 @@ static class Program
                     env.HeldIota?.ToString() ?? "null");
             }
             {
-                // 空载体上 erase：源项目会报 MishapBadOffhandItem，不能静默成功
+                // 空核心上 erase：原版目标是「writeIota(null, simulate) 行得通」的载体 —— 空核心也行，照样扣一份粉尘
                 var env = new TestEnv { HasStorage = true };
-                var img = new CastingImage();
-                var r = Run(env, img, P("hexcasting:erase"));
-                Check("erase：载体本来就是空的 -> Errored（不静默成功）",
-                    r.ResolutionType == ResolvedPatternType.Errored, Sig(r.Image));
+                long before = env.Media;
+                var r = Run(env, new CastingImage(), P("hexcasting:erase"));
+                Check("erase：空核心也能清（原版 OpErase），扣 1 粉尘",
+                    r.ResolutionType == ResolvedPatternType.Evaluated && env.Erased == 1
+                    && before - env.Media == HexCastingTerraria.Core.Media.MediaConstants.DustUnit, Sig(r.Image));
+            }
+            {
+                // 结念绳：canWrite(null) = false，erase 清不掉 → 报错
+                var env = new TestEnv { HeldIota = new DoubleIota(3), HeldCanWrite = d => false };
+                var r = Run(env, new CastingImage(), P("hexcasting:erase"));
+                Check("erase：结念绳清不掉 -> Errored，内容还在",
+                    r.ResolutionType == ResolvedPatternType.Errored && env.HeldIota is DoubleIota { Value: 3 }, Sig(r.Image));
+            }
+            {
+                // 以前 erase 在**求值阶段**就把载体清了：媒质不够、法术没放出来，东西已经没了
+                var env = new TestEnv(media: 0) { HeldIota = new DoubleIota(5) };
+                var r = Run(env, new CastingImage(), P("hexcasting:erase"));
+                Check("erase：媒质不够 -> 不放，载体里的东西还在",
+                    r.ResolutionType == ResolvedPatternType.Errored && env.Erased == 0 && env.HeldIota is DoubleIota { Value: 5 },
+                    env.HeldIota?.ToString() ?? "null");
+            }
+            {
+                // 打包法术：erase 清掉里面的咒术（原版 hexHolder.clearHex）
+                var env = new TestEnv { HeldHasHex = true };
+                var r = Run(env, new CastingImage(), P("hexcasting:erase"));
+                Check("erase：清掉打包法术里的咒术", r.ResolutionType == ResolvedPatternType.Evaluated && !env.HeldHasHex, Sig(r.Image));
+            }
+            {
+                // 卷轴：只收图案（原版 canWrite：datum is PatternIota || null）
+                var env = new TestEnv { HasStorage = true, HeldCanWrite = d => d is null or PatternIota };
+                var num = new CastingVM(new CastingImage(new Iota[] { new DoubleIota(1) }), env)
+                    .QueueExecute(new CastingImage(new Iota[] { new DoubleIota(1) }), new Iota[] { P("hexcasting:write") });
+                var pat = new CastingVM(new CastingImage(new Iota[] { P("hexcasting:add") }), env)
+                    .QueueExecute(new CastingImage(new Iota[] { P("hexcasting:add") }), new Iota[] { P("hexcasting:write") });
+                Check("write：卷轴拒收数字（Errored）、收图案",
+                    num.ResolutionType == ResolvedPatternType.Errored && pat.ResolutionType == ResolvedPatternType.Evaluated
+                    && env.HeldIota is PatternIota, $"{num.ResolutionType} / {pat.ResolutionType}");
             }
 
             // ── 实体载体：read/entity / readable/entity / write/entity / writable/entity ──
@@ -4265,6 +4310,15 @@ static class Program
                 Check("read/entity：不是载体的掉落物 -> Errored",
                     readEmpty.ResolutionType == ResolvedPatternType.Errored, Sig(readEmpty.Image));
 
+                world.EntityIotaHolders[(EntityIota.EntityKind.Item, 6)] = true;   // 空载体
+                var readBlank = Run(env, new CastingImage(new Iota[] { new EntityIota(EntityIota.EntityKind.Item, 6) }),
+                    P("hexcasting:read/entity"));
+                var readableBlank = Run(env, new CastingImage(new Iota[] { new EntityIota(EntityIota.EntityKind.Item, 6) }),
+                    P("hexcasting:readable/entity"));
+                Check("read/entity：空载体 -> Errored；readable/entity -> false（原版 OpTheCoolerRead / Readable）",
+                    readBlank.ResolutionType == ResolvedPatternType.Errored && Sig(readableBlank.Image) == "[false]",
+                    $"{readBlank.ResolutionType} / {Sig(readableBlank.Image)}");
+
                 var readable = Run(env, new CastingImage(new Iota[] { carried }), P("hexcasting:readable/entity"));
                 var readableNo = Run(env, new CastingImage(new Iota[] { plain }), P("hexcasting:readable/entity"));
                 Check("readable/entity：载体 -> true；普通掉落物 -> false",
@@ -4280,6 +4334,14 @@ static class Program
 
                 var writable = Run(env, new CastingImage(new Iota[] { carried }), P("hexcasting:writable/entity"));
                 Check("writable/entity：可写载体 -> true", Sig(writable.Image) == "[true]", Sig(writable.Image));
+
+                // 掉在地上的卷轴：writeable 为真，但只收图案 —— 写数字要报错（原版 writeIota(datum, simulate)）
+                world.EntityCanWrite = d => d is PatternIota;
+                var badImg = new CastingImage(new Iota[] { carried, new DoubleIota(2) });
+                var bad = new CastingVM(badImg, env).QueueExecute(badImg, new Iota[] { P("hexcasting:write/entity") });
+                Check("write/entity：卷轴收不下数字 -> Errored（不是静默写失败）",
+                    bad.ResolutionType == ResolvedPatternType.Errored, Sig(bad.Image));
+                world.EntityCanWrite = null;
             }
 
             // ── 本次施法的局部存储：read/local / write/local ──
@@ -4811,7 +4873,7 @@ static class Program
                     Sig(r.Image));
             }
             {
-                // 列表里混进非图案 -> 拒绝（否则会做出一个「存了数字的符纸」）
+                // 列表里混进非图案：原版 args.getList(1) 什么都收，writeHex 原样存下（放的时候整串入队）
                 var w = new FakeWorld();
                 w.ItemMedia[1] = MediaConstants.CrystalUnit;
                 var e = new TestEnv(world: w) { HeldEmptyPackaged = PackagedSpellKind.Cypher };
@@ -4821,8 +4883,8 @@ static class Program
                     new ListIota(new Iota[] { P("hexcasting:add_motion"), new DoubleIota(3) }),
                 });
                 var r = new CastingVM(im, e).QueueExecute(im, new Iota[] { P("hexcasting:craft/cypher") });
-                Check("craft：图案列表里混了非图案 -> Errored",
-                    r.ResolutionType == ResolvedPatternType.Errored && e.FilledPackaged.Count == 0,
+                Check("craft：列表里混了非图案也照封（原版 OpMakePackagedSpell 不检查每一项）",
+                    r.ResolutionType == ResolvedPatternType.Evaluated && e.FilledPackaged is [(2, _)],
                     Sig(r.Image));
             }
             {
@@ -4844,7 +4906,7 @@ static class Program
             {
                 var w = new FakeWorld();
                 w.ItemMedia[1] = MediaConstants.CrystalUnit * 2;
-                var e = new TestEnv(world: w) { HeldPhialBase = true };
+                var e = new TestEnv(world: w) { HeldPhials = 1 };
                 var im = new CastingImage(new Iota[] { new EntityIota(EntityIota.EntityKind.Item, 1) });
                 var r = new CastingVM(im, e).QueueExecute(im, new Iota[] { P("hexcasting:craft/battery") });
                 Check("craft/battery：做出容量 = 抽到的媒质，消耗 1 晶体",
@@ -4869,7 +4931,7 @@ static class Program
                 // craft/battery 是**需要启蒙**的大法术（源项目标签里就有它）
                 var w = new FakeWorld();
                 w.ItemMedia[1] = MediaConstants.CrystalUnit;
-                var e = new TestEnv(world: w) { HeldPhialBase = true, Enlightened = false };
+                var e = new TestEnv(world: w) { HeldPhials = 1, Enlightened = false };
                 var im = new CastingImage(new Iota[] { new EntityIota(EntityIota.EntityKind.Item, 1) });
                 var r = new CastingVM(im, e).QueueExecute(im, new Iota[] { P("hexcasting:craft/battery") });
                 Check("craft/battery：未启蒙 -> Invalid（原版 MishapUnenlightened.resolutionType）（大法术门槛）",
@@ -5043,28 +5105,6 @@ static class Program
             }
         }
 
-        Console.WriteLine("=== 存储策略扩充（算盘 / 法术书） ===");
-        {
-            var num = new DoubleIota(1.5);
-            var pat = P("hexcasting:add_motion");
-            var list = new ListIota(new Iota[] { P("hexcasting:add_motion"), P("hexcasting:const/vec/px") });
-            var mixed = new ListIota(new Iota[] { P("hexcasting:add_motion"), new DoubleIota(2) });
-
-            Check("存储策略：算盘只收数值（收列表/图案都拒绝）",
-                StoragePolicy.CanStore(StorageKind.NumberOnly, num)
-                && !StoragePolicy.CanStore(StorageKind.NumberOnly, pat)
-                && !StoragePolicy.CanStore(StorageKind.NumberOnly, list),
-                "NumberOnly");
-
-            Check("存储策略：法术书页只收「全是图案」的列表",
-                StoragePolicy.CanStore(StorageKind.PatternListOnly, list)
-                && !StoragePolicy.CanStore(StorageKind.PatternListOnly, mixed)
-                && !StoragePolicy.CanStore(StorageKind.PatternListOnly, num),
-                "PatternListOnly");
-
-            Check("存储策略：空列表算合法的「纯图案列表」（新书的一页就是空的）",
-                StoragePolicy.CanStore(StorageKind.PatternListOnly, new ListIota(new Iota[0])));
-        }
         Console.WriteLine("=== 未识别图案的「最接近」建议 ===");
         {
             // 玩家随手画的曲线几乎一定不在 188 条里。给不出「差在哪」的报错等于把人扔在原地，
@@ -5411,12 +5451,11 @@ static class Program
                 $"{bad.ResolutionType} {bad.Image.Stack.Count}");
         }
         {
-            // 插嵌：拿着空载体 → 插入空值，不报错（原版 readIota ?: emptyIota）
+            // 插嵌：拿着空载体 → 报错（原版 readIota ?: emptyIota ?: mishap，而没有哪个物品定义 emptyIota；上一轮这里写反了）
             var env = new TestEnv { HasStorage = true };
             var img = new CastingImage(System.Array.Empty<Iota>());
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:open_paren"), P("hexcasting:read_into_parens"), P("hexcasting:close_paren") });
-            Check("插嵌：空载体插入 null", r.ResolutionType == ResolvedPatternType.Evaluated && Sig(r.Image) == "[list(1)]"
-                && r.Image.Stack[0] is ListIota { Items: [NullIota] }, $"{r.ResolutionType} {Sig(r.Image)}");
+            Check("插嵌：空载体 -> Errored", r.ResolutionType == ResolvedPatternType.Errored, $"{r.ResolutionType} {Sig(r.Image)}");
         }
 
         // ==================== 法术坐标 ↔ 泰拉坐标（HexAxes，Y 朝上） ====================

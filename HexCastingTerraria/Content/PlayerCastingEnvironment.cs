@@ -30,38 +30,67 @@ public class PlayerCastingEnvironment : CastingEnvironment
 
     public Player Player => _player;
 
-    /// <summary>
-    /// 读取手持的数据载体里的 iota。
-    ///
-    /// 对应源项目 `env.getHeldItemToOperateOn` —— 那边查的是**副手**。
-    /// 泰拉没有 MC 那种「主手/副手」双持语义，所以查手持物品。
-    /// </summary>
-    public override Core.Casting.Iotas.Iota? ReadHeldIota()
+    // ── 「手」：原版 getPrimaryStacks = [另一只手, 施法的手] ───────────────
+    //
+    // 泰拉没有副手。「另一只手」= **快捷栏里施法物品右边那一格**（到第 10 格就绕回第 1 格）——
+    // 原版放方块时也是从「法杖右边一格」开始找（书里讲过），这样拿着法杖施法时，
+    // 把核心 / 法术书 / 空瓶 / 染料放在它右边就等于拿在另一只手里。
+    // 施法物品不在快捷栏（鼠标上拿着）时只有手上这一格。所有「手持物品」类图案都按这个顺序找。
+
+    /// <summary>[另一只手, 施法的手] 对应的背包格子。</summary>
+    public int[] PrimarySlots()
     {
-        var held = _player.HeldItem;
-        if (held.IsAir || held.ModItem is not ItemIotaStorage storage) return null;
-        return storage.Read();
+        int main = _player.selectedItem;
+        return main is >= 0 and < 10 ? new[] { (main + 1) % 10, main } : new[] { main };
     }
 
-    /// <summary>把 iota 写进手持的数据载体。只读载体（如卷轴）会拒绝。</summary>
+    /// <summary>原版 getHeldItemToOperateOn(谓词)：第一个满足谓词的格子，没有 → -1。</summary>
+    private int FindHeld(System.Func<Item, bool> ok)
+    {
+        foreach (int slot in PrimarySlots())
+        {
+            if (slot >= 0 && slot < _player.inventory.Length && _player.inventory[slot] is { IsAir: false } it && ok(it))
+            {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    private Item? HeldAt(System.Func<Item, bool> ok) => FindHeld(ok) is var s and >= 0 ? _player.inventory[s] : null;
+
+    // ── 数据载体（read / write / erase）──────────────────────────────
+
+    public override Core.Casting.Iotas.Iota? ReadHeldIota()
+        => (HeldAt(i => i.ModItem is ItemIotaStorage s && s.Read() != null)?.ModItem as ItemIotaStorage)?.Read();
+
+    public override bool HasHeldStorage() => FindHeld(i => i.ModItem is ItemIotaStorage) >= 0;
+
+    public override bool IsHeldWritable()
+        => HeldAt(i => i.ModItem is ItemIotaStorage)?.ModItem is ItemIotaStorage { Writeable: true };
+
+    public override bool CanWriteHeld(Core.Casting.Iotas.Iota? datum)
+        => FindHeld(i => i.ModItem is ItemIotaStorage s && s.WriteIota(datum, simulate: true)) >= 0;
+
+    /// <summary>手持物品归本人客户端 —— 走 PlayerEffects（服务端自己那份同时改，客户端那份由它转发）。</summary>
     public override bool WriteHeldIota(Core.Casting.Iotas.Iota value)
     {
-        var held = _player.HeldItem;
-        if (held.IsAir || held.ModItem is not ItemIotaStorage storage) return false;
-        return storage.TryStore(value);
+        int slot = FindHeld(i => i.ModItem is ItemIotaStorage s && s.WriteIota(value, simulate: true));
+        return slot >= 0 && PlayerEffects.WriteSlot(_player, slot, value);
     }
 
-    /// <summary>手上是否拿着数据载体（不管里面有没有东西）。`readable` / `writable` 靠它区分「没拿」与「空着」。</summary>
-    public override bool HasHeldStorage()
-        => !_player.HeldItem.IsAir && _player.HeldItem.ModItem is ItemIotaStorage;
+    /// <summary>原版 OpErase 的目标：装着咒术的打包法术，或者肯被清除的载体。</summary>
+    private int EraseTarget() => FindHeld(i =>
+        i.ModItem is ItemPackagedSpell { IsEmpty: false }
+        || i.ModItem is ItemIotaStorage s && s.WriteIota(null, simulate: true));
 
-    /// <summary>手持载体可不可写。只读载体（卷轴）返回 false。</summary>
-    public override bool IsHeldWritable()
-        => _player.HeldItem.ModItem is ItemIotaStorage { ReadOnlyStorage: false };
+    public override int HeldEraseableCount() => EraseTarget() is var s and >= 0 ? _player.inventory[s].stack : 0;
 
-    /// <summary>清空手持载体。返回原来是否有东西。</summary>
-    public override bool ClearHeldIota()
-        => _player.HeldItem.ModItem is ItemIotaStorage storage && storage.Clear();
+    public override void EraseHeld()
+    {
+        int slot = EraseTarget();
+        if (slot >= 0) PlayerEffects.EraseSlot(_player, slot);
+    }
 
     // ── 哨卫（sentinel/* 图案）──────────────────────────────────────
 
@@ -69,120 +98,106 @@ public class PlayerCastingEnvironment : CastingEnvironment
     public override SentinelState? Sentinel => HexPlayer.Get(_player).Sentinel;
 
     public override void SetSentinel(double x, double y, bool great)
-        => HexPlayer.Get(_player).Sentinel = new SentinelState(x, y, great);
+    {
+        HexPlayer.Get(_player).Sentinel = new SentinelState(x, y, great);
+        HexPlayer.Get(_player).SyncFromServer();   // 存档在客户端、画也在客户端
+    }
 
     public override void ClearSentinel()
-        => HexPlayer.Get(_player).Sentinel = null;
+    {
+        HexPlayer.Get(_player).Sentinel = null;
+        HexPlayer.Get(_player).SyncFromServer();
+    }
 
     // ── 打包法术与媒质瓶（craft/* 图案）────────────────────────────
 
     /// <summary>
-    /// 手持的**空的**打包法术物品是哪一种。装过东西的不算 ——
-    /// `craft/*` 只往空容器里封，否则会把别人存好的咒术覆盖掉。
+    /// 手上**空的**打包法术是哪一种。装过东西的不算 ——
+    /// `craft/*` 只往空容器里封（原版 `!hexHolder.hasHex()`），否则会把存好的咒术覆盖掉。
     /// </summary>
     public override PackagedSpellKind? HeldEmptyPackagedSpell
-        => _player.HeldItem.ModItem is ItemPackagedSpell { IsEmpty: true } packed
-            ? packed.Kind
-            : null;
+        => (HeldAt(i => i.ModItem is ItemPackagedSpell { IsEmpty: true })?.ModItem as ItemPackagedSpell)?.Kind;
 
-    /// <summary>
-    /// 手持的是不是「空瓶」。对应源项目 `PHIAL_BASE` 标签。
-    ///
-    /// ⚠️ 源项目额外要求**恰好 1 个**（`handStack.count != 1` 报错）。
-    /// 泰拉的 `ItemID.Bottle` 可堆叠，所以这条限制要在这里补上 ——
-    /// 否则一次施法会「用一个瓶子做出 N 个媒质瓶」。
-    /// </summary>
-    public override bool IsHeldPhialBase()
-    {
-        var held = _player.HeldItem;
-        return !held.IsAir && held.type == Terraria.ID.ItemID.Bottle && held.stack == 1;
-    }
+    /// <summary>手上第一个空瓶的数量（原版 PHIAL_BASE；恰好 1 个的检查在图案里）。</summary>
+    public override int HeldPhialCount()
+        => HeldAt(i => i.type == Terraria.ID.ItemID.Bottle)?.stack ?? 0;
 
     public override bool FillHeldPackagedSpell(
         System.Collections.Generic.IReadOnlyList<Core.Casting.Iotas.Iota> patterns, long media)
-        => _player.HeldItem.ModItem is ItemPackagedSpell packed && packed.Fill(patterns, media);
+    {
+        int slot = FindHeld(i => i.ModItem is ItemPackagedSpell { IsEmpty: true });
+        return slot >= 0 && PlayerEffects.FillPackaged(_player, slot, patterns, media);
+    }
 
     /// <summary>
-    /// 把空瓶换成媒质瓶。
-    ///
-    /// 装出来的瓶子里存的**就是抽到的那个数**（煤质瓶带 `StoredMedia`），
-    /// 所以「地上放 3 个充能紫水晶再 craft/battery」得到的是 30 万的瓶子 ——
-    /// 与源项目 `ItemMediaHolder.withMedia(BATTERY, mediamount, mediamount)` 同一语义。
+    /// 把空瓶换成媒质瓶：存量 = 上限 = 抽到的量
+    ///（源项目 `ItemMediaHolder.withMedia(BATTERY, mediamount, mediamount)`）。
     /// </summary>
     public override bool CraftBatteryHeld(long media)
     {
-        if (!IsHeldPhialBase()) return false;
-        // 手持物品归本人客户端 —— 走 PlayerEffects（联机时服务端直接改会被忽略）
-        PlayerEffects.MakeFlask(_player, _player.selectedItem, media);
+        int slot = FindHeld(i => i.type == Terraria.ID.ItemID.Bottle);
+        if (slot < 0 || _player.inventory[slot].stack != 1) return false;
+        PlayerEffects.MakeFlask(_player, slot, media);
         return true;
     }
 
-    /// <summary>手上的可充能物品还能装多少：媒质瓶，或装过法术的打包法术（源项目 canRecharge）。</summary>
+    /// <summary>原版 OpRecharge 的目标：可充能（媒质瓶，或装过咒术的打包法术）且还装得下。</summary>
+    private int RechargeTarget() => FindHeld(i => i.ModItem switch
+    {
+        MediaFlask f => f.Media < f.MaxMedia,
+        ItemPackagedSpell p => p.MaxMedia > 0 && p.Media < p.MaxMedia,
+        _ => false,
+    });
+
     public override long HeldRechargeSpace()
     {
-        return _player.HeldItem.ModItem switch
+        int slot = RechargeTarget();
+        return slot < 0 ? -1 : _player.inventory[slot].ModItem switch
         {
             MediaFlask f => f.MaxMedia - f.Media,
-            ItemPackagedSpell p when p.MaxMedia > 0 => p.MaxMedia - p.Media,
+            ItemPackagedSpell p => p.MaxMedia - p.Media,
             _ => -1,
         };
     }
 
     public override void ChargeHeld(long media)
-        => PlayerEffects.BatteryDelta(_player, _player.selectedItem, media);
+    {
+        int slot = RechargeTarget();
+        if (slot >= 0) PlayerEffects.BatteryDelta(_player, slot, media);
+    }
 
-    public override bool HeldHasVariants() => _player.HeldItem.ModItem is ItemPackagedSpell;
+    /// <summary>原版 VariantItem：符纸 / 缀品 / 造物、核心、法术书。</summary>
+    public override bool HeldHasVariants() => FindHeld(i => i.ModItem is IHexVariantItem) >= 0;
 
     public override bool CycleHeldVariant()
     {
-        if (_player.HeldItem.ModItem is not ItemPackagedSpell packed) return false;
-        packed.CycleVariant();
-        return true;
+        int slot = FindHeld(i => i.ModItem is IHexVariantItem);
+        return slot >= 0 && PlayerEffects.CycleVariant(_player, slot);
     }
 
     // ── 法术配色（colorize）────────────────────────────────────────
 
     /// <summary>
-    /// 找一份可用作颜料的染料。
-    ///
-    /// 只认**基础染料**（有单一颜色的那些）：特殊染料（火焰/渐变/彩虹）会被跳过，
-    /// 因为给它们硬套一个色值，玩家会看到「拿了彩虹染料却变紫」这种莫名其妙的result。
-    /// 优先找手持的，再找背包里的 —— 与源项目「先在副手找」的优先级一致。
+    /// 手上（两个位置之一）的颜料（泰拉侧 = 基础染料）。原版只看手上，不翻背包。
+    /// 特殊染料（火焰/渐变/彩虹）没有单一颜色，不算。
     /// </summary>
     public override int FindPigmentItem()
-    {
-        var held = _player.HeldItem;
-        if (!held.IsAir && Client.HexPigment.ColorOf(held.type) is not null)
-        {
-            return held.type;
-        }
+        => HeldAt(i => Client.HexPigment.ColorOf(i.type) is not null)?.type ?? 0;
 
-        for (int i = 0; i < _player.inventory.Length; i++)
-        {
-            var item = _player.inventory[i];
-            if (item is null || item.IsAir) continue;
-            if (Client.HexPigment.ColorOf(item.type) is not null) return item.type;
-        }
-
-        return 0;
-    }
-
-    /// <summary>消耗一份染料并把配色记到玩家身上。</summary>
+    /// <summary>
+    /// 消耗一份同种染料并把配色记到玩家身上。
+    /// 原版 withdrawItem 的顺序：背包从后往前（跳过手上那格），最后才是手上。
+    /// </summary>
     public override void ApplyPigment(int itemType)
     {
-        for (int i = 0; i < _player.inventory.Length; i++)
+        int slot = -1;
+        for (int i = 49; i >= 0 && slot < 0; i--)
         {
-            var item = _player.inventory[i];
-            if (item is null || item.IsAir || item.type != itemType) continue;
-
-            item.stack--;
-            if (item.stack <= 0)
-            {
-                item.TurnToAir();
-            }
-
-            break;
+            if (i != _player.selectedItem && _player.inventory[i] is { IsAir: false } item && item.type == itemType) slot = i;
         }
+        if (slot < 0 && _player.HeldItem.type == itemType) slot = _player.selectedItem;
+        if (slot < 0) return;
+        PlayerEffects.ConsumeSlot(_player, slot, 1);
 
         HexPlayer.Get(_player).PigmentDyeType = itemType;
 
@@ -192,10 +207,7 @@ public class PlayerCastingEnvironment : CastingEnvironment
             Client.HexCanvasState.SetMessage("法术配色已更换");
         }
 
-        if (Main.netMode == Terraria.ID.NetmodeID.Server)
-        {
-            NetMessage.SendData(Terraria.ID.MessageID.SyncPlayer, -1, -1, null, _player.whoAmI);
-        }
+        HexPlayer.Get(_player).SyncFromServer();
     }
 
     /// <summary>
@@ -311,12 +323,12 @@ public class PlayerCastingEnvironment : CastingEnvironment
     /// <summary>原版 dropHeldItems：把手上的物品丢出去（未启蒙强行施放大法术的代价）。</summary>
     /// <summary>原版 dropHeldItems：朝视线方向（前方一格）甩出去。</summary>
     public override void DropHeldItems()
-        => PlayerEffects.YeetHeld(_player, _player.Center + HexPlayer.Get(_player).Look * 16f);
+        => PlayerEffects.YeetHeld(_player, PrimarySlots(), _player.Center + HexPlayer.Get(_player).Look * 16f);
 
     // ── mishap 惩罚（原版 PlayerBasedMishapEnv）──────────────────────────
 
     public override void YeetHeldItemsTowards(double x, double y)
-        => PlayerEffects.YeetHeld(_player, new Microsoft.Xna.Framework.Vector2((float)(x * 16.0), (float)(y * 16.0)));
+        => PlayerEffects.YeetHeld(_player, PrimarySlots(), HexSpaceWorld.ToWorldPixels(x, y));   // Core 给的是法术坐标（+Y 朝上）
 
     /// <summary>原版 damage(p)：trulyHurt(当前生命 × p)。</summary>
     public override void MishapDamage(double healthProportion)

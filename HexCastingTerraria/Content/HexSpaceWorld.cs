@@ -170,6 +170,8 @@ public sealed class HexSpaceWorld : ICastingWorld
 
     public bool IsEntityIotaWritable(EntityIota entity) => _inner.IsEntityIotaWritable(entity);
 
+    public bool CanWriteEntityIota(EntityIota entity, Iota datum) => _inner.CanWriteEntityIota(entity, datum);
+
     public Iota? ReadEntityIota(EntityIota entity) => _inner.ReadEntityIota(entity);
 
     public bool WriteEntityIota(EntityIota entity, Iota value) => _inner.WriteEntityIota(entity, value);

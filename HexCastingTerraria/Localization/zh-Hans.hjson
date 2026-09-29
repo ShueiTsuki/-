@@ -4,6 +4,7 @@ Mods: {
 	HexCastingTerraria: {
 		Conditions: {
 			Enlightened: 已获得启迪（启蒙）
+			Sealable: 背包里第一件同类物品存着东西、还没密封
 		}
 
 		Items: {
@@ -194,7 +195,7 @@ Mods: {
 					'''
 			}
 			MediaFlask: {
-				DisplayName: 媒质瓶
+				DisplayName: 媒质之瓶
 				Tooltip:
 					'''
 					施法时最先从这里扣媒质
@@ -294,19 +295,18 @@ Mods: {
 				Tooltip: 剖开思绪本身，窥见其下的结构
 			}
 			Focus: {
-				DisplayName: 聚念核心
+				DisplayName: 核心
 				Tooltip:
 					'''
-					可以存下一个 iota
-					配合 read_into_parens 把常用的值随身携带
+					可以存下任意一个 iota
+					和蜂巢块合成可密封（防 write 覆写），erase 会连同密封一起清掉
 					'''
 			}
 			ThoughtKnot: {
-				DisplayName: 念珠
+				DisplayName: 结念绳
 				Tooltip:
 					'''
-					可以存下一个 iota
-					绳结记着某个念头，不会散
+					只能写入一次：写进去的 iota 再也改不了、也清不掉
 					'''
 			}
 			ScrollSmall: {

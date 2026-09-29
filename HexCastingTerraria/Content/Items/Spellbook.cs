@@ -8,67 +8,48 @@ using Terraria.ModLoader.IO;
 namespace HexCastingTerraria.Content.Items;
 
 /// <summary>
-/// 法术书。对应源项目 `hexcasting:spellbook`（**不是**那本引导书 `thehexbook`）。
+/// 法术书。对应源项目 `hexcasting:spellbook`（ItemSpellbook，**不是**那本引导书）。
 ///
-/// ## 它是什么：一本 64 页的咒术笔记本
+/// 一本 64 页的笔记本，每页存**一个任意** iota（原版 canWrite 不看类型）。规则逐条照原版：
+///   - 页码 1..64；整本是空的时候页码是 0（「空白」），只能停在那里；翻页不回卷（到头就停）
+///   - **潜行 + 滚轮翻页**（原版 MsgShiftScrollC2S；手上或「另一只手」都行，见 HexPlayer.SetControls）
+///   - **密封**当前页：和蜂巢合成（原版和蜜脾合成，SealThingsRecipe）。封了写不进
+///   - `erase` 封了也能清，清掉当前页的同时解封（原版 writeDatum(null) 连 sealed 一起删）
+///   - 没有右键功能（原版 ItemSpellbook 没有 use）
 ///
-/// ⚠️ 关键事实（读源码得到的，与直觉不同）：
-/// **法术书不能直接施放**。`ItemSpellbook` 只实现了 `IotaHolderItem`，
-/// **没有 `use` 覆写** —— 它不是法器，是**存储**。
-/// 用法是：用 `read` 把某一页的图案列表读出来，再 `eval` 它。
-///
-/// 这一点很容易做错：想当然地给它加个「右键施放」，
-/// 就等于凭空造了一个原版没有的机制。
-///
-/// ## 页与封印
-///
-/// - 最多 **64 页**（`MAX_PAGES`），页码 1 起；**0 表示书是空的**（源项目用 0/0 表达"空书"）
-/// - 每页存**一串图案**（我们限制成 `PatternListOnly`，与源项目一致：
-///   写进去的东西要不是图案列表就不收）
-/// - **封印**（sealed）：封住的页拒绝 `write` 与 `erase`，防止手滑覆盖掉存好的法术
-///
-/// ## 与源项目的交互差异（必须有）
-///
-/// 源项目里「翻页」和「封印」都是**键位**（`rotatePageIdx` / `setSealed` 由按键处理调用）。
-/// 泰拉这边物品的「使用」是右键，所以映射成：
-///   - **右键** = 翻到下一页（到 64 后回到 1）
-///   - **潜行 + 右键** = 封 / 解封当前页
-/// 语义一一对应，只是触发方式换成了泰拉的习惯。
-///
-/// 源项目还会把「物品的自定义名字」存成页名，泰拉的物品没有自定义名，这一条不做（不影响机制）。
+/// 原版会把物品的自定义名字存成页名（铁砧改名），泰拉的物品不能改名，这一条不做。
 /// </summary>
-public sealed class Spellbook : ItemIotaStorage
+public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
 {
     /// <summary>最大页数。源项目 `MAX_PAGES = 64`。</summary>
     public const int MaxPages = 64;
 
-    // ── 为什么这两个集合是「写时复制」而不是就地修改 ──────────────
-    //
-    // tModLoader 在克隆物品时会**共享引用字段**（并且会对带引用字段的 ModItem 发警告），
-    // 而 1.4.5 的 `ModItem` **没有** Clone 钩子让我们深拷贝。
-    // 如果 `_pages` 被就地修改（`_pages[page] = x`），两个共享它的书会互相串页 ——
-    // 而且完全不报错。
-    //
-    // 所以这里的约定是：**任何修改都整体换成新集合**，绝不就地改。
-    // 这样共享一个引用就永远安全（对方看到的是旧快照），
-    // 于是可以正大光明地标 `[CloneByReference]` 说明「我们想过这件事」。
+    public const int Variants = 8;
 
-    /// <summary>页码 -> 该页的图案列表。缺键 = 空页。**只整体替换，不就地修改**。</summary>
+    // 写时复制：tModLoader 克隆物品时共享引用字段，就地改会让两本书串页 —— 任何修改都整体换新集合
     [CloneByReference]
     private Dictionary<int, Iota> _pages = new();
 
-    /// <summary>被封住的页码。同样只整体替换。</summary>
     [CloneByReference]
     private HashSet<int> _sealed = new();
 
-    /// <summary>当前页（1..MaxPages）。</summary>
-    public int CurrentPage { get; private set; } = 1;
+    /// <summary>选中的页（原版 TAG_SELECTED_PAGE，0..64；0 只在整本空白时出现）。</summary>
+    private int _selected;
 
-    /// <summary>页里只能放图案列表。对应源项目 `writeable` / `canWrite` 的约束。</summary>
-    public override StorageKind StorageKind => StorageKind.PatternListOnly;
+    public int Variant { get; private set; }
 
-    /// <summary>当前页是否被封住。</summary>
-    public bool IsSealed => _sealed.Contains(CurrentPage);
+    public int NumVariants => Variants;
+
+    public void SetVariant(int variant)
+    {
+        if (!IsSealed) Variant = System.Math.Clamp(variant, 0, Variants - 1);
+    }
+
+    /// <summary>原版 getPage(ifEmpty)：整本空白 → ifEmpty；否则选中页（0 当 1）。</summary>
+    public int GetPage(int ifEmpty) => _pages.Count == 0 ? ifEmpty : System.Math.Max(1, _selected);
+
+    /// <summary>当前页是否被封住（原版 isSealed：按 getPage(1)）。</summary>
+    public bool IsSealed => _sealed.Contains(GetPage(1));
 
     /// <summary>最高有内容的页码（0 = 整本都是空的）。对应源项目 `highestPage`。</summary>
     public int HighestPage
@@ -76,124 +57,72 @@ public sealed class Spellbook : ItemIotaStorage
         get
         {
             int highest = 0;
-            foreach (int page in _pages.Keys)
-            {
-                if (page > highest) highest = page;
-            }
+            foreach (int page in _pages.Keys) highest = System.Math.Max(highest, page);
             return highest;
         }
     }
 
-    /// <summary>当前页的内容（读不出来就是 null）。</summary>
-    public override Iota? Read()
-        => _pages.TryGetValue(CurrentPage, out var value) ? value : null;
+    public override Iota? Read() => _pages.TryGetValue(GetPage(1), out var value) ? value : null;
 
-    /// <summary>写入当前页。封住的页拒绝写入 —— 这是封印的全部意义。</summary>
-    public override bool TryStore(Iota value)
+    public override bool Writeable => !IsSealed;
+
+    public override bool CanWrite(Iota? datum) => datum == null || !IsSealed;
+
+    protected override void WriteDatum(Iota? datum)
     {
-        if (IsSealed) return false;
-        if (!CanStore(value)) return false;
-
-        // 写时复制：整体换一份新字典（理由见字段处的注释）
-        _pages = new Dictionary<int, Iota>(_pages) { [CurrentPage] = value };
-        return true;
-    }
-
-    /// <summary>清空当前页。封住的页同样拒绝。</summary>
-    public override bool Clear()
-    {
-        if (IsSealed) return false;
-        if (!_pages.ContainsKey(CurrentPage)) return false;
-
-        var copy = new Dictionary<int, Iota>(_pages);
-        copy.Remove(CurrentPage);
-        _pages = copy;
-        return true;
-    }
-
-    // ── 翻页与封印 ─────────────────────────────────────────────────
-
-    /// <summary>翻到下一页，到顶回到 1。对应源项目 `rotatePageIdx(increase: true)` 的钳制语义。</summary>
-    public void NextPage()
-    {
-        CurrentPage = CurrentPage >= MaxPages ? 1 : CurrentPage + 1;
-    }
-
-    /// <summary>封 / 解封当前页。对应源项目 `setSealed`。</summary>
-    public bool ToggleSeal()
-    {
-        var copy = new HashSet<int>(_sealed);
-
-        if (copy.Contains(CurrentPage))
+        int page = GetPage(1);
+        if (datum == null)
         {
-            copy.Remove(CurrentPage);
-            _sealed = copy;
-            return false;
+            var pages = new Dictionary<int, Iota>(_pages);
+            pages.Remove(page);
+            _pages = pages;
+            var seals = new HashSet<int>(_sealed);
+            seals.Remove(page);
+            _sealed = seals;
         }
-
-        copy.Add(CurrentPage);
-        _sealed = copy;
-        return true;
+        else if (!IsSealed)
+        {
+            _pages = new Dictionary<int, Iota>(_pages) { [page] = datum };
+            // 原版 inventoryTick 每刻把 getPage(0) 写回 TAG_SELECTED_PAGE：第一次写进空书时选中页从 0 变 1
+            _selected = page;
+        }
     }
 
-    // ── 物品行为 ───────────────────────────────────────────────────
+    /// <summary>密封当前页（原版 setSealed(stack, true)）。</summary>
+    public void SealCurrentPage() => _sealed = new HashSet<int>(_sealed) { GetPage(1) };
+
+    /// <summary>原版 rotatePageIdx：空白书停在 0；否则 ±1，最小 1，最大 64（不回卷）。返回新页码。</summary>
+    public int RotatePage(bool increase)
+    {
+        int idx = GetPage(0);
+        if (idx != 0)
+        {
+            idx += increase ? 1 : -1;
+            idx = System.Math.Max(1, idx);
+        }
+        _selected = System.Math.Clamp(idx, 0, MaxPages);
+        return _selected;
+    }
+
+    /// <summary>原版 tooltip.spellbook.page(.sealed) / empty(.sealed)。</summary>
+    public string PageLine()
+    {
+        int highest = HighestPage;
+        string seal = IsSealed ? "（已密封）" : "";
+        return highest == 0 ? $"空白{seal}" : $"所选书页 {GetPage(0)}/{highest}{seal}";
+    }
 
     public override void SetDefaults()
     {
         base.SetDefaults();
-        Item.useStyle = ItemUseStyleID.HoldUp;
-        Item.useTime = 15;
-        Item.useAnimation = 15;
-        Item.UseSound = null;
         Item.rare = ItemRarityID.Pink;
         Item.value = Item.sellPrice(gold: 2);
     }
 
-    public override bool? UseItem(Player player)
-    {
-        if (player.whoAmI != Main.myPlayer) return true;
-
-        bool shift =
-            Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift) ||
-            Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightShift);
-
-        if (shift)
-        {
-            bool sealedNow = ToggleSeal();
-            Client.HexCanvasState.SetMessage(sealedNow
-                ? $"第 {CurrentPage} 页已封印（write / erase 会被拒绝）"
-                : $"第 {CurrentPage} 页已解封");
-            return true;
-        }
-
-        NextPage();
-
-        Iota? content = Read();
-        string summary = content is ListIota list ? $"{list.Count} 个图案" : "空页";
-        Client.HexCanvasState.SetMessage($"法术书 第 {CurrentPage} / {MaxPages} 页 · {summary}");
-
-        return true;
-    }
-
     public override void ModifyTooltips(List<TooltipLine> tooltips)
     {
-        int highest = HighestPage;
-
-        tooltips.Add(new TooltipLine(Mod, "HexSpellbookPage",
-            $"第 {CurrentPage} / {MaxPages} 页{(highest > 0 ? $"（已写到第 {highest} 页）" : "（整本还是空的）")}"));
-
-        if (IsSealed)
-        {
-            tooltips.Add(new TooltipLine(Mod, "HexSpellbookSealed", "已封印：本页不能被 write / erase 改动"));
-        }
-
-        Iota? content = Read();
-        tooltips.Add(new TooltipLine(Mod, "HexSpellbookContent", content is ListIota list
-            ? $"本页存有 {list.Count} 个图案"
-            : "本页是空的：用 write 写入一串图案"));
-
-        tooltips.Add(new TooltipLine(Mod, "HexSpellbookHint", "右键翻页 · 潜行右键 封/解封"));
-        tooltips.Add(new TooltipLine(Mod, "HexSpellbookReadHint", "读取用法：read 读出本页 → eval 执行"));
+        tooltips.Add(new TooltipLine(Mod, "HexSpellbookPage", PageLine()));
+        base.ModifyTooltips(tooltips);
     }
 
     public override void AddRecipes()
@@ -204,11 +133,8 @@ public sealed class Spellbook : ItemIotaStorage
         //     NBA        A = 充能紫水晶 ×2
         //                F = **合唱果 ×1**
         //
-        // 阶段：**肉后**。源项目那个合唱果是末地特产（代码里那句
-        // "i wanna gate this behind the end SOMEHOW" 就是本人在承认这个门槛），
-        // 但泰拉没有「末地」这一档，最接近的中间阶段是**肉后**；
-        // 而泰拉的**魔法书**（水球术→黄金雨→水晶风暴）恰好也是这个走向 ——
-        // 所以用「水晶碎块」代替合唱果：同为异界的结晶，同为肉后魔法材料的代表。
+        // 阶段：**肉后**。合唱果是末地特产，泰拉最接近的中间阶段是肉后；
+        // 用「水晶碎块」代替合唱果：同为异界的结晶，同为肉后魔法材料的代表。
         CreateRecipe()
             .AddIngredient(ItemID.Book, 1)                  // 可写书
             .AddIngredient(ItemID.GoldBar, 1)               // 金粒 ×3
@@ -216,66 +142,83 @@ public sealed class Spellbook : ItemIotaStorage
             .AddIngredient(ItemID.CrystalShard, 5)          // 合唱果 → 水晶碎块
             .AddTile(TileID.Bookcases)
             .Register();
+
+        // 原版 SealThingsRecipe.SPELLBOOK：当前页有内容且没封
+        SealRecipes.Add(this, b => b is Spellbook book && book.Read() != null && !book.IsSealed,
+            b => ((Spellbook)b).SealCurrentPage());
     }
 
     // ── 存档 ───────────────────────────────────────────────────────
 
     public override void SaveData(TagCompound tag)
     {
-        tag["page"] = CurrentPage;
-
-        // 页内容：key 是页码字符串 —— 与源项目的 TAG_PAGES 结构一致
+        tag["page"] = _selected;
         var pages = new TagCompound();
-        foreach (var kv in _pages)
-        {
-            pages[kv.Key.ToString()] = kv.Value.Serialize();
-        }
+        foreach (var kv in _pages) pages[kv.Key.ToString()] = kv.Value.Serialize();
         tag["pages"] = pages;
-
-        var sealedList = new List<int>(_sealed);
-        tag["sealed"] = sealedList;
+        tag["sealed"] = new List<int>(_sealed);
+        tag["variant"] = Variant;
     }
 
     public override void LoadData(TagCompound tag)
     {
-        _pages = new Dictionary<int, Iota>();
-        _sealed = new HashSet<int>();
-        CurrentPage = 1;
-
-        if (tag.TryGet("page", out int page))
-        {
-            CurrentPage = System.Math.Clamp(page, 1, MaxPages);
-        }
-
-        // 读档时先在局部变量里攒，最后一次性赋值 —— 保持「只整体替换」的约定
+        _selected = System.Math.Clamp(tag.GetInt("page"), 0, MaxPages);
         var loaded = new Dictionary<int, Iota>();
-
         if (tag.TryGet("pages", out TagCompound pages))
         {
             foreach (var kv in pages)
             {
                 // 页码解析失败就跳过这一条，**不要把整本书读废**
-                if (!int.TryParse(kv.Key, out int index)) continue;
-                if (index < 1 || index > MaxPages) continue;
-                if (kv.Value is not TagCompound envelope) continue;
-
-                if (IotaSerializer.TryDeserialize(envelope, out var iota))
+                if (!int.TryParse(kv.Key, out int index) || index < 1 || index > MaxPages) continue;
+                if (kv.Value is TagCompound envelope && IotaSerializer.TryDeserialize(envelope, out var iota))
                 {
                     loaded[index] = iota;
                 }
             }
         }
-
         _pages = loaded;
-
-        var loadedSealed = new HashSet<int>();
+        var seals = new HashSet<int>();
         if (tag.TryGet("sealed", out List<int> sealedPages))
         {
             foreach (int index in sealedPages)
             {
-                if (index >= 1 && index <= MaxPages) loadedSealed.Add(index);
+                if (index >= 1 && index <= MaxPages) seals.Add(index);
             }
         }
-        _sealed = loadedSealed;
+        _sealed = seals;
+        Variant = System.Math.Clamp(tag.GetInt("variant"), 0, Variants - 1);
+    }
+
+    public override void NetSend(System.IO.BinaryWriter writer)
+    {
+        writer.Write((byte)_selected);
+        writer.Write((byte)_pages.Count);
+        foreach (var kv in _pages)
+        {
+            writer.Write((byte)kv.Key);
+            Net.IotaWire.Write(writer, kv.Value);
+        }
+        writer.Write((byte)_sealed.Count);
+        foreach (int page in _sealed) writer.Write((byte)page);
+        writer.Write((byte)Variant);
+    }
+
+    public override void NetReceive(System.IO.BinaryReader reader)
+    {
+        _selected = System.Math.Clamp((int)reader.ReadByte(), 0, MaxPages);
+        var pages = new Dictionary<int, Iota>();
+        int count = reader.ReadByte();
+        for (int i = 0; i < count; i++)
+        {
+            int index = reader.ReadByte();
+            var iota = Net.IotaWire.Read(reader);
+            if (index >= 1 && index <= MaxPages) pages[index] = iota;
+        }
+        _pages = pages;
+        var seals = new HashSet<int>();
+        int sealedCount = reader.ReadByte();
+        for (int i = 0; i < sealedCount; i++) seals.Add(reader.ReadByte());
+        _sealed = seals;
+        Variant = System.Math.Clamp((int)reader.ReadByte(), 0, Variants - 1);
     }
 }

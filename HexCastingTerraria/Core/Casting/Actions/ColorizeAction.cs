@@ -30,7 +30,7 @@ public sealed class OpColorize : SpellAction
         int pigment = env.FindPigmentItem();
         if (pigment == 0)
         {
-            throw new MishapBadHeldItem();
+            throw new MishapBadHeldItem(MishapBadHeldItem.Need.Colorizer);
         }
 
         return EnvSpell.Make(

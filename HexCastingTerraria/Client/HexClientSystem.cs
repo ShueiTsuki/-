@@ -335,6 +335,17 @@ public sealed class HexClientSystem : ModSystem
             index = layers.Count;
         }
 
+        // 哨卫：世界里的东西，用「游戏缩放」层（跟着镜头缩放），画在所有 UI 下面
+        layers.Insert(0, new LegacyGameInterfaceLayer(
+            "HexCastingTerraria: Sentinel",
+            () =>
+            {
+                SentinelRenderer.Draw(Main.spriteBatch);
+                return true;
+            },
+            InterfaceScaleType.Game));
+        index++;
+
         // 笔迹层：屏幕像素坐标（InterfaceScaleType.None），与输入端的 RawMouse() 同一套坐标。
         // 放在 HUD 层下面，HUD 文字压在笔迹上方。
         layers.Insert(index, new LegacyGameInterfaceLayer(

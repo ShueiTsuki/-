@@ -109,7 +109,6 @@
 | `Casting/Iota/Iota.cs` | Iota 绫诲瀷鏍囩銆傚搴旀簮椤圭洰 IotaType 鍗曚緥鐨勯泦鍚堬紙娉ㄥ唽浜?HexIotaTypes.java锛夈€?/// |
 | `Casting/Iota/IotaSerializer.cs` | iota 鐨勫簭鍒楀寲涓庡弽搴忓垪鍖栥€?/// |
 | `Casting/Iota/PrimitiveIotas.cs` | 绌哄€?iota銆傛簮锛歂ullIota銆傚崟渚嬨€?/summary> |
-| `Casting/Iota/StoragePolicy.cs` | 鏁版嵁杞戒綋鐨勫瓨鍌ㄧ瓥鐣ャ€?/summary> |
 | `Casting/Math/EulerPathFinder.cs` | 缁欎竴涓浘妗堟壘鍙︿竴绉嶇敾娉曪細**褰㈢姸锛堣竟闆嗭級瀹屽叏鐩稿悓锛岀瑪椤轰笉鍚?*銆?/// 绉绘鑷簮椤圭洰 EulerPathFinder.kt 鈥斺€?澶ф硶鏈殑銆屾瘡涓笘鐣岀殑绗旈『銆嶅氨鏄敤瀹冧粠鏍囧噯鍥炬 + 涓栫晫绉嶅瓙鐢熸垚鐨勩€?/// |
 | `Casting/Math/HexAngle.cs` | 鍏杞悜瑙掋€傞『搴忎笌婧愰」鐩竴鑷达紝搴忓彿鍙備笌妯¤繍绠楋紝涓嶅彲閲嶆帓銆?/// 婧愶細at.petrak.hexcasting.api.casting.math.HexAngle |
 | `Casting/Math/HexCoord.cs` | 鍏竟褰㈢綉鏍间笂鐨勮酱鍧愭爣锛坅xial coordinate锛夈€?/// 婧愶細at.petrak.hexcasting.api.casting.math.HexCoord |
@@ -164,7 +163,7 @@
 | `Items/HexRecipeGroups.cs` | 寤烘潗鏃忕殑**閰嶆柟缁?*銆?/// |
 | `Items/HexSlateItem.cs` | 鐭虫澘锛堢墿鍝佸舰鎬侊級銆傚搴旀簮椤圭洰 `hexcasting:slate`銆?/// |
 | `Items/HexStaff.cs` | 娉曟潠鍩虹被銆傜Щ妞嶈嚜婧愰」鐩?`common/items/ItemStaff.java`銆?/// |
-| `Items/ItemIotaStorage.cs` | 銆屾暟鎹浇浣撱€嶇墿鍝佺殑鍩虹被锛氳兘瀛樹竴涓?iota銆?/// 绉绘鑷簮椤圭洰 `common/items/storage/ItemDataHolder`锛坒ocus / abacus / spellbook 绛夛級銆?/// |
+| `Items/ItemIotaStorage.cs` | 銆屾暟鎹浇浣撱€嶇墿鍝佺殑鍩虹被锛氳兘瀛樹竴涓?iota銆?/// 绉绘鑷簮椤圭洰 `api/item/IotaHolderItem`锛堟牳蹇?/ 缁撳康缁?/ 鍗疯酱 / 娉曟湳涔?/ 绠楃洏锛夈€?/// |
 | `Items/ItemPackagedSpell.cs` | 鎵撳寘娉曟湳鐗╁搧鐨勫熀绫伙細鎶婁竴涓插浘妗堜笌涓€浠藉獟璐ㄥ皝鍦ㄩ噷闈紝鍙抽敭鍗冲彲鏂芥斁銆?/// 绉绘鑷簮椤圭洰 `common/items/magic/ItemPackagedHex.java`銆?/// |
 | `Items/ItemScroll.cs` | 鍗疯酱銆傜Щ妞嶈嚜婧愰」鐩?`common/items/storage/ItemScroll.java`銆?/// |
 | `Items/JewelerHammer.cs` | 鐝犲疂鍖犻敜銆傚搴旀簮椤圭洰 `hexcasting:jeweler_hammer`銆?/// |
@@ -173,7 +172,7 @@
 | `Items/MiscDecoItems.cs` | 鍗疯酱绾革紙鐗╁搧锛夈€?/summary> |
 | `Items/PackagedSpellCast.cs` | 鎵撳寘娉曟湳涓撶敤鐜锛氬獟璐?*浠庣墿鍝佽嚜宸辩殑姹犲瓙閲屾墸**锛屼笉鏄粠鐜╁韬笂銆?/// 绉绘鑷簮椤圭洰 `ItemPackagedHex` 閲岀殑 `PackagedHexCastEnv`銆?/// |
 | `Items/ScryingLens.cs` | 鎺㈡湳閫忛暅銆傚搴旀簮椤圭洰 `hexcasting:lens`锛坄ItemLens`锛岃澶囧湪**澶撮儴**瑁呭浣嶏級銆?/// |
-| `Items/Spellbook.cs` | 娉曟湳涔︺€傚搴旀簮椤圭洰 `hexcasting:spellbook`锛?*涓嶆槸**閭ｆ湰寮曞涔?`thehexbook`锛夈€?/// |
+| `Items/Spellbook.cs` | 娉曟湳涔︺€傚搴旀簮椤圭洰 `hexcasting:spellbook`锛圛temSpellbook锛?*涓嶆槸**閭ｆ湰寮曞涔︼級銆?/// |
 | `Items/WallScrollFrames.cs` | 鍗疯酱鎸傛澘鐨勫熀绫汇€傚搴旀簮椤圭洰閲屻€屾妸鍗疯酱鎸傚埌澧欎笂銆嶉偅涓€姝ユ墍闇€鐨勮浇浣撱€?/// |
 | `Net/HexNet.cs` | 缃戠粶娑堟伅绫诲瀷銆?/// </summary> |
 | `Net/HexNetSync.cs` | 鏂瑰潡浜や簰鐨勪笂鎶ヨ緟鍔┿€? |
@@ -209,6 +208,7 @@
 | `HexPixel.cs` | 鍏变韩鐨?1脳1 鐧借壊璐村浘锛岀敤浜庣敾绾挎涓庢柟鍧楃偣銆?/// |
 | `HexVec.cs` | `Core` 鐨?<see cref="Vec2f"/> 鈫?XNA 鐨?<see cref="Vector2"/> 浜掕浆銆?/// |
 | `HexVmState.cs` | 瀹㈡埛绔晶鐨?VM 鐘舵€併€?/// |
+| `SentinelRenderer.cs` | 鐢昏嚜宸辩殑鍝ㄥ崼锛堝師鐗?HexAdditionalRenderers.renderSentinel锛夛細涓€涓唴鎺ヤ簬鍗曚綅鐞冪殑**姝ｄ簩鍗侀潰浣撶嚎妗?*锛?/// 缁曠珫杞磋嚜杞€佷笂涓嬫诞鍔紱澶у摠鍗紙鎵╁睍鏂芥硶鑼冨洿鐨勯偅绉嶏級鍐嶇粫姘村钩杞存參鎱㈢炕婊氥€?/// 鍙湁涓讳汉鐪嬪緱瑙侊紝闅旂潃澧欎篃鐪嬪緱瑙侊紙鍘熺増鍏充簡娣卞害娴嬭瘯锛夈€?/// |
 | `UI/DevPanel.cs` | 寮€鍙戣€呴潰鏉匡紙榛樿 F7锛夛細涓嶇煡閬撹鏀句粈涔堟硶鏈椂鐢ㄣ€?/// |
 | `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€? |
 | `UI/HexCanvas.cs` | 宸茬敾瀹岀殑涓€鏉″浘妗?+ 娉ㄥ唽琛ㄥ尮閰嶇粨鏋滐紙null = 鏈懡涓級+ 姹傚€肩粨鏋滐紙鍐冲畾棰滆壊锛夈€?/summary> |

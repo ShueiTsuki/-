@@ -55,22 +55,24 @@ public sealed class AkashicRecordItem : ModItem
 }
 
 /// <summary>
-/// 算盘。对应源项目 `hexcasting:abacus`。
+/// 算盘。对应源项目 `hexcasting:abacus`（ItemAbacus）。
 ///
-/// 它就是一个**只存一个数**的数据载体：`read` 读出来的是 double，
-/// `write` 写进去也必须是数。原版里右键（潜行）会「摇一摇」随机换一个数。
-///
-/// 我们已经有能存任意 iota 的聚念核心（`Focus`），为什么还要它：
-///   - 原版清单里有，属于「内容完整性」
-///   - 它自带一个**随机数**动作（摇算盘），拿来测 `write` / `read` / 数值图案比
-///     「先画一堆常数图案再写进核心」方便得多
-///
-/// 实现上直接复用 <see cref="ItemIotaStorage"/>，只把存储策略收紧到「只收 double」。
+/// **永远读得出一个数**（没设过就是 0），但**不能写**（writeable / canWrite 都是 false）——
+/// 它是拿来「拨出一个数再 read」的，省得画数字图案。操作照原版：
+///   - 潜行 + 滚轮：拿在手上 ±1（按住 Ctrl ±10）；放在「另一只手」（快捷栏里施法物品右边那格）±0.1（Ctrl ±0.01）
+///     原版加速键是疾跑键，泰拉没有疾跑，用 Ctrl。滚轮向下是加（原版 `increase = delta < 0`）
+///   - 潜行 + 右键：归零（原来是 69 的话提示「nice」）
+/// 之前这里是「右键摇出一个随机数、可以 write 进去」—— 原版没有这两样。
 /// </summary>
 public sealed class Abacus : ItemIotaStorage
 {
-    /// <summary>只收数值 —— 对应原版 `writeable` 里对 DoubleIota 的检查。</summary>
-    public override StorageKind StorageKind => StorageKind.NumberOnly;
+    public double Value { get; private set; }
+
+    public override Iota? Read() => new DoubleIota(Value);
+
+    public override bool Writeable => false;
+
+    public override bool CanWrite(Iota? datum) => false;
 
     public override void SetDefaults()
     {
@@ -78,28 +80,44 @@ public sealed class Abacus : ItemIotaStorage
         Item.useStyle = ItemUseStyleID.HoldUp;
         Item.useTime = 15;
         Item.useAnimation = 15;
-        Item.UseSound = SoundID.Item4;
+        Item.UseSound = null;
         Item.rare = ItemRarityID.Blue;
         Item.value = Item.sellPrice(silver: 15);
     }
 
-    /// <summary>
-    /// 右键摇一摇：写入一个 [0,1) 的随机数。
-    ///
-    /// 对应原版 `ItemAbacus.use`（潜行时清空、否则摇出一个新数）。
-    /// 摇出一个**新数**而不是清空，是因为「清空」用 `erase` 图案就能做，
-    /// 而「随机数」在测试里更常用。
-    /// </summary>
+    public override bool AltFunctionUse(Player player) => true;
+
+    /// <summary>原版 use：只有潜行时归零（不潜行 → pass，什么都不做）。</summary>
+    public override bool CanUseItem(Player player) => player.altFunctionUse == 2 && HexPlayer.ShiftHeld();
+
     public override bool? UseItem(Player player)
     {
         if (player.whoAmI != Main.myPlayer) return true;
-
-        TryStore(new DoubleIota(Main.rand.NextDouble()));
-
+        double old = Value;
+        Value = 0;
+        Item.NetStateChanged();
         Content.SpellSounds.Play("abacus.shake");
-        Client.HexCanvasState.SetMessage($"算盘：{Stored}");
+        Client.HexCanvasState.SetMessage(old == 69 ? "nice" : "重置为0");
         return true;
     }
+
+    /// <summary>原版 MsgShiftScrollC2S.abacus：拨一下。<paramref name="notches"/> = 滚了几格（向下为正 = 加）。</summary>
+    public void Scroll(int notches, bool mainHand, bool ctrl)
+    {
+        double step = mainHand ? (ctrl ? 10 : 1) : (ctrl ? 0.01 : 0.1);
+        Value += notches * step;
+        Item.NetStateChanged();
+        Content.SpellSounds.Play("abacus");
+        Client.HexCanvasState.SetMessage($"算盘：{new DoubleIota(Value)}");
+    }
+
+    public override void SaveData(Terraria.ModLoader.IO.TagCompound tag) => tag["value"] = Value;
+
+    public override void LoadData(Terraria.ModLoader.IO.TagCompound tag) => Value = tag.GetDouble("value");
+
+    public override void NetSend(System.IO.BinaryWriter writer) => writer.Write(Value);
+
+    public override void NetReceive(System.IO.BinaryReader reader) => Value = reader.ReadDouble();
 
     public override void AddRecipes()
     {

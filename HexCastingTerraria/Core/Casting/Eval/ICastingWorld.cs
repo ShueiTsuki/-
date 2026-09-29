@@ -322,6 +322,9 @@ public interface ICastingWorld
     /// <summary>该实体身上的载体是否可写。对应源项目 `dataHolder.writeable()`。</summary>
     bool IsEntityIotaWritable(EntityIota entity);
 
+    /// <summary>这个实体身上的载体肯不肯收 <paramref name="datum"/>（原版 writeIota(datum, simulate: true)）。</summary>
+    bool CanWriteEntityIota(EntityIota entity, Iota datum) => IsEntityIotaWritable(entity);
+
     /// <summary>读出实体身上载体里的 iota。null = 载体是空的（或根本不是载体）。</summary>
     Iota? ReadEntityIota(EntityIota entity);
 

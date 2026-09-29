@@ -6,6 +6,7 @@
 Mods: {
 	HexCastingTerraria: {
 		Conditions: {
+			Sealable: The first one of this item in your inventory holds something and is not sealed
 			Enlightened: Enlightened
 		}
 

@@ -517,7 +517,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     ///   ③ 快捷栏与护甲的掉率打折（×0.5 / ×0.25）——
     ///      这些东西掉出来最烦人，而且设定上「施法者对自己常用的东西更有意识」
     ///
-    /// 只对**玩家**生效；传送 NPC / 弹幕不会掉任何人的东西。
+    /// 只对**施法者自己**生效（调用方检查，原版 teleportee == castingEntity）。
+    /// 背包归本人客户端：掷骰和丢出都在那边做（PlayerEffects.Scatter）。
     /// </summary>
     public void ScatterInventory(EntityIota entity, double distanceTiles)
     {
@@ -533,25 +534,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         double baseChance = distanceTiles / divisor;
         if (baseChance <= 0) return;
 
-        // 服务端权威：掉落必须在服务端结算，否则联机时每个客户端各掉一份
         if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
-
-        var source = new Terraria.DataStructures.EntitySource_Misc("hexcasting:greater_teleport");
-
-        // ⚠️ 先记录主手，永不掉落它（源项目：会让饰品复制）
-        int heldSlot = player.selectedItem;
-
-        for (int i = 0; i < player.inventory.Length; i++)
-        {
-            if (i == heldSlot) continue;              // 规则②
-            DropIfRolled(player, i, baseChance * (i < 10 ? 0.5 : 1.0), source);
-        }
-
-        // 护甲：只算头/胸/腿（0..2），时装栏（3..9）不动
-        for (int i = 0; i < 3 && i < player.armor.Length; i++)
-        {
-            DropIfRolled(player, -1, baseChance * 0.25, source, armorSlot: i);
-        }
+        PlayerEffects.Scatter(player, baseChance);
     }
 
     /// <summary>
@@ -800,12 +784,23 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     public bool IsEntityIotaHolder(EntityIota entity) => FindEntityStorage(entity) is not null;
 
     public bool IsEntityIotaWritable(EntityIota entity)
-        => FindEntityStorage(entity) is { ReadOnlyStorage: false };
+        => FindEntityStorage(entity) is { Writeable: true };
+
+    public bool CanWriteEntityIota(EntityIota entity, Iota datum)
+        => FindEntityStorage(entity)?.WriteIota(datum, simulate: true) ?? false;
 
     public Iota? ReadEntityIota(EntityIota entity) => FindEntityStorage(entity)?.Read();
 
     public bool WriteEntityIota(EntityIota entity, Iota value)
-        => FindEntityStorage(entity)?.TryStore(value) ?? false;
+    {
+        if (FindEntityStorage(entity) is not { } storage || !storage.WriteIota(value, simulate: false)) return false;
+        // 地上的掉落物归服务端：写完广播一次（NetSend 带着里面的 iota），不然别人捡起来还是旧的
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, entity.Index);
+        }
+        return true;
+    }
 
     // ── 世界效果 ────────────────────────────────────────────────────
 
@@ -1993,27 +1988,6 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
         {
             Terraria.NetMessage.SendData(Terraria.ID.MessageID.TileEntitySharing, -1, -1, null, entity.ID, tx, ty);
-        }
-    }
-    /// <summary>
-    /// 按概率把某个槽位的**整堆**物品丢到地上并清空该槽。
-    /// 源项目也是整堆丢（`drop(invItem.copy())` + `shrink(count)`），逐件丢反而不忠实。
-    /// </summary>
-    private static void DropIfRolled(Player player, int slot, double chance,
-                                     Terraria.DataStructures.IEntitySource source, int armorSlot = -1)
-    {
-        if (chance <= 0 || Main.rand.NextDouble() >= chance) return;
-
-        Item item = armorSlot >= 0 ? player.armor[armorSlot] : player.inventory[slot];
-        if (item.IsAir || item.stack <= 0) return;
-
-        // 用 Clone 丢出，保留前缀与 mod 数据；随后清空原槽位
-        var dropped = Item.NewItem(source, player.Center, item.Clone());
-
-        // 极小概率 NewItem 因物品上限失败 —— 那就别清空，免得物品凭空消失
-        if (dropped >= 0)
-        {
-            item.TurnToAir();
         }
     }
 }

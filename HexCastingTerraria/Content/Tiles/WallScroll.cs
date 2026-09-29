@@ -198,7 +198,7 @@ public abstract class WallScrollTile : ModTile
         var scroll = new Item(ScrollItemType);
         if (scroll.ModItem is Items.ItemIotaStorage target)
         {
-            target.TryStore(new PatternIota(entity.Pattern));
+            target.WriteIota(new PatternIota(entity.Pattern), simulate: false);
         }
 
         Main.LocalPlayer.QuickSpawnItem(

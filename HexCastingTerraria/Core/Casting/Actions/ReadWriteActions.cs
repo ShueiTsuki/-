@@ -54,36 +54,27 @@ internal static class EnvSpell
 
 /// <summary>
 /// `read`：把**手持**数据载体里的 iota 压栈。
-/// 移植自源项目 `OpRead`。
-///
-/// 载体是空的时压入它的「空值」（我们的载体空值就是 `null` iota）。
-/// 手上没拿载体才报 mishap —— 与「拿了但空着」是两回事。
+/// 移植自源项目 `OpRead`：`readIota ?: emptyIota ?: mishap` —— 原版没有哪个物品有「空值」，
+/// 所以拿着**空**的核心 / 卷轴 read 也是 mishap（「需要一个可以读出 iota 的地方」）。
 /// </summary>
 public sealed class OpReadHeld : ConstMediaAction
 {
     public override int Argc => 0;
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
-    {
-        if (!env.HasHeldStorage())
-        {
-            throw new MishapBadHeldItem();
-        }
-
-        return new Iota[] { env.ReadHeldIota() ?? NullIota.Instance };
-    }
+        => new Iota[] { env.ReadHeldIota() ?? throw new MishapBadHeldItem(MishapBadHeldItem.Need.Read) };
 }
 
 /// <summary>
-/// `readable`：手持物是不是一个可读的数据载体（压入布尔）。
-/// 移植自源项目 `OpReadable`。
+/// `readable`：手上有没有**读得出东西**的载体（压入布尔）。
+/// 移植自源项目 `OpReadable`：载体是空的 → false。
 /// </summary>
 public sealed class OpReadableHeld : ConstMediaAction
 {
     public override int Argc => 0;
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
-        => new Iota[] { BooleanIota.Of(env.HasHeldStorage()) };
+        => new Iota[] { BooleanIota.Of(env.ReadHeldIota() != null) };
 }
 
 /// <summary>
@@ -100,17 +91,14 @@ public sealed class OpWriteHeld : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        if (!env.HasHeldStorage())
-        {
-            throw new MishapBadHeldItem();
-        }
-
-        if (!env.IsHeldWritable())
-        {
-            throw new MishapBadHeldItem();
-        }
-
         var value = args[0];
+        // 原版：先找肯收它的载体；没有 → 有载体就报「只读」，连载体都没有就报「需要可写入的地方」
+        if (!env.CanWriteHeld(value))
+        {
+            throw env.HasHeldStorage()
+                ? new MishapBadHeldItem(MishapBadHeldItem.Need.ReadOnly, value)
+                : new MishapBadHeldItem(MishapBadHeldItem.Need.Write);
+        }
         // 源项目 OpWrite：不能把别的玩家写进物品（真名保护，联机防恶意）
         MishapOthersName.ThrowIfTrueName(value, env.World?.Caster, allowSelf: true);
         return EnvSpell.Make(
@@ -132,11 +120,13 @@ public sealed class OpWritableHeld : ConstMediaAction
 }
 
 /// <summary>
-/// `erase`：清空手持数据载体里存的 iota。
-/// 移植自源项目 `OpErase`。
+/// `erase`：清空手持的打包法术里的咒术，或数据载体里存的 iota。
+/// 移植自源项目 `OpErase`：目标 = 第一个「装着咒术」或「writeIota(null) 行得通」的物品 ——
+/// 所以**空的核心也能清**（不报错，照样扣费），封了的核心也能清（顺带解封），念珠清不了。
 ///
 /// 消耗按**手持物品的堆叠数**算（源项目 `DUST_UNIT * handStack.getCount()`）。
-/// 我们的载体一律 `maxStack = 1`，所以实际上就是 1 粉尘单位。
+///
+/// ⚠️ 这里只能**查**，不能清：之前在 Execute 里就调了清除，媒质不够、法术根本没放出来，东西也已经被清空了。
 /// </summary>
 public sealed class OpEraseHeld : SpellAction
 {
@@ -144,14 +134,15 @@ public sealed class OpEraseHeld : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        if (!env.HasHeldStorage() || !env.ClearHeldIota())
+        int count = env.HeldEraseableCount();
+        if (count <= 0)
         {
-            throw new MishapBadHeldItem();
+            throw new MishapBadHeldItem(MishapBadHeldItem.Need.Eraseable);
         }
 
         return EnvSpell.Make(
-            new EnvSpell.Simple(castEnv => castEnv.ClearHeldIota()),
-            MediaConstants.DustUnit);
+            new EnvSpell.Simple(castEnv => castEnv.EraseHeld()),
+            MediaConstants.DustUnit * count);
     }
 }
 
@@ -167,16 +158,13 @@ public sealed class OpReadEntity : ConstMediaAction
     {
         var entity = env.ResolveEntity(args[0]);
         var world = env.RequireWorld();
-        if (!world.IsEntityIotaHolder(entity))
-        {
-            throw new MishapBadEntity(entity, "可读取的载体");
-        }
-
-        return new Iota[] { world.ReadEntityIota(entity) ?? NullIota.Instance };
+        // 原版：readIota ?: emptyIota ?: mishap —— 空载体同样报错
+        var datum = world.IsEntityIotaHolder(entity) ? world.ReadEntityIota(entity) : null;
+        return new Iota[] { datum ?? throw new MishapBadEntity(entity, "一个可以读出iota的地方") };
     }
 }
 
-/// <summary>`readable/entity`：某个实体身上有没有可读载体（压入布尔）。移植自 `OpTheCoolerReadable`。</summary>
+/// <summary>`readable/entity`：某个实体身上有没有**读得出东西**的载体（压入布尔）。移植自 `OpTheCoolerReadable`。</summary>
 public sealed class OpReadableEntity : ConstMediaAction
 {
     public override int Argc => 1;
@@ -184,7 +172,8 @@ public sealed class OpReadableEntity : ConstMediaAction
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var entity = env.ResolveEntity(args[0]);
-        return new Iota[] { BooleanIota.Of(env.RequireWorld().IsEntityIotaHolder(entity)) };
+        var world = env.RequireWorld();
+        return new Iota[] { BooleanIota.Of(world.IsEntityIotaHolder(entity) && world.ReadEntityIota(entity) != null) };
     }
 }
 
@@ -202,9 +191,10 @@ public sealed class OpWriteEntity : SpellAction
         var value = args[1];
 
         var world = env.RequireWorld();
-        if (!world.IsEntityIotaWritable(entity))
+        // 原版 writeIota(datum, simulate: true)：卷轴只收图案、念珠只收一次 —— 光看 writeable() 不够
+        if (!world.IsEntityIotaHolder(entity) || !world.CanWriteEntityIota(entity, value))
         {
-            throw new MishapBadEntity(entity, "可写入的载体");
+            throw new MishapBadEntity(entity, "一个可以写入iota的地方");
         }
 
         // 源项目 OpTheCoolerWrite：getTrueNameFromDatum(datum, null) —— 连自己的名字也不能写进实体

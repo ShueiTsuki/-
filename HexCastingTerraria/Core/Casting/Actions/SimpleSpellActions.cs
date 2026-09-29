@@ -193,7 +193,7 @@ public sealed class OpRecharge : SpellAction
         long space = env.HeldRechargeSpace();
         if (space <= 0)
         {
-            throw new MishapBadHeldItem();
+            throw new MishapBadHeldItem(MishapBadHeldItem.Need.Rechargeable);
         }
 
         if (world.ItemEntityMedia(entity, forBattery: false) <= 0)

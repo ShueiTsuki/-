@@ -9,30 +9,49 @@ namespace HexCastingTerraria.Content.Items;
 
 /// <summary>
 /// 「数据载体」物品的基类：能存一个 iota。
-/// 移植自源项目 `common/items/storage/ItemDataHolder`（focus / abacus / spellbook 等）。
+/// 移植自源项目 `api/item/IotaHolderItem`（核心 / 结念绳 / 卷轴 / 法术书 / 算盘）。
+///
+/// 规则照原版接口，一条都不自己发明：
+///   - <see cref="Read"/>      = readIota：存着的东西，空就是 null（原版没有哪个物品定义 emptyIota，空载体 read 报 mishap）
+///   - <see cref="Writeable"/> = writeable()：`writable` 图案问的就是它
+///   - <see cref="CanWrite"/>  = canWrite(datum)：肯不肯收；datum = null 表示清除
+///   - <see cref="WriteIota"/> = writeIota(datum, simulate)：先 canWrite，不是试算才真写
 ///
 /// ⚠️ **必须 maxStack = 1**：泰拉的堆叠物品共享一个 <see cref="Item"/> 实例，
-/// 没法给同堆里的每一件存不同的 iota。可堆叠的 iota 载体在原理上就不成立。
+/// 没法给同堆里的每一件存不同的 iota。
 /// </summary>
 public abstract class ItemIotaStorage : ModItem
 {
     /// <summary>
     /// 当前存着的 iota。null 表示空。
-    ///
-    /// 用**显式字段 + 只读属性**而不是自动属性：tModLoader 的
-    /// 「引用字段可能在克隆间不安全」检查看的是字段，自动属性的字段是编译器生成的，
-    /// 在上面标 `[CloneByReference]` 不生效。
-    ///
-    /// 之所以敢共享引用：iota 是**不可变**的（改值一律是造新的），
-    /// 克隆物品时共享同一个实例完全安全 —— 那条警告对不可变对象是误报。
+    /// 显式字段 + [CloneByReference]：iota 不可变，克隆物品时共享同一个实例是安全的。
     /// </summary>
     [CloneByReference]
     private Iota? _stored;
 
     public Iota? Stored => _stored;
 
-    /// <summary>是否只读（例如卷轴 —— 只能读不能改）。</summary>
-    public virtual bool ReadOnlyStorage => false;
+    protected void SetStored(Iota? value) => _stored = value;
+
+    /// <summary>readIota。法术书按当前页读、算盘永远读得出一个数、远古卷轴读本世界的笔顺。</summary>
+    public virtual Iota? Read() => _stored;
+
+    /// <summary>writeable()。</summary>
+    public virtual bool Writeable => true;
+
+    /// <summary>canWrite(datum)。null = 清除。</summary>
+    public virtual bool CanWrite(Iota? datum) => true;
+
+    /// <summary>writeDatum(datum)：只在 <see cref="CanWrite"/> 通过后调用。</summary>
+    protected virtual void WriteDatum(Iota? datum) => _stored = datum;
+
+    /// <summary>原版 writeIota(datum, simulate)。</summary>
+    public bool WriteIota(Iota? datum, bool simulate)
+    {
+        if (!CanWrite(datum)) return false;
+        if (!simulate) WriteDatum(datum);
+        return true;
+    }
 
     public override void SetDefaults()
     {
@@ -49,87 +68,113 @@ public abstract class ItemIotaStorage : ModItem
 
     public override void ModifyTooltips(List<TooltipLine> tooltips)
     {
-        var line = new TooltipLine(Mod, "HexStored",
-            Stored == null ? "空" : $"存有：{Stored}");
-        tooltips.Add(line);
-    }
-
-    /// <summary>
-    /// 这个载体**能不能存**这种 iota。
-    ///
-    /// 对应源项目的 `canWrite(stack, datum)` —— 卷轴只接受图案
-    /// （`datum instanceof PatternIota || datum == null`），
-    /// 这样墙上挂的卷轴不会突然变成「存了一个数字的卷轴」。
-    /// </summary>
-    /// <summary>本载体的存储策略。子类覆写。</summary>
-    public virtual StorageKind StorageKind => StorageKind.Any;
-
-    public virtual bool CanStore(Iota value) => StoragePolicy.CanStore(StorageKind, value);
-
-    /// <summary>写入一个 iota。只读载体、类型不符、都拒绝写入。</summary>
-    public virtual bool TryStore(Iota value)
-    {
-        if (ReadOnlyStorage) return false;
-        if (!CanStore(value)) return false;
-        _stored = value;
-        return true;
-    }
-
-    /// <summary>
-    /// 读出存着的 iota。
-    ///
-    /// 声明成 virtual 是为了**法术书**：它有 64 页，Read() 要按当前页去取，
-    /// 而不是读那个单一的 Stored 字段。
-    /// </summary>
-    public virtual Iota? Read() => Stored;
-
-    /// <summary>
-    /// 清空载体。对应源项目 `writeIota(null, false)`。
-    /// 返回**原来是否有东西** —— 空载体上执行 `erase` 应当报 mishap，不是静默成功。
-    /// </summary>
-    public virtual bool Clear()
-    {
-        if (_stored == null) return false;
-        _stored = null;
-        return true;
+        // 原版 IotaHolderItem.appendHoverText：有内容就显示内容，空就不写
+        if (Read() is { } iota)
+        {
+            tooltips.Add(new TooltipLine(Mod, "HexStored", $"存有：{iota}"));
+        }
     }
 
     public override void SaveData(TagCompound tag)
     {
-        if (Stored == null) return;
-
-        // Serialize() 返回的是「只含 TagCompound 原生类型的信封」，
-        // 所以可以直接塞进 TagCompound —— 这正是 IotaSerializer 的设计目的。
-        tag["iota"] = Stored.Serialize();
+        if (_stored == null) return;
+        tag["iota"] = _stored.Serialize();
     }
 
     public override void LoadData(TagCompound tag)
     {
-        if (!tag.ContainsKey("iota"))
-        {
-            _stored = null;
-            return;
-        }
+        // 读不出来就当作空，**不是**静默降级成某个默认值
+        _stored = tag.ContainsKey("iota") && IotaSerializer.TryDeserialize(tag["iota"], out var iota) ? iota : null;
+    }
 
-        // 读不出来就当作空，**不是**静默降级成某个默认值 ——
-        // 存档里放一个「看起来正常但内容变了」的 iota，比空着更难查。
-        _stored = IotaSerializer.TryDeserialize(tag["iota"], out var iota) ? iota : null;
+    // ── 联机 ───────────────────────────────────────────────────────
+    //
+    // 背包同步（MessageID.SyncEquipment）只带 NetSend 写的东西。之前没写 ——
+    // 联机时服务端手里的核心永远是空的：`read` 读出 null，`write` 写了客户端也看不到。
+    // 客户端这边改了内容（翻页、拨算盘、收到服务端的写入）要调 Item.NetStateChanged()，
+    // 否则泰拉只比较「类型 / 数量 / 前缀」，认为没变，不会同步。
+
+    public override void NetSend(System.IO.BinaryWriter writer)
+    {
+        writer.Write(_stored != null);
+        if (_stored != null) Net.IotaWire.Write(writer, _stored);
+    }
+
+    public override void NetReceive(System.IO.BinaryReader reader)
+    {
+        _stored = reader.ReadBoolean() ? Net.IotaWire.Read(reader) : null;
     }
 }
 
 /// <summary>
-/// 聚念核心。对应源项目 `hexcasting:focus`。
-///
-/// 存**一个** iota，配合 `read_into_parens` 使用：
-/// 把一段计算好的图案（或任何值）存进去，之后随时读出来复用。
-/// 这是「写一次、反复用」的基础，也是原版玩家做自定义法术的第一步。
+/// 有「外观变体」的物品（源项目 VariantItem，`cycle_variant` 改的就是它）：
+/// 符纸 / 缀品 / 造物、核心、法术书。封了的核心 / 书页不变（原版 setVariant 里的 `if (!isSealed)`）。
 /// </summary>
-public sealed class Focus : ItemIotaStorage
+public interface IHexVariantItem
 {
+    int Variant { get; }
+
+    int NumVariants { get; }
+
+    void SetVariant(int variant);
+}
+
+/// <summary>
+/// 核心。对应源项目 `hexcasting:focus`（ItemFocus）。
+///
+/// 存**一个任意** iota。可以**密封**（和蜂巢合成，原版是蜜脾）：密封后写不进，
+/// 但 `erase` 照样能清 —— 清掉的同时解封（原版 writeDatum(null) 连 TAG_SEALED 一起删）。
+/// </summary>
+public sealed class Focus : ItemIotaStorage, IHexVariantItem
+{
+    public const int Variants = 8;
+
+    public bool Sealed { get; private set; }
+
+    public int Variant { get; private set; }
+
+    public int NumVariants => Variants;
+
+    public void SetVariant(int variant)
+    {
+        if (!Sealed) Variant = System.Math.Clamp(variant, 0, Variants - 1);
+    }
+
+    public void Seal() => Sealed = true;
+
+    public override bool Writeable => !Sealed;
+
+    public override bool CanWrite(Iota? datum) => datum == null || !Sealed;
+
+    protected override void WriteDatum(Iota? datum)
+    {
+        if (datum == null)
+        {
+            SetStored(null);
+            Sealed = false;
+        }
+        else if (!Sealed)
+        {
+            SetStored(datum);
+        }
+    }
+
     public override void SetDefaults()
     {
         base.SetDefaults();
         Item.rare = ItemRarityID.Orange;
+    }
+
+    public override void ModifyTooltips(List<TooltipLine> tooltips)
+    {
+        if (Sealed)
+        {
+            foreach (var t in tooltips)
+            {
+                if (t.Name == "ItemName") t.Text = "密封核心";
+            }
+        }
+        base.ModifyTooltips(tooltips);
     }
 
     public override void AddRecipes()
@@ -139,27 +184,58 @@ public sealed class Focus : ItemIotaStorage
         //     PAP        L = 皮革 ×2        → 折进丝绸
         //     GLG        P = 纸 ×2          → 泰拉没有纸，用丝绸
         //                A = 充能紫水晶 ×1
-        //
-        // 阶段：肉前 —— 源项目的解锁条件是「拥有任意法杖」，没有进度门槛。
-        // 之前这里是「充能紫晶 ×2 + 紫晶 ×5 + 玻璃 ×3」，材料与原版毫无对应关系。
         CreateRecipe()
             .AddIngredient(ItemID.FallenStar, 4)        // 萤石粉
             .AddIngredient(ItemID.Silk, 4)              // 皮革 ×2 + 纸 ×2
             .AddIngredient<ChargedAmethyst>(1)
             .AddTile(TileID.WorkBenches)
             .Register();
+
+        SealRecipes.Add(this, f => f is Focus { Sealed: false } focus && focus.Stored != null,
+            f => ((Focus)f).Seal());
+    }
+
+    public override void SaveData(TagCompound tag)
+    {
+        base.SaveData(tag);
+        tag["sealed"] = Sealed;
+        tag["variant"] = Variant;
+    }
+
+    public override void LoadData(TagCompound tag)
+    {
+        base.LoadData(tag);
+        Sealed = tag.GetBool("sealed");
+        Variant = System.Math.Clamp(tag.GetInt("variant"), 0, Variants - 1);
+    }
+
+    public override void NetSend(System.IO.BinaryWriter writer)
+    {
+        base.NetSend(writer);
+        writer.Write(Sealed);
+        writer.Write((byte)Variant);
+    }
+
+    public override void NetReceive(System.IO.BinaryReader reader)
+    {
+        base.NetReceive(reader);
+        Sealed = reader.ReadBoolean();
+        Variant = System.Math.Clamp((int)reader.ReadByte(), 0, Variants - 1);
     }
 }
 
 /// <summary>
-/// 念珠。对应源项目 `hexcasting:thought_knot`。
+/// 结念绳。对应源项目 `hexcasting:thought_knot`（ItemThoughtKnot）。
 ///
-/// 原版里它存的是**一小段图案列表**（用来把常用咒术随身带着）。
-/// 泰拉侧先做成「只读的单 iota 载体」—— 写入能力等
-/// 阿卡夏记录（P2-4）落地后再补，因为原版的念珠内容是由记录赋予的。
+/// **只能写一次**：空的时候可写（writeable = 没存东西），写进去以后就固定了，
+/// `erase` 也清不掉（canWrite(null) = false）。原版注释：「本想直接往绳子上写，但 API 要求写完还是同一个物品」。
 /// </summary>
 public sealed class ThoughtKnot : ItemIotaStorage
 {
+    public override bool Writeable => Stored == null;
+
+    public override bool CanWrite(Iota? datum) => datum != null && Writeable;
+
     public override void SetDefaults()
     {
         base.SetDefaults();
@@ -168,19 +244,55 @@ public sealed class ThoughtKnot : ItemIotaStorage
 
     public override void AddRecipes()
     {
-        // 源 HexplatRecipes.java:93-97，**shapeless 无合成站**：
-        //     紫水晶粉 ×1 + 线 ×1 → 1
-        //
-        // 阶段：肉前（解锁条件同样是「拥有任意法杖」）。
-        // 站：源项目是徒手；本模组不允许徒手（check_arch 断言⑧）。
-        // 念珠是线绳活，用**织布机**（丝绸就是它产的），语义最贴。
-        //
-        // 之前这里写的是「聚念核心 ×1 + 丝绸 ×5 + 粉 ×20」—— 比原版贵 20 倍以上，
-        // 而且把一个「随手搓的小玩意」变成了必须先把聚念核心做出来才能做的东西。
+        // 源 HexplatRecipes.java:93-97，**shapeless 无合成站**：紫水晶粉 ×1 + 线 ×1 → 1
+        // 站：本模组不允许徒手（check_arch 断言⑧），念珠是线绳活，用织布机。
         CreateRecipe()
             .AddIngredient<AmethystDust>(1)
             .AddIngredient(ItemID.Silk, 1)
             .AddTile(TileID.Loom)
             .Register();
+    }
+}
+
+/// <summary>
+/// 原版 SealThingsRecipe（核心 / 法术书 + 蜜脾 → 密封）。
+/// 泰拉没有蜜脾，用**蜂巢块**（地下丛林蜂巢里挖的，语义就是一块蜜脾）。
+///
+/// 泰拉配方没有「这一件物品满足条件」的写法：用条件检查背包里**会被消耗的那一件**
+///（配方按背包顺序取第一个同类物品），合成完把它的数据拷到产物上再封。
+/// </summary>
+internal static class SealRecipes
+{
+    public static void Add(ModItem self, System.Func<ModItem, bool> sealable, System.Action<ModItem> seal)
+    {
+        int type = self.Type;
+        var cond = new Condition(
+            Terraria.Localization.Language.GetOrRegister("Mods.HexCastingTerraria.Conditions.Sealable"),
+            () => FirstOf(Main.LocalPlayer, type) is { ModItem: { } m } && sealable(m));
+
+        self.CreateRecipe()
+            .AddIngredient(type, 1)
+            .AddIngredient(ItemID.Hive, 1)
+            .AddTile(TileID.WorkBenches)        // 原版 2×2 背包格就能合；本模组配方一律要合成站（check_arch ⑧）
+            .AddCondition(cond)
+            .AddOnCraftCallback((recipe, result, consumed, dest) =>
+            {
+                // 整件数据（iota、页、变体……）拷到产物上，再封
+                if (consumed.Find(i => i.type == type)?.ModItem is not { } src || result.ModItem is null) return;
+                var tag = new TagCompound();
+                src.SaveData(tag);
+                result.ModItem.LoadData(tag);
+                seal(result.ModItem);
+            })
+            .Register();
+    }
+
+    private static Item? FirstOf(Player p, int type)
+    {
+        for (int i = 0; i < 58; i++)
+        {
+            if (p.inventory[i] is { IsAir: false } it && it.type == type) return it;
+        }
+        return null;
     }
 }

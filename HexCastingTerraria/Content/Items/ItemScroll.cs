@@ -25,8 +25,8 @@ public abstract class ItemScroll : ItemIotaStorage
     /// <summary>壁挂展示宽度（图格）。对应源项目的 `blockSize`。</summary>
     public abstract int BlockSize { get; }
 
-    /// <summary>卷轴**可以**写（原版 `writeable` 返回 true），但只能写图案。</summary>
-    public override StorageKind StorageKind => StorageKind.PatternOnly;
+    /// <summary>卷轴**可以**写（原版 `writeable` 返回 true），但只收图案；也可以清空（原版 canWrite：`datum is PatternIota || datum == null`）。</summary>
+    public override bool CanWrite(Iota? datum) => datum is null or PatternIota;
 
     public override void SetDefaults()
     {
