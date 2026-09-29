@@ -84,6 +84,15 @@ public abstract class CastingEnvironment
     public virtual bool CanOvercast() => false;
 
     /// <summary>
+    /// 未启蒙却施放了大法术（原版 FAIL_GREAT_SPELL_TRIGGER → 进度「盲目绘制」）。
+    /// 原版里这是**解锁过载**的前提：玩家环境据此记下，以后才允许用生命换媒质。
+    /// </summary>
+    public virtual void OnFailedGreatSpell() { }
+
+    /// <summary>原版 mishapEnvironment.dropHeldItems：把手上的东西丢出去。没有实体施法者的环境什么都不做。</summary>
+    public virtual void DropHeldItems() { }
+
+    /// <summary>
     /// 把一条消息发给施法者（聊天框）。
     /// 对应源项目 CastingEnvironment.printMessage。
     /// 用于：mishap 错误消息、print 图案的输出、未启蒙提示。

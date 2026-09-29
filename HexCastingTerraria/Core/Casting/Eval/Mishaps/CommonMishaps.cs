@@ -156,18 +156,25 @@ public sealed class MishapInternalException : Mishap
         => $"内部错误：{Exception.Message}";
 }
 
-/// <summary>需要「启蒙」才能使用该图案（大法术）。</summary>
+/// <summary>
+/// 需要「启蒙」才能使用该图案（大法术）。对应原版 MishapUnenlightened.kt：
+/// 丢下手上的东西、提示「法术没起效」、触发 FAIL_GREAT_SPELL（→ 解锁过载），图案判为无效。
+/// </summary>
 public sealed class MishapUnenlightened : Mishap
 {
     public MishapUnenlightened() : base("unenlightened") { }
 
+    public override ResolvedPatternType ResolutionType(CastingEnvironment env) => ResolvedPatternType.Invalid;
+
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
-        // 栈不变
+        env.DropHeldItems();
+        env.OnFailedGreatSpell();
     }
 
+    /// <summary>原版文本 hexcasting.message.cant_great_spell（官方中文）。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "你尚未启蒙，无法施放此法术";
+        => "奇怪，法术没起效……也许我还不够熟练？";
 }
 
 /// <summary>

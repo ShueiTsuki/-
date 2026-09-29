@@ -239,9 +239,10 @@ public class PlayerCastingEnvironment : CastingEnvironment
             {
                 return 0;
             }
-            // 试算：把缺口折算成生命，生命也不够则返回缺口
-            long hpNeeded = (shortfall + HexPlayer.MediaPerHealthPoint - 1) / HexPlayer.MediaPerHealthPoint;
-            return _player.statLife - hpNeeded >= 1 ? 0 : shortfall;
+            // 试算（原版 simulate 分支）：能过载时按生命折算，换到的媒质 = min(当前生命, 需要扣的生命) × 汇率
+            if (!CanOvercast()) { return shortfall; }
+            var (_, gainable, _) = Overcast.Plan(shortfall, _player.statLife, _player.statLifeMax2);
+            return shortfall - gainable;
         }
 
         // ---- 真正扣除 ----
@@ -272,16 +273,42 @@ public class PlayerCastingEnvironment : CastingEnvironment
         }
 
         // ---- 剩余缺口走过载（扣血）----
-        long healthCost = (shortfall + HexPlayer.MediaPerHealthPoint - 1) / HexPlayer.MediaPerHealthPoint;
-        if (_player.statLife - healthCost < 1)
+        // 施法前的试算已经保证「媒质 + 生命」够付；这里仍按原版做一次保护：付不起就退款。
+        var (damage, gained, lethal) = Overcast.Plan(shortfall, _player.statLife, _player.statLifeMax2);
+        if (!CanOvercast() || gained < shortfall)
         {
-            // 生命不足：**必须把已扣的还回去**，否则会出现「法术没放成但媒质没了」
             RefundPayment(hexPlayer, plan);
             return shortfall;
         }
 
-        hexPlayer.NoteOvercast(healthCost);
-        _player.statLife -= (int)healthCost;
+        int lifeBefore = _player.statLife;
+        hexPlayer.NoteOvercast(damage);
+        if (!HexClientConfig.Instance.NoOvercastDamage)
+        {
+            if (lethal)
+            {
+                // 原版 trulyHurt 可以致死（死亡信息「%s的意识消散为了能量」）：只有正好耗尽全部生命时才会发生
+                _player.KillMe(Terraria.DataStructures.PlayerDeathReason.ByCustomReason(
+                    Terraria.Localization.NetworkText.FromLiteral(_player.name + "的意识消散为了能量")), damage, 0);
+                return 0;
+            }
+            _player.statLife -= damage;
+            if (Main.netMode == Terraria.ID.NetmodeID.Server)
+            {
+                NetMessage.SendData(Terraria.ID.MessageID.PlayerLifeMana, -1, -1, null, _player.whoAmI);
+            }
+        }
+        if (_player.whoAmI == Main.myPlayer)
+        {
+            CombatText.NewText(_player.getRect(), HexColors.Overcast, damage);
+        }
+
+        // 原版 ENLIGHTEN：这一下用掉 ≥80% 最大生命，且活了下来、只剩不到半颗心
+        int lifeAfter = HexClientConfig.Instance.NoOvercastDamage ? lifeBefore - damage : _player.statLife;
+        if (Overcast.IsEnlightening(damage, _player.statLifeMax2, lifeAfter))
+        {
+            hexPlayer.GrantEnlightenment();
+        }
         return 0;
     }
 
@@ -340,7 +367,32 @@ public class PlayerCastingEnvironment : CastingEnvironment
     public override bool IsEnlightened()
         => HexPlayer.Get(_player).Enlightened || HexClientConfig.Instance.AlwaysEnlightened;
 
-    public override bool CanOvercast() => true;
+    /// <summary>原版 canOvercast：要先失败过一次大法术（进度「盲目绘制」）才解锁过载。</summary>
+    public override bool CanOvercast() => HexPlayer.Get(_player).FailedGreatSpell;
+
+    public override void OnFailedGreatSpell()
+    {
+        var hp = HexPlayer.Get(_player);
+        if (hp.FailedGreatSpell) { return; }
+        hp.FailedGreatSpell = true;
+        PrintMessage("盲目绘制 —— 法术没能起效，但你隐约察觉到：媒质不够时，也许可以拿生命去换。");
+    }
+
+    /// <summary>原版 dropHeldItems：把手上的物品丢出去（未启蒙强行施放大法术的代价）。</summary>
+    public override void DropHeldItems()
+    {
+        var item = _player.inventory[_player.selectedItem];
+        if (item is null || item.IsAir) { return; }
+        int idx = Item.NewItem(_player.GetSource_Misc("HexUnenlightened"), _player.Center, item.Clone());
+        if (idx >= 0 && idx < Main.maxItems)
+        {
+            if (Main.netMode == Terraria.ID.NetmodeID.Server)
+            {
+                NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, idx, 1f);
+            }
+        }
+        item.TurnToAir();
+    }
 
     public override int MaxOpCount() => HexClientConfig.Instance.MaxOpCount;
 

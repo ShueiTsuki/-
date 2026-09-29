@@ -45,15 +45,10 @@ public sealed class HexPlayer : ModPlayer
     public bool Enlightened { get; set; }
 
     /// <summary>
-    /// 过载施法的换汇率：每 1 点生命值折算的媒质量。
-    ///
-    /// 源项目机制：媒质不足时按 mediaToHealthRate 扣血换媒质，
-    /// 且「启蒙」要求单次过载消耗 ≥ 80% 储量。
-    /// MC 是 20 点生命制，泰拉是 100 起步、可到 500+ 的红心分段制，不能照搬数值。
-    /// 这里取「1 点生命 = 1 晶体(100,000)」，满血 100 时可换算 1,000,000，
-    /// 与容量 1,200,000 同量级，保证过载是「偶尔为之」。
+    /// 是否失败过一次大法术（原版进度「盲目绘制」y_u_no_cast_angy）。
+    /// 原版 PlayerBasedCastEnv.canOvercast 以它为前提：**没失败过大法术就不能过载**。
     /// </summary>
-    public const long MediaPerHealthPoint = MediaConstants.CrystalUnit;
+    public bool FailedGreatSpell { get; set; }
 
     /// <summary>最近一次过载消耗的生命值，供 HUD 显示。</summary>
     public long LastOvercastHealthCost { get; private set; }
@@ -82,94 +77,15 @@ public sealed class HexPlayer : ModPlayer
     public bool InfiniteMedia { get; set; }
 
     /// <summary>
-    /// 支出媒质；不足时按 <see cref="MediaPerHealthPoint"/> 折算成生命值扣除（过载施法）。
-    ///
-    /// 创造模式下直接成功且不扣任何东西（源项目 StaffCastEnv.java:62-68 同义）。
-    /// 若连生命也不够扣，返回 false 且不改变任何状态。
+    /// 授予「启蒙」（原版进度 enlightenment「获得启迪」）。条件的判定在 <see cref="Core.Media.Overcast.IsEnlightening"/>。
     /// </summary>
-    public bool TrySpendOrOvercast(long cost)
+    public void GrantEnlightenment()
     {
-        if (cost <= 0)
+        if (Enlightened) { return; }
+        Enlightened = true;
+        if (Player.whoAmI == Main.myPlayer)
         {
-            return true;
-        }
-
-        // 创造模式：不消耗、不过载。
-        // 以「设置界面里的配置项」为准（用户可在 设置 → 模组配置 里改），
-        // 键位/调试切换只是把它翻个面。
-        if (InfiniteMedia || HexClientConfig.Instance.InfiniteMedia)
-        {
-            return true;
-        }
-
-        long fromMedia = System.Math.Min(cost, _media.Media);
-        long remaining = cost - fromMedia;
-        long healthCost = 0;
-
-        if (remaining > 0)
-        {
-            // 向上取整：不足 1 点的部分也至少扣 1 点生命
-            healthCost = (remaining + MediaPerHealthPoint - 1) / MediaPerHealthPoint;
-
-            // 不允许把自己过载致死，至少留 1 点生命
-            if (Player.statLife - healthCost < 1)
-            {
-                return false;
-            }
-        }
-
-        // 通过校验后再真正扣除，避免「失败但已扣媒质」
-        if (fromMedia > 0)
-        {
-            _media.Withdraw(fromMedia);
-        }
-
-        if (healthCost > 0)
-        {
-            // 调试开关：过载不扣血（但仍然算「过载过」，所以照样能拿到启蒙）
-            bool free = HexClientConfig.Instance.NoOvercastDamage;
-
-            if (!free)
-            {
-                Player.statLife -= (int)healthCost;
-            }
-            if (Player.statLife < 1)
-            {
-                Player.statLife = 1;
-            }
-
-            LastOvercastHealthCost = healthCost;
-
-            if (Player.whoAmI == Main.myPlayer)
-            {
-                CombatText.NewText(Player.getRect(), HexColors.Overcast, (int)healthCost);
-            }
-
-            TryGrantEnlightenment(cost);
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// 达成条件时授予「启蒙」：单次施法消耗 ≥ 80% 媒质储量。
-    /// 源项目里这对应 advancements/enlightenment.json 的 hexcasting:overcast 触发。
-    /// </summary>
-    private void TryGrantEnlightenment(long totalCost)
-    {
-        if (Enlightened)
-        {
-            return;
-        }
-
-        long threshold = (long)(_media.MaxMedia * 0.8);
-        if (totalCost >= threshold)
-        {
-            Enlightened = true;
-            if (Player.whoAmI == Main.myPlayer)
-            {
-                Main.NewText("你达成了启蒙。", HexColors.Overcast);
-            }
+            Main.NewText("获得启迪 —— 施放咒术至生命将尽，击碎了屏障。", HexColors.Overcast);
         }
     }
 
@@ -409,6 +325,7 @@ public sealed class HexPlayer : ModPlayer
     {
         tag["media"] = _media.Media;
         tag["enlightened"] = Enlightened;
+        tag["failedGreatSpell"] = FailedGreatSpell;
         tag["ravenmindCount"] = RavenmindCount;
         tag["infiniteMedia"] = InfiniteMedia;
         tag["pigmentDye"] = PigmentDyeType;

@@ -44,6 +44,12 @@ sealed class TestEnv : CastingEnvironment
 
     public override bool IsEnlightened() => Enlightened;
 
+    /// <summary>未启蒙强行施放大法术的次数 / 丢下手持物品的次数（原版 MishapUnenlightened 的两个副作用）。</summary>
+    public int FailedGreatSpells { get; private set; }
+    public int DroppedHeld { get; private set; }
+    public override void OnFailedGreatSpell() => FailedGreatSpells++;
+    public override void DropHeldItems() => DroppedHeld++;
+
     // ---- 打包法术与媒质瓶（craft/*）----
 
     /// <summary>手持的空打包法术物品是哪一种（null = 没有）。</summary>
@@ -2467,8 +2473,8 @@ static class Program
             var env = new TestEnv(world: world, media: 5_000_000) { Enlightened = false };
             var img = new CastingImage(new Iota[] { target, new VectorIota(1.0, 0.0) });
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:teleport/great") });
-            Check("teleport/great：未启蒙 -> Errored（大法术门槛）",
-                r.ResolutionType == ResolvedPatternType.Errored && world.Trace.Count == 0,
+            Check("teleport/great：未启蒙 -> Invalid（原版 MishapUnenlightened.resolutionType）（大法术门槛）",
+                r.ResolutionType == ResolvedPatternType.Invalid && world.Trace.Count == 0,
                 Sig(r.Image));
         }
         {
@@ -2984,7 +2990,7 @@ static class Program
             var forbiddenResult = new CastingVM(forbidden, forbiddenEnv)
                 .QueueExecute(forbidden, new Iota[] { P("hexcasting:summon_rain") });
             Check("天气：未启蒙时 summon_rain 被拒绝（源项目的大法术门槛）",
-                forbiddenResult.ResolutionType == ResolvedPatternType.Errored,
+                forbiddenResult.ResolutionType == ResolvedPatternType.Invalid,
                 Sig(forbiddenResult.Image));
 
             var w1 = new FakeWorld();
@@ -4810,8 +4816,8 @@ static class Program
                 var e = new TestEnv(world: w) { HeldPhialBase = true, Enlightened = false };
                 var im = new CastingImage(new Iota[] { new EntityIota(EntityIota.EntityKind.Item, 1) });
                 var r = new CastingVM(im, e).QueueExecute(im, new Iota[] { P("hexcasting:craft/battery") });
-                Check("craft/battery：未启蒙 -> Errored（大法术门槛）",
-                    r.ResolutionType == ResolvedPatternType.Errored, Sig(r.Image));
+                Check("craft/battery：未启蒙 -> Invalid（原版 MishapUnenlightened.resolutionType）（大法术门槛）",
+                    r.ResolutionType == ResolvedPatternType.Invalid, Sig(r.Image));
             }
 
             // ── cycle_variant：推进一格并绕回 ──
@@ -4892,8 +4898,8 @@ static class Program
                 var env = new TestEnv(world: world) { Enlightened = false };
                 var img = new CastingImage(new Iota[] { new EntityIota(EntityIota.EntityKind.Npc, 5), new VectorIota(10, 20) });
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:brainsweep") });
-                Check("brainsweep：未启蒙 -> Errored（大法术门槛）",
-                    r.ResolutionType == ResolvedPatternType.Errored && world.Sweeps.Count == 0, Sig(r.Image));
+                Check("brainsweep：未启蒙 -> Invalid（原版 MishapUnenlightened.resolutionType）（大法术门槛）",
+                    r.ResolutionType == ResolvedPatternType.Invalid && world.Sweeps.Count == 0, Sig(r.Image));
             }
             {
                 // 配方不存在 -> 拒绝，且不扣媒质
@@ -5135,6 +5141,34 @@ static class Program
 
             Console.WriteLine($"        已注册行为 {PatternRegistry.RegisteredActionCount} / {PatternRegistry.Count} 条；"
                               + $"不适用 {notApplicable.Count} 条；未实现 {missing.Count} 条");
+        }
+
+        // ── 过载与启蒙（原版 PlayerBasedCastEnv / HexAdvancements.ENLIGHTEN）──
+        {
+            // 满血 = 2 个充能紫水晶，不论生命上限（原版 20 × mediaToHealthRate）
+            var (d1, g1, _) = Overcast.Plan(MediaConstants.CrystalUnit, 100, 100);
+            Check("过载：100 血上限时 1 个充能紫水晶 = 50 点生命", d1 == 50 && g1 == MediaConstants.CrystalUnit, $"扣 {d1} 得 {g1}");
+            var (d2, _, _) = Overcast.Plan(MediaConstants.CrystalUnit, 400, 400);
+            Check("过载：400 血上限时同样的缺口 = 200 点（按生命比例，满血恒等于 2 个紫水晶）", d2 == 200, $"扣 {d2}");
+            var (d3, _, _) = Overcast.Plan(1, 100, 100);
+            Check("过载：再小的缺口也至少扣 2.5% 生命（原版最少 0.5/20 点）", d3 == 3, $"扣 {d3}");
+            var (_, g4, lethal4) = Overcast.Plan(3 * MediaConstants.CrystalUnit, 100, 100);
+            Check("过载：生命不够付时只能换到当前生命的量（施法前试算会判媒质不足）",
+                g4 == 2 * MediaConstants.CrystalUnit && lethal4, $"得 {g4}");
+
+            Check("启蒙：用掉 80% 且只剩不到半颗心（100 上限 → ≤5 点）→ 启蒙", Overcast.IsEnlightening(80, 100, 5));
+            Check("启蒙：剩得太多不算", !Overcast.IsEnlightening(80, 100, 20));
+            Check("启蒙：用得不到 80% 不算", !Overcast.IsEnlightening(79, 100, 1));
+            Check("启蒙：耗死了不算（必须活下来）", !Overcast.IsEnlightening(100, 100, 0));
+        }
+        {
+            // 未启蒙强行施放大法术：丢下手持物品 + 记为「盲目绘制」（解锁过载），图案判为无效
+            var env = new TestEnv(world: new FakeWorld()) { Enlightened = false };
+            var img = new CastingImage(System.Array.Empty<Iota>());
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:summon_rain") });
+            Check("未启蒙施放大法术：Invalid + 丢下手持物品 + 触发「盲目绘制」",
+                r.ResolutionType == ResolvedPatternType.Invalid && env.DroppedHeld == 1 && env.FailedGreatSpells == 1,
+                $"{r.ResolutionType} drop={env.DroppedHeld} fail={env.FailedGreatSpells}");
         }
 
         Console.WriteLine($"================ 通过 {_pass} / 失败 {_fail} ================");

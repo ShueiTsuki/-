@@ -123,6 +123,7 @@
 | `Media/MediaConstants.cs` | 濯掕川鍗曚綅鎹㈢畻銆傜Щ妞嶈嚜 at.petrak.hexcasting.api.misc.MediaConstants锛堟暟鍊奸€愰」瀵归綈锛夈€?/// |
 | `Media/MediaPaymentPlanner.cs` | 鑳屽寘閲屼竴鍫嗗彲鎻愪緵濯掕川鐨勭墿鍝併€?/summary> |
 | `Media/MediaPool.cs` | 涓€涓畝鍗曠殑濯掕川姹犲疄鐜般€傜帺瀹惰嚜韬殑濯掕川鍌ㄩ噺銆佺墿鍝佸唴鐨勫獟璐ㄩ兘澶嶇敤瀹冦€?/// </summary> |
+| `Media/Overcast.cs` | 杩囪浇锛堢敤鐢熷懡鎹㈠獟璐級涓庛€屽惎钂欍€嶇殑鍒ゅ畾锛岀収鍘熺増 PlayerBasedCastEnv.extractMediaFromInventory |
 | `Registry/GeneratedPatternData.cs` | 鍥炬鐨勯潤鎬佹暟鎹細id銆佽搴︾鍚嶃€佽捣濮嬫柟鍚戙€佹簮瀹炵幇绫诲悕銆?/summary> |
 | `Registry/PatternDisplay.cs` | 鍥炬鐨?*鏄剧ず鍚?*銆傜晫闈竴寰嬭蛋杩欓噷锛屼笉瑕佸悇鑷嫾 `Id.Replace("hexcasting:", "")`銆?/// |
 | `Registry/PatternNames.Generated.cs` | 图案的**正式中文名**（例如 get_caster → 「意识之精思」）。 |
