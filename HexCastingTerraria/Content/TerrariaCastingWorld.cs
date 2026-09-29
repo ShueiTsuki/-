@@ -1287,6 +1287,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return 0;
 
         long gained = hexPlayer.MediaStorage.Insert(value);
+        PlayerEffects.SyncMedia(_caster!);
         if (gained <= 0) return 0;
 
         item.stack--;

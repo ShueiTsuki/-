@@ -27,6 +27,7 @@ public static class PlayerEffects
         DropInventory = 3,
         ConsumeSlot = 4,
         Progress = 5,
+        Media = 6,
     }
 
     // ── 对外 ─────────────────────────────────────────────────────────
@@ -78,6 +79,17 @@ public static class PlayerEffects
         Route(p, Kind.Progress, w => { w.Write(hp.Enlightened); w.Write(hp.FailedGreatSpell); w.Write(hp.Overcasted); });
     }
 
+    /// <summary>
+    /// 服务端改了玩家的媒质池（施法扣费、找零、充能）后同步给本人客户端 ——
+    /// 池子存档在客户端，HUD 也读客户端那份；不同步的话联机施法不花媒质（下线再上又是满的）。
+    /// </summary>
+    public static void SyncMedia(Player p)
+    {
+        if (Main.netMode != NetmodeID.Server) { return; }
+        long media = HexPlayer.Get(p).Media;
+        Route(p, Kind.Media, w => w.Write(media));
+    }
+
     // ── 联机转发 ─────────────────────────────────────────────────────
 
     /// <summary>服务端：发给那个玩家的客户端去做，返回 true。其它情况返回 false（就地执行）。</summary>
@@ -124,6 +136,12 @@ public static class PlayerEffects
                 int slot = r.ReadInt16();
                 int count = r.ReadInt32();
                 if (p is { active: true }) { ApplyConsumeSlot(p, slot, count); }
+                break;
+            }
+            case Kind.Media:
+            {
+                long media = r.ReadInt64();
+                if (p is { active: true }) { HexPlayer.Get(p).SetMediaFromServer(media); }
                 break;
             }
             case Kind.Progress:

@@ -212,6 +212,7 @@ public class PlayerCastingEnvironment : CastingEnvironment
     ///
     /// 整件消耗造成的多付会**退回池中**（泰拉堆叠物品没有单件独立数据，
     /// 做不到源项目那样把一件粉尘扣到只剩 5,000）。
+    /// 付不起时与源项目相同：物品照扣，能过载就按全部缺口扣血（可以致死），从不退款。
     ///
     /// 返回**还未付清**的量（<=0 表示够）。
     /// </summary>
@@ -246,50 +247,40 @@ public class PlayerCastingEnvironment : CastingEnvironment
         }
 
         // ---- 真正扣除 ----
+        // 源项目 extractMediaFromInventory：物品**照扣不误**（付不起也扣光），再用生命抵剩下的，**从不退款**。
+        //（这里曾经「付不起就把已扣的退回去」—— 于是 MishapNotEnoughMedia 的「抽干」惩罚、
+        //   以及原版「过载超过剩余生命会死」都不会发生）
+        // 联机：背包与媒质池都归本人客户端，走 PlayerEffects（服务端直接改会被忽略 / 刷媒质）。
         if (plan.FromPool > 0)
         {
             hexPlayer.MediaStorage.Withdraw(plan.FromPool);
         }
-
         for (int i = 0; i < plan.FromItems.Count; i++)
         {
             var (slot, count) = plan.FromItems[i];
-            _player.inventory[slot].stack -= count;
-            if (_player.inventory[slot].stack <= 0)
-            {
-                _player.inventory[slot].TurnToAir();
-            }
+            PlayerEffects.ConsumeSlot(_player, slot, count);
         }
-
-        // 多付的部分退回池中
         if (plan.Change > 0)
         {
-            hexPlayer.MediaStorage.Insert(plan.Change);
+            hexPlayer.MediaStorage.Insert(plan.Change);   // 整件消耗的多付退回池中
         }
+        PlayerEffects.SyncMedia(_player);
 
-        if (shortfall <= 0)
+        if (shortfall <= 0 || !CanOvercast())
         {
-            return 0;
+            return System.Math.Max(0, shortfall);
         }
 
-        // ---- 剩余缺口走过载（扣血）----
-        // 施法前的试算已经保证「媒质 + 生命」够付；这里仍按原版做一次保护：付不起就退款。
+        // ---- 剩余缺口走过载（扣血）：源项目 trulyHurt(缺口 / 汇率)，超过剩余生命就死 ----
         var (damage, gained, lethal) = Overcast.Plan(shortfall, _player.statLife, _player.statLifeMax2);
-        if (!CanOvercast() || gained < shortfall)
-        {
-            RefundPayment(hexPlayer, plan);
-            return shortfall;
-        }
-
         int lifeBefore = _player.statLife;
         int lifeAfter = lifeBefore - damage;
         hexPlayer.NoteOvercast(damage);
         if (!HexClientConfig.Instance.NoOvercastDamage)
         {
-            // 原版 trulyHurt（无视护甲，可以致死，死亡信息「%s的意识消散为了能量」）。
-            // 走 PlayerEffects：联机时服务端改 statLife 不会到达本人客户端（曾经这样写，联机过载不扣血）
+            // 死亡信息「%s的意识消散为了能量」
             PlayerEffects.TrueDamage(_player, damage, _player.name + "的意识消散为了能量");
-            if (lethal) { return 0; }
+            if (lethal) { return shortfall - gained; }
         }
         else if (_player.whoAmI == Main.myPlayer)
         {
@@ -306,30 +297,7 @@ public class PlayerCastingEnvironment : CastingEnvironment
             hexPlayer.GrantEnlightenment();
         }
         PlayerEffects.SyncProgress(_player);
-        return 0;
-    }
-
-    /// <summary>
-    /// 把已经执行的支付原样退回（用于过载校验失败的场景）。
-    ///
-    /// 只退媒质池与堆叠数；不重建被清空的槽位类型 ——
-    /// 这只有在「池 + 物品刚好不够、且生命也不够」时才触发，
-    /// 属于极端边界，宁可少退也不能让退款逻辑本身出错。
-    /// </summary>
-    private void RefundPayment(HexPlayer hexPlayer, MediaPaymentPlan plan)
-    {
-        if (plan.FromPool > 0)
-        {
-            hexPlayer.MediaStorage.Insert(plan.FromPool);
-        }
-
-        for (int i = 0; i < plan.FromItems.Count; i++)
-        {
-            var (slot, count) = plan.FromItems[i];
-            var item = _player.inventory[slot];
-            if (item.IsAir) continue;
-            item.stack += count;
-        }
+        return System.Math.Max(0, shortfall - gained);
     }
 
     /// <summary>
@@ -417,6 +385,7 @@ public class PlayerCastingEnvironment : CastingEnvironment
         {
             var hexPlayer = HexPlayer.Get(_player);
             hexPlayer.MediaStorage.Insert(hexPlayer.MaxMedia);
+            PlayerEffects.SyncMedia(_player);
         }
 
         for (int i = 0; i < result.SideEffects.Count; i++)

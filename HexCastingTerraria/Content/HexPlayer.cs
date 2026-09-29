@@ -35,6 +35,9 @@ public sealed class HexPlayer : ModPlayer
 
     public long MaxMedia => _media.MaxMedia;
 
+    /// <summary>联机：服务端施法改了媒质池，把结果同步过来（见 PlayerEffects.SyncMedia）。</summary>
+    public void SetMediaFromServer(long media) => _media.SetMedia(media);
+
     /// <summary>
     /// 是否已「启蒙」。
     ///
