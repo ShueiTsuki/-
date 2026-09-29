@@ -1,4 +1,4 @@
-# 方块贴图与模组图标重刷（第三批）
+﻿# 方块贴图与模组图标重刷（第三批）
 # 同一条流水线，见 pixelforge.ps1。
 . "$PSScriptRoot\pixelforge.ps1"
 

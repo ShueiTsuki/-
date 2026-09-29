@@ -1,4 +1,4 @@
-# 召唤方块 / 召唤光源贴图（16x16）。开发期占位。
+﻿# 召唤方块 / 召唤光源贴图（16x16）。开发期占位。
 Add-Type -AssemblyName System.Drawing
 $out = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Tiles"
 $S = 16

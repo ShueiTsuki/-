@@ -1,4 +1,4 @@
-# 生成三种卷轴贴图。32x32，差别在卷起的宽度。
+﻿# 生成三种卷轴贴图。32x32，差别在卷起的宽度。
 Add-Type -AssemblyName System.Drawing
 $out = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Items"
 $S = 32

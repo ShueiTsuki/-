@@ -15,11 +15,11 @@
 | 构建同步目录 | `C:\Users\MSI-PC\Documents\My Games\Terraria\tModLoader\ModSources\HexCastingTerraria` |
 | 打包产物 | `C:\Users\MSI-PC\Documents\My Games\Terraria\tModLoader-dev\Mods\HexCastingTerraria.tmod` |
 | 工具脚本 | `D:\DeepSeekHarness\tmod\_tools`（**不是** `HexCastingTerraria\_tools`） |
-| 离线 VM 测试工程 | `D:\DeepSeekHarness\vmtest`（由 `_tools\vmtest_setup.ps1` 生成） |
-| 拖拽/几何验证工程 | `D:\DeepSeekHarness\drawtest`（直接引用 Core 源码，不复制） |
+| 离线 VM 测试工程 | `D:\DeepSeekHarness\tmod\tests\vmtest`（直接编译整个 `Core/**`，不复制） |
+| 拖拽/几何验证工程 | `D:\DeepSeekHarness\tmod\tests\drawtest`（同上） |
 | 原版参考源码 | `D:\DeepSeekHarness\hexsrc`（HexMod 的 Kotlin/Java，**权威依据**） |
 | 用户素材 | `D:\DeepSeekHarness\图案工具`、`D:\DeepSeekHarness\咒法学图案` |
-| tModLoader | `D:\steam\steamapps\common\tModLoader`（1.4.5-dev / runtime 1.4.5.6 / .NET 10） |
+| tModLoader | `D:\steam\steamapps\common\tModLoader`（1.4.5-dev，随上游提交自动更新；验证时的 commit 见 STATUS.generated.md） |
 
 ---
 
@@ -27,14 +27,19 @@
 
 ```powershell
 cd D:\DeepSeekHarness\tmod
-.\_tools\run_all.ps1        # 编译 → 离线 VM → 拖拽/几何 → 生成状态表 → 架构断言
+.\_tools\run_all.ps1            # 编译(0错0警) → 离线 VM → 拖拽/几何 → 贴图 → 生成物 → 架构断言
+.\_tools\run_all.ps1 -Package   # 另外打包，并在专用服务器里真实加载 + 进世界（需先关游戏）
 ```
+
+每一步都以**子进程退出码**判定；被跳过的步骤显示 SKIP，不算全绿。
+各步实测事实写进 `_tools\run_last.json`，`STATUS.generated.md` 只从那里取数。
 
 单独跑某一层：
 
 ```powershell
 cd D:\DeepSeekHarness\tmod\HexCastingTerraria; .\build.ps1 -CompileOnly   # 编译
-cd D:\DeepSeekHarness\drawtest;                dotnet run -c Release      # 拖拽 + 几何 + 栈
+cd D:\DeepSeekHarness\tmod\tests\vmtest;       dotnet run -c Release      # 离线 VM（栈机语义）
+cd D:\DeepSeekHarness\tmod\tests\drawtest;     dotnet run -c Release      # 拖拽 + 几何 + 栈
 cd D:\DeepSeekHarness\tmod;                    .\_tools\check_arch.ps1    # 架构断言
 cd D:\DeepSeekHarness\tmod;                    .\_tools\check_assets.ps1  # 贴图存在性
 cd D:\DeepSeekHarness\tmod;                    .\_tools\verify_server.ps1 # 专用服务器加载
@@ -57,10 +62,30 @@ cd D:\DeepSeekHarness\tmod;                    .\_tools\verify_server.ps1 # 专�
 | 4 | 破坏魔法"成功"但方块不动 | `BreakBlockAt` 手写 `Main.tileNoFail` 判定**语义搞反**（该数组是「挖起来不会失败」＝能挖，被当成「挖不动」），木板直接走进 `else { return false; }`；而这个返回值**没有任何人看** | 已修（改走 `WorldGen.KillTile` + 扣费前预检带原因） |
 | 5 | 挖了树却没挖到瞄准的方块 | **法术序列栈错**：`get_caster → entity_pos/eye → get_entity_look → raycast → break_block`。`entity_pos/eye` 把实体换成向量，后两步依次报错但**栈不变**，`break_block` 拿到残留的眼位向量 → 破坏了**玩家自己脚下那一格** | 已修（要取两次施法者）；`drawtest` 加了栈平衡检查并把这个错序列留作**反例** |
 | 6 | 13 把法杖图标一模一样 | 掩码杖身写成 `'++'`（= 次材料色），`-Body` 的木材色**从未生效** | 已修 |
-| 7 | 打包报 `warning : Image loading failed: unknown image type` | **未定因**。已排除：全部 PNG 可解码、全为 8 位非隔行、客户端加载 0 错 | **待查** |
+| 7 | 打包报 `warning : Image loading failed: unknown image type` | **未定因**。已排除：全部 PNG 可解码、全为 8 位非隔行、客户端加载 0 错 | 2026-09-29 用当天 tML 打包**未复现**，观察中 |
+| 8 | tML 自动更新后编译失败（4 错） | 1.4.5-dev 上游把 `Item.active` 移到 `WorldItem` 外壳上。顺带发现：`ExtractMediaFromItem` 对 `inner` 调 `TurnToAir()`，**地上的掉落物实体不会失活**（应对外壳调用） | 已修；run_all 现在会提示「tML 自上次全绿以来已更新」 |
 
-> **统计**：上述 7 条，**没有一条是自动化测试发现的**。这条统计本身就是对当前验证网的评级 ——
+> **统计**：上述条目里 1–7 **没有一条是自动化测试发现的**。这条统计本身就是对当前验证网的评级 ——
 > 第 4 节说明了为什么。
+
+### 验证工具自身的缺陷（2026-09-29 审计，已修）
+
+验证网本身出过错，而且都是「静默地报绿」那一类 —— 比没有测试更糟：
+
+| 缺陷 | 后果 |
+|---|---|
+| 36 个含中文的 `.ps1` 都没有 UTF-8 BOM | PS 5.1 下 `run_all.ps1`、`build.ps1` 直接语法错误，整条流水线跑不起来。现由 `check_arch` 断言 |
+| `Get-Content` 读 JSON 不带 `-Encoding` | 中文乱码 → `ConvertFrom-Json` 失败。现由 `check_arch` 断言 |
+| drawtest 判定写成 `$out -match '失败 0'` | 中途一行「（失败 0 条）」就能让最终「失败 5」判为通过 |
+| 编译步骤名为「0 错 0 警」，只查「已成功生成」 | 警告直接放行 |
+| 所有步骤都不看退出码；生成器步骤无条件 `return $true` | 生成器崩了也是绿的 |
+| `STATUS.generated.md` 的编译行、贴图行是**写死的字符串** | 不管实测如何，状态表永远写「0 错 0 警」「缺失 0」 |
+| `check_arch` 查 drawtest.csproj 的路径写错，外面包了 `if (Test-Path)` | 这条断言**从未执行过** |
+| vmtest 靠脚本按子目录拷贝 Core；两个测试工程都在仓库外 | Core 新增目录会被静默漏测；测试代码不受版本控制 |
+| `verify_server.ps1` 读 stdout（不是 tML 日志）、编码错、无退出码 | 要么干等 300 秒超时，要么凭运气给结论 |
+
+修法的共同原则：**以退出码为准，文件不存在 = 失败而不是跳过，数字只来自实测**。
+改完后做过变异测试（植入 1 条警告 + 改坏一个 Core 常量）：编译与 VM 两步都正确判红。
 
 ---
 

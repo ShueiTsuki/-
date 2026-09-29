@@ -1,4 +1,4 @@
-# 查询 _tools\vanilla_ids.json 里的原版 ID。用法：
+﻿# 查询 _tools\vanilla_ids.json 里的原版 ID。用法：
 #   .\_tools\qid.ps1 ItemID 'Amethyst|Pixie'
 #   .\_tools\qid.ps1 TileID 'WorkBench|Sawmill'
 param(
@@ -8,7 +8,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $path = Join-Path $PSScriptRoot 'vanilla_ids.json'
-$j = Get-Content $path -Raw | ConvertFrom-Json
+$j = Get-Content $path -Raw -Encoding UTF8 | ConvertFrom-Json
 if (-not $j.PSObject.Properties.Name -contains $Table) {
     throw "没有表 $Table；可选：$(($j.PSObject.Properties.Name) -join ', ')"
 }

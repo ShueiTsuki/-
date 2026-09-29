@@ -1,4 +1,4 @@
-# 架构约束断言 —— 把「文档里写的规矩」变成「会失败的测试」。
+﻿# 架构约束断言 —— 把「文档里写的规矩」变成「会失败的测试」。
 #
 # 为什么需要它：审计指出三类问题，
 #   ① 根目录同时有两份宣称"当前状态"的文档，数字还不一样；
@@ -117,17 +117,47 @@ Check "Core/ 不引用 Content/Client/Config（注释里的 cref 不算）" ($co
 # ─────────────────────────────────────────────────────────────────────
 Write-Host "`n② 离线测试不许有排除项（排除 = 那段代码从没被测过）"
 # ─────────────────────────────────────────────────────────────────────
-$setup = Join-Path $tools 'vmtest_setup.ps1'
-$setupText = Get-Content -LiteralPath $setup -Raw -Encoding UTF8
-$excludeHits = [regex]::Matches($setupText, "Copy-Subset\s+""(\w+)""\s+@\(")
-Check "vmtest_setup.ps1 的 Copy-Subset 排除表为空" ($excludeHits.Count -eq 0) `
-      ("仍有排除: " + (($excludeHits | ForEach-Object { $_.Groups[1].Value }) -join ', '))
+# 两个测试工程都在仓库内 tests/ 下，直接编译整个 Core/**。
+# 以前 vmtest 靠脚本「按子目录拷贝」、drawtest 按子目录列 Include —— Core 新增目录会被静默漏测；
+# 而且这里的 drawtest 检查用错了路径，`if (Test-Path)` 让它**从未执行过**。
+# 所以现在：文件不存在 = 失败，而不是跳过。
+foreach ($t in 'vmtest', 'drawtest') {
+    $proj = Join-Path (Split-Path -Parent $mod) "tests\$t\$t.csproj"
+    if (-not (Test-Path $proj)) { Check "tests\$t\$t.csproj 存在" $false $proj; continue }
+    $projText = Get-Content -LiteralPath $proj -Raw -Encoding UTF8
+    Check "$t 编译整个 Core/**（不按子目录挑选）" `
+          ($projText -match 'HexCastingTerraria\\Core\\\*\*\\\*\.cs') '缺少 Core\**\*.cs'
+    Check "$t 没有 Exclude/Remove（测的必须是真代码）" `
+          ($projText -notmatch '(Exclude|Remove)\s*=') '仍有 Exclude/Remove='
+}
 
-$drawProj = Join-Path (Split-Path -Parent $mod) 'drawtest\drawtest.csproj'
-if (Test-Path $drawProj) {
-    $projText = Get-Content -LiteralPath $drawProj -Raw -Encoding UTF8
-    Check "drawtest.csproj 没有 Exclude（测的必须是真代码）" `
-          ($projText -notmatch 'Exclude\s*=') '仍有 Exclude='
+# ─────────────────────────────────────────────────────────────────────
+Write-Host "`n②b 脚本编码（PS 5.1 把无 BOM 的 UTF-8 当 ANSI 读）"
+# ─────────────────────────────────────────────────────────────────────
+# 真实事故：全部 36 个含中文的 .ps1 都没有 BOM，run_all.ps1 连同 build.ps1 在 PS 5.1 下
+# 直接语法错误；gen_progression 读 JSON 不带 -Encoding，中文乱码后 ConvertFrom-Json 失败。
+& {
+    $root = Split-Path -Parent $mod
+    $noBom = New-Object System.Collections.Generic.List[string]
+    $noEnc = New-Object System.Collections.Generic.List[string]
+    Get-ChildItem $root -Recurse -Filter *.ps1 | Where-Object { $_.FullName -notmatch '\\(_install_[^\\]*|bin|obj)\\' } | ForEach-Object {
+        $b = [System.IO.File]::ReadAllBytes($_.FullName)
+        $hasBom = $b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF
+        $nonAscii = $false
+        foreach ($x in $b) { if ($x -gt 127) { $nonAscii = $true; break } }
+        if ($nonAscii -and -not $hasBom) { $noBom.Add((Rel $_.FullName $root)) }
+
+        $n = 0
+        foreach ($line in [System.IO.File]::ReadAllLines($_.FullName)) {
+            $n++
+            if ($line -match '^\s*#') { continue }
+            if ($line -match '\bGet-Content\b' -and $line -match '\.(json|md|hjson|cs|txt)\b|ConvertFrom-Json' -and $line -notmatch '-Encoding') {
+                $noEnc.Add("$(Rel $_.FullName $root):$n")
+            }
+        }
+    }
+    Check '含非 ASCII 字符的 .ps1 都带 UTF-8 BOM' ($noBom.Count -eq 0) ($noBom -join ', ')
+    Check '读文本文件的 Get-Content 都显式 -Encoding' ($noEnc.Count -eq 0) ($noEnc -join ', ')
 }
 
 # ─────────────────────────────────────────────────────────────────────
@@ -219,7 +249,7 @@ $noMark = New-Object System.Collections.Generic.List[string]
 foreach ($g in $generated) {
     $p = Join-Path $mod $g
     if (-not (Test-Path $p)) { $noMark.Add("$g 不存在"); continue }
-    $head = (Get-Content -LiteralPath $p -TotalCount 6) -join "`n"
+    $head = (Get-Content -LiteralPath $p -TotalCount 6 -Encoding UTF8) -join "`n"
     if ($head -notmatch '生成|auto-generated|generated') { $noMark.Add($g) }
 }
 Check "生成的文件头部都带生成标记（提醒别手改）" ($noMark.Count -eq 0) ($noMark -join ', ')

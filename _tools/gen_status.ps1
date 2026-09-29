@@ -46,15 +46,23 @@ $layers['(根目录)'] = @{ Files = $rootFiles.Count; Lines = $rootLines }
 $totalFiles = 0; $totalLines = 0
 foreach ($k in $layers.Keys) { $totalFiles += $layers[$k].Files; $totalLines += $layers[$k].Lines }
 
-# ---- 文档规模 ----
-$docs = Get-ChildItem $mod -Recurse -File -Filter *.md -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -notmatch '\\(obj|bin)\\' }
+# ---- 文档规模（仓库根目录；以前扫的是模组目录，永远是 0）----
+$docs = Get-ChildItem (Split-Path -Parent $mod) -File -Filter *.md -ErrorAction SilentlyContinue
 $docLines = 0
-foreach ($d in $docs) { $docLines += (Get-Content -LiteralPath $d.FullName).Count }
+foreach ($d in $docs) { $docLines += (Get-Content -LiteralPath $d.FullName -Encoding UTF8).Count }
 
-# ---- 包体 ----
-$tmod = Join-Path $env:USERPROFILE 'Documents\My Games\Terraria\tModLoader-dev\Mods\HexCastingTerraria.tmod'
-$tmodSize = if (Test-Path $tmod) { (Get-Item $tmod).Length } else { 0 }
+# ---- 每一行都必须来自实测；没跑过就写「未运行」，绝不写死 ----
+$run = Read-JsonFile (Join-Path $tools 'run_last.json')   # run_all.ps1 每步的实测事实
+function Fact($obj, [scriptblock]$fmt, [string]$none = '未运行') {
+    if ($null -eq $obj) { return $none }
+    return (& $fmt $obj)
+}
+$compileText = Fact $run.compile { param($c) "$($c.errors) 错 $($c.warnings) 警" }
+$assetText   = Fact $run.assets  { param($a) "$($a.needTexture) 个类需要贴图，缺失 $($a.missing)" }
+$packText    = Fact $run.package { param($p) if ($p.ok) { "$($p.bytes) 字节" } else { '打包失败' } } '未运行（run_all.ps1 -Package）'
+$serverText  = Fact $run.server  { param($v) if ($v.ok) { '通过（加载 + 进入世界，无未登记异常）' } else { '失败' } } '未运行（run_all.ps1 -Package）'
+$tmlText     = if ($run -and $run.tml) { "commit ``$($run.tml.commit.Substring(0,10))``，dll 构建于 $($run.tml.dllBuilt)" } else { '未记录' }
+$runWhen     = if ($run) { $run.at } else { '(尚未运行 run_all.ps1)' }
 
 # ---- VM 测试 ----
 $vmPassed = '未记录'; $vmFailed = '未记录'; $vmWhen = '(尚未运行)'
@@ -107,20 +115,25 @@ foreach ($k in $layers.Keys) {
 [void]$sb.AppendLine()
 [void]$sb.AppendLine('| 层 | 结果 | 命令 |')
 [void]$sb.AppendLine('|---|---|---|')
-[void]$sb.AppendLine('| 编译 | 0 错 0 警 | `build.ps1 -CompileOnly` |')
-[void]$sb.AppendLine("| 离线 VM（栈机语义） | $vmPassed 通过 / $vmFailed 失败 $vmWhen | `_tools\run_all.ps1` |")
-[void]$sb.AppendLine("| 拖拽 + 几何（画布/坐标） | $($measured.checksPassed) 通过 / $($measured.checksFailed) 失败 | `drawtest` |")
-[void]$sb.AppendLine('| 贴图存在性 | 91 个类需要贴图，缺失 0 | `_tools\check_assets.ps1` |')
+[void]$sb.AppendLine("| 编译 | $compileText | ``build.ps1 -CompileOnly`` |")
+[void]$sb.AppendLine("| 离线 VM（栈机语义） | $vmPassed 通过 / $vmFailed 失败 | ``tests\vmtest`` |")
+[void]$sb.AppendLine("| 拖拽 + 几何（画布/坐标） | $($measured.checksPassed) 通过 / $($measured.checksFailed) 失败 | ``tests\drawtest`` |")
+[void]$sb.AppendLine("| 贴图存在性 | $assetText | ``_tools\check_assets.ps1`` |")
 [void]$sb.AppendLine('| 架构约束 | 见 `_tools\check_arch.ps1` | `_tools\check_arch.ps1` |')
-[void]$sb.AppendLine("| 包体 | $tmodSize 字节 | `build.ps1` |")
+[void]$sb.AppendLine("| 打包 | $packText | ``build.ps1`` |")
+[void]$sb.AppendLine("| 专用服务器加载 | $serverText | ``_tools\verify_server.ps1`` |")
+[void]$sb.AppendLine()
+[void]$sb.AppendLine("以上来自 ``_tools\run_all.ps1`` 于 $runWhen 的一次运行（``_tools\run_last.json``）；VM 测试时间 $vmWhen。")
+[void]$sb.AppendLine("验证时的 tModLoader：$tmlText。1.4.5-dev 随上游每次提交自动更新，API 会变 —— tML 更新后请重跑。")
 [void]$sb.AppendLine()
 [void]$sb.AppendLine('## 验证**没有**覆盖什么')
 [void]$sb.AppendLine()
-[void]$sb.AppendLine('这一节比上面的数字重要。上述四层全是**无头/纯逻辑**验证，抓不到：')
+[void]$sb.AppendLine('这一节比上面的数字重要。上述验证除「专用服务器加载」外都是**无头/纯逻辑**的；服务器也只证明能加载、能进世界。抓不到：')
 [void]$sb.AppendLine()
 [void]$sb.AppendLine('- **一切绘制结果**：书的排版、图案预览的位置与缩放、画布网格点、HUD、粒子、法术环')
 [void]$sb.AppendLine('- **UI 布局与命中判定**、鼠标键盘输入链路（落笔/拖拽/收笔、开书关书）')
-[void]$sb.AppendLine('- **真实世界行为**：`WorldGen.*` 调用没有在真实世界里执行过')
+[void]$sb.AppendLine('- **真实世界行为**：施法相关的 `WorldGen.*` 调用没有在真实世界里执行过')
+[void]$sb.AppendLine('- **客户端加载**：贴图缺失只在客户端报（服务器不加载贴图）；`check_assets` 只查文件存在性')
 [void]$sb.AppendLine('- **像素级回归**：没有截图基线，改贴图不会有任何测试报警')
 [void]$sb.AppendLine('- 音频、联机双客户端同步、存档落盘往返、16 个配置开关、性能')
 [void]$sb.AppendLine()

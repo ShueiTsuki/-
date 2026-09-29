@@ -1,9 +1,0 @@
-﻿worldpath=D:\DeepSeekHarness\tmod\_verify\save\Worlds
-worldname=_verify_world
-autocreate=1
-world=D:\DeepSeekHarness\tmod\_verify\save\Worlds\_verify_world.wld
-maxplayers=1
-port=7799
-nosteam=1
-noupnp=1
-language=zh-Hans

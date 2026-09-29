@@ -1,4 +1,4 @@
-# 生成 13 把法杖与紫水晶粉块的贴图。
+﻿# 生成 13 把法杖与紫水晶粉块的贴图。
 Add-Type -AssemblyName System.Drawing
 
 $itemsOut = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Items"

@@ -1,4 +1,4 @@
-# 从 tModLoader.dll 里**只读元数据**导出原版 ID 表（ItemID / TileID / NPCID / BuffID / DustID ...）。
+﻿# 从 tModLoader.dll 里**只读元数据**导出原版 ID 表（ItemID / TileID / NPCID / BuffID / DustID ...）。
 #
 # 为什么需要这个：配方对齐时最怕「凭记忆写一个 ItemID」，写出来的常量不存在就是编译错误，
 # 或者存在但语义不对（比如把「紫晶石块」记成 AmethystStoneBlock）。

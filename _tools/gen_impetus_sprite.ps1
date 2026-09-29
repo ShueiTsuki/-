@@ -1,4 +1,4 @@
-# 原动力贴图（16x16）。开发期占位，见 TODO_PLAN.md 美术欠账。
+﻿# 原动力贴图（16x16）。开发期占位，见 TODO_PLAN.md 美术欠账。
 Add-Type -AssemblyName System.Drawing
 $out = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Tiles"
 $S = 16

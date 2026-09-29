@@ -1,4 +1,4 @@
-# 生成晶洞方块贴图（16x16 物块贴图）。
+﻿# 生成晶洞方块贴图（16x16 物块贴图）。
 Add-Type -AssemblyName System.Drawing
 
 $out = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Tiles"

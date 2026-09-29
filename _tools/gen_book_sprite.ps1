@@ -1,4 +1,4 @@
-# 咒法学之书的贴图（20x20）。开发期占位，见 TODO_PLAN.md 美术欠账。
+﻿# 咒法学之书的贴图（20x20）。开发期占位，见 TODO_PLAN.md 美术欠账。
 Add-Type -AssemblyName System.Drawing
 
 $dir = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Items"

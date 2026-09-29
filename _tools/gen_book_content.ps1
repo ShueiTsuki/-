@@ -1,4 +1,4 @@
-# 从源项目的 Patchouli 手册生成书本**内容骨架**（Core/Ui/BookContent.Generated.cs）。
+﻿# 从源项目的 Patchouli 手册生成书本**内容骨架**（Core/Ui/BookContent.Generated.cs）。
 #
 # 源：D:\DeepSeekHarness\hexsrc\Common\src\main\resources\assets\hexcasting\patchouli_books\thehexbook\en_us\
 #     7 个分类 + 82 个条目（含 patterns/great_spells、patterns/spells 两个子目录）

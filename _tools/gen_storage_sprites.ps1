@@ -1,4 +1,4 @@
-# 生成聚念核心 / 念珠贴图。32x32。
+﻿# 生成聚念核心 / 念珠贴图。32x32。
 Add-Type -AssemblyName System.Drawing
 $out = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Items"
 $S = 32

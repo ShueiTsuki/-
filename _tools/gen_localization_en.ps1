@@ -1,4 +1,4 @@
-# 补齐 Localization/en-US.hjson 里**缺失**的物品与方块词条。
+﻿# 补齐 Localization/en-US.hjson 里**缺失**的物品与方块词条。
 #
 # 为什么需要它：tModLoader 找不到词条时会**静默回退到类名**，所以英文环境里
 # 玩家看到的是 `AmethystDustBlockItem` 而不是 "Amethyst Dust Block"。

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     生成媒质瓶（MediaFlask）贴图。
 .DESCRIPTION

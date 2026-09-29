@@ -1,4 +1,4 @@
-# 把 Patchouli 的书本图集预处理成离屏渲染能直接吃的格式。
+﻿# 把 Patchouli 的书本图集预处理成离屏渲染能直接吃的格式。
 #
 # 为什么需要它：离屏出图跑在 `drawtest`（net10.0 控制台），那里**没有 PNG 解码器**
 # （`System.Drawing.Common` 从 .NET 7 起不再随框架分发，离线 restore 不可靠；

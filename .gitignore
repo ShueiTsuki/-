@@ -16,3 +16,6 @@ _install_*/
 _shots/
 _verify/save/
 _watcher.log
+
+# 服务器验证的临时存档/日志（每次运行重建）
+_verify/

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     编译并打包咒法学模组，并自动处理「游戏正在运行导致 .tmod 被锁」的情况。
 
@@ -23,7 +23,9 @@
 [CmdletBinding()]
 param(
     # 只编译不打包。不触碰 .tmod，游戏运行中也能安全执行。
-    [switch]$CompileOnly
+    [switch]$CompileOnly,
+    # 非交互（流水线用）：游戏开着时直接失败，而不是 Read-Host 卡住等输入。
+    [switch]$NoPrompt
 )
 
 $ErrorActionPreference = 'Stop'
@@ -62,6 +64,7 @@ if ($gameProcs) {
         Write-Host "检测到 tModLoader 正在运行（PID: $ids）。" -ForegroundColor Yellow
         Write-Host "打包会写入 $tmodOut，该文件被游戏锁定，必须先关闭游戏。" -ForegroundColor Yellow
         Write-Host ''
+        if ($NoPrompt) { throw "tModLoader 正在运行（PID: $ids），无法打包。请先关闭游戏。" }
         $answer = Read-Host "是否现在结束游戏进程？(y/N)"
         if ($answer -eq 'y' -or $answer -eq 'Y') {
             foreach ($p in $gameProcs) {

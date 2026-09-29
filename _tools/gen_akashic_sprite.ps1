@@ -1,4 +1,4 @@
-# 阿卡夏记录方块贴图（16x16）。占位风格，见 TODO_PLAN.md 美术欠账一节。
+﻿# 阿卡夏记录方块贴图（16x16）。占位风格，见 TODO_PLAN.md 美术欠账一节。
 Add-Type -AssemblyName System.Drawing
 $out = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Tiles"
 $S = 16

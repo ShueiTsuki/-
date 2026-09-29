@@ -1,4 +1,4 @@
-# 生成 PROGRESSION.generated.md（阶段表），并把「阶段表 ↔ 代码里的配方」对拍。
+﻿# 生成 PROGRESSION.generated.md（阶段表），并把「阶段表 ↔ 代码里的配方」对拍。
 #
 # 为什么要有这个：
 #   之前配方是「一个一个单独看」的，于是同一个族里各写各的比例（瓦从基底块 1:1、
@@ -26,7 +26,7 @@ if (-not $ModDir) { $ModDir = Join-Path $root 'HexCastingTerraria' }
 $stagesPath = Join-Path $tools 'progression_stages.json'
 $outPath    = Join-Path $root 'PROGRESSION.generated.md'
 
-$cfg = Get-Content $stagesPath -Raw | ConvertFrom-Json
+$cfg = Get-Content $stagesPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $stageOrder = @($cfg.stages)
 
 # ── 从代码里读出每个「有配方的类」的合成站与材料 ──────────────────────

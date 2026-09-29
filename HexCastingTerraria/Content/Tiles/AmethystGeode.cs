@@ -214,19 +214,19 @@ public abstract class AmethystGrowth : ModTile
 
         if (loot.Dust > 0)
         {
-            Item.NewItem(source, i * 16, j * 16, 16, 16,
+            Item.NewItem(source, new Microsoft.Xna.Framework.Vector2(i * 16, j * 16), new Microsoft.Xna.Framework.Vector2(16, 16),
                 ModContent.ItemType<Items.AmethystDust>(), loot.Dust);
         }
 
         if (loot.ChargedCrystal > 0)
         {
-            Item.NewItem(source, i * 16, j * 16, 16, 16,
+            Item.NewItem(source, new Microsoft.Xna.Framework.Vector2(i * 16, j * 16), new Microsoft.Xna.Framework.Vector2(16, 16),
                 ModContent.ItemType<Items.ChargedAmethyst>(), loot.ChargedCrystal);
         }
 
         if (loot.Shards > 0)
         {
-            Item.NewItem(source, i * 16, j * 16, 16, 16,
+            Item.NewItem(source, new Microsoft.Xna.Framework.Vector2(i * 16, j * 16), new Microsoft.Xna.Framework.Vector2(16, 16),
                 ModContent.ItemType<Items.AmethystShard>(), loot.Shards);
         }
     }

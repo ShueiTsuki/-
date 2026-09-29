@@ -1,4 +1,4 @@
-# 壁挂装饰与阿卡夏装饰的贴图（16x16）。开发期占位，见 TODO_PLAN.md 美术欠账。
+﻿# 壁挂装饰与阿卡夏装饰的贴图（16x16）。开发期占位，见 TODO_PLAN.md 美术欠账。
 Add-Type -AssemblyName System.Drawing
 
 $tileDir = "D:\DeepSeekHarness\tmod\HexCastingTerraria\Content\Tiles"

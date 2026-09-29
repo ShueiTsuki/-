@@ -694,20 +694,20 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (a.Index < 0 || a.Index >= Main.maxItems) return false;
         if (b.Index < 0 || b.Index >= Main.maxItems) return false;
 
-        // 1.4.5 的 Main.item 是 WorldItem 外壳，真正的 Item 在 .inner 里；
-        // 外壳只转发了一部分成员（prefix 就没转发），所以这里一律走 inner。
-        Item ia = Main.item[a.Index].inner;
-        Item ib = Main.item[b.Index].inner;
-        if (ia is null || ib is null) return false;
-        if (!ia.active || !ib.active) return false;
+        // 1.4.5 的 Main.item 是 WorldItem 外壳，真正的 Item 在 .inner 里。
+        // 存活标记 active 只在外壳上（Item.active 已移除）。
+        WorldItem wa = Main.item[a.Index];
+        WorldItem wb = Main.item[b.Index];
+        if (wa is null || wb is null) return false;
+        if (!wa.active || !wb.active) return false;
 
-        if (ia.type != ib.type) return false;
+        if (wa.type != wb.type) return false;
 
         if (!exact) return true;
 
         // strict：原版 ItemStack.isSameItemSameComponents —— 同种物品 + 同 NBT，数量不参与比较。
         // 泰拉里 NBT 的对应物就是前缀。
-        return ia.prefix == ib.prefix;
+        return wa.prefix == wb.prefix;
     }
 
     /// <summary>[0, 1) 的随机数。</summary>
@@ -729,10 +729,10 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (entity.Target != EntityIota.EntityKind.Item) return null;
         if (entity.Index < 0 || entity.Index >= Main.maxItems) return null;
 
-        Item item = Main.item[entity.Index].inner;
-        if (item is null || !item.active || item.IsAir) return null;
+        WorldItem world = Main.item[entity.Index];
+        if (world is null || !world.active || world.IsAir) return null;
 
-        return item.ModItem as Items.ItemIotaStorage;
+        return world.ModItem as Items.ItemIotaStorage;
     }
 
     public bool IsEntityIotaHolder(EntityIota entity) => FindEntityStorage(entity) is not null;
@@ -1203,8 +1203,10 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (itemEntity.Target != EntityIota.EntityKind.Item) return 0;
         if (itemEntity.Index < 0 || itemEntity.Index >= Main.maxItems) return 0;
 
-        Item item = Main.item[itemEntity.Index].inner;
-        if (item is null || !item.active || item.IsAir) return 0;
+        // 存活标记在 WorldItem 外壳上（1.4.5 起 Item.active 已移除）
+        WorldItem world = Main.item[itemEntity.Index];
+        if (world is null || !world.active || world.IsAir) return 0;
+        Item item = world.inner;
         if (item.ModItem is not Items.MediaMaterial material) return 0;
 
         var hexPlayer = HexPlayer.Get(_caster);
@@ -1223,7 +1225,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         item.stack--;
         if (item.stack <= 0)
         {
-            item.TurnToAir();
+            // 必须对外壳调用：inner.TurnToAir() 不会让地上的掉落物实体失活
+            world.TurnToAir();
         }
 
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
@@ -1409,11 +1412,11 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         // ② 产物
         if (recipe.ResultItem >= 0)
         {
-            // 用 (source, x, y, width, height, type, stack) 这个重载 ——
+            // 用 (source, position, size, type, stack) 这个重载 ——
             // 它接像素坐标与尺寸，正好对上 Core 给的图格中心。
             Item.NewItem(new Terraria.DataStructures.EntitySource_Misc("HexBrainsweep"),
-                (int)(x * HexUnits.PixelsPerTile), (int)(y * HexUnits.PixelsPerTile),
-                16, 16, recipe.ResultItem, 1);
+                new Vector2((float)(x * HexUnits.PixelsPerTile), (float)(y * HexUnits.PixelsPerTile)),
+                new Vector2(16, 16), recipe.ResultItem, 1);
         }
 
         // ③ 生物：标记为已切除再杀掉。
@@ -1819,9 +1822,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (item.IsAir || item.stack <= 0) return;
 
         // 用 Clone 丢出，保留前缀与 mod 数据；随后清空原槽位
-        var dropped = Item.NewItem(source,
-            (int)player.Center.X, (int)player.Center.Y, 0, 0,
-            item.Clone());
+        var dropped = Item.NewItem(source, player.Center, item.Clone());
 
         // 极小概率 NewItem 因物品上限失败 —— 那就别清空，免得物品凭空消失
         if (dropped >= 0)
