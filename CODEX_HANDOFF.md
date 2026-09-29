@@ -95,6 +95,11 @@ cd D:\DeepSeekHarness\tmod;                    .\_tools\verify_server.ps1 # 专�
 
 ## 4. 验证的能力边界（比"有多少测试"重要）
 
+> **2026-09-29 更正**：vmtest / drawtest 的断言大多由 DeepSeek 写成，验证的是「移植版现有行为」而不是「与原版一致」。
+> 对照 hexsrc 审计时发现 27 处偏差（骗徒之策略错位、mishap 惩罚全空、法术环快 3 倍、联机扣血/扣物品不生效……），
+> 其中 **8 条旧测试把错误行为当成了期望值**。清单与状态见 **`AUDIT_VS_ORIGINAL.md`**；
+> 对照工具 `_tools/audit/action_audit.py`。**测试全绿 ≠ 与原版一致**，改行为时以 hexsrc 为准。
+
 四层自动化**全是有头/无头逻辑验证**。它们能抓：编译、栈机语义、图案几何、坐标换算、
 贴图**存在性**、服务器加载。抓不到：
 
@@ -185,6 +190,8 @@ get_caster → entity_pos/eye → const/vec/ny → add_motion
 
 ## 5. 环境 / 工具踩坑清单（会浪费时间的那些）
 
+0. **换行符**：工作区里很多文件是 CRLF、仓库里是 LF（`autocrlf=false`），改过的文件一提交就整文件 diff。
+   **提交前跑 `python _tools/fix_eol.py`**（把改过的文件对齐到 HEAD 的换行风格）。
 1. **`_tools` 的真实位置**是 `D:\DeepSeekHarness\tmod\_tools`。在 `HexCastingTerraria\` 下另建
    一个 `_tools` 会让脚本跑旧副本，症状是"改了没生效"，极难察觉。
 2. **PowerShell 5.1 里 `[System.IO.File]::XXX("相对路径")` 用的是进程初始 CWD**，不是 `cd`
