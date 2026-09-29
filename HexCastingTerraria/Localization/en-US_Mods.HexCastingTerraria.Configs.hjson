@@ -1,0 +1,139 @@
+﻿# Hex Casting config localization (English)
+# File name format: {language}_Mods.{ModName}.Configs.hjson
+
+Mods: {
+	HexCastingTerraria: {
+		Configs: {
+			HexClientConfig: {
+				DisplayName: Hex Casting Client Settings
+
+				Headers: {
+					DevGrants: Developer - Grant State
+					DevDisplay: Developer - Display
+					Display: Canvas and Display
+				}
+
+				InfiniteMedia: {
+					Label: Infinite media (developer mode)
+					Tooltip: Casting costs no media and never triggers overcast health loss. Also toggleable in-game with J.
+				}
+
+				NewBookUi: {
+					Label: New book UI (experimental)
+					Tooltip: On = the new element-tree/skin UI. Off = the old pattern browser. The new UI had a rendering issue in game, so it is off by default.
+				}
+
+				VanillaBookSkin: {
+					Label: Use Terraria-style book
+					Tooltip: On = native Terraria panel and item slots. Off = the Patchouli handbook. Press F8 in game to flip temporarily.
+				}
+
+				GiveDevKitOnEnter: {
+					Label: Give developer kit on world enter
+					Tooltip: Grants one representative item per subsystem on every world entry (staff, book, media chain, data holders, scrolls, packaged spells, all three circle blocks, building blocks). Press K to grant it again at any time.
+				}
+
+				AlwaysEnlightened: {
+					Label: Always enlightened
+					Tooltip: Unlocks the 14 great spells (lightning, flight, create_lava, great teleport, great sentinel, weather, brainsweep, battery, 5 potions) without having to trigger an overcast first. Normally enlightenment requires a single cast costing at least 80% of your media capacity.
+				}
+
+				NoOvercastDamage: {
+					Label: No overcast health cost
+					Tooltip: Casting still succeeds when media runs out, but no health is deducted. It still counts as an overcast, so enlightenment is still granted.
+				}
+
+				RefillMediaAfterCast: {
+					Label: Refill media after each cast
+					Tooltip: Refills your media pool after every cast, so you do not have to keep drinking media flasks while testing.
+				}
+
+				NoPackagedCooldown: {
+					Label: No packaged spell cooldown
+					Tooltip: Cypher, trinket and artifact normally have 8 / 5 / 3 tick cooldowns. With this on you can spam right click to test the same spell repeatedly.
+				}
+
+				InfiniteFlight: {
+					Label: Infinite hex flight
+					Tooltip: Flight never ends, never times out and has no range limit, so you can evaluate what flight, flight/range and flight/time actually do.
+				}
+
+				FastSpellCircles: {
+					Label: Fast spell circles
+					Tooltip: Circles normally take 10 to 2 ticks per block. With this on a circle advances one block per tick, which makes testing long circles practical.
+				}
+
+				FreeSpellCircles: {
+					Label: Free spell circles
+					Tooltip: A circle's media pool drains as slates execute, after which every slate reports insufficient media and the rest of the circle cannot be tested. With this on the whole circle runs.
+				}
+
+				LooseBrainsweepTargets: {
+					Label: Loose brainsweep targets
+					Tooltip: Normally only town NPCs and critters can be swept. With this on any non-boss NPC works, so you can test all 5 recipes without hunting for the right NPC.
+				}
+
+				InstantCrystalGrowth: {
+					Label: Instant crystal growth
+					Tooltip: Skips the random growth roll so amethyst clusters advance a stage on every random tick. Useful for verifying budding block to cluster to drop.
+				}
+
+				ShowMediaRing: {
+					Label: Show media ring
+					Tooltip: Shows the media ring with amount and percentage in the top-left corner.
+				}
+
+				ShowDebugPanel: {
+					Label: Show debug panel
+					Tooltip: Shows coordinate conversions and snap threshold while the canvas is open (also toggled with F1).
+				}
+
+				ShowAimMarker: {
+					Label: Show aim marker
+					Tooltip: Marks the world position the mouse points at with particles. Other players see the same marker in multiplayer.
+				}
+
+				AimMarkerDustCount: {
+					Label: Aim marker particle count
+					Tooltip: How many particles are spent marking the aim position. Higher is more visible but uses more of the particle budget.
+				}
+
+				ShowEntityIds: {
+					Label: Show entity ids
+					Tooltip: Shows the kind and index of the entity under the cursor. Essential when debugging get_entity, zone_entity and every other entity pattern, since those take exactly that index.
+				}
+
+				ShowAimRay: {
+					Label: Show aim ray
+					Tooltip: Draws the ray from the player to the hit tile. Useful for debugging raycast, raycast/axis and raycast/entity.
+				}
+
+				ShowCircleDebug: {
+					Label: Show spell circle state
+					Tooltip: Shows the current block, blocks visited, speed and remaining media of running spell circles.
+				}
+
+				ShowPatternId: {
+					Label: Show recognized pattern
+					Tooltip: After drawing a pattern, shows its id, angle signature and argument count.
+				}
+
+				MaxOpCount: {
+					Label: Max operation count
+					Tooltip: Evaluation steps allowed per cast. Exceeding it triggers an out-of-mind mishap. Matches the original maxOpCount.
+				}
+
+				GridZoom: {
+					Label: Grid zoom
+					Tooltip: Adjusts the hex grid spacing on the drawing canvas. Higher values pack the grid tighter.
+				}
+
+				GridSnapThreshold: {
+					Label: Snap threshold
+					Tooltip: '''How far you must drag before a step is recorded. 0.5 = the pattern follows the cursor
+exactly (upstream default). Above 0.5 the pattern lags one step behind and tends to drop the last segment.'''
+				}
+			}
+		}
+	}
+}

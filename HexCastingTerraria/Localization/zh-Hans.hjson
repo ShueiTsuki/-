@@ -1,0 +1,521 @@
+﻿# 咒法学 (Hex Casting) → tModLoader 移植版（简体中文）
+
+Mods: {
+	HexCastingTerraria: {
+		Items: {
+			Abacus: {
+				DisplayName: 算盘
+			}
+			JewelerHammer: {
+				DisplayName: 珠宝匠锤
+			}
+			ScryingLens: {
+				DisplayName: 探知透镜
+			}
+			Spellbook: {
+				DisplayName: 法术书
+			}
+			HexBookItem: {
+				DisplayName: 咒法学之书
+			}
+			AkashicRecordItem: {
+				DisplayName: 阿卡夏记录
+			}
+			Cypher: {
+				DisplayName: 杂件
+			}
+			Trinket: {
+				DisplayName: 缀品
+			}
+			Artifact: {
+				DisplayName: 造物
+			}
+			CherryStaff: {
+				DisplayName: 樱花木法杖
+			}
+			WallScrollFrameSmall: {
+				DisplayName: 小型挂轴框
+			}
+			WallScrollFrameMedium: {
+				DisplayName: 中型挂轴框
+			}
+			WallScrollFrameLarge: {
+				DisplayName: 大型挂轴框
+			}
+			ScrollPaperItem: {
+				DisplayName: 卷轴纸
+			}
+			ScrollPaperLanternItem: {
+				DisplayName: 卷轴纸灯笼
+			}
+			AncientScrollPaperItem: {
+				DisplayName: 远古卷轴纸
+			}
+			AncientScrollPaperLanternItem: {
+				DisplayName: 远古卷轴纸灯笼
+			}
+			AkashicBookshelfItem: {
+				DisplayName: 阿卡夏书架
+			}
+			AkashicLigatureItem: {
+				DisplayName: 阿卡夏系带
+			}
+			AmethystSconceItem: {
+				DisplayName: 紫晶烛台
+			}
+			SlateBlockItem: {
+				DisplayName: 板岩块
+			}
+			SlateTilesItem: {
+				DisplayName: 板岩瓦
+			}
+			SlateBricksItem: {
+				DisplayName: 板岩砖
+			}
+			SlateBricksSmallItem: {
+				DisplayName: 小板岩砖
+			}
+			SlatePillarItem: {
+				DisplayName: 板岩柱
+			}
+			SlateAmethystTilesItem: {
+				DisplayName: 板岩紫晶瓦
+			}
+			SlateAmethystBricksItem: {
+				DisplayName: 板岩紫晶砖
+			}
+			SlateAmethystBricksSmallItem: {
+				DisplayName: 小板岩紫晶砖
+			}
+			SlateAmethystPillarItem: {
+				DisplayName: 板岩紫晶柱
+			}
+			AmethystTilesItem: {
+				DisplayName: 紫晶瓦
+			}
+			AmethystBricksItem: {
+				DisplayName: 紫晶砖
+			}
+			AmethystBricksSmallItem: {
+				DisplayName: 小紫晶砖
+			}
+			AmethystPillarItem: {
+				DisplayName: 紫晶柱
+			}
+			QuenchedAllayItem: {
+				DisplayName: 淬灵块
+			}
+			QuenchedAllayTilesItem: {
+				DisplayName: 淬灵瓦
+			}
+			QuenchedAllayBricksItem: {
+				DisplayName: 淬灵砖
+			}
+			QuenchedAllayBricksSmallItem: {
+				DisplayName: 小淬灵砖
+			}
+			EdifiedLogItem: {
+				DisplayName: 启迪原木
+			}
+			EdifiedLogAmethystItem: {
+				DisplayName: 紫晶启迪原木
+			}
+			EdifiedLogAventurineItem: {
+				DisplayName: 东陵启迪原木
+			}
+			EdifiedLogCitrineItem: {
+				DisplayName: 黄晶启迪原木
+			}
+			EdifiedLogPurpleItem: {
+				DisplayName: 紫启迪原木
+			}
+			StrippedEdifiedLogItem: {
+				DisplayName: 去皮启迪原木
+			}
+			EdifiedWoodItem: {
+				DisplayName: 启迪木
+			}
+			StrippedEdifiedWoodItem: {
+				DisplayName: 去皮启迪木
+			}
+			EdifiedPlanksItem: {
+				DisplayName: 启迪木板
+			}
+			EdifiedPanelItem: {
+				DisplayName: 启迪木面板
+			}
+			EdifiedTileItem: {
+				DisplayName: 启迪木瓷砖
+			}
+			AmethystEdifiedLeavesItem: {
+				DisplayName: 紫晶启迪树叶
+			}
+			AventurineEdifiedLeavesItem: {
+				DisplayName: 东陵启迪树叶
+			}
+			CitrineEdifiedLeavesItem: {
+				DisplayName: 黄晶启迪树叶
+			}
+			DevStaff: {
+				DisplayName: 咒法学开发者法杖
+				Tooltip:
+					'''
+					右键打开咒术绘制画布
+					潜行右键清空已绘制图案
+					画布内：左键拖拽绘制 · 右键撤销 · Esc 关闭 · F1 调试面板
+					'''
+			}
+			MediaFlask: {
+				DisplayName: 媒质瓶
+				Tooltip:
+					'''
+					注入 100,000 媒质（1 晶体）
+					1 紫水晶粉 = 10,000 媒质
+					'''
+			}
+			AmethystDust: {
+				DisplayName: 紫水晶粉
+				Tooltip:
+					'''
+					蕴含着 10,000 媒质
+					媒质的基本单位 —— 一切咒术都从这里开始
+					右键蓄入自身媒质池
+					'''
+			}
+			AmethystShard: {
+				DisplayName: 紫水晶碎片
+				Tooltip:
+					'''
+					蕴含着 50,000 媒质（5 粉）
+					右键蓄入自身媒质池
+					'''
+			}
+			ChargedAmethyst: {
+				DisplayName: 充能紫水晶
+				Tooltip:
+					'''
+					蕴含着 100,000 媒质（10 粉）
+					晶体中封存着尚未散去的思绪
+					右键蓄入自身媒质池
+					'''
+			}
+			QuenchedAllayShard: {
+				DisplayName: 淬灵晶碎片
+				Tooltip:
+					'''
+					蕴含着 300,000 媒质（30 粉）
+					某个曾经欢快之物，如今只剩冰冷的安宁
+					右键蓄入自身媒质池
+					'''
+			}
+		}
+			AmethystDustBlockItem: {
+				DisplayName: 紫水晶粉块
+				Tooltip: 压实的紫水晶粉，可作建材
+			}
+			OakStaff: {
+				DisplayName: 橡木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			BorealStaff: {
+				DisplayName: 北地木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			PalmStaff: {
+				DisplayName: 棕榈木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			MahoganyStaff: {
+				DisplayName: 红木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			EbonwoodStaff: {
+				DisplayName: 乌木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			ShadewoodStaff: {
+				DisplayName: 阴影木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			PearlwoodStaff: {
+				DisplayName: 珍珠木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			DynastyStaff: {
+				DisplayName: 王朝木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			SpookyStaff: {
+				DisplayName: 阴森木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			AshStaff: {
+				DisplayName: 灰烬木法杖
+				Tooltip: 右键绘制咒术图案
+			}
+			QuenchedStaff: {
+				DisplayName: 淬灵晶法杖
+				Tooltip: 以淬灵晶锻造，晶体中回荡着安宁
+			}
+			EdifiedStaff: {
+				DisplayName: 启迪木法杖
+				Tooltip: 启迪之木所制，思绪在其纹理间流动
+			}
+			MindspliceStaff: {
+				DisplayName: 剖念法杖
+				Tooltip: 剖开思绪本身，窥见其下的结构
+			}
+			Focus: {
+				DisplayName: 聚念核心
+				Tooltip:
+					'''
+					可以存下一个 iota
+					配合 read_into_parens 把常用的值随身携带
+					'''
+			}
+			ThoughtKnot: {
+				DisplayName: 念珠
+				Tooltip:
+					'''
+					可以存下一个 iota
+					绳结记着某个念头，不会散
+					'''
+			}
+			ScrollSmall: {
+				DisplayName: 小型卷轴
+				Tooltip: 可以存下一个图案
+			}
+			ScrollMedium: {
+				DisplayName: 中型卷轴
+				Tooltip: 可以存下一个图案
+			}
+			ScrollLarge: {
+				DisplayName: 大型卷轴
+				Tooltip: 可以存下一个图案
+			}
+			HexSlateItem: {
+				DisplayName: 咒术石板
+				Tooltip:
+					'''
+					法术环的一块「指令」
+					用手上存着图案的物品右键 → 写入图案
+					空手右键 → 顺时针转 90° 改朝向
+					朝向必须垂直于控制流方向，否则环走不通
+					'''
+			}
+			HexImpetusItem: {
+				DisplayName: 咒术原动力
+				Tooltip:
+					'''
+					法术环的「原动力」
+					它本身不含图案 —— 图案写在石板上
+					右击启动环；启动前会校验环是否闭合
+					'''
+			}
+			HexDirectrixEmptyItem: {
+				DisplayName: 空导线
+				Tooltip:
+					'''
+					法术环的分流器
+					随机出轴的一端 —— 用来做概率分支
+					空手右键转轴向
+					'''
+			}
+			HexDirectrixBooleanItem: {
+				DisplayName: 布尔导线
+				Tooltip:
+					'''
+					法术环的分流器，也是唯一的分支结构
+					弹出栈顶布尔值：真出轴向一端、假出另一端
+					空手右键转轴向
+					'''
+			}
+			HexDirectrixRedstoneItem: {
+				DisplayName: 红石导线
+				Tooltip:
+					'''
+					法术环的分流器
+					通电时出轴向一端，否则出另一端
+					空手右键转轴向
+					'''
+			}
+			Tiles: {
+			AmethystSconce: {
+				MapEntry: 紫晶烛台
+			}
+			AkashicRecord: {
+				MapEntry: 阿卡夏记录
+			}
+			AkashicBookshelf: {
+				MapEntry: 阿卡夏书架
+			}
+			AkashicLigature: {
+				MapEntry: 阿卡夏系带
+			}
+			AmethystDustBlock: {
+				MapEntry: 紫水晶粉块
+			}
+			ScrollPaper: {
+				MapEntry: 卷轴纸
+			}
+			ScrollPaperLantern: {
+				MapEntry: 卷轴纸灯笼
+			}
+			AncientScrollPaper: {
+				MapEntry: 远古卷轴纸
+			}
+			AncientScrollPaperLantern: {
+				MapEntry: 远古卷轴纸灯笼
+			}
+			WallScrollSmall: {
+				MapEntry: 小型挂轴
+			}
+			WallScrollMedium: {
+				MapEntry: 中型挂轴
+			}
+			WallScrollLarge: {
+				MapEntry: 大型挂轴
+			}
+			SlateBlock: {
+				MapEntry: 板岩块
+			}
+			SlateTiles: {
+				MapEntry: 板岩瓦
+			}
+			SlateBricks: {
+				MapEntry: 板岩砖
+			}
+			SlateBricksSmall: {
+				MapEntry: 小板岩砖
+			}
+			SlatePillar: {
+				MapEntry: 板岩柱
+			}
+			SlateAmethystTiles: {
+				MapEntry: 板岩紫晶瓦
+			}
+			SlateAmethystBricks: {
+				MapEntry: 板岩紫晶砖
+			}
+			SlateAmethystBricksSmall: {
+				MapEntry: 小板岩紫晶砖
+			}
+			SlateAmethystPillar: {
+				MapEntry: 板岩紫晶柱
+			}
+			AmethystTiles: {
+				MapEntry: 紫晶瓦
+			}
+			AmethystBricks: {
+				MapEntry: 紫晶砖
+			}
+			AmethystBricksSmall: {
+				MapEntry: 小紫晶砖
+			}
+			AmethystPillar: {
+				MapEntry: 紫晶柱
+			}
+			QuenchedAllay: {
+				MapEntry: 淬灵块
+			}
+			QuenchedAllayTiles: {
+				MapEntry: 淬灵瓦
+			}
+			QuenchedAllayBricks: {
+				MapEntry: 淬灵砖
+			}
+			QuenchedAllayBricksSmall: {
+				MapEntry: 小淬灵砖
+			}
+			EdifiedLog: {
+				MapEntry: 启迪原木
+			}
+			EdifiedLogAmethyst: {
+				MapEntry: 紫晶启迪原木
+			}
+			EdifiedLogAventurine: {
+				MapEntry: 东陵启迪原木
+			}
+			EdifiedLogCitrine: {
+				MapEntry: 黄晶启迪原木
+			}
+			EdifiedLogPurple: {
+				MapEntry: 紫启迪原木
+			}
+			StrippedEdifiedLog: {
+				MapEntry: 去皮启迪原木
+			}
+			EdifiedWood: {
+				MapEntry: 启迪木
+			}
+			StrippedEdifiedWood: {
+				MapEntry: 去皮启迪木
+			}
+			EdifiedPlanks: {
+				MapEntry: 启迪木板
+			}
+			EdifiedPanel: {
+				MapEntry: 启迪木面板
+			}
+			EdifiedTile: {
+				MapEntry: 启迪木瓷砖
+			}
+			AmethystEdifiedLeaves: {
+				MapEntry: 紫晶启迪树叶
+			}
+			AventurineEdifiedLeaves: {
+				MapEntry: 东陵启迪树叶
+			}
+			CitrineEdifiedLeaves: {
+				MapEntry: 黄晶启迪树叶
+			}
+			ConjuredBlock: {
+				MapEntry: 召唤方块
+			}
+			ConjuredLight: {
+				MapEntry: 召唤光源
+			}
+			HexDirectrixEmpty: {
+				MapEntry: 空导线
+			}
+			HexDirectrixBoolean: {
+				MapEntry: 布尔导线
+			}
+			HexDirectrixRedstone: {
+				MapEntry: 红石导线
+			}
+			HexImpetus: {
+				MapEntry: 咒术原动力
+			}
+			HexSlate: {
+				MapEntry: 咒术石板
+			}
+			GeodeCore: {
+				MapEntry: 晶洞母岩
+			}
+			AmethystBudSmall: {
+				MapEntry: 紫水晶小芽
+			}
+			AmethystBudMedium: {
+				MapEntry: 紫水晶中芽
+			}
+			AmethystBudLarge: {
+				MapEntry: 紫水晶大芽
+			}
+			AmethystCluster: {
+				MapEntry: 紫水晶簇
+			}
+		}
+			Keybinds: {
+			GiveDevKit: {
+				DisplayName: 发放开发者套件（开发者模式）
+			}
+			ToggleInfiniteMedia: {
+				DisplayName: 切换无限媒质（开发者模式）
+			}
+			CycleGuide: {
+				DisplayName: 翻页临摹引导（画布内，Shift 反向）
+			}
+		}
+	}
+}

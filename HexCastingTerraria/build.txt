@@ -1,0 +1,5 @@
+displayName = 咒法学
+author = 
+version = 0.1.0
+side = Both
+displayName.zh-Hans = 咒法学

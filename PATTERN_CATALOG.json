@@ -1,0 +1,1130 @@
+﻿[
+    {
+        "Id":  "hexcasting:get_caster",
+        "Angles":  "qaq",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpGetCaster"
+    },
+    {
+        "Id":  "hexcasting:entity_pos/eye",
+        "Angles":  "aa",
+        "StartDir":  "EAST",
+        "Op":  "OpEntityPos"
+    },
+    {
+        "Id":  "hexcasting:entity_pos/foot",
+        "Angles":  "dd",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpEntityPos"
+    },
+    {
+        "Id":  "hexcasting:get_entity_look",
+        "Angles":  "wa",
+        "StartDir":  "EAST",
+        "Op":  "OpEntityLook"
+    },
+    {
+        "Id":  "hexcasting:get_entity_height",
+        "Angles":  "awq",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpEntityHeight"
+    },
+    {
+        "Id":  "hexcasting:get_entity_velocity",
+        "Angles":  "wq",
+        "StartDir":  "EAST",
+        "Op":  "OpEntityVelocity"
+    },
+    {
+        "Id":  "hexcasting:raycast",
+        "Angles":  "wqaawdd",
+        "StartDir":  "EAST",
+        "Op":  "OpBlockRaycast"
+    },
+    {
+        "Id":  "hexcasting:raycast/axis",
+        "Angles":  "weddwaa",
+        "StartDir":  "EAST",
+        "Op":  "OpBlockAxisRaycast"
+    },
+    {
+        "Id":  "hexcasting:raycast/entity",
+        "Angles":  "weaqa",
+        "StartDir":  "EAST",
+        "Op":  "OpEntityRaycast"
+    },
+    {
+        "Id":  "hexcasting:get_media",
+        "Angles":  "dde",
+        "StartDir":  "WEST",
+        "Op":  "OpGetMedia"
+    },
+    {
+        "Id":  "hexcasting:circle/impetus_pos",
+        "Angles":  "eaqwqae",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpImpetusPos"
+    },
+    {
+        "Id":  "hexcasting:circle/impetus_dir",
+        "Angles":  "eaqwqaewede",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpImpetusDir"
+    },
+    {
+        "Id":  "hexcasting:circle/bounds/min",
+        "Angles":  "eaqwqaewdd",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpCircleBounds"
+    },
+    {
+        "Id":  "hexcasting:circle/bounds/max",
+        "Angles":  "aqwqawaaqa",
+        "StartDir":  "WEST",
+        "Op":  "OpCircleBounds"
+    },
+    {
+        "Id":  "hexcasting:swap",
+        "Angles":  "aawdd",
+        "StartDir":  "EAST",
+        "Op":  "OpTwiddling"
+    },
+    {
+        "Id":  "hexcasting:rotate",
+        "Angles":  "aaeaa",
+        "StartDir":  "EAST",
+        "Op":  "OpTwiddling"
+    },
+    {
+        "Id":  "hexcasting:rotate_reverse",
+        "Angles":  "ddqdd",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpTwiddling"
+    },
+    {
+        "Id":  "hexcasting:duplicate",
+        "Angles":  "aadaa",
+        "StartDir":  "EAST",
+        "Op":  "OpTwiddling"
+    },
+    {
+        "Id":  "hexcasting:over",
+        "Angles":  "aaedd",
+        "StartDir":  "EAST",
+        "Op":  "OpTwiddling"
+    },
+    {
+        "Id":  "hexcasting:tuck",
+        "Angles":  "ddqaa",
+        "StartDir":  "EAST",
+        "Op":  "OpTwiddling"
+    },
+    {
+        "Id":  "hexcasting:2dup",
+        "Angles":  "aadadaaw",
+        "StartDir":  "EAST",
+        "Op":  "OpTwiddling"
+    },
+    {
+        "Id":  "hexcasting:stack_len",
+        "Angles":  "qwaeawqaeaqa",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpStackSize"
+    },
+    {
+        "Id":  "hexcasting:duplicate_n",
+        "Angles":  "aadaadaa",
+        "StartDir":  "EAST",
+        "Op":  "OpDuplicateN"
+    },
+    {
+        "Id":  "hexcasting:fisherman",
+        "Angles":  "ddad",
+        "StartDir":  "WEST",
+        "Op":  "OpFisherman"
+    },
+    {
+        "Id":  "hexcasting:fisherman/copy",
+        "Angles":  "aada",
+        "StartDir":  "EAST",
+        "Op":  "OpFishermanButItCopies"
+    },
+    {
+        "Id":  "hexcasting:swizzle",
+        "Angles":  "qaawdde",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpAlwinfyHasAscendedToABeingOfPureMath"
+    },
+    {
+        "Id":  "hexcasting:add",
+        "Angles":  "waaw",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:sub",
+        "Angles":  "wddw",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:mul",
+        "Angles":  "waqaw",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:div",
+        "Angles":  "wdedw",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:abs",
+        "Angles":  "wqaqw",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:pow",
+        "Angles":  "wedew",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:floor",
+        "Angles":  "ewq",
+        "StartDir":  "EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:ceil",
+        "Angles":  "qwe",
+        "StartDir":  "EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:construct_vec",
+        "Angles":  "eqqqqq",
+        "StartDir":  "EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:deconstruct_vec",
+        "Angles":  "qeeeee",
+        "StartDir":  "EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:coerce_axial",
+        "Angles":  "qqqqqaww",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpCoerceToAxial"
+    },
+    {
+        "Id":  "hexcasting:and",
+        "Angles":  "wdw",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:or",
+        "Angles":  "waw",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:not",
+        "Angles":  "dw",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:xor",
+        "Angles":  "dwa",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:greater",
+        "Angles":  "e",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:less",
+        "Angles":  "q",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:greater_eq",
+        "Angles":  "ee",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:less_eq",
+        "Angles":  "qq",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:equals",
+        "Angles":  "ad",
+        "StartDir":  "EAST",
+        "Op":  "OpEquality"
+    },
+    {
+        "Id":  "hexcasting:not_equals",
+        "Angles":  "da",
+        "StartDir":  "EAST",
+        "Op":  "OpEquality"
+    },
+    {
+        "Id":  "hexcasting:type_equals",
+        "Angles":  "wawdw",
+        "StartDir":  "EAST",
+        "Op":  "OpTypeEquality"
+    },
+    {
+        "Id":  "hexcasting:type_not_equals",
+        "Angles":  "wdwaw",
+        "StartDir":  "EAST",
+        "Op":  "OpTypeEquality"
+    },
+    {
+        "Id":  "hexcasting:bool_coerce",
+        "Angles":  "aw",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpCoerceToBool"
+    },
+    {
+        "Id":  "hexcasting:if",
+        "Angles":  "awdd",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpBoolIf"
+    },
+    {
+        "Id":  "hexcasting:random",
+        "Angles":  "eqqq",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpRandom"
+    },
+    {
+        "Id":  "hexcasting:sin",
+        "Angles":  "qqqqqaa",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:cos",
+        "Angles":  "qqqqqad",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:tan",
+        "Angles":  "wqqqqqadq",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:arcsin",
+        "Angles":  "ddeeeee",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:arccos",
+        "Angles":  "adeeeee",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:arctan",
+        "Angles":  "eadeeeeew",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:arctan2",
+        "Angles":  "deadeeeeewd",
+        "StartDir":  "WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:logarithm",
+        "Angles":  "eqaqe",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:modulo",
+        "Angles":  "addwaad",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:unique",
+        "Angles":  "aweaqa",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:print",
+        "Angles":  "de",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpPrint"
+    },
+    {
+        "Id":  "hexcasting:explode",
+        "Angles":  "aawaawaa",
+        "StartDir":  "EAST",
+        "Op":  "OpExplode"
+    },
+    {
+        "Id":  "hexcasting:explode/fire",
+        "Angles":  "ddwddwdd",
+        "StartDir":  "EAST",
+        "Op":  "OpExplode"
+    },
+    {
+        "Id":  "hexcasting:add_motion",
+        "Angles":  "awqqqwaqw",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpAddMotion"
+    },
+    {
+        "Id":  "hexcasting:blink",
+        "Angles":  "awqqqwaq",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpBlink"
+    },
+    {
+        "Id":  "hexcasting:break_block",
+        "Angles":  "qaqqqqq",
+        "StartDir":  "EAST",
+        "Op":  "OpBreakBlock"
+    },
+    {
+        "Id":  "hexcasting:place_block",
+        "Angles":  "eeeeede",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpPlaceBlock"
+    },
+    {
+        "Id":  "hexcasting:colorize",
+        "Angles":  "awddwqawqwawq",
+        "StartDir":  "EAST",
+        "Op":  "OpColorize"
+    },
+    {
+        "Id":  "hexcasting:cycle_variant",
+        "Angles":  "dwaawedwewdwe",
+        "StartDir":  "WEST",
+        "Op":  "OpCycleVariant"
+    },
+    {
+        "Id":  "hexcasting:create_water",
+        "Angles":  "aqawqadaq",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpCreateFluid"
+    },
+    {
+        "Id":  "hexcasting:destroy_water",
+        "Angles":  "dedwedade",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpDestroyFluid"
+    },
+    {
+        "Id":  "hexcasting:ignite",
+        "Angles":  "aaqawawa",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpIgnite"
+    },
+    {
+        "Id":  "hexcasting:extinguish",
+        "Angles":  "ddedwdwd",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpExtinguish"
+    },
+    {
+        "Id":  "hexcasting:conjure_block",
+        "Angles":  "qqa",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpConjureBlock"
+    },
+    {
+        "Id":  "hexcasting:conjure_light",
+        "Angles":  "qqd",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpConjureBlock"
+    },
+    {
+        "Id":  "hexcasting:bonemeal",
+        "Angles":  "wqaqwawqaqw",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpTheOnlyReasonAnyoneDownloadedPsi"
+    },
+    {
+        "Id":  "hexcasting:recharge",
+        "Angles":  "qqqqqwaeaeaeaeaea",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpRecharge"
+    },
+    {
+        "Id":  "hexcasting:erase",
+        "Angles":  "qdqawwaww",
+        "StartDir":  "EAST",
+        "Op":  "OpErase"
+    },
+    {
+        "Id":  "hexcasting:edify",
+        "Angles":  "wqaqwd",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpEdifySapling"
+    },
+    {
+        "Id":  "hexcasting:beep",
+        "Angles":  "adaa",
+        "StartDir":  "WEST",
+        "Op":  "OpBeep"
+    },
+    {
+        "Id":  "hexcasting:craft/cypher",
+        "Angles":  "waqqqqq",
+        "StartDir":  "EAST",
+        "Op":  "OpMakePackagedSpell"
+    },
+    {
+        "Id":  "hexcasting:craft/trinket",
+        "Angles":  "wwaqqqqqeaqeaeqqqeaeq",
+        "StartDir":  "EAST",
+        "Op":  "OpMakePackagedSpell"
+    },
+    {
+        "Id":  "hexcasting:craft/artifact",
+        "Angles":  "wwaqqqqqeawqwqwqwqwqwwqqeadaeqqeqqeadaeqq",
+        "StartDir":  "EAST",
+        "Op":  "OpMakePackagedSpell"
+    },
+    {
+        "Id":  "hexcasting:craft/battery",
+        "Angles":  "aqqqaqwwaqqqqqeqaqqqawwqwqwqwqwqw",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpMakeBattery"
+    },
+    {
+        "Id":  "hexcasting:potion/weakness",
+        "Angles":  "qqqqqaqwawaw",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/levitation",
+        "Angles":  "qqqqqawwawawd",
+        "StartDir":  "WEST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/wither",
+        "Angles":  "qqqqqaewawawe",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/poison",
+        "Angles":  "qqqqqadwawaww",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/slowness",
+        "Angles":  "qqqqqadwawaw",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/regeneration",
+        "Angles":  "qqqqaawawaedd",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/night_vision",
+        "Angles":  "qqqaawawaeqdd",
+        "StartDir":  "WEST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/absorption",
+        "Angles":  "qqaawawaeqqdd",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/haste",
+        "Angles":  "qaawawaeqqqdd",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:potion/strength",
+        "Angles":  "aawawaeqqqqdd",
+        "StartDir":  "EAST",
+        "Op":  "OpPotionEffect"
+    },
+    {
+        "Id":  "hexcasting:flight/range",
+        "Angles":  "awawaawq",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpFlight"
+    },
+    {
+        "Id":  "hexcasting:flight/time",
+        "Angles":  "dwdwdewq",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpFlight"
+    },
+    {
+        "Id":  "hexcasting:flight/can_fly",
+        "Angles":  "dwdwdeweaqa",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpCanEntityHexFly"
+    },
+    {
+        "Id":  "hexcasting:sentinel/create",
+        "Angles":  "waeawae",
+        "StartDir":  "EAST",
+        "Op":  "OpCreateSentinel"
+    },
+    {
+        "Id":  "hexcasting:sentinel/destroy",
+        "Angles":  "qdwdqdw",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpDestroySentinel"
+    },
+    {
+        "Id":  "hexcasting:sentinel/get_pos",
+        "Angles":  "waeawaede",
+        "StartDir":  "EAST",
+        "Op":  "OpGetSentinelPos"
+    },
+    {
+        "Id":  "hexcasting:sentinel/wayfind",
+        "Angles":  "waeawaedwa",
+        "StartDir":  "EAST",
+        "Op":  "OpGetSentinelWayfind"
+    },
+    {
+        "Id":  "hexcasting:lightning",
+        "Angles":  "waadwawdaaweewq",
+        "StartDir":  "EAST",
+        "Op":  "OpLightning"
+    },
+    {
+        "Id":  "hexcasting:flight",
+        "Angles":  "eawwaeawawaa",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpAltiora"
+    },
+    {
+        "Id":  "hexcasting:create_lava",
+        "Angles":  "eaqawqadaqd",
+        "StartDir":  "EAST",
+        "Op":  "OpCreateFluid"
+    },
+    {
+        "Id":  "hexcasting:teleport/great",
+        "Angles":  "wwwqqqwwwqqeqqwwwqqwqqdqqqqqdqq",
+        "StartDir":  "EAST",
+        "Op":  "OpTeleport"
+    },
+    {
+        "Id":  "hexcasting:sentinel/create/great",
+        "Angles":  "waeawaeqqqwqwqqwq",
+        "StartDir":  "EAST",
+        "Op":  "OpCreateSentinel"
+    },
+    {
+        "Id":  "hexcasting:dispel_rain",
+        "Angles":  "eeewwweeewwaqqddqdqd",
+        "StartDir":  "EAST",
+        "Op":  "OpWeather"
+    },
+    {
+        "Id":  "hexcasting:summon_rain",
+        "Angles":  "wwweeewwweewdawdwad",
+        "StartDir":  "WEST",
+        "Op":  "OpWeather"
+    },
+    {
+        "Id":  "hexcasting:brainsweep",
+        "Angles":  "qeqwqwqwqwqeqaeqeaqeqaeqaqded",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpBrainsweep"
+    },
+    {
+        "Id":  "hexcasting:akashic/read",
+        "Angles":  "qqqwqqqqqaq",
+        "StartDir":  "WEST",
+        "Op":  "OpAkashicRead"
+    },
+    {
+        "Id":  "hexcasting:akashic/write",
+        "Angles":  "eeeweeeeede",
+        "StartDir":  "EAST",
+        "Op":  "OpAkashicWrite"
+    },
+    {
+        "Id":  "hexcasting:escape",
+        "Angles":  "qqqaw",
+        "StartDir":  "WEST",
+        "Op":  "OpEscape"
+    },
+    {
+        "Id":  "hexcasting:runtime_escape",
+        "Angles":  "wdeee",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpRuntimeEscape"
+    },
+    {
+        "Id":  "hexcasting:open_paren",
+        "Angles":  "qqq",
+        "StartDir":  "WEST",
+        "Op":  "OpOpenParen"
+    },
+    {
+        "Id":  "hexcasting:close_paren",
+        "Angles":  "eee",
+        "StartDir":  "EAST",
+        "Op":  "OpCloseParen"
+    },
+    {
+        "Id":  "hexcasting:open_n_parens",
+        "Angles":  "qdaqadq",
+        "StartDir":  "WEST",
+        "Op":  "OpOpenNParens"
+    },
+    {
+        "Id":  "hexcasting:close_all_parens",
+        "Angles":  "eadedae",
+        "StartDir":  "EAST",
+        "Op":  "OpCloseAllParens"
+    },
+    {
+        "Id":  "hexcasting:read_into_parens",
+        "Angles":  "aqqqqqwded",
+        "StartDir":  "EAST",
+        "Op":  "OpReadIntoParens"
+    },
+    {
+        "Id":  "hexcasting:undo",
+        "Angles":  "eeedw",
+        "StartDir":  "EAST",
+        "Op":  "OpUndo"
+    },
+    {
+        "Id":  "hexcasting:eval",
+        "Angles":  "deaqq",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpEval"
+    },
+    {
+        "Id":  "hexcasting:eval/cc",
+        "Angles":  "qwaqde",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpEvalBreakable"
+    },
+    {
+        "Id":  "hexcasting:halt",
+        "Angles":  "aqdee",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpHalt"
+    },
+    {
+        "Id":  "hexcasting:read",
+        "Angles":  "aqqqqq",
+        "StartDir":  "EAST",
+        "Op":  "OpRead"
+    },
+    {
+        "Id":  "hexcasting:read/entity",
+        "Angles":  "wawqwqwqwqwqw",
+        "StartDir":  "EAST",
+        "Op":  "OpTheCoolerRead"
+    },
+    {
+        "Id":  "hexcasting:write",
+        "Angles":  "deeeee",
+        "StartDir":  "EAST",
+        "Op":  "OpWrite"
+    },
+    {
+        "Id":  "hexcasting:write/entity",
+        "Angles":  "wdwewewewewew",
+        "StartDir":  "EAST",
+        "Op":  "OpTheCoolerWrite"
+    },
+    {
+        "Id":  "hexcasting:readable",
+        "Angles":  "aqqqqqe",
+        "StartDir":  "EAST",
+        "Op":  "OpReadable"
+    },
+    {
+        "Id":  "hexcasting:readable/entity",
+        "Angles":  "wawqwqwqwqwqwew",
+        "StartDir":  "EAST",
+        "Op":  "OpTheCoolerReadable"
+    },
+    {
+        "Id":  "hexcasting:writable",
+        "Angles":  "deeeeeq",
+        "StartDir":  "EAST",
+        "Op":  "OpWritable"
+    },
+    {
+        "Id":  "hexcasting:writable/entity",
+        "Angles":  "wdwewewewewewqw",
+        "StartDir":  "EAST",
+        "Op":  "OpTheCoolerWritable"
+    },
+    {
+        "Id":  "hexcasting:read/local",
+        "Angles":  "qeewdweddw",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpPeekLocal"
+    },
+    {
+        "Id":  "hexcasting:write/local",
+        "Angles":  "eqqwawqaaw",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpPushLocal"
+    },
+    {
+        "Id":  "hexcasting:thanatos",
+        "Angles":  "qqaed",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpThanos"
+    },
+    {
+        "Id":  "hexcasting:const/null",
+        "Angles":  "d",
+        "StartDir":  "EAST",
+        "Op":  "NullIota"
+    },
+    {
+        "Id":  "hexcasting:const/true",
+        "Angles":  "aqae",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "BooleanIota"
+    },
+    {
+        "Id":  "hexcasting:const/false",
+        "Angles":  "dedq",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "BooleanIota"
+    },
+    {
+        "Id":  "hexcasting:const/vec/px",
+        "Angles":  "qqqqqea",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "Vec3Iota"
+    },
+    {
+        "Id":  "hexcasting:const/vec/py",
+        "Angles":  "qqqqqew",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "Vec3Iota"
+    },
+    {
+        "Id":  "hexcasting:const/vec/pz",
+        "Angles":  "qqqqqed",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "Vec3Iota"
+    },
+    {
+        "Id":  "hexcasting:const/vec/nx",
+        "Angles":  "eeeeeqa",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "Vec3Iota"
+    },
+    {
+        "Id":  "hexcasting:const/vec/ny",
+        "Angles":  "eeeeeqw",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "Vec3Iota"
+    },
+    {
+        "Id":  "hexcasting:const/vec/nz",
+        "Angles":  "eeeeeqd",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "Vec3Iota"
+    },
+    {
+        "Id":  "hexcasting:const/vec/0",
+        "Angles":  "qqqqq",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "Vec3Iota"
+    },
+    {
+        "Id":  "hexcasting:const/double/pi",
+        "Angles":  "qdwdq",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "DoubleIota"
+    },
+    {
+        "Id":  "hexcasting:const/double/tau",
+        "Angles":  "eawae",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "DoubleIota"
+    },
+    {
+        "Id":  "hexcasting:const/double/e",
+        "Angles":  "aaq",
+        "StartDir":  "EAST",
+        "Op":  "DoubleIota"
+    },
+    {
+        "Id":  "hexcasting:const/double/phi",
+        "Angles":  "wdded",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "DoubleIota"
+    },
+    {
+        "Id":  "hexcasting:get_entity",
+        "Angles":  "qqqqqdaqa",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntityAt"
+    },
+    {
+        "Id":  "hexcasting:get_entity/animal",
+        "Angles":  "qqqqqdaqaawa",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntityAt"
+    },
+    {
+        "Id":  "hexcasting:get_entity/monster",
+        "Angles":  "qqqqqdaqaawq",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntityAt"
+    },
+    {
+        "Id":  "hexcasting:get_entity/item",
+        "Angles":  "qqqqqdaqaaww",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntityAt"
+    },
+    {
+        "Id":  "hexcasting:get_entity/player",
+        "Angles":  "qqqqqdaqaawe",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntityAt"
+    },
+    {
+        "Id":  "hexcasting:get_entity/living",
+        "Angles":  "qqqqqdaqaawd",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntityAt"
+    },
+    {
+        "Id":  "hexcasting:zone_entity",
+        "Angles":  "qqqqqwded",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/animal",
+        "Angles":  "qqqqqwdeddwa",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/not_animal",
+        "Angles":  "eeeeewaqaawa",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/monster",
+        "Angles":  "qqqqqwdeddwq",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/not_monster",
+        "Angles":  "eeeeewaqaawq",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/item",
+        "Angles":  "qqqqqwdeddww",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/not_item",
+        "Angles":  "eeeeewaqaaww",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/player",
+        "Angles":  "qqqqqwdeddwe",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/not_player",
+        "Angles":  "eeeeewaqaawe",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/living",
+        "Angles":  "qqqqqwdeddwd",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:zone_entity/not_living",
+        "Angles":  "eeeeewaqaawd",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpGetEntitiesBy"
+    },
+    {
+        "Id":  "hexcasting:compare_block/lenient",
+        "Angles":  "qqqqqeqeeeee",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpBlockEquality"
+    },
+    {
+        "Id":  "hexcasting:compare_block/strict",
+        "Angles":  "qwawqwadadwewdwe",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpBlockEquality"
+    },
+    {
+        "Id":  "hexcasting:compare_entity",
+        "Angles":  "aqaeqded",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpEntityEquality"
+    },
+    {
+        "Id":  "hexcasting:compare_item/lenient",
+        "Angles":  "qaeaqeqedqde",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpItemEquality"
+    },
+    {
+        "Id":  "hexcasting:compare_item/strict",
+        "Angles":  "qaeaqewqedqde",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpItemEquality"
+    },
+    {
+        "Id":  "hexcasting:append",
+        "Angles":  "edqde",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:unappend",
+        "Angles":  "qaeaq",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:index",
+        "Angles":  "deeed",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:for_each",
+        "Angles":  "dadad",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpForEach"
+    },
+    {
+        "Id":  "hexcasting:singleton",
+        "Angles":  "adeeed",
+        "StartDir":  "EAST",
+        "Op":  "OpSingleton"
+    },
+    {
+        "Id":  "hexcasting:empty_list",
+        "Angles":  "qqaeaae",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpEmptyList"
+    },
+    {
+        "Id":  "hexcasting:reverse",
+        "Angles":  "qqqaede",
+        "StartDir":  "EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:last_n_list",
+        "Angles":  "ewdqdwe",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "OpLastNToList"
+    },
+    {
+        "Id":  "hexcasting:splat",
+        "Angles":  "qwaeawq",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpSplat"
+    },
+    {
+        "Id":  "hexcasting:index_of",
+        "Angles":  "dedqde",
+        "StartDir":  "EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:remove_from",
+        "Angles":  "edqdewaqa",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:slice",
+        "Angles":  "qaeaqwded",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:replace",
+        "Angles":  "wqaeaqw",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:construct",
+        "Angles":  "ddewedd",
+        "StartDir":  "SOUTH_EAST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:deconstruct",
+        "Angles":  "aaqwqaa",
+        "StartDir":  "SOUTH_WEST",
+        "Op":  "?"
+    },
+    {
+        "Id":  "hexcasting:interop/pehkui/get",
+        "Angles":  "aawawwawwa",
+        "StartDir":  "NORTH_WEST",
+        "Op":  "OpGetScale"
+    },
+    {
+        "Id":  "hexcasting:interop/pehkui/set",
+        "Angles":  "ddwdwwdwwd",
+        "StartDir":  "NORTH_EAST",
+        "Op":  "OpSetScale"
+    }
+]

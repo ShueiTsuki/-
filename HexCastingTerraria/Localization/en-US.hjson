@@ -1,0 +1,539 @@
+﻿# Hex Casting -> tModLoader port
+# Key format: Mods.{ModInternalName}.{Category}.{ClassName}.{Field}
+# File name must be {language}.hjson
+# (do not confuse with the Configs-only format {language}_Mods.{Name}.Configs.hjson)
+
+Mods: {
+	HexCastingTerraria: {
+		Items: {
+			Abacus: {
+				DisplayName: "Abacus"
+			}
+			JewelerHammer: {
+				DisplayName: "Jeweler's Hammer"
+			}
+			ScryingLens: {
+				DisplayName: "Scrying Lens"
+			}
+			Spellbook: {
+				DisplayName: "Spellbook"
+			}
+			HexBookItem: {
+				DisplayName: "The Hex Book"
+			}
+			AkashicRecordItem: {
+				DisplayName: "Akashic Record"
+			}
+			Cypher: {
+				DisplayName: "Cypher"
+			}
+			Trinket: {
+				DisplayName: "Trinket"
+			}
+			Artifact: {
+				DisplayName: "Artifact"
+			}
+			CherryStaff: {
+				DisplayName: "Cherry Staff"
+			}
+			WallScrollFrameSmall: {
+				DisplayName: "Small Scroll Frame"
+			}
+			WallScrollFrameMedium: {
+				DisplayName: "Medium Scroll Frame"
+			}
+			WallScrollFrameLarge: {
+				DisplayName: "Large Scroll Frame"
+			}
+			ScrollPaperItem: {
+				DisplayName: "Scroll Paper"
+			}
+			ScrollPaperLanternItem: {
+				DisplayName: "Scroll Paper Lantern"
+			}
+			AncientScrollPaperItem: {
+				DisplayName: "Ancient Scroll Paper"
+			}
+			AncientScrollPaperLanternItem: {
+				DisplayName: "Ancient Scroll Paper Lantern"
+			}
+			AmethystSconceItem: {
+				DisplayName: "Amethyst Sconce"
+			}
+			AkashicBookshelfItem: {
+				DisplayName: "Akashic Bookshelf"
+			}
+			AkashicLigatureItem: {
+				DisplayName: "Akashic Ligature"
+			}
+			SlateBlockItem: {
+				DisplayName: "Slate Block"
+			}
+			SlateTilesItem: {
+				DisplayName: "Slate Tiles"
+			}
+			SlateBricksItem: {
+				DisplayName: "Slate Bricks"
+			}
+			SlateBricksSmallItem: {
+				DisplayName: "Slate Bricks (Small)"
+			}
+			SlatePillarItem: {
+				DisplayName: "Slate Pillar"
+			}
+			SlateAmethystTilesItem: {
+				DisplayName: "Slate Amethyst Tiles"
+			}
+			SlateAmethystBricksItem: {
+				DisplayName: "Slate Amethyst Bricks"
+			}
+			SlateAmethystBricksSmallItem: {
+				DisplayName: "Slate Amethyst Bricks (Small)"
+			}
+			SlateAmethystPillarItem: {
+				DisplayName: "Slate Amethyst Pillar"
+			}
+			AmethystTilesItem: {
+				DisplayName: "Amethyst Tiles"
+			}
+			AmethystBricksItem: {
+				DisplayName: "Amethyst Bricks"
+			}
+			AmethystBricksSmallItem: {
+				DisplayName: "Amethyst Bricks (Small)"
+			}
+			AmethystPillarItem: {
+				DisplayName: "Amethyst Pillar"
+			}
+			QuenchedAllayItem: {
+				DisplayName: "Quenched Allay"
+			}
+			QuenchedAllayTilesItem: {
+				DisplayName: "Quenched Allay Tiles"
+			}
+			QuenchedAllayBricksItem: {
+				DisplayName: "Quenched Allay Bricks"
+			}
+			QuenchedAllayBricksSmallItem: {
+				DisplayName: "Quenched Allay Bricks (Small)"
+			}
+			EdifiedLogItem: {
+				DisplayName: "Edified Log"
+			}
+			EdifiedLogAmethystItem: {
+				DisplayName: "Amethyst Edified Log"
+			}
+			EdifiedLogAventurineItem: {
+				DisplayName: "Aventurine Edified Log"
+			}
+			EdifiedLogCitrineItem: {
+				DisplayName: "Citrine Edified Log"
+			}
+			EdifiedLogPurpleItem: {
+				DisplayName: "Purple Edified Log"
+			}
+			StrippedEdifiedLogItem: {
+				DisplayName: "Stripped Edified Log"
+			}
+			EdifiedWoodItem: {
+				DisplayName: "Edified Wood"
+			}
+			StrippedEdifiedWoodItem: {
+				DisplayName: "Stripped Edified Wood"
+			}
+			EdifiedPlanksItem: {
+				DisplayName: "Edified Planks"
+			}
+			EdifiedPanelItem: {
+				DisplayName: "Edified Panel"
+			}
+			EdifiedTileItem: {
+				DisplayName: "Edified Tile"
+			}
+			AmethystEdifiedLeavesItem: {
+				DisplayName: "Amethyst Edified Leaves"
+			}
+			AventurineEdifiedLeavesItem: {
+				DisplayName: "Aventurine Edified Leaves"
+			}
+			CitrineEdifiedLeavesItem: {
+				DisplayName: "Citrine Edified Leaves"
+			}
+			DevStaff: {
+				DisplayName: Hexcasting Dev Staff
+				Tooltip:
+					'''
+					Right click to open the hex drawing canvas
+					Shift + right click to clear drawn patterns
+					In canvas: hold LMB to draw, RMB to undo, Esc to close, F1 for debug
+					'''
+			}
+
+			MediaFlask: {
+				DisplayName: Media Flask
+				Tooltip:
+					'''
+					Restores 100,000 media (1 crystal)
+					1 amethyst dust = 10,000 media
+					'''
+			}
+
+			AmethystDust: {
+				DisplayName: Amethyst Dust
+				Tooltip:
+					'''
+					Holds 10,000 media
+					The base unit of media -- every hex starts here
+					Right click to charge your own media pool
+					'''
+			}
+
+			AmethystShard: {
+				DisplayName: Amethyst Shard
+				Tooltip:
+					'''
+					Holds 50,000 media (5 dust)
+					Right click to charge your own media pool
+					'''
+			}
+
+			ChargedAmethyst: {
+				DisplayName: Charged Amethyst
+				Tooltip:
+					'''
+					Holds 100,000 media (10 dust)
+					A thought not yet dispersed, sealed in crystal
+					Right click to charge your own media pool
+					'''
+			}
+
+			QuenchedAllayShard: {
+				DisplayName: Shard of Quenched Allay
+				Tooltip:
+					'''
+					Holds 300,000 media (30 dust)
+					Something once joyful, now only cold peace
+					Right click to charge your own media pool
+					'''
+			}
+		}
+
+			AmethystDustBlockItem: {
+				DisplayName: Block of Amethyst Dust
+				Tooltip: Compressed amethyst dust, usable as a building block
+			}
+
+			OakStaff: {
+				DisplayName: Oak Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			BorealStaff: {
+				DisplayName: Boreal Wood Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			PalmStaff: {
+				DisplayName: Palm Wood Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			MahoganyStaff: {
+				DisplayName: Rich Mahogany Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			EbonwoodStaff: {
+				DisplayName: Ebonwood Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			ShadewoodStaff: {
+				DisplayName: Shadewood Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			PearlwoodStaff: {
+				DisplayName: Pearlwood Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			DynastyStaff: {
+				DisplayName: Dynasty Wood Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			SpookyStaff: {
+				DisplayName: Spooky Wood Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			AshStaff: {
+				DisplayName: Ash Wood Staff
+				Tooltip: Right click to draw a hex pattern
+			}
+			QuenchedStaff: {
+				DisplayName: Quenched Shard Staff
+				Tooltip: Forged of quenched alloy; peace echoes within the crystal
+			}
+			EdifiedStaff: {
+				DisplayName: Edified Staff
+				Tooltip: Thoughts flow along the grain of this wood
+			}
+			MindspliceStaff: {
+				DisplayName: Mindsplice Staff
+				Tooltip: Splits thought itself to glimpse the structure beneath
+			}
+			Focus: {
+				DisplayName: Focus
+				Tooltip:
+					'''
+					Holds a single iota
+					Pair with read_into_parens to carry a value around
+					'''
+			}
+			ThoughtKnot: {
+				DisplayName: Thought Knot
+				Tooltip:
+					'''
+					Holds a single iota
+					The knot remembers a thought; it does not come undone
+					'''
+			}
+			ScrollSmall: {
+				DisplayName: Small Scroll
+				Tooltip: Holds a single pattern
+			}
+			ScrollMedium: {
+				DisplayName: Medium Scroll
+				Tooltip: Holds a single pattern
+			}
+			ScrollLarge: {
+				DisplayName: Large Scroll
+				Tooltip: Holds a single pattern
+			}
+			HexSlateItem: {
+				DisplayName: Hex Slate
+				Tooltip:
+					'''
+					One instruction of a spell circle
+					Right click holding a pattern item to write the pattern
+					Right click empty-handed to rotate 90° clockwise
+					Orientation must be perpendicular to the control flow
+					'''
+			}
+			HexImpetusItem: {
+				DisplayName: Hex Impetus
+				Tooltip:
+					'''
+					The heart of a spell circle
+					It holds no patterns itself -- patterns live on slates
+					Right click to start; closure is validated first
+					'''
+			}
+			HexDirectrixEmptyItem: {
+				DisplayName: Empty Directrix
+				Tooltip:
+					'''
+					A spell circle splitter
+					Randomly picks one end of its axis -- use it for chance branches
+					Right click empty-handed to rotate the axis
+					'''
+			}
+			HexDirectrixBooleanItem: {
+				DisplayName: Boolean Directrix
+				Tooltip:
+					'''
+					A spell circle splitter, and the only branch structure
+					Pops a boolean: true exits one way, false the other
+					Right click empty-handed to rotate the axis
+					'''
+			}
+			HexDirectrixRedstoneItem: {
+				DisplayName: Redstone Directrix
+				Tooltip:
+					'''
+					A spell circle splitter
+					Powered exits one way, unpowered the other
+					Right click empty-handed to rotate the axis
+					'''
+			}
+		Tiles: {
+			AkashicRecord: {
+				MapEntry: "Akashic Record"
+			}
+			WallScrollSmall: {
+				MapEntry: "Small Wall Scroll"
+			}
+			WallScrollMedium: {
+				MapEntry: "Medium Wall Scroll"
+			}
+			WallScrollLarge: {
+				MapEntry: "Large Wall Scroll"
+			}
+			ScrollPaper: {
+				MapEntry: "Scroll Paper"
+			}
+			ScrollPaperLantern: {
+				MapEntry: "Scroll Paper Lantern"
+			}
+			AncientScrollPaper: {
+				MapEntry: "Ancient Scroll Paper"
+			}
+			AncientScrollPaperLantern: {
+				MapEntry: "Ancient Scroll Paper Lantern"
+			}
+			AmethystSconce: {
+				MapEntry: "Amethyst Sconce"
+			}
+			AkashicBookshelf: {
+				MapEntry: "Akashic Bookshelf"
+			}
+			AkashicLigature: {
+				MapEntry: "Akashic Ligature"
+			}
+			SlateBlock: {
+				MapEntry: "Slate Block"
+			}
+			SlateTiles: {
+				MapEntry: "Slate Tiles"
+			}
+			SlateBricks: {
+				MapEntry: "Slate Bricks"
+			}
+			SlateBricksSmall: {
+				MapEntry: "Slate Bricks (Small)"
+			}
+			SlatePillar: {
+				MapEntry: "Slate Pillar"
+			}
+			SlateAmethystTiles: {
+				MapEntry: "Slate Amethyst Tiles"
+			}
+			SlateAmethystBricks: {
+				MapEntry: "Slate Amethyst Bricks"
+			}
+			SlateAmethystBricksSmall: {
+				MapEntry: "Slate Amethyst Bricks (Small)"
+			}
+			SlateAmethystPillar: {
+				MapEntry: "Slate Amethyst Pillar"
+			}
+			AmethystDustBlock: {
+				MapEntry: "Amethyst Dust Block"
+			}
+			AmethystTiles: {
+				MapEntry: "Amethyst Tiles"
+			}
+			AmethystBricks: {
+				MapEntry: "Amethyst Bricks"
+			}
+			AmethystBricksSmall: {
+				MapEntry: "Amethyst Bricks (Small)"
+			}
+			AmethystPillar: {
+				MapEntry: "Amethyst Pillar"
+			}
+			QuenchedAllay: {
+				MapEntry: "Quenched Allay"
+			}
+			QuenchedAllayTiles: {
+				MapEntry: "Quenched Allay Tiles"
+			}
+			QuenchedAllayBricks: {
+				MapEntry: "Quenched Allay Bricks"
+			}
+			QuenchedAllayBricksSmall: {
+				MapEntry: "Quenched Allay Bricks (Small)"
+			}
+			EdifiedLog: {
+				MapEntry: "Edified Log"
+			}
+			EdifiedLogAmethyst: {
+				MapEntry: "Amethyst Edified Log"
+			}
+			EdifiedLogAventurine: {
+				MapEntry: "Aventurine Edified Log"
+			}
+			EdifiedLogCitrine: {
+				MapEntry: "Citrine Edified Log"
+			}
+			EdifiedLogPurple: {
+				MapEntry: "Purple Edified Log"
+			}
+			StrippedEdifiedLog: {
+				MapEntry: "Stripped Edified Log"
+			}
+			EdifiedWood: {
+				MapEntry: "Edified Wood"
+			}
+			StrippedEdifiedWood: {
+				MapEntry: "Stripped Edified Wood"
+			}
+			EdifiedPlanks: {
+				MapEntry: "Edified Planks"
+			}
+			EdifiedPanel: {
+				MapEntry: "Edified Panel"
+			}
+			EdifiedTile: {
+				MapEntry: "Edified Tile"
+			}
+			AmethystEdifiedLeaves: {
+				MapEntry: "Amethyst Edified Leaves"
+			}
+			AventurineEdifiedLeaves: {
+				MapEntry: "Aventurine Edified Leaves"
+			}
+			CitrineEdifiedLeaves: {
+				MapEntry: "Citrine Edified Leaves"
+			}
+			HexDirectrixEmpty: {
+				MapEntry: "Empty Directrix"
+			}
+			HexImpetus: {
+				MapEntry: "Impetus"
+			}
+			HexSlate: {
+				MapEntry: "Slate"
+			}
+			GeodeCore: {
+				MapEntry: "Geode Core"
+			}
+			GiveDevKit: {
+				MapEntry: "Developer Kit"
+			}
+			ConjuredBlock: {
+				MapEntry: Conjured Block
+			}
+			ConjuredLight: {
+				MapEntry: Conjured Light
+			}			HexDirectrixEmpty: {
+				MapEntry: Empty Directrix
+			}
+			HexDirectrixBoolean: {
+				MapEntry: Boolean Directrix
+			}
+			HexDirectrixRedstone: {
+				MapEntry: Redstone Directrix
+			}			HexImpetus: {
+				MapEntry: Hex Impetus
+			}			HexSlate: {
+				MapEntry: Hex Slate
+			}			GeodeCore: {
+				MapEntry: Geode Core
+			}
+			AmethystBudSmall: {
+				MapEntry: Small Amethyst Bud
+			}
+			AmethystBudMedium: {
+				MapEntry: Medium Amethyst Bud
+			}
+			AmethystBudLarge: {
+				MapEntry: Large Amethyst Bud
+			}
+			AmethystCluster: {
+				MapEntry: Amethyst Cluster
+			}
+		}
+		Keybinds: {
+			ToggleInfiniteMedia: {
+				DisplayName: Toggle infinite media (developer mode)
+			}
+			CycleGuide: {
+				DisplayName: Cycle tracing guide (in canvas, Shift reverses)
+			}
+		}
+	}
+}

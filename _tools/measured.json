@@ -1,0 +1,10 @@
+{
+  "patterns": 188,
+  "actions": 184,
+  "notApplicable": 4,
+  "unimplemented": 0,
+  "typedActions": 32,
+  "checksPassed": 91,
+  "checksFailed": 0,
+  "generatedAtUtc": "2026-09-14T10:02:45Z"
+}

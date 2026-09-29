@@ -1,0 +1,3 @@
+咒法学 (Hex Casting) 的泰拉瑞亚移植版。
+原项目：https://github.com/FallingColors/HexMod (MIT License)
+Copyright (c) 2021-2024 Petrak, Falkory220, wiresegal and contributors

@@ -1,0 +1,139 @@
+﻿# Hex Casting config localization (Simplified Chinese)
+# File name format: {language}_Mods.{ModName}.Configs.hjson
+
+Mods: {
+	HexCastingTerraria: {
+		Configs: {
+			HexClientConfig: {
+				DisplayName: 咒法学 客户端设置
+
+				Headers: {
+					DevGrants: 开发者 · 直接给状态
+					DevDisplay: 开发者 · 显示
+					Display: 画布与显示
+				}
+
+				InfiniteMedia: {
+					Label: 无限媒质（开发者模式）
+					Tooltip: 开启后施法不消耗媒质、也不会触发过载掉血，测试法术零成本。也可以在游戏里按 J 临时切换。
+				}
+
+				NewBookUi: {
+					Label: 新版书本 UI（实验）
+					Tooltip: 开 = 元素树/皮肤那套新界面；关 = 旧的图案浏览器。新版在实机上出过渲染异常，所以默认关。
+				}
+
+				VanillaBookSkin: {
+					Label: 书本用泰拉原版外观
+					Tooltip: 开 = 泰拉原生面板与物品格；关 = 帕秋莉手册（原版咒法学的书）。游戏里按 F8 也能临时切换。
+				}
+
+				GiveDevKitOnEnter: {
+					Label: 进世界自动发放测试包
+					Tooltip: 每次进入世界时把每个子系统的代表性物品各发一份（法杖 / 书 / 媒质链 / 数据载体 / 卷轴 / 打包法术 / 法术环三方块 / 建材）。随时可以按 K 手动补发。
+				}
+
+				AlwaysEnlightened: {
+					Label: 始终视为已启蒙
+					Tooltip: 直接解锁 14 条大法术（闪电 / 飞行 / 岩浆 / 大传送 / 大哨卫 / 天气 / 脑叶切除 / 媒质瓶 / 5 种药水），不必真的去触发一次过载。正常玩法里启蒙需要单次施法消耗 ≥80% 媒质储量。
+				}
+
+				NoOvercastDamage: {
+					Label: 过载不扣血
+					Tooltip: 媒质不足时照常施放，但不会扣除生命值。仍然算"过载过"，所以照样能拿到启蒙。
+				}
+
+				RefillMediaAfterCast: {
+					Label: 施法后补满媒质
+					Tooltip: 每次施法结束把媒质补满。连续测多条法术时不用反复用媒质瓶。
+				}
+
+				NoPackagedCooldown: {
+					Label: 打包法术无冷却
+					Tooltip: 符纸 / 饰品 / 法器原本各有 8 / 5 / 3 tick 冷却。开启后可连续右键测同一发法术。
+				}
+
+				InfiniteFlight: {
+					Label: 咒法飞行永不结束
+					Tooltip: 飞行不落地、不计时、不限距。用来测 flight / flight/range / flight/time 三种飞行的实际效果。
+				}
+
+				FastSpellCircles: {
+					Label: 法术环全速推进
+					Tooltip: 环原本每格要等 10→2 tick（环越长越快），长环测一次要十几秒。开启后每 tick 走一格。
+				}
+
+				FreeSpellCircles: {
+					Label: 法术环不消耗媒质
+					Tooltip: 环的媒质池会随石板消耗而耗尽，之后所有石板都报"媒质不足"，根本测不到后面的图案。开启后可完整跑完长环。
+				}
+
+				LooseBrainsweepTargets: {
+					Label: 脑叶切除放宽目标
+					Tooltip: 正常只允许城镇 NPC 与小动物，开启后任意非 Boss 生物都能切。用来测 5 条配方，不必每次都去凑对应的 NPC。
+				}
+
+				InstantCrystalGrowth: {
+					Label: 晶簇立即长成
+					Tooltip: 跳过随机生长判定，紫水晶簇每次随机刻都往上长一阶。用来验证母岩 → 四阶晶簇 → 掉落的整条链路。
+				}
+
+				ShowMediaRing: {
+					Label: 显示媒质环
+					Tooltip: 左上角显示媒质环（数量与百分比）。
+				}
+
+				ShowDebugPanel: {
+					Label: 显示调试面板
+					Tooltip: 画布打开时显示坐标换算与吸附阈值（也可以在游戏里按 F1 切换）。
+				}
+
+				ShowAimMarker: {
+					Label: 显示瞄准标记
+					Tooltip: 用粒子标出鼠标指向的世界位置。联机时其他玩家也能看到同一个标记。
+				}
+
+				AimMarkerDustCount: {
+					Label: 瞄准标记粒子数
+					Tooltip: 标记瞄准点用多少粒子。越大越显眼，也越占粒子预算。
+				}
+
+				ShowEntityIds: {
+					Label: 显示实体编号
+					Tooltip: 显示鼠标指向实体的"种类#索引"。调试 get_entity / zone_entity / 各种 entity 类图案必备 —— 那些图案要的就是这个编号。
+				}
+
+				ShowAimRay: {
+					Label: 显示瞄准射线
+					Tooltip: 画出从玩家到命中点的射线与命中的图格。调试 raycast / raycast/axis / raycast/entity 用。
+				}
+
+				ShowCircleDebug: {
+					Label: 显示法术环状态
+					Tooltip: 显示正在运行的法术环的当前格、已走格数、速度与剩余媒质。
+				}
+
+				ShowPatternId: {
+					Label: 画布上显示识别结果
+					Tooltip: 画完一条图案后显示它的 id、角度签名与参数个数。
+				}
+
+				MaxOpCount: {
+					Label: 求值步数上限
+					Tooltip: 单次施法累计消耗的操作数超过此值会触发"算力耗尽"。对应原作 maxOpCount。
+				}
+
+				GridZoom: {
+					Label: 画布网格缩放
+					Tooltip: 调整画布上六边形网格的间距，越大网格越密。
+				}
+
+				GridSnapThreshold: {
+					Label: 吸附阈值
+					Tooltip: '''拖拽多远才记一步图案。0.5 = 鼠标走到下一个格点就记（跟手，原版默认）；
+0.5 以上图案会比鼠标慢一拍，画到终点松开时容易少记最后一段。'''
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,1130 @@
+[
+    {
+        "id":  "hexcasting:get_caster",
+        "name":  "意识之精思",
+        "sig":  "qaq",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:entity_pos/eye",
+        "name":  "指南针之纯化",
+        "sig":  "aa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:entity_pos/foot",
+        "name":  "指南针之纯化，第二型",
+        "sig":  "dd",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:get_entity_look",
+        "name":  "照准仪之纯化",
+        "sig":  "wa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:get_entity_height",
+        "name":  "测高仪之纯化",
+        "sig":  "awq",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:get_entity_velocity",
+        "name":  "步伐之纯化",
+        "sig":  "wq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:raycast",
+        "name":  "弓箭手之馏化",
+        "sig":  "wqaawdd",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:raycast/axis",
+        "name":  "建筑师之馏化",
+        "sig":  "weddwaa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:raycast/entity",
+        "name":  "侦查员之馏化",
+        "sig":  "weaqa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:get_media",
+        "name":  "媒质之精思",
+        "sig":  "dde",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:circle/impetus_pos",
+        "name":  "指路石之精思",
+        "sig":  "eaqwqae",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:circle/impetus_dir",
+        "name":  "磁石之精思",
+        "sig":  "eaqwqaewede",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:circle/bounds/min",
+        "name":  "次要折角之精思",
+        "sig":  "eaqwqaewdd",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:circle/bounds/max",
+        "name":  "主要折角之精思",
+        "sig":  "aqwqawaaqa",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:swap",
+        "name":  "弄臣之策略",
+        "sig":  "aawdd",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:rotate",
+        "name":  "轮换之策略",
+        "sig":  "aaeaa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:rotate_reverse",
+        "name":  "轮换之策略，第二型",
+        "sig":  "ddqdd",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:duplicate",
+        "name":  "双子之分解",
+        "sig":  "aadaa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:over",
+        "name":  "勘探者之策略",
+        "sig":  "aaedd",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:tuck",
+        "name":  "送葬者之策略",
+        "sig":  "ddqaa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:2dup",
+        "name":  "狄俄斯库里之策略",
+        "sig":  "aadadaaw",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:stack_len",
+        "name":  "群体之精思",
+        "sig":  "qwaeawqaeaqa",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:duplicate_n",
+        "name":  "双子之策略",
+        "sig":  "aadaadaa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:fisherman",
+        "name":  "渔夫之策略",
+        "sig":  "ddad",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:fisherman/copy",
+        "name":  "渔夫之策略，第二型",
+        "sig":  "aada",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:swizzle",
+        "name":  "骗徒之策略",
+        "sig":  "qaawdde",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:add",
+        "name":  "加法之馏化",
+        "sig":  "waaw",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:sub",
+        "name":  "减法之馏化",
+        "sig":  "wddw",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:mul",
+        "name":  "乘法之馏化",
+        "sig":  "waqaw",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:div",
+        "name":  "除法之馏化",
+        "sig":  "wdedw",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:abs",
+        "name":  "长度之纯化",
+        "sig":  "wqaqw",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:pow",
+        "name":  "乘方之馏化",
+        "sig":  "wedew",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:floor",
+        "name":  "取底之纯化",
+        "sig":  "ewq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:ceil",
+        "name":  "取顶之纯化",
+        "sig":  "qwe",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:construct_vec",
+        "name":  "向量之提整",
+        "sig":  "eqqqqq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:deconstruct_vec",
+        "name":  "向量之拆解",
+        "sig":  "qeeeee",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:coerce_axial",
+        "name":  "轴向之纯化",
+        "sig":  "qqqqqaww",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:and",
+        "name":  "合取之馏化",
+        "sig":  "wdw",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:or",
+        "name":  "析取之馏化",
+        "sig":  "waw",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:not",
+        "name":  "取非之纯化",
+        "sig":  "dw",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:xor",
+        "name":  "互斥之馏化",
+        "sig":  "dwa",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:greater",
+        "name":  "至大之馏化",
+        "sig":  "e",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:less",
+        "name":  "至小之馏化",
+        "sig":  "q",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:greater_eq",
+        "name":  "至大之馏化，第二型",
+        "sig":  "ee",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:less_eq",
+        "name":  "至小之馏化，第二型",
+        "sig":  "qq",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:equals",
+        "name":  "相等之馏化",
+        "sig":  "ad",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:not_equals",
+        "name":  "不等之馏化",
+        "sig":  "da",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:type_equals",
+        "name":  "类似之馏化",
+        "sig":  "wawdw",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:type_not_equals",
+        "name":  "相异之馏化",
+        "sig":  "wdwaw",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:bool_coerce",
+        "name":  "占卜师之纯化",
+        "sig":  "aw",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:if",
+        "name":  "占卜师之提整",
+        "sig":  "awdd",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:random",
+        "name":  "熵之精思",
+        "sig":  "eqqq",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:sin",
+        "name":  "正弦之纯化",
+        "sig":  "qqqqqaa",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:cos",
+        "name":  "余弦之纯化",
+        "sig":  "qqqqqad",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:tan",
+        "name":  "正切之纯化",
+        "sig":  "wqqqqqadq",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:arcsin",
+        "name":  "反正弦之纯化",
+        "sig":  "ddeeeee",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:arccos",
+        "name":  "反余弦之纯化",
+        "sig":  "adeeeee",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:arctan",
+        "name":  "反正切之纯化",
+        "sig":  "eadeeeeew",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:arctan2",
+        "name":  "反正切之馏化",
+        "sig":  "deadeeeeewd",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:logarithm",
+        "name":  "对数之馏化",
+        "sig":  "eqaqe",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:modulo",
+        "name":  "余数之馏化",
+        "sig":  "addwaad",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:unique",
+        "name":  "唯一之纯化",
+        "sig":  "aweaqa",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:print",
+        "name":  "揭示",
+        "sig":  "de",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:explode",
+        "name":  "爆炸",
+        "sig":  "aawaawaa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:explode/fire",
+        "name":  "火球",
+        "sig":  "ddwddwdd",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:add_motion",
+        "name":  "驱动",
+        "sig":  "awqqqwaqw",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:blink",
+        "name":  "闪现",
+        "sig":  "awqqqwaq",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:break_block",
+        "name":  "破坏方块",
+        "sig":  "qaqqqqq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:place_block",
+        "name":  "放置方块",
+        "sig":  "eeeeede",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:colorize",
+        "name":  "内化染色剂",
+        "sig":  "awddwqawqwawq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:cycle_variant",
+        "name":  "施法者之魅力",
+        "sig":  "dwaawedwewdwe",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:create_water",
+        "name":  "制造水源",
+        "sig":  "aqawqadaq",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:destroy_water",
+        "name":  "清除流体",
+        "sig":  "dedwedade",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:ignite",
+        "name":  "点燃",
+        "sig":  "aaqawawa",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:extinguish",
+        "name":  "广域熄灭",
+        "sig":  "ddedwdwd",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:conjure_block",
+        "name":  "构筑方块",
+        "sig":  "qqa",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:conjure_light",
+        "name":  "构筑光源",
+        "sig":  "qqd",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:bonemeal",
+        "name":  "催生",
+        "sig":  "wqaqwawqaqw",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:recharge",
+        "name":  "重新充能",
+        "sig":  "qqqqqwaeaeaeaeaea",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:erase",
+        "name":  "清除物品",
+        "sig":  "qdqawwaww",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:edify",
+        "name":  "启迪树苗",
+        "sig":  "wqaqwd",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:beep",
+        "name":  "弹奏音符",
+        "sig":  "adaa",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:craft/cypher",
+        "name":  "制作杂件",
+        "sig":  "waqqqqq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:craft/trinket",
+        "name":  "制作缀品",
+        "sig":  "wwaqqqqqeaqeaeqqqeaeq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:craft/artifact",
+        "name":  "制作造物",
+        "sig":  "wwaqqqqqeawqwqwqwqwqwwqqeadaeqqeqqeadaeqq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:craft/battery",
+        "name":  "制作试剂瓶",
+        "sig":  "aqqqaqwwaqqqqqeqaqqqawwqwqwqwqwqw",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:potion/weakness",
+        "name":  "白阳西沉",
+        "sig":  "qqqqqaqwawaw",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:potion/levitation",
+        "name":  "蓝阳西沉",
+        "sig":  "qqqqqawwawawd",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:potion/wither",
+        "name":  "黑阳西沉",
+        "sig":  "qqqqqaewawawe",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:potion/poison",
+        "name":  "红阳西沉",
+        "sig":  "qqqqqadwawaww",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:potion/slowness",
+        "name":  "绿阳西沉",
+        "sig":  "qqqqqadwawaw",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:potion/regeneration",
+        "name":  "白阳当空",
+        "sig":  "qqqqaawawaedd",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:potion/night_vision",
+        "name":  "蓝阳当空",
+        "sig":  "qqqaawawaeqdd",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:potion/absorption",
+        "name":  "黑阳当空",
+        "sig":  "qqaawawaeqqdd",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:potion/haste",
+        "name":  "红阳当空",
+        "sig":  "qaawawaeqqqdd",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:potion/strength",
+        "name":  "绿阳当空",
+        "sig":  "aawawaeqqqqdd",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:flight/range",
+        "name":  "隐士之飞行",
+        "sig":  "awawaawq",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:flight/time",
+        "name":  "旅者之飞行",
+        "sig":  "dwdwdewq",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:flight/can_fly",
+        "name":  "飞行员之纯化",
+        "sig":  "dwdwdeweaqa",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:sentinel/create",
+        "name":  "召唤哨卫",
+        "sig":  "waeawae",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:sentinel/destroy",
+        "name":  "驱除哨卫",
+        "sig":  "qdwdqdw",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:sentinel/get_pos",
+        "name":  "定位哨卫",
+        "sig":  "waeawaede",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:sentinel/wayfind",
+        "name":  "寻路至哨卫",
+        "sig":  "waeawaedwa",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:lightning",
+        "name":  "召雷",
+        "sig":  "waadwawdaaweewq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:flight",
+        "name":  "翱翔",
+        "sig":  "eawwaeawawaa",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:create_lava",
+        "name":  "制造熔岩",
+        "sig":  "eaqawqadaqd",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:teleport/great",
+        "name":  "卓越传送",
+        "sig":  "wwwqqqwwwqqeqqwwwqqwqqdqqqqqdqq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:sentinel/create/great",
+        "name":  "召唤卓越哨卫",
+        "sig":  "waeawaeqqqwqwqqwq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:dispel_rain",
+        "name":  "驱雨",
+        "sig":  "eeewwweeewwaqqddqdqd",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:summon_rain",
+        "name":  "召雨",
+        "sig":  "wwweeewwweewdawdwad",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:brainsweep",
+        "name":  "剥离意识",
+        "sig":  "qeqwqwqwqwqeqaeqeaqeqaeqaqded",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:akashic/read",
+        "name":  "阿卡夏之馏化",
+        "sig":  "qqqwqqqqqaq",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:akashic/write",
+        "name":  "阿卡夏之策略",
+        "sig":  "eeeweeeeede",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:escape",
+        "name":  "考察",
+        "sig":  "qqqaw",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:runtime_escape",
+        "name":  "深思",
+        "sig":  "wdeee",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:open_paren",
+        "name":  "内省",
+        "sig":  "qqq",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:close_paren",
+        "name":  "反思",
+        "sig":  "eee",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:open_n_parens",
+        "name":  "冥想",
+        "sig":  "qdaqadq",
+        "dir":  "West"
+    },
+    {
+        "id":  "hexcasting:close_all_parens",
+        "name":  "回想",
+        "sig":  "eadedae",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:read_into_parens",
+        "name":  "插嵌",
+        "sig":  "aqqqqqwded",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:undo",
+        "name":  "消解",
+        "sig":  "eeedw",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:eval",
+        "name":  "赫尔墨斯之策略",
+        "sig":  "deaqq",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:eval/cc",
+        "name":  "伊里斯之策略",
+        "sig":  "qwaqde",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:halt",
+        "name":  "卡戎之策略",
+        "sig":  "aqdee",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:read",
+        "name":  "书吏之精思",
+        "sig":  "aqqqqq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:read/entity",
+        "name":  "编年史家之纯化",
+        "sig":  "wawqwqwqwqwqw",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:write",
+        "name":  "书吏之策略",
+        "sig":  "deeeee",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:write/entity",
+        "name":  "编年史家之策略",
+        "sig":  "wdwewewewewew",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:readable",
+        "name":  "审计员之精思",
+        "sig":  "aqqqqqe",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:readable/entity",
+        "name":  "审计员之纯化",
+        "sig":  "wawqwqwqwqwqwew",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:writable",
+        "name":  "估价员之精思",
+        "sig":  "deeeeeq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:writable/entity",
+        "name":  "估价员之纯化",
+        "sig":  "wdwewewewewewqw",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:read/local",
+        "name":  "雾尼之精思",
+        "sig":  "qeewdweddw",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:write/local",
+        "name":  "福金之策略",
+        "sig":  "eqqwawqaaw",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:thanatos",
+        "name":  "塔纳托斯之精思",
+        "sig":  "qqaed",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:const/null",
+        "name":  "空元之精思",
+        "sig":  "d",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:const/true",
+        "name":  "真之精思",
+        "sig":  "aqae",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:const/false",
+        "name":  "假之精思",
+        "sig":  "dedq",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:const/vec/px",
+        "name":  "向量之精思，+X型",
+        "sig":  "qqqqqea",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:const/vec/py",
+        "name":  "向量之精思，+Y型",
+        "sig":  "qqqqqew",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:const/vec/pz",
+        "name":  "向量之精思，+Z型",
+        "sig":  "qqqqqed",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:const/vec/nx",
+        "name":  "向量之精思，-X型",
+        "sig":  "eeeeeqa",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:const/vec/ny",
+        "name":  "向量之精思，-Y型",
+        "sig":  "eeeeeqw",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:const/vec/nz",
+        "name":  "向量之精思，-Z型",
+        "sig":  "eeeeeqd",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:const/vec/0",
+        "name":  "向量之精思，零型",
+        "sig":  "qqqqq",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:const/double/pi",
+        "name":  "弧之精思",
+        "sig":  "qdwdq",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:const/double/tau",
+        "name":  "圆之精思",
+        "sig":  "eawae",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:const/double/e",
+        "name":  "欧拉之精思",
+        "sig":  "aaq",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:const/double/phi",
+        "name":  "和谐之精思",
+        "sig":  "wdded",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:get_entity",
+        "name":  "实体之纯化",
+        "sig":  "qqqqqdaqa",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:get_entity/animal",
+        "name":  "实体之纯化：动物",
+        "sig":  "qqqqqdaqaawa",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:get_entity/monster",
+        "name":  "实体之纯化：怪物",
+        "sig":  "qqqqqdaqaawq",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:get_entity/item",
+        "name":  "实体之纯化：物品",
+        "sig":  "qqqqqdaqaaww",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:get_entity/player",
+        "name":  "实体之纯化：玩家",
+        "sig":  "qqqqqdaqaawe",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:get_entity/living",
+        "name":  "实体之纯化：生物",
+        "sig":  "qqqqqdaqaawd",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity",
+        "name":  "区域之馏化：任意",
+        "sig":  "qqqqqwded",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/animal",
+        "name":  "区域之馏化：动物",
+        "sig":  "qqqqqwdeddwa",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/not_animal",
+        "name":  "区域之馏化：非动物",
+        "sig":  "eeeeewaqaawa",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/monster",
+        "name":  "区域之馏化：怪物",
+        "sig":  "qqqqqwdeddwq",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/not_monster",
+        "name":  "区域之馏化：非怪物",
+        "sig":  "eeeeewaqaawq",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/item",
+        "name":  "区域之馏化：物品",
+        "sig":  "qqqqqwdeddww",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/not_item",
+        "name":  "区域之馏化：非物品",
+        "sig":  "eeeeewaqaaww",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/player",
+        "name":  "区域之馏化：玩家",
+        "sig":  "qqqqqwdeddwe",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/not_player",
+        "name":  "区域之馏化：非玩家",
+        "sig":  "eeeeewaqaawe",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/living",
+        "name":  "区域之馏化：生物",
+        "sig":  "qqqqqwdeddwd",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:zone_entity/not_living",
+        "name":  "区域之馏化：非生物",
+        "sig":  "eeeeewaqaawd",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:compare_block/lenient",
+        "name":  "测量员之馏化",
+        "sig":  "qqqqqeqeeeee",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:compare_block/strict",
+        "name":  "检验员之馏化",
+        "sig":  "qwawqwadadwewdwe",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:compare_entity",
+        "name":  "分类学家之馏化",
+        "sig":  "aqaeqded",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:compare_item/lenient",
+        "name":  "分拣员之馏化",
+        "sig":  "qaeaqeqedqde",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:compare_item/strict",
+        "name":  "堆叠之馏化",
+        "sig":  "qaeaqewqedqde",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:append",
+        "name":  "整合之馏化",
+        "sig":  "edqde",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:unappend",
+        "name":  "派生之分解",
+        "sig":  "qaeaq",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:index",
+        "name":  "选择之馏化",
+        "sig":  "deeed",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:for_each",
+        "name":  "托特之策略",
+        "sig":  "dadad",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:singleton",
+        "name":  "单体之纯化",
+        "sig":  "adeeed",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:empty_list",
+        "name":  "空无之精思",
+        "sig":  "qqaeaae",
+        "dir":  "NorthEast"
+    },
+    {
+        "id":  "hexcasting:reverse",
+        "name":  "逆行之纯化",
+        "sig":  "qqqaede",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:last_n_list",
+        "name":  "群体之策略",
+        "sig":  "ewdqdwe",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:splat",
+        "name":  "群体之拆解",
+        "sig":  "qwaeawq",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:index_of",
+        "name":  "定位器之馏化",
+        "sig":  "dedqde",
+        "dir":  "East"
+    },
+    {
+        "id":  "hexcasting:remove_from",
+        "name":  "切除器之馏化",
+        "sig":  "edqdewaqa",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:slice",
+        "name":  "选择之提整",
+        "sig":  "qaeaqwded",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:replace",
+        "name":  "外科医师之提整",
+        "sig":  "wqaeaqw",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:construct",
+        "name":  "演讲者之馏化",
+        "sig":  "ddewedd",
+        "dir":  "SouthEast"
+    },
+    {
+        "id":  "hexcasting:deconstruct",
+        "name":  "演讲者之分解",
+        "sig":  "aaqwqaa",
+        "dir":  "SouthWest"
+    },
+    {
+        "id":  "hexcasting:interop/pehkui/get",
+        "name":  "格列佛之纯化",
+        "sig":  "aawawwawwa",
+        "dir":  "NorthWest"
+    },
+    {
+        "id":  "hexcasting:interop/pehkui/set",
+        "name":  "改变大小",
+        "sig":  "ddwdwwdwwd",
+        "dir":  "NorthEast"
+    }
+]

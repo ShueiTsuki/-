@@ -1,0 +1,1832 @@
+using HexCastingTerraria.Core.Casting;
+using HexCastingTerraria.Core.Casting.Eval;
+using HexCastingTerraria.Core.Casting.Iotas;
+using HexCastingTerraria.Content.Tiles;
+using HexCastingTerraria.Core.World;
+using Microsoft.Xna.Framework;
+using HexCastingTerraria.Core;
+using Terraria;
+using Terraria.ModLoader;
+using HexCastingTerraria.Config;
+
+namespace HexCastingTerraria.Content;
+
+/// <summary>
+/// <see cref="ICastingWorld"/> 的泰拉瑞亚实现。
+///
+/// 这是「Core 逻辑 / 游戏取值」的分界线：所有**像素 ↔ 图格**换算与
+/// **左上角 ↔ 中心**换算都只在本文件里做一次，
+/// 上层（世界图案）拿到的永远是「图格单位、中心语义」的值。
+///
+/// 详见 <see cref="ICastingWorld"/> 顶部关于单位与坐标原点的说明。
+/// </summary>
+public sealed class TerrariaCastingWorld : ICastingWorld
+{
+    private readonly Player? _caster;
+
+    /// <summary>
+    /// 法术环的范围（图格）。设了它就用它做范围判定，**不再用施法者半径**。
+    ///
+    /// 源项目 `CircleCastEnv.isVecInRangeEnvironment` 用的就是环的包围盒 ——
+    /// 环里的可用范围与玩家施法完全不同。
+    /// </summary>
+    private readonly (int MinX, int MinY, int MaxX, int MaxY)? _circleBounds;
+
+    public TerrariaCastingWorld(Player? caster, (int MinX, int MinY, int MaxX, int MaxY)? circleBounds = null)
+    {
+        _caster = caster;
+        _circleBounds = circleBounds;
+    }
+
+    /// <summary>
+    /// 法术环专用的世界访问：**没有施法者**，范围 = 环的包围盒。
+    ///
+    /// `Caster` 返回 null 正是 `get_caster` 吐 `NullIota` 的场景 ——
+    /// 那个分支早先按源码注释保留，现在有真实用途了。
+    /// </summary>
+    public static TerrariaCastingWorld ForCircle(int minX, int minY, int maxX, int maxY)
+        => new(null, (minX, minY, maxX, maxY));
+
+    /// <summary>
+    /// 施法者。玩家不存活时返回 null —— 对应源项目 `castingEntity` 可为 null 的语义，
+    /// `get_caster` 会因此吐 NullIota。法术环环境下**恒为 null**。
+    /// </summary>
+    public EntityIota? Caster
+        => _caster is { active: true } && !_caster.dead
+            ? new EntityIota(EntityIota.EntityKind.Player, _caster.whoAmI)
+            : null;
+
+    /// <summary>
+    /// 实体的关键读数，已统一成**图格单位 + 中心语义**。
+    /// 用一个私有结构承载，避免把 Player / NPC / Projectile 硬塞进同一个类型。
+    /// </summary>
+    private readonly struct Reading
+    {
+        public required Vector2 CenterTile { get; init; }
+
+        /// <summary>脚底中心（对应 MC 的 position()）。</summary>
+        public required Vector2 FeetTile { get; init; }
+
+        /// <summary>图格/帧。</summary>
+        public required Vector2 VelocityTiles { get; init; }
+
+        /// <summary>单位向量，由 LookResolver 保证非 NaN、非零。</summary>
+        public required Vector2 Look { get; init; }
+
+        /// <summary>图格。</summary>
+        public required float HeightTiles { get; init; }
+    }
+
+    /// <summary>
+    /// 把实体 iota 解析成读数。索引越界或实体不存活 → false。
+    ///
+    /// 【为什么必须校验索引合法性】泰拉用 whoAmI 索引标识实体，
+    /// 实体死亡后**索引会被新实体复用**。不校验就会读到「另一个实体」，
+    /// 而且完全无声 —— 法术作用到错误的怪身上，玩家只会觉得「这法术有 bug」。
+    /// </summary>
+    private static bool TryRead(EntityIota iota, out Reading reading)
+    {
+        reading = default;
+
+        switch (iota.Target)
+        {
+            case EntityIota.EntityKind.Player:
+            {
+                if (iota.Index < 0 || iota.Index >= Main.maxPlayers) return false;
+                var p = Main.player[iota.Index];
+                if (p is not { active: true } || p.dead) return false;
+                reading = Make(p.Center, p.Bottom, p.velocity, HexPlayer.Get(p).Look, p.height);
+                return true;
+            }
+
+            case EntityIota.EntityKind.Npc:
+            {
+                if (iota.Index < 0 || iota.Index >= Main.maxNPCs) return false;
+                var n = Main.npc[iota.Index];
+                if (n is not { active: true }) return false;
+                reading = Make(n.Center, n.Bottom, n.velocity,
+                    n.GetGlobalNPC<HexGlobalNPC>().Look, n.height);
+                return true;
+            }
+
+            case EntityIota.EntityKind.Projectile:
+            {
+                if (iota.Index < 0 || iota.Index >= Main.maxProjectiles) return false;
+                var pr = Main.projectile[iota.Index];
+                if (pr is not { active: true }) return false;
+                reading = Make(pr.Center, pr.Bottom, pr.velocity,
+                    pr.GetGlobalProjectile<HexGlobalProjectile>().Look, pr.height);
+                return true;
+            }
+
+            case EntityIota.EntityKind.Item:
+            {
+                if (iota.Index < 0 || iota.Index >= Main.maxItems) return false;
+                var it = Main.item[iota.Index];
+                if (it is not { active: true }) return false;
+                // 掉落物没有速度与视线可言，用其速度方向作视线（静止则退回 (1,0)）
+                var look = it.velocity.LengthSquared() > 0.01f
+                    ? Microsoft.Xna.Framework.Vector2.Normalize(it.velocity)
+                    : new Microsoft.Xna.Framework.Vector2(1f, 0f);
+                reading = Make(it.Center, new Microsoft.Xna.Framework.Vector2(it.Center.X, it.Bottom.Y),
+                    it.velocity, look, it.height);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 像素 → 图格的唯一换算点。
+    /// 泰拉实体的宽度/高度是 int 像素，速度是像素/帧，位置是像素。
+    /// </summary>
+    private static Reading Make(Vector2 center, Vector2 bottom, Vector2 velocity, Vector2 look, int height)
+        => new()
+        {
+            CenterTile = center / HexUnits.PixelsPerTile,
+            FeetTile = bottom / HexUnits.PixelsPerTile,
+            VelocityTiles = velocity / HexUnits.PixelsPerTile,
+            Look = look,
+            HeightTiles = height / HexUnits.PixelsPerTile,
+        };
+
+    public bool IsAlive(EntityIota entity) => TryRead(entity, out _);
+
+    /// <summary>施法者中心（图格）。范围判定全部以它为圆心。</summary>
+    private (float X, float Y) CasterCenterTiles()
+        => _caster == null
+            ? (0f, 0f)   // 环环境不会走到这里（InRange 优先用包围盒）
+            : (_caster.Center.X / HexUnits.PixelsPerTile, _caster.Center.Y / HexUnits.PixelsPerTile);
+
+    /// <summary>
+    /// 点是否在施法范围内。用平方比较省一次开方。
+    /// 半径取 <see cref="HexUnits.AmbitRadiusTiles"/>（32 格），与源项目 `DEFAULT_AMBIT_RADIUS` 对齐。
+    ///
+    /// **大哨卫会把范围延伸过去**：源项目 `PlayerBasedCastEnv.isVecInRangeEnvironment`
+    /// 的第一段分支就是「在大哨卫 16 格内 -> 也算在范围内」。
+    /// 这是 `sentinel/create/great` 存在的全部理由，漏掉它这个图案就白做了。
+    /// </summary>
+    private bool InRange(double tileX, double tileY)
+    {
+        // 法术环：范围 = 环的包围盒（源项目 CircleCastEnv 的语义）
+        if (_circleBounds is { } b)
+        {
+            return tileX >= b.MinX - 0.5 && tileX <= b.MaxX + 1.5
+                && tileY >= b.MinY - 0.5 && tileY <= b.MaxY + 1.5;
+        }
+
+        // 大哨卫：以哨卫为心 16 格（对齐 DEFAULT_SENTINEL_RADIUS）
+        if (_caster is not null && HexPlayer.Get(_caster).Sentinel is { Great: true } s)
+        {
+            double sdx = tileX - s.X;
+            double sdy = tileY - s.Y;
+            const double sr = CastingEnvironment.SentinelRadiusTiles;
+            if (sdx * sdx + sdy * sdy <= sr * sr + 1e-10)
+            {
+                return true;
+            }
+        }
+
+        // 玩家：以自身为中心 32 格半径
+        var (cx, cy) = CasterCenterTiles();
+        double dx = tileX - cx;
+        double dy = tileY - cy;
+        const double r = HexUnits.AmbitRadiusTiles;
+        return dx * dx + dy * dy <= r * r;
+    }
+
+    public bool IsInRange(EntityIota entity)
+        => TryRead(entity, out var reading) && InRange(reading.CenterTile.X, reading.CenterTile.Y);
+
+    public bool IsVecInRange(double x, double y) => InRange(x, y);
+
+    /// <summary>
+    /// 图格是否阻挡射线。**所有**射线相关的实心判定都必须走这里，包括客户端的瞄准预览 ——
+    /// 否则预览会指向一个位置、真正施法却打到别处，而且两边都不报错。
+    ///
+    /// 取 `WorldGen.SolidTile` 的语义（= `tileSolid` 且非 `tileSolidTop`），
+    /// 对应 MC 的 `ClipContext.Block.COLLIDER` —— 平台、金属架这类「可穿过的实心顶」
+    /// **不算**阻挡，否则站在平台上往下打射线会立刻命中脚下的平台。
+    /// </summary>
+    public static bool SolidAt(int tileX, int tileY)
+    {
+        // 世界外当作实心：否则射线飞出世界边界会一路走到坐标溢出
+        if (!WorldGen.InWorld(tileX, tileY, 1)) return true;
+        return WorldGen.SolidTile(tileX, tileY);
+    }
+
+    public bool IsTileSolid(int tileX, int tileY) => SolidAt(tileX, tileY);
+
+    /// <summary>
+    /// 枚举区域内的实体判定箱（图格单位）。
+    ///
+    /// 这里把三类实体都算上：玩家、NPC、弹幕。
+    /// 源项目的 `getEntities` 同样涵盖所有 Entity，我们保持一致。
+    /// 故意**不**做范围外过滤 —— 那句「命中者也要在范围内」的检查在 Core 里做，
+    /// 免得两处判断标准不一致。
+    /// </summary>
+    public System.Collections.Generic.IReadOnlyList<EntityBox> EntitiesInArea(
+        double minX, double minY, double maxX, double maxY)
+    {
+        var list = new System.Collections.Generic.List<EntityBox>();
+
+        void Add(EntityIota iota, Rectangle hitbox)
+        {
+            // 判定箱与查询区域无重叠 → 不可能被射线扫到，跳过
+            double bMinX = hitbox.X / (double)HexUnits.PixelsPerTile;
+            double bMinY = hitbox.Y / (double)HexUnits.PixelsPerTile;
+            double bMaxX = (hitbox.X + hitbox.Width) / (double)HexUnits.PixelsPerTile;
+            double bMaxY = (hitbox.Y + hitbox.Height) / (double)HexUnits.PixelsPerTile;
+
+            if (bMaxX < minX || bMinX > maxX || bMaxY < minY || bMinY > maxY) return;
+
+            list.Add(new EntityBox
+            {
+                Entity = iota,
+                MinX = bMinX,
+                MinY = bMinY,
+                MaxX = bMaxX,
+                MaxY = bMaxY,
+            });
+        }
+
+        for (int i = 0; i < Main.maxPlayers; i++)
+        {
+            var p = Main.player[i];
+            if (p is not { active: true } || p.dead) continue;
+            Add(new EntityIota(EntityIota.EntityKind.Player, i), p.Hitbox);
+        }
+
+        for (int i = 0; i < Main.maxNPCs; i++)
+        {
+            var n = Main.npc[i];
+            if (n is not { active: true }) continue;
+            Add(new EntityIota(EntityIota.EntityKind.Npc, i), n.Hitbox);
+        }
+
+        for (int i = 0; i < Main.maxProjectiles; i++)
+        {
+            var pr = Main.projectile[i];
+            if (pr is not { active: true }) continue;
+            Add(new EntityIota(EntityIota.EntityKind.Projectile, i), pr.Hitbox);
+        }
+
+        return list;
+    }
+
+    public (double X, double Y) FeetPosition(EntityIota entity)
+        => TryRead(entity, out var r) ? (r.FeetTile.X, r.FeetTile.Y) : (0.0, 0.0);
+
+    public (double X, double Y) EyePosition(EntityIota entity)
+        // 2D 侧视下「眼高」对应物不明确，取中心（见 LOOK_DIRECTION_DESIGN.md 第四节）
+        => TryRead(entity, out var r) ? (r.CenterTile.X, r.CenterTile.Y) : (0.0, 0.0);
+
+    public (double X, double Y) Velocity(EntityIota entity)
+        => TryRead(entity, out var r) ? (r.VelocityTiles.X, r.VelocityTiles.Y) : (0.0, 0.0);
+
+    public (double X, double Y) Look(EntityIota entity)
+        // 取不到时退回正方向，而不是零向量 —— 零向量进 VM 会被归一化成 NaN
+        => TryRead(entity, out var r) ? (r.Look.X, r.Look.Y) : (1.0, 0.0);
+
+    public double EntityHeight(EntityIota entity)
+        => TryRead(entity, out var r) ? r.HeightTiles : 0.0;
+
+    // ── 写入类：会改变世界状态 ──────────────────────────────────────
+
+    /// <summary>
+    /// 坐标是否在世界内。
+    /// 留 1 格余量，避免把实体送到地图边缘外导致它永久掉出世界。
+    /// </summary>
+    public bool IsVecInWorld(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+        return WorldGen.InWorld(tx, ty, 1);
+    }
+
+    /// <summary>
+    /// 施加推力。图格/帧 → 像素/帧。
+    ///
+    /// 三类实体的处理：
+    ///   - 玩家：直接改 velocity（泰拉玩家速度由自身逻辑接管，通常下一帧就衰减）
+    ///   - NPC：改 velocity 并置 `netUpdate = true`，否则联机下客户端看不到
+    ///   - 弹幕：直接改 velocity
+    /// </summary>
+    public void ApplyMotion(EntityIota entity, double mx, double my)
+    {
+        // ⚠️ 速度单位要换算，不能直接乘 16。
+        //
+        // 源项目的 motion 单位是 **MC 的格/tick**：1 单位 = 1 格/tick = 20 格/秒。
+        // 泰拉的 velocity 单位是 **像素/帧**：1 px/帧 = 60 px/秒 = 3.75 格/秒。
+        //
+        // 所以 1 个 MC 单位 = 20 格/秒 = 20×16/60 px/帧 = 5.3333 px/帧。
+        // 直接乘 PixelsPerTile（=16）的话，**所有推动都会猛 3 倍** ——
+        // 原版轻轻一推，我们这边直接把人射上天。这个 3 是 16 / (16/3)，不是拍脑袋来的。
+        const float mcUnitToPixelsPerFrame = HexUnits.PixelsPerTile / 3f;
+
+        var delta = new Vector2(
+            (float)(mx * mcUnitToPixelsPerFrame),
+            (float)(my * mcUnitToPixelsPerFrame));
+
+        switch (entity.Target)
+        {
+            case EntityIota.EntityKind.Player:
+            {
+                if (entity.Index < 0 || entity.Index >= Main.maxPlayers) return;
+                var p = Main.player[entity.Index];
+                if (p is not { active: true } || p.dead) return;
+                p.velocity += delta;
+                break;
+            }
+
+            case EntityIota.EntityKind.Npc:
+            {
+                if (entity.Index < 0 || entity.Index >= Main.maxNPCs) return;
+                var n = Main.npc[entity.Index];
+                if (n is not { active: true }) return;
+                n.velocity += delta;
+                // 不置 netUpdate 的话，联机下这次推动只发生在服务端
+                n.netUpdate = true;
+                break;
+            }
+
+            case EntityIota.EntityKind.Projectile:
+            {
+                if (entity.Index < 0 || entity.Index >= Main.maxProjectiles) return;
+                var pr = Main.projectile[entity.Index];
+                if (pr is not { active: true }) return;
+                pr.velocity += delta;
+                pr.netUpdate = true;
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 瞬移一段位移（图格 → 像素）。
+    ///
+    /// 「不塞进墙里」的处理：先按目标位置试放，若该处是实心的则**取消这次传送**
+    /// 而不是硬塞 —— 硬塞会让玩家卡在方块里窒息，比传送失败糟糕得多。
+    /// 源项目用 `teleportRespectSticky` 做了更复杂的处理（连带乘客、碰撞搜索），
+    /// 那依赖 MC 的实体挂载体系，泰拉侧先做保守版本。
+    /// </summary>
+    public void TeleportBy(EntityIota entity, double dx, double dy)
+    {
+        var offset = new Vector2(
+            (float)(dx * HexUnits.PixelsPerTile),
+            (float)(dy * HexUnits.PixelsPerTile));
+
+        if (!TryGetEntity(entity, out var target) || target == null) return;
+
+        var destination = target.Center + offset;
+
+        // 目的地必须整体可站立，否则放弃这次传送
+        if (!IsAreaClear(destination, target.width, target.height)) return;
+
+        target.Center = destination;
+
+        if (entity.Target == EntityIota.EntityKind.Npc)
+        {
+            Main.npc[entity.Index].netUpdate = true;
+        }
+        else if (entity.Target == EntityIota.EntityKind.Projectile)
+        {
+            Main.projectile[entity.Index].netUpdate = true;
+        }
+    }
+
+    /// <summary>取实体对象。三类分别处理，取不到返回 false。</summary>
+    private static bool TryGetEntity(EntityIota iota, out Entity? entity)
+    {
+        entity = null;
+        switch (iota.Target)
+        {
+            case EntityIota.EntityKind.Player:
+                if (iota.Index >= 0 && iota.Index < Main.maxPlayers)
+                {
+                    var p = Main.player[iota.Index];
+                    if (p is { active: true } && !p.dead) { entity = p; return true; }
+                }
+                return false;
+
+            case EntityIota.EntityKind.Npc:
+                if (iota.Index >= 0 && iota.Index < Main.maxNPCs)
+                {
+                    var n = Main.npc[iota.Index];
+                    if (n is { active: true }) { entity = n; return true; }
+                }
+                return false;
+
+            case EntityIota.EntityKind.Projectile:
+                if (iota.Index >= 0 && iota.Index < Main.maxProjectiles)
+                {
+                    var pr = Main.projectile[iota.Index];
+                    if (pr is { active: true }) { entity = pr; return true; }
+                }
+                return false;
+        }
+
+        return false;
+    }
+
+    /// <summary>以 center 为中心、给定尺寸的矩形是否完全没有实心图格。</summary>
+    private static bool IsAreaClear(Vector2 center, int width, int height)
+    {
+        int minX = (int)System.Math.Floor((center.X - width * 0.5f) / HexUnits.PixelsPerTile);
+        int maxX = (int)System.Math.Floor((center.X + width * 0.5f - 1f) / HexUnits.PixelsPerTile);
+        int minY = (int)System.Math.Floor((center.Y - height * 0.5f) / HexUnits.PixelsPerTile);
+        int maxY = (int)System.Math.Floor((center.Y + height * 0.5f - 1f) / HexUnits.PixelsPerTile);
+
+        for (int x = minX; x <= maxX; x++)
+        {
+            for (int y = minY; y <= maxY; y++)
+            {
+                if (SolidAt(x, y)) return false;
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// 大传送的代价：按距离概率把**施法者自己**的物品震落在地。
+    /// 移植自源项目 `OpTeleport.Spell.cast` 的掉落分支。
+    ///
+    /// 三条照抄原版的规则（都很重要）：
+    ///   ① 掉率 = 传送距离(图格) / 分母（默认 10000）—— 传得越远掉得越多
+    ///   ② **永不掉落主手物品** —— 源项目注释写明：如果主手是饰品，
+    ///      掉落后会被复制（这是原版的 bug 规避，不是随意的选择）
+    ///   ③ 快捷栏与护甲的掉率打折（×0.5 / ×0.25）——
+    ///      这些东西掉出来最烦人，而且设定上「施法者对自己常用的东西更有意识」
+    ///
+    /// 只对**玩家**生效；传送 NPC / 弹幕不会掉任何人的东西。
+    /// </summary>
+    public void ScatterInventory(EntityIota entity, double distanceTiles)
+    {
+        if (entity.Target != EntityIota.EntityKind.Player) return;
+        if (entity.Index < 0 || entity.Index >= Main.maxPlayers) return;
+
+        var player = Main.player[entity.Index];
+        if (player is not { active: true } || player.dead) return;
+
+        double divisor = Core.Casting.GreatTeleportRules.DropDivisor();
+        if (divisor <= 0) return;
+
+        double baseChance = distanceTiles / divisor;
+        if (baseChance <= 0) return;
+
+        // 服务端权威：掉落必须在服务端结算，否则联机时每个客户端各掉一份
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        var source = new Terraria.DataStructures.EntitySource_Misc("hexcasting:greater_teleport");
+
+        // ⚠️ 先记录主手，永不掉落它（源项目：会让饰品复制）
+        int heldSlot = player.selectedItem;
+
+        for (int i = 0; i < player.inventory.Length; i++)
+        {
+            if (i == heldSlot) continue;              // 规则②
+            DropIfRolled(player, i, baseChance * (i < 10 ? 0.5 : 1.0), source);
+        }
+
+        // 护甲：只算头/胸/腿（0..2），时装栏（3..9）不动
+        for (int i = 0; i < 3 && i < player.armor.Length; i++)
+        {
+            DropIfRolled(player, -1, baseChance * 0.25, source, armorSlot: i);
+        }
+    }
+
+    /// <summary>
+    /// 查询区域内的实体。**按距离升序**返回 —— 源项目要求排序，
+    /// 而距离信息只有世界侧有，所以排序必须在这里做。
+    ///
+    /// 过滤条件（照抄源项目 `OpGetEntitiesBy.isReasonablySelectable`）：
+    ///   - 存活
+    ///   - **在施法范围内** —— 源项目注释特别注明这一条是为了修复 #792：
+    ///     不加范围限制就能「把全世界的玩家一网打尽」
+    ///   - 距离 ≤ 半径
+    /// </summary>
+    public System.Collections.Generic.IReadOnlyList<EntityIota> QueryEntities(
+        Core.Casting.Actions.ZoneEntityFilter filter, bool negate, double x, double y, double radius)
+    {
+        var found = new System.Collections.Generic.List<(EntityIota Iota, double DistSq)>();
+
+        double r2 = radius * radius;
+
+        void Consider(EntityIota iota, Microsoft.Xna.Framework.Vector2 center)
+        {
+            if (!TryRead(iota, out var reading)) return;
+            if (!IsInRange(iota)) return;
+
+            double dx = reading.CenterTile.X - x;
+            double dy = reading.CenterTile.Y - y;
+            double d2 = dx * dx + dy * dy;
+            if (d2 > r2) return;
+
+            found.Add((iota, d2));
+        }
+
+        // 泰拉侧的生物分类：
+        //   动物（critter）-> npc.CountsAsACritter
+        //   怪物           -> 非友好、非 critter、非城镇 NPC
+        //   活物           -> 玩家或 NPC
+        // 这些字段 Core 层拿不到，所以「分类 + 谓词判定」都在这里做。
+        for (int i = 0; i < Main.maxPlayers; i++)
+        {
+            var p = Main.player[i];
+            if (p is not { active: true } || p.dead) continue;
+
+            bool match = filter is Core.Casting.Actions.ZoneEntityFilter.Player
+                         or Core.Casting.Actions.ZoneEntityFilter.Living;
+            if (match != negate)
+            {
+                Consider(new EntityIota(EntityIota.EntityKind.Player, i), p.Center);
+            }
+        }
+
+        for (int i = 0; i < Main.maxNPCs; i++)
+        {
+            var n = Main.npc[i];
+            if (n is not { active: true }) continue;
+
+            bool isCritter = n.CountsAsACritter;
+            bool isMonster = !n.friendly && !n.townNPC && !isCritter;
+
+            bool match = filter switch
+            {
+                Core.Casting.Actions.ZoneEntityFilter.Animal => isCritter,
+                Core.Casting.Actions.ZoneEntityFilter.Monster => isMonster,
+                Core.Casting.Actions.ZoneEntityFilter.Living => true,
+                _ => false,
+            };
+
+            if (match != negate)
+            {
+                Consider(new EntityIota(EntityIota.EntityKind.Npc, i), n.Center);
+            }
+        }
+
+        // 物品：只有「物品」这一个筛选会匹配
+        if ((filter == Core.Casting.Actions.ZoneEntityFilter.Item) != negate)
+        {
+            for (int i = 0; i < Main.maxItems; i++)
+            {
+                var it = Main.item[i];
+                if (it is not { active: true }) continue;
+                Consider(new EntityIota(EntityIota.EntityKind.Item, i), it.Center);
+            }
+        }
+
+        // 弹幕：源项目没有「弹幕」这个筛选，只有取反时才会被选中（「不是动物」之类）
+        if (negate)
+        {
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                var pr = Main.projectile[i];
+                if (pr is not { active: true }) continue;
+                Consider(new EntityIota(EntityIota.EntityKind.Projectile, i), pr.Center);
+            }
+        }
+
+        // 按距离升序 —— 源项目的 `.sortedBy { it.distanceToSqr(pos) }`
+        found.Sort(static (a, b) => a.DistSq.CompareTo(b.DistSq));
+
+        var result = new System.Collections.Generic.List<EntityIota>(found.Count);
+        foreach (var (iota, _) in found)
+        {
+            result.Add(iota);
+        }
+        return result;
+    }
+    /// <summary>清除 NPC 的某个 buff。泰拉 NPC 的 buff 是并行数组，没有现成的 ClearBuff。</summary>
+    private static void ClearNpcBuff(Terraria.NPC npc, int buffType)
+    {
+        for (int i = 0; i < npc.buffType.Length; i++)
+        {
+            if (npc.buffType[i] == buffType)
+            {
+                npc.buffType[i] = 0;
+                npc.buffTime[i] = 0;
+            }
+        }
+    }
+
+    // ── 比较类 ──────────────────────────────────────────────────────
+
+    /// <summary>两个实体是不是同类。泰拉按「种类 + 具体物种 ID」判定。</summary>
+    public bool IsSameEntityType(EntityIota a, EntityIota b)
+    {
+        if (a.Target != b.Target) return false;
+
+        switch (a.Target)
+        {
+            case EntityIota.EntityKind.Player:
+                return true;   // 玩家都是同一种
+
+            case EntityIota.EntityKind.Npc:
+            {
+                if (a.Index < 0 || a.Index >= Main.maxNPCs) return false;
+                if (b.Index < 0 || b.Index >= Main.maxNPCs) return false;
+                var na = Main.npc[a.Index];
+                var nb = Main.npc[b.Index];
+                if (na is not { active: true } || nb is not { active: true }) return false;
+                return na.netID == nb.netID;   // 同一个物种
+            }
+
+            case EntityIota.EntityKind.Projectile:
+            {
+                if (a.Index < 0 || a.Index >= Main.maxProjectiles) return false;
+                if (b.Index < 0 || b.Index >= Main.maxProjectiles) return false;
+                var pa = Main.projectile[a.Index];
+                var pb = Main.projectile[b.Index];
+                if (pa is not { active: true } || pb is not { active: true }) return false;
+                return pa.type == pb.type;
+            }
+
+            case EntityIota.EntityKind.Item:
+            {
+                if (a.Index < 0 || a.Index >= Main.maxItems) return false;
+                if (b.Index < 0 || b.Index >= Main.maxItems) return false;
+                var ia = Main.item[a.Index];
+                var ib = Main.item[b.Index];
+                if (ia is not { active: true } || ib is not { active: true }) return false;
+                return ia.type == ib.type;
+            }
+
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// 两个位置的方块是否相同。
+    /// strict 比「方块 + 帧 + 斜坡 + 油漆」，lenient 只比方块种类。
+    /// </summary>
+    public bool CompareBlocks(double x1, double y1, double x2, double y2, bool exact)
+    {
+        int ax = (int)System.Math.Floor(x1), ay = (int)System.Math.Floor(y1);
+        int bx = (int)System.Math.Floor(x2), by = (int)System.Math.Floor(y2);
+
+        if (!WorldGen.InWorld(ax, ay, 1) || !WorldGen.InWorld(bx, by, 1)) return false;
+
+        var ta = Main.tile[ax, ay];
+        var tb = Main.tile[bx, by];
+
+        if (ta.HasTile != tb.HasTile) return false;
+        if (!ta.HasTile) return true;            // 两边都是空气 -> 相同
+
+        if (ta.TileType != tb.TileType) return false;
+
+        if (!exact) return true;
+
+        // strict：帧、斜坡、油漆都要一致
+        return ta.TileFrameX == tb.TileFrameX
+            && ta.TileFrameY == tb.TileFrameY
+            && ta.Slope == tb.Slope
+            && ta.IsHalfBlock == tb.IsHalfBlock
+            && ta.TileColor == tb.TileColor;
+    }
+
+    /// <summary>两个掉落物是不是同一种物品。strict 时连带前缀一起比。</summary>
+    public bool CompareItems(EntityIota a, EntityIota b, bool exact)
+    {
+        if (a.Target != EntityIota.EntityKind.Item || b.Target != EntityIota.EntityKind.Item) return false;
+        if (a.Index < 0 || a.Index >= Main.maxItems) return false;
+        if (b.Index < 0 || b.Index >= Main.maxItems) return false;
+
+        // 1.4.5 的 Main.item 是 WorldItem 外壳，真正的 Item 在 .inner 里；
+        // 外壳只转发了一部分成员（prefix 就没转发），所以这里一律走 inner。
+        Item ia = Main.item[a.Index].inner;
+        Item ib = Main.item[b.Index].inner;
+        if (ia is null || ib is null) return false;
+        if (!ia.active || !ib.active) return false;
+
+        if (ia.type != ib.type) return false;
+
+        if (!exact) return true;
+
+        // strict：原版 ItemStack.isSameItemSameComponents —— 同种物品 + 同 NBT，数量不参与比较。
+        // 泰拉里 NBT 的对应物就是前缀。
+        return ia.prefix == ib.prefix;
+    }
+
+    /// <summary>[0, 1) 的随机数。</summary>
+    public double NextDouble() => Main.rand.NextDouble();
+
+    // ── 实体身上的数据载体（read/entity 与 write/entity）──────────────
+
+    /// <summary>
+    /// 取掉落物身上的 iota 载体。
+    ///
+    /// 泰拉侧的对应物 = **掉在地上、本身就是载体的物品**（聚念核心、念珠、卷轴）。
+    /// 源项目还能读物品展示框、盔甲架 —— 泰拉没有等价实体，见 ICastingWorld 的说明。
+    ///
+    /// ⚠️ 载体的状态挂在 <see cref="ModItem"/> 实例上（`ModItem` 是 per-Item 的），
+    /// 所以必须从 `Main.item[i].inner.ModItem` 取，不能自己 new 一个。
+    /// </summary>
+    private static Items.ItemIotaStorage? FindEntityStorage(EntityIota entity)
+    {
+        if (entity.Target != EntityIota.EntityKind.Item) return null;
+        if (entity.Index < 0 || entity.Index >= Main.maxItems) return null;
+
+        Item item = Main.item[entity.Index].inner;
+        if (item is null || !item.active || item.IsAir) return null;
+
+        return item.ModItem as Items.ItemIotaStorage;
+    }
+
+    public bool IsEntityIotaHolder(EntityIota entity) => FindEntityStorage(entity) is not null;
+
+    public bool IsEntityIotaWritable(EntityIota entity)
+        => FindEntityStorage(entity) is { ReadOnlyStorage: false };
+
+    public Iota? ReadEntityIota(EntityIota entity) => FindEntityStorage(entity)?.Read();
+
+    public bool WriteEntityIota(EntityIota entity, Iota value)
+        => FindEntityStorage(entity)?.TryStore(value) ?? false;
+
+    // ── 世界效果 ────────────────────────────────────────────────────
+
+    /// <summary>改变天气。泰拉用 `Main.raining` + `Main.rainTime`（tick）。</summary>
+    public void SetRain(bool rain, int minMinutes, int maxMinutes)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        // 泰拉 1 分钟 = 3600 tick
+        int minutes = Main.rand.Next(minMinutes, maxMinutes);
+        Main.raining = rain;
+        Main.rainTime = minutes * 3600;
+        Main.maxRaining = rain ? 1f : 0f;
+
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Terraria.NetMessage.SendData(Terraria.ID.MessageID.WorldData);
+        }
+    }
+
+    /// <summary>点燃实体。</summary>
+    public void IgniteEntity(EntityIota entity)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        switch (entity.Target)
+        {
+            case EntityIota.EntityKind.Player:
+                if (entity.Index >= 0 && entity.Index < Main.maxPlayers)
+                {
+                    Main.player[entity.Index].AddBuff(Terraria.ID.BuffID.OnFire, 300);
+                }
+                break;
+            case EntityIota.EntityKind.Npc:
+                if (entity.Index >= 0 && entity.Index < Main.maxNPCs)
+                {
+                    Main.npc[entity.Index].AddBuff(Terraria.ID.BuffID.OnFire, 300);
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 点燃一个位置。
+    /// ⚠️ 泰拉没有 MC 那样的火焰方块，所以实现为「烧这一格附近的实体 + 撒火粒子」。
+    /// </summary>
+    public void IgniteAt(double x, double y)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        float cx = (float)(x * HexUnits.PixelsPerTile);
+        float cy = (float)(y * HexUnits.PixelsPerTile);
+
+        foreach (var entity in QueryEntities(
+            Core.Casting.Actions.ZoneEntityFilter.Living, negate: false, x, y, 1.5))
+        {
+            IgniteEntity(entity);
+        }
+
+        for (int k = 0; k < 12; k++)
+        {
+            var d = Terraria.Dust.NewDustPerfect(
+                new Microsoft.Xna.Framework.Vector2(cx + Main.rand.Next(-8, 9), cy + Main.rand.Next(-8, 9)),
+                Terraria.ID.DustID.Torch,
+                new Microsoft.Xna.Framework.Vector2(0f, -Main.rand.NextFloat() * 1.5f));
+            d.noGravity = true;
+        }
+    }
+
+    /// <summary>
+    /// 扑灭一片区域。泰拉没有火焰方块，所以实际做的是
+    /// 「扑灭附近实体身上的着火状态」—— 泛洪的规模限制保留（源项目 1024 格）。
+    /// </summary>
+    public void ExtinguishAt(double x, double y, int maxCount)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        // 用查询半径近似 source 的泛洪范围（避免遍历上百万格）
+        double radius = System.Math.Min(System.Math.Sqrt(maxCount) / 2.0, 16.0);
+
+        foreach (var entity in QueryEntities(
+            Core.Casting.Actions.ZoneEntityFilter.Living, negate: false, x, y, radius))
+        {
+            switch (entity.Target)
+            {
+                case EntityIota.EntityKind.Player:
+                    Main.player[entity.Index].ClearBuff(Terraria.ID.BuffID.OnFire);
+                    Main.player[entity.Index].ClearBuff(Terraria.ID.BuffID.OnFire3);
+                    break;
+                case EntityIota.EntityKind.Npc:
+                    ClearNpcBuff(Main.npc[entity.Index], Terraria.ID.BuffID.OnFire);
+                    ClearNpcBuff(Main.npc[entity.Index], Terraria.ID.BuffID.OnFire3);
+                    break;
+            }
+        }
+
+        // 视觉：一圈水汽
+        float cx = (float)(x * HexUnits.PixelsPerTile);
+        float cy = (float)(y * HexUnits.PixelsPerTile);
+        for (int k = 0; k < 20; k++)
+        {
+            var d = Terraria.Dust.NewDustPerfect(
+                new Microsoft.Xna.Framework.Vector2(
+                    cx + (float)(Main.rand.NextDouble() * 2 - 1) * (float)radius * 16f,
+                    cy + (float)(Main.rand.NextDouble() * 2 - 1) * (float)radius * 16f),
+                Terraria.ID.DustID.Smoke, Microsoft.Xna.Framework.Vector2.Zero);
+            d.noGravity = true;
+        }
+    }
+
+    /// <summary>造出一格水。泰拉用 `tile.LiquidAmount` + `LiquidType`。</summary>
+    public void CreateWaterAt(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        var tile = Main.tile[tx, ty];
+        if (tile.HasTile) return;   // 有方块就不放水
+
+        tile.LiquidAmount = 255;
+        tile.LiquidType = Terraria.ID.LiquidID.Water;
+
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Terraria.NetMessage.SendTileSquare(-1, tx, ty, 1);
+        }
+    }
+
+    /// <summary>抽干一片水域（泛洪，上限 maxCount 格）。</summary>
+    public void DestroyWaterAt(double x, double y, int maxCount)
+    {
+        int sx = (int)System.Math.Floor(x);
+        int sy = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(sx, sy, 1)) return;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        // 广度优先抽水：只走「有水且无方块」的格子
+        var todo = new System.Collections.Generic.Queue<(int X, int Y)>();
+        var seen = new System.Collections.Generic.HashSet<(int X, int Y)>();
+        todo.Enqueue((sx, sy));
+        seen.Add((sx, sy));
+
+        int drained = 0;
+        var minX = sx; var maxX = sx; var minY = sy; var maxY = sy;
+
+        while (todo.Count > 0 && drained < maxCount)
+        {
+            var (cx, cy) = todo.Dequeue();
+            if (!WorldGen.InWorld(cx, cy, 1)) continue;
+
+            var tile = Main.tile[cx, cy];
+            if (tile.HasTile || tile.LiquidAmount == 0) continue;
+
+            tile.LiquidAmount = 0;
+            drained++;
+
+            if (cx < minX) minX = cx;
+            if (cx > maxX) maxX = cx;
+            if (cy < minY) minY = cy;
+            if (cy > maxY) maxY = cy;
+
+            foreach (var (dx, dy) in new[] { (0, -1), (0, 1), (-1, 0), (1, 0) })
+            {
+                var k = (cx + dx, cy + dy);
+                if (seen.Add(k)) todo.Enqueue(k);
+            }
+        }
+
+        if (drained > 0 && Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Terraria.NetMessage.SendTileSquare(-1, minX, minY, maxX - minX + 1, maxY - minY + 1);
+        }
+    }
+
+    /// <summary>召下一道闪电。用泰拉现成的天气闪电系统。</summary>
+    public void SpawnLightning(double x, double y)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        float cx = (float)(x * HexUnits.PixelsPerTile);
+        float cy = (float)(y * HexUnits.PixelsPerTile);
+
+        // 泰拉没有可生成的闪电实体；`Main.lightning` 是**背景闪光强度**（float），
+        // 不是对象数组。所以用「闪光 + 粒子 + 伤害」组合来表现一道落雷。
+        Main.lightning = 1f;
+
+        for (int k = 0; k < 25; k++)
+        {
+            var d = Terraria.Dust.NewDustPerfect(
+                new Microsoft.Xna.Framework.Vector2(cx + Main.rand.Next(-6, 7), cy + Main.rand.Next(-30, 7)),
+                Terraria.ID.DustID.Electric,
+                new Microsoft.Xna.Framework.Vector2(0f, -Main.rand.NextFloat() * 3f));
+            d.noGravity = true;
+        }
+
+        // 伤害：小范围内造成一次打击
+        foreach (var entity in QueryEntities(
+            Core.Casting.Actions.ZoneEntityFilter.Monster, negate: false, x, y, 2.0))
+        {
+            if (entity.Target != EntityIota.EntityKind.Npc) continue;
+            var npc = Main.npc[entity.Index];
+            npc.SimpleStrikeNPC(80, 0, false, 0f);
+            npc.AddBuff(Terraria.ID.BuffID.OnFire, 300);
+        }
+    }
+
+    /// <summary>
+    /// 催熟。对应源项目的骨粉效果：
+    ///   - 树苗 → 长成树
+    ///   - 草药 → 推进生长帧
+    /// </summary>
+    public void ApplyBonemeal(double x, double y)
+    {
+        int sx = (int)System.Math.Floor(x);
+        int sy = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(sx, sy, 1)) return;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        // 3×3 范围，与原版骨粉的作用范围量级一致
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                int tx = sx + dx;
+                int ty = sy + dy;
+                if (!WorldGen.InWorld(tx, ty, 1)) continue;
+
+                var tile = Main.tile[tx, ty];
+                if (!tile.HasTile) continue;
+
+                int type = tile.TileType;
+
+                // 树苗 -> 树
+                if (Terraria.ID.TileID.Sets.CommonSapling[type])
+                {
+                    WorldGen.AttemptToGrowTreeFromSapling(tx, ty, false);
+                    continue;
+                }
+
+                // 草药/花草：推进到成熟帧。
+                // 泰拉的植物生长用 TileFrameX 分档（每档 18），满档即成熟。
+                if (Terraria.ID.TileID.Sets.BasicChest[type]) continue;   // 排除箱子
+
+                if (!Main.tileSolid[type] && tile.TileFrameX > 0)
+                {
+                    // 往前推两档；推到负数就停在 0（成熟）
+                    int next = tile.TileFrameX - 36;
+                    tile.TileFrameX = (short)(next < 0 ? 0 : next);
+
+                    if (Main.netMode == Terraria.ID.NetmodeID.Server)
+                    {
+                        Terraria.NetMessage.SendTileSquare(-1, tx, ty, 1);
+                    }
+                }
+            }
+        }
+    }
+
+    // ── 单点法术（beep / create_lava / edify / place_block / recharge）──
+
+    /// <summary>
+    /// 泰拉侧的乐器表。索引 = `beep` 的乐器参数。
+    ///
+    /// ⚠️ MC 有 16 种音符盒乐器，泰拉没有音符盒 —— 这里用的是**泰拉真实存在**的音效：
+    /// 竖琴（`Item153`，原版里它跟随 `Main.musicPitch`）+ 6 个吉他和弦 + 7 件鼓组。
+    /// 编号与 MC 的乐器列表**不对应**，这是无法消除的差异；
+    /// 能保证的是「同一编号永远是同一种音色」。
+    /// </summary>
+    private static readonly Terraria.Audio.SoundStyle[] Instruments =
+    {
+        Terraria.ID.SoundID.Item153,           // 0  竖琴
+        Terraria.ID.SoundID.GuitarC,           // 1  吉他 C
+        Terraria.ID.SoundID.GuitarD,           // 2  吉他 D
+        Terraria.ID.SoundID.GuitarEm,          // 3  吉他 Em
+        Terraria.ID.SoundID.GuitarG,           // 4  吉他 G
+        Terraria.ID.SoundID.GuitarBm,          // 5  吉他 Bm
+        Terraria.ID.SoundID.GuitarAm,          // 6  吉他 Am
+        Terraria.ID.SoundID.DrumKick,          // 7  底鼓
+        Terraria.ID.SoundID.DrumTamaSnare,     // 8  军鼓
+        Terraria.ID.SoundID.DrumClosedHiHat,   // 9  闭合踩镲
+        Terraria.ID.SoundID.DrumCymbal1,       // 10 吊镲
+        Terraria.ID.SoundID.DrumTomHigh,       // 11 高音通鼓
+        Terraria.ID.SoundID.DrumTomMid,        // 12 中音通鼓
+        Terraria.ID.SoundID.DrumTomLow,        // 13 低音通鼓
+    };
+
+    /// <summary>
+    /// 播放一个音符。
+    ///
+    /// 音高映射：源项目的音高是 0~24（两个八度），
+    /// 泰拉 `SoundStyle.Pitch` 的范围也是 -1.0（低一个八度）~ 1.0（高一个八度），
+    /// 所以 `(note - 12) / 12` 正好铺满整个音域，不需要截断。
+    ///
+    /// 联机：声音是纯客户端表现，服务端播不了 —— 所以服务端走 <see cref="Net.HexNetSync"/>
+    /// 广播给附近玩家（对齐源项目的 `MsgBeepS2C`，那边也是发给 128 格内的玩家）。
+    /// </summary>
+    public void Beep(double x, double y, int instrument, int note)
+    {
+        if (instrument < 0 || instrument >= Instruments.Length) return;
+        if (note < 0 || note > Core.Casting.Actions.OpBeep.MaxNote) return;
+
+        float px = (float)(x * HexUnits.PixelsPerTile);
+        float py = (float)(y * HexUnits.PixelsPerTile);
+        float pitch = (note - 12) / 12f;
+
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Net.HexNetSync.BroadcastBeep(px, py, (byte)instrument, (byte)note);
+            return;
+        }
+
+        PlayBeep(px, py, instrument, note, pitch);
+    }
+
+    /// <summary>客户端侧的真正播放。服务端与联机客户端都走这里（联机客户端由广播包触发）。</summary>
+    internal static void PlayBeep(float px, float py, int instrument, int note, float pitch)
+    {
+        if (Main.dedServ) return;
+        if (instrument < 0 || instrument >= Instruments.Length) return;
+
+        var style = Instruments[instrument] with { Pitch = pitch };
+        Terraria.Audio.SoundEngine.PlaySound(style, new Vector2(px, py));
+    }
+
+    /// <summary>造出一格岩浆。与 <see cref="CreateWaterAt"/> 同构，只是液体类型不同。</summary>
+    public void CreateLavaAt(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        var tile = Main.tile[tx, ty];
+        if (tile.HasTile) return;
+
+        tile.LiquidAmount = 255;
+        tile.LiquidType = Terraria.ID.LiquidID.Lava;
+
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Terraria.NetMessage.SendTileSquare(-1, tx, ty, 1);
+        }
+    }
+
+    /// <summary>该格是不是树苗。对应源项目的 `BlockTags.SAPLINGS`。</summary>
+    public bool IsSaplingAt(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return false;
+
+        var tile = Main.tile[tx, ty];
+        if (!tile.HasTile) return false;
+
+        return Terraria.ID.TileID.Sets.CommonSapling[tile.TileType];
+    }
+
+    /// <summary>把树苗催成树。用的是原版自己的树苗生长逻辑，所以长出来的树与自然生长一致。</summary>
+    public bool GrowTreeAt(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return false;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return false;
+
+        return WorldGen.AttemptToGrowTreeFromSapling(tx, ty, false);
+    }
+
+    /// <summary>
+    /// 从施法者背包里找一件可放置的物品，放到该格。
+    ///
+    /// 「可放置」的判定用 `Item.createTile >= 0` —— 这正是泰拉自己的判定，
+    /// 比维护一张白名单可靠（模组物品只要有 createTile 就自动支持）。
+    ///
+    /// 放之前再查一次可替换性：媒质预检与实际施放之间隔了一帧，
+    /// 期间别人可能已经把方块放上去了。
+    /// </summary>
+    public bool PlaceBlockAt(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (_caster is null) return false;
+        if (!WorldGen.InWorld(tx, ty, 1)) return false;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return false;
+
+        int slot = FindPlaceableSlot(_caster);
+        if (slot < 0) return false;
+
+        if (!IsReplaceable(x, y)) return false;
+
+        Item item = _caster.inventory[slot];
+        int style = item.placeStyle;
+
+        bool placed = WorldGen.PlaceTile(tx, ty, item.createTile, mute: false, forced: true,
+            plr: _caster.whoAmI, style: style);
+
+        if (!placed) return false;
+
+        // 用掉一件。泰拉的物品消耗要自己写 —— 这里刻意不用 Player.ConsumeItem，
+        // 因为它会顺手触发一堆「拾取/消耗」统计与音效，施法不该有那些副作用。
+        item.stack--;
+        if (item.stack <= 0)
+        {
+            item.TurnToAir();
+        }
+
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Terraria.NetMessage.SendTileSquare(-1, tx, ty, 1);
+            // 背包变了要同步给所有客户端（泰拉用 NetMessage.SendData(MessageID.SyncPlayer, ...) 同步整包玩家状态）
+            NetMessage.SendData(Terraria.ID.MessageID.SyncPlayer, -1, -1, null, _caster.whoAmI);
+        }
+
+        return true;
+    }
+
+    /// <summary>找背包里第一件「可放置」的物品。找不到返回 -1。</summary>
+    private static int FindPlaceableSlot(Player player)
+    {
+        for (int i = 0; i < player.inventory.Length; i++)
+        {
+            Item item = player.inventory[i];
+            if (item is null || item.IsAir) continue;
+
+            // `createTile` 的「不可放置」值是 -1（原版 Item.createTile 的约定）。
+            // 写成 == -1 而不是 < 0：分析器会把这里的 0 当成「方块 ID 字面量」而报警。
+            if (item.createTile == -1) continue;
+            if (item.stack <= 0) continue;
+
+            return i;
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// 把掉落物里的媒质抽给施法者（`recharge`）。
+    ///
+    /// 两条与源项目不同、但必须说清楚的取舍：
+    ///  1. **整件抽取**：泰拉的堆叠物品没有「单件独立媒质」，
+    ///     做不到源项目那样把一撮粉抽到只剩一半 —— 所以只在**放得下整件**时才抽。
+    ///     放不下就不抽（而不是抽一半扔一半），避免玩家白亏。
+    ///  2. 抽出来的媒质进玩家的媒质池（源项目是进手持的法杖/媒质瓶）。
+    /// </summary>
+    public long ExtractMediaFromItem(EntityIota itemEntity, bool simulate)
+    {
+        if (_caster is null) return 0;
+        if (itemEntity.Target != EntityIota.EntityKind.Item) return 0;
+        if (itemEntity.Index < 0 || itemEntity.Index >= Main.maxItems) return 0;
+
+        Item item = Main.item[itemEntity.Index].inner;
+        if (item is null || !item.active || item.IsAir) return 0;
+        if (item.ModItem is not Items.MediaMaterial material) return 0;
+
+        var hexPlayer = HexPlayer.Get(_caster);
+        long room = hexPlayer.MaxMedia - hexPlayer.Media;
+        long value = material.MediaValue;
+
+        if (room < value) return 0;   // 放不下整件 -> 不抽（见上面的取舍 ①）
+
+        if (simulate) return value;
+
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return 0;
+
+        long gained = hexPlayer.MediaStorage.Insert(value);
+        if (gained <= 0) return 0;
+
+        item.stack--;
+        if (item.stack <= 0)
+        {
+            item.TurnToAir();
+        }
+
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            // 掉落物少了一件，同步给所有客户端
+            NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, itemEntity.Index);
+        }
+
+        return gained;
+    }
+
+    // ── 咒法飞行（flight 系列）────────────────────────────────────
+
+    /// <summary>
+    /// 向上弹一下。对应源项目 `target.push(0, 1.5, 0)`。
+    ///
+    /// 数值换算：源项目是 `push(0, 1.5, 0)`，即 **1.5 格/tick**。
+    /// 按 <see cref="ApplyMotion"/> 里那条换算（1 格/tick = 16/3 px/帧）：
+    /// 1.5 × 16/3 = 8 px/帧。
+    ///
+    /// ⚠️ 之前这里写的是 12（凭手感），与 `add_motion` 的换算**不一致** ——
+    /// 于是「法术弹一下」和「Altiora 起飞」是两套尺度。现在统一走同一条换算。
+    /// </summary>
+    public void LaunchUp(EntityIota target)
+    {
+        var player = FindPlayer(target);
+        if (player is null) return;
+
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        player.velocity.Y = -1.5f * (HexUnits.PixelsPerTile / 3f);
+        player.fallStart = (int)(player.position.Y / 16f);   // 免得落地时按「从弹起点坠落」算伤害
+        player.fallStart2 = player.fallStart;
+
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            NetMessage.SendData(Terraria.ID.MessageID.SyncPlayer, -1, -1, null, player.whoAmI);
+        }
+    }
+
+    public void GrantFlight(EntityIota target, int ticks, double originX, double originY, double radius, int graceTicks)
+    {
+        var player = FindPlayer(target);
+        if (player is null) return;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        HexPlayer.Get(player).GrantFlight(ticks, originX, originY, radius, graceTicks);
+    }
+
+    public bool HasHexFlight(EntityIota target)
+    {
+        var player = FindPlayer(target);
+        return player is not null && HexPlayer.Get(player).FlightActive;
+    }
+
+    /// <summary>把实体 iota 解析成玩家；不是玩家（或索引失效）返回 null。</summary>
+    private static Player? FindPlayer(EntityIota entity)
+    {
+        if (entity.Target != EntityIota.EntityKind.Player) return null;
+        if (entity.Index < 0 || entity.Index >= Main.maxPlayers) return null;
+
+        var player = Main.player[entity.Index];
+        return player is { active: true } ? player : null;
+    }
+
+    // ── 脑叶切除（brainsweep）──────────────────────────────────────
+
+    /// <summary>
+    /// 该位置能不能被改动。
+    ///
+    /// 泰拉侧没有 MC 的「冒险模式 / 领地保护」概念，所以这里的对应物是
+    /// **出生点保护区**（`Main.spawnTileX/Y` 周围）——
+    /// 那是原版唯一自带「你不能动这里」语义的地方。
+    /// </summary>
+    public bool CanEditAt(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return false;
+
+        // 出生点 40 格内不允许（新城堡/地牢这类特殊区域不改，避免误伤建筑）
+        int dx = System.Math.Abs(tx - Main.spawnTileX);
+        int dy = System.Math.Abs(ty - Main.spawnTileY);
+        return dx > 40 || dy > 40;
+    }
+
+    /// <summary>该位置的方块类型；-1 表示空气。</summary>
+    public int TileTypeAt(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return -1;
+
+        var tile = Main.tile[tx, ty];
+        return tile.HasTile ? tile.TileType : -1;
+    }
+
+    /// <summary>
+    /// 实体的「种类编号」。
+    ///
+    /// 城镇 NPC 走负数编码（<see cref="Core.Casting.Actions.BrainsweepRules.TownNpcSpecies"/>），
+    /// 因为配方表里有「任意城镇 NPC」这一档 —— 普通怪物的 netID 全是正数，
+    /// 用符号区分比维护一张白名单可靠（模组的城镇 NPC 也自动落进来）。
+    /// </summary>
+    public int EntitySpeciesOf(EntityIota entity)
+    {
+        if (entity.Target != EntityIota.EntityKind.Npc) return 0;
+        if (entity.Index < 0 || entity.Index >= Main.maxNPCs) return 0;
+
+        var npc = Main.npc[entity.Index];
+        if (npc is not { active: true }) return 0;
+
+        return npc.townNPC
+            ? Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(npc.netID)
+            : npc.netID;
+    }
+
+    /// <summary>
+    /// 能不能被切除。
+    ///
+    /// 源项目用 `NO_BRAINSWEEPING` 标签排除一批生物；泰拉侧的对应规则是
+    /// **只允许城镇 NPC 与小动物（critter）** —— 也就是「有脑子的、非战斗的」那些。
+    /// 史莱姆、 boss 之类切了没有意义，直接拒绝比默默出产物好。
+    /// </summary>
+    public bool IsBrainsweepable(EntityIota entity)
+    {
+        if (entity.Target != EntityIota.EntityKind.Npc) return false;
+        if (entity.Index < 0 || entity.Index >= Main.maxNPCs) return false;
+
+        var npc = Main.npc[entity.Index];
+        if (npc is not { active: true } || npc.life <= 0) return false;
+
+        // Boss 永远不切 —— 这一条即使开了调试开关也保留：
+        // 切掉 Boss 会让世界状态变得很难恢复（事件计数、进度标记都已写入）
+        if (npc.boss) return false;
+
+        // 调试开关：放宽到任意非 Boss 生物，方便测 5 条配方
+        if (HexClientConfig.Instance.LooseBrainsweepTargets) return true;
+
+        return npc.townNPC || npc.CountsAsACritter;
+    }
+
+    public bool IsBrainswept(EntityIota entity)
+    {
+        if (entity.Target != EntityIota.EntityKind.Npc) return false;
+        if (entity.Index < 0 || entity.Index >= Main.maxNPCs) return false;
+
+        var npc = Main.npc[entity.Index];
+        return npc is { active: true } && npc.GetGlobalNPC<HexGlobalNPC>().Brainswept;
+    }
+
+    /// <summary>
+    /// 执行切除：换方块、杀掉生物、掉落产物。
+    ///
+    /// 顺序照抄源项目：**先换方块，再处理生物**。
+    /// 反过来的话，如果生物死亡触发了什么（掉落、事件计数），
+    /// 那些逻辑会看到一个还没变的方块状态。
+    /// </summary>
+    public void Brainsweep(double x, double y, EntityIota target, Core.Casting.Actions.BrainsweepRecipe recipe)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        // ① 方块
+        if (recipe.ResultTile >= 0 && WorldGen.InWorld(tx, ty, 1))
+        {
+            var tile = Main.tile[tx, ty];
+            tile.HasTile = true;
+            tile.TileType = (ushort)recipe.ResultTile;
+            tile.TileFrameX = 0;
+            tile.TileFrameY = 0;
+
+            if (Main.netMode == Terraria.ID.NetmodeID.Server)
+            {
+                Terraria.NetMessage.SendTileSquare(-1, tx, ty, 1);
+            }
+        }
+
+        // ② 产物
+        if (recipe.ResultItem >= 0)
+        {
+            // 用 (source, x, y, width, height, type, stack) 这个重载 ——
+            // 它接像素坐标与尺寸，正好对上 Core 给的图格中心。
+            Item.NewItem(new Terraria.DataStructures.EntitySource_Misc("HexBrainsweep"),
+                (int)(x * HexUnits.PixelsPerTile), (int)(y * HexUnits.PixelsPerTile),
+                16, 16, recipe.ResultItem, 1);
+        }
+
+        // ③ 生物：标记为已切除再杀掉。
+        //    标记必须在杀掉之前 —— NPC 死亡后索引可能立刻被复用，
+        //    那时候再取 GetGlobalNPC 会打到别的 NPC 身上。
+        if (target.Target == EntityIota.EntityKind.Npc
+            && target.Index >= 0 && target.Index < Main.maxNPCs)
+        {
+            var npc = Main.npc[target.Index];
+            if (npc is { active: true })
+            {
+                npc.GetGlobalNPC<HexGlobalNPC>().Brainswept = true;
+
+                // 直接清空生命值并走原版死亡流程：这样掉落、旗帜计数、
+                // 「已击败」之类都由游戏自己处理，不需要我们复刻一遍
+                npc.life = 0;
+                npc.HitEffect();
+                npc.checkDead();
+
+                if (Main.netMode == Terraria.ID.NetmodeID.Server)
+                {
+                    NetMessage.SendData(Terraria.ID.MessageID.SyncNPC, -1, -1, null, npc.whoAmI);
+                }
+            }
+        }
+    }
+
+    // ── 方块操作 ────────────────────────────────────────────────────
+
+    /// <summary>该格是否可以被替换。</summary>
+    public bool IsReplaceable(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return false;
+
+        var tile = Main.tile[tx, ty];
+        if (!tile.HasTile) return true;                      // 空气
+
+        // 只认「草、花、藤」这类贴地小物件；实心方块不算可替换
+        return !Main.tileSolid[tile.TileType] && tile.TileType != ModContent.TileType<ConjuredBlock>();
+    }
+
+    /// <summary>凭空造出召唤方块/光源。替换前先确认是空气。</summary>
+    public void ConjureBlock(double x, double y, bool light)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return;
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;   // 服务端权威
+
+        var tile = Main.tile[tx, ty];
+        if (tile.HasTile) return;
+
+        tile.HasTile = true;
+        tile.TileType = (ushort)(light ? ModContent.TileType<ConjuredLight>() : ModContent.TileType<ConjuredBlock>());
+
+        ConjuredBlocks.Track(tx, ty, (int)(ConjuredBlocks.DefaultLifetimeSeconds * 60));
+
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            NetMessage.SendTileSquare(-1, tx, ty, 1);
+        }
+    }
+
+    /// <summary>
+    /// 是否是「廉价可挖」的方块。
+    /// 判据：非实心（草、花、藤这类装饰）—— 与源项目的方块标签作用一致。
+    /// </summary>
+    public bool IsCheapToBreak(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return false;
+
+        var tile = Main.tile[tx, ty];
+        if (!tile.HasTile) return true;
+
+        return !Main.tileSolid[tile.TileType];
+    }
+
+    /// <summary>
+    /// 该格现在能不能挖。不能时给出**人话原因** ——
+    /// 这条原因会直接出现在施法失败的提示里，是「破坏魔法没反应」唯一的排查线索。
+    /// </summary>
+    public bool CanBreakBlockAt(double x, double y, out string reason)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1))
+        {
+            reason = "超出世界范围";
+            return false;
+        }
+
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient)
+        {
+            // 联机时世界改动由服务端权威执行，客户端自己改会跟服务端打架
+            reason = "联机客户端不直接改世界";
+            return false;
+        }
+
+        if (!Main.tile[tx, ty].HasTile)
+        {
+            reason = "那一格是空的";
+            return false;
+        }
+
+        reason = string.Empty;
+        return true;
+    }
+
+    /// <summary>
+    /// 挖掉该格的方块。
+    ///
+    /// ⚠️ 走 `WorldGen.KillTile` 而不是 `tile.ClearTile()`：
+    ///   · KillTile 会掉落物品、放挖掘特效、跑 ModTile.Kill / GlobalTile.Kill 钩子，
+    ///     与源项目 `destroyBlock(pos, dropItems = true)` 的行为一致；
+    ///   · ClearTile 是「无声抹掉」，不掉东西、不触发钩子。
+    ///
+    /// 「挖不动」的情形（基岩、未解锁的地牢砖、被其它模组保护的方块）由 KillTile 自己拒绝。
+    /// 这里靠「挖完再看一眼」如实返回结果，而不是不管三七二十一都返回 true ——
+    /// 后者会让上层以为成功，问题就再也浮不上来了。
+    /// </summary>
+    public bool BreakBlockAt(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!CanBreakBlockAt(x, y, out _))
+        {
+            return false;
+        }
+
+        // 挖之前取消召唤登记，避免倒计时表留下悬空条目
+        ConjuredBlocks.Untrack(tx, ty);
+
+        WorldGen.KillTile(tx, ty, fail: false, effectOnly: false, noItem: false);
+
+        bool broke = !Main.tile[tx, ty].HasTile;
+
+        if (broke && Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            NetMessage.SendTileSquare(-1, tx, ty, 1);
+        }
+
+        return broke;
+    }
+
+    /// <summary>取该坐标上最近的实体（不筛选种类）。</summary>
+    public EntityIota? QueryNearestEntity(double x, double y)
+    {
+        EntityIota? best = null;
+        double bestD2 = 0.25;   // 判定盒 pos±0.5 -> 半径 0.5
+
+        void Consider(EntityIota iota)
+        {
+            if (!TryRead(iota, out var reading)) return;
+            if (!IsInRange(iota)) return;
+
+            double dx = reading.CenterTile.X - x;
+            double dy = reading.CenterTile.Y - y;
+            double d2 = dx * dx + dy * dy;
+            if (d2 > bestD2) return;
+
+            best = iota;
+            bestD2 = d2;
+        }
+
+        for (int i = 0; i < Main.maxPlayers; i++)
+        {
+            var p = Main.player[i];
+            if (p is not { active: true } || p.dead) continue;
+            Consider(new EntityIota(EntityIota.EntityKind.Player, i));
+        }
+        for (int i = 0; i < Main.maxNPCs; i++)
+        {
+            var n = Main.npc[i];
+            if (n is not { active: true }) continue;
+            Consider(new EntityIota(EntityIota.EntityKind.Npc, i));
+        }
+        for (int i = 0; i < Main.maxProjectiles; i++)
+        {
+            var pr = Main.projectile[i];
+            if (pr is not { active: true }) continue;
+            Consider(new EntityIota(EntityIota.EntityKind.Projectile, i));
+        }
+        for (int i = 0; i < Main.maxItems; i++)
+        {
+            var it = Main.item[i];
+            if (it is not { active: true }) continue;
+            Consider(new EntityIota(EntityIota.EntityKind.Item, i));
+        }
+
+        return best;
+    }
+
+    /// <summary>
+    /// 是否有实体的眼睛位置恰好落在该坐标上。
+    ///
+    /// 泰拉的「眼位」用实体中心近似（与 `EyePosition` 的取法一致）——
+    /// 2D 侧视下眼高没有明确对应物，这条判定本来就是「贴脸」的近似。
+    /// </summary>
+    public bool HasEntityEyeExactlyAt(double x, double y)
+    {
+        const double eps = 0.01;
+
+        bool Near(double cx, double cy)
+            => System.Math.Abs(cx - x) < eps && System.Math.Abs(cy - y) < eps;
+
+        for (int i = 0; i < Main.maxPlayers; i++)
+        {
+            var p = Main.player[i];
+            if (p is not { active: true } || p.dead) continue;
+            if (Near(p.Center.X / HexUnits.PixelsPerTile, p.Center.Y / HexUnits.PixelsPerTile)) return true;
+        }
+        for (int i = 0; i < Main.maxNPCs; i++)
+        {
+            var n = Main.npc[i];
+            if (n is not { active: true }) continue;
+            if (Near(n.Center.X / HexUnits.PixelsPerTile, n.Center.Y / HexUnits.PixelsPerTile)) return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 制造爆炸：**只造成伤害与击退，不破坏方块**。
+    ///
+    /// 为什么不用泰拉现成的 `Projectile.ExplodeTiles`：那个会**炸掉图格**。
+    /// 源项目在 `cast` 里先查 `env.canEditBlockAt(pos)`，
+    /// 无权限时直接不爆炸 —— 说明作者也在意「法术不该随便拆家」。
+    /// 泰拉侧干脆做成纯伤害版：既不会把玩家的房子炸没，也不受权限系统影响。
+    ///
+    /// 强度 → 伤害的换算：1 强度 ≈ 30 伤害、2 图格半径。
+    /// 源项目的 strength 是 MC 的爆炸威力单位，两边量纲不同，这里是按手感定的。
+    /// </summary>
+    public void Explode(double x, double y, double strength, bool fire)
+    {
+        float cx = (float)(x * HexUnits.PixelsPerTile);
+        float cy = (float)(y * HexUnits.PixelsPerTile);
+        float radiusPx = (float)(strength * 2.0 * HexUnits.PixelsPerTile);
+        if (radiusPx < 8f) radiusPx = 8f;
+
+        int damage = (int)(strength * 30.0);
+        if (damage < 1) damage = 1;
+
+        // NPC
+        for (int i = 0; i < Main.maxNPCs; i++)
+        {
+            var n = Main.npc[i];
+            if (n is not { active: true } || n.friendly || n.dontTakeDamage) continue;
+
+            float dx = n.Center.X - cx;
+            float dy = n.Center.Y - cy;
+            if (dx * dx + dy * dy > radiusPx * radiusPx) continue;
+
+            int dir = dx >= 0 ? 1 : -1;
+            n.SimpleStrikeNPC(damage, dir, false, (float)strength * 2f);
+
+            if (fire) n.AddBuff(Terraria.ID.BuffID.OnFire, 300);
+        }
+
+        // 玩家（不含自己以外的 —— 这里对所有玩家生效，包括施法者，与原版一致）
+        for (int i = 0; i < Main.maxPlayers; i++)
+        {
+            var p = Main.player[i];
+            if (p is not { active: true } || p.dead || p.creativeGodMode) continue;
+
+            float dx = p.Center.X - cx;
+            float dy = p.Center.Y - cy;
+            if (dx * dx + dy * dy > radiusPx * radiusPx) continue;
+
+            int dir = dx >= 0 ? 1 : -1;
+            p.Hurt(Terraria.DataStructures.PlayerDeathReason.LegacyDefault(), damage, dir);
+
+            if (fire) p.AddBuff(Terraria.ID.BuffID.OnFire, 300);
+        }
+
+        // 视觉：用 dust 表现爆炸。
+        // **不用 `Projectile.ExplodeTiles`** —— 那个会真的炸掉图格，
+        // 与「只造成伤害不拆家」的设计相悖。
+        for (int k = 0; k < 30; k++)
+        {
+            var vel = new Microsoft.Xna.Framework.Vector2(
+                (float)(Main.rand.NextDouble() * 2 - 1),
+                (float)(Main.rand.NextDouble() * 2 - 1)) * (float)strength;
+            var d = Terraria.Dust.NewDustPerfect(
+                new Microsoft.Xna.Framework.Vector2(cx, cy),
+                fire ? Terraria.ID.DustID.Torch : Terraria.ID.DustID.Smoke,
+                vel, 0, default, 1.4f);
+            d.noGravity = true;
+        }
+    }
+
+    /// <summary>
+    /// 施加药水效果。MC 的 10 个 `MobEffects` → 泰拉 buff 的映射。
+    ///
+    /// 有几条**没有精确对应物**，选了语义最接近的并注明：
+    ///   - 飘浮（LEVITATION）→ 羽毛缓落：泰拉没有「向上飘」的 buff
+    ///   - 凋零（WITHER）   → 诅咒地狱：同样是高伤持续伤害
+    ///   - 吸收（ABSORPTION）→ 铁皮：泰拉没有「伤害护盾」类 buff，取防御向
+    /// </summary>
+    public void ApplyPotion(EntityIota entity, Core.Casting.Actions.PotionEffectKind effect,
+                            int ticks, int potency)
+    {
+        if (ticks <= 0) return;
+
+        int buffType = effect switch
+        {
+            Core.Casting.Actions.PotionEffectKind.Weakness => Terraria.ID.BuffID.Weak,
+            Core.Casting.Actions.PotionEffectKind.Levitation => Terraria.ID.BuffID.Featherfall,
+            Core.Casting.Actions.PotionEffectKind.Wither => Terraria.ID.BuffID.CursedInferno,
+            Core.Casting.Actions.PotionEffectKind.Poison => Terraria.ID.BuffID.Poisoned,
+            Core.Casting.Actions.PotionEffectKind.Slowness => Terraria.ID.BuffID.Slow,
+            Core.Casting.Actions.PotionEffectKind.Regeneration => Terraria.ID.BuffID.Regeneration,
+            Core.Casting.Actions.PotionEffectKind.NightVision => Terraria.ID.BuffID.NightOwl,
+            Core.Casting.Actions.PotionEffectKind.Absorption => Terraria.ID.BuffID.Ironskin,
+            Core.Casting.Actions.PotionEffectKind.Haste => Terraria.ID.BuffID.Mining,
+            Core.Casting.Actions.PotionEffectKind.Strength => Terraria.ID.BuffID.Wrath,
+            _ => -1,
+        };
+
+        if (buffType < 0) return;
+
+        switch (entity.Target)
+        {
+            case EntityIota.EntityKind.Player:
+            {
+                if (entity.Index < 0 || entity.Index >= Main.maxPlayers) return;
+                var p = Main.player[entity.Index];
+                if (p is not { active: true } || p.dead) return;
+                p.AddBuff(buffType, ticks);
+                break;
+            }
+
+            case EntityIota.EntityKind.Npc:
+            {
+                if (entity.Index < 0 || entity.Index >= Main.maxNPCs) return;
+                var n = Main.npc[entity.Index];
+                if (n is not { active: true }) return;
+                // 泰拉 NPC 的 buff 用 AddBuff；等级由 buff 类型本身决定（没有 amplifier 概念）
+                n.AddBuff(buffType, ticks);
+                break;
+            }
+        }
+    }
+    // ── 阿卡夏记录 ──────────────────────────────────────────────────
+
+    /// <summary>该坐标是不是阿卡夏记录方块。</summary>
+    public bool IsAkashicRecord(double x, double y)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        if (!WorldGen.InWorld(tx, ty, 1)) return false;
+
+        var tile = Main.tile[tx, ty];
+        if (!tile.HasTile) return false;
+
+        return tile.TileType == Terraria.ModLoader.ModContent.TileType<AkashicRecord>();
+    }
+
+    /// <summary>按图案查记录。没有该键返回 null。</summary>
+    public Core.Casting.Iotas.Iota? LookupAkashic(double x, double y, Core.Casting.Math.HexPattern key)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+        return AkashicRecordEntity.FindAt(tx, ty)?.Lookup(key);
+    }
+
+    /// <summary>按图案写记录。</summary>
+    public void WriteAkashic(double x, double y, Core.Casting.Math.HexPattern key, Core.Casting.Iotas.Iota value)
+    {
+        int tx = (int)System.Math.Floor(x);
+        int ty = (int)System.Math.Floor(y);
+
+        var entity = AkashicRecordEntity.FindAt(tx, ty);
+        if (entity == null) return;
+
+        entity.Store(key, value);
+
+        // 联机：把变化同步出去，否则只有写入者的客户端能看到
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            Terraria.NetMessage.SendData(Terraria.ID.MessageID.TileEntitySharing, -1, -1, null, entity.ID, tx, ty);
+        }
+    }
+    /// <summary>
+    /// 按概率把某个槽位的**整堆**物品丢到地上并清空该槽。
+    /// 源项目也是整堆丢（`drop(invItem.copy())` + `shrink(count)`），逐件丢反而不忠实。
+    /// </summary>
+    private static void DropIfRolled(Player player, int slot, double chance,
+                                     Terraria.DataStructures.IEntitySource source, int armorSlot = -1)
+    {
+        if (chance <= 0 || Main.rand.NextDouble() >= chance) return;
+
+        Item item = armorSlot >= 0 ? player.armor[armorSlot] : player.inventory[slot];
+        if (item.IsAir || item.stack <= 0) return;
+
+        // 用 Clone 丢出，保留前缀与 mod 数据；随后清空原槽位
+        var dropped = Item.NewItem(source,
+            (int)player.Center.X, (int)player.Center.Y, 0, 0,
+            item.Clone());
+
+        // 极小概率 NewItem 因物品上限失败 —— 那就别清空，免得物品凭空消失
+        if (dropped >= 0)
+        {
+            item.TurnToAir();
+        }
+    }
+}

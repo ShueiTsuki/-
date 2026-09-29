@@ -1,0 +1,14 @@
+# ui_atlas.txt —— 由 pack_ui_atlas.ps1 生成，勿手改
+# 格式： name x y w h
+atlas 910 772
+book 0 0 512 256
+bookmark 0 258 512 256
+buttons 0 516 512 256
+panel_bg 514 516 28 28
+panel_border 544 516 28 28
+panel_inner 574 516 24 27
+button_backing 600 516 22 22
+slot_back 624 516 70 70
+slot_front 696 516 70 70
+slot_overlay 768 516 70 70
+slot_selection 840 516 70 70

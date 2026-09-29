@@ -1,0 +1,18 @@
+# 编译产物
+bin/
+obj/
+*.tmod
+
+# VS Code / VS
+.vs/
+.idea/
+
+# tModLoader 本地文件
+*.bak
+
+# 大文件/截图/安装包（不入库）
+*.zip
+_install_*/
+_shots/
+_verify/save/
+_watcher.log
