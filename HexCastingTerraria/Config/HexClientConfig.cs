@@ -75,7 +75,7 @@ public sealed class HexClientConfig : ModConfig
     [DefaultValue(false)]
     public bool InfiniteFlight { get; set; }
 
-    /// <summary>法术环每 tick 走一格（正常是 10 → 2 tick，越长越快）。</summary>
+    /// <summary>法术环每帧走一格（正常是 30 → 6 帧，越长越快）。</summary>
     [DefaultValue(false)]
     public bool FastSpellCircles { get; set; }
 

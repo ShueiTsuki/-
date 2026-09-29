@@ -305,7 +305,7 @@ public sealed class HexImpetusEntity : ModTileEntity
     /// 每 tick 由 <see cref="PostGlobalUpdate"/> 调用，推进一环。
     ///
     /// 对应源项目的 `tickExecution` + `getTickSpeed`：
-    /// **每 tick 走一格**，且**环走得越深越快**（起步 10 tick/格，最低 2）。
+    /// **一格一格走**，且**环走得越深越快**（起步 10 MC 刻/格 = 30 帧，最低 2 刻 = 6 帧）。
     /// </summary>
     public override void PostGlobalUpdate()
     {
@@ -314,9 +314,10 @@ public sealed class HexImpetusEntity : ModTileEntity
 
         // 调试开关：环每 tick 走一格，用来快速验证长环
         // （正常是 10 → 2 tick，环越长越快；长环测一次要等十几秒）
+        // 源项目：走完一格后按「已走格数」排下一次（tickExecution → scheduleTick(getTickSpeed())）
         int speed = HexClientConfig.Instance.FastSpellCircles
             ? 1
-            : CircleTraversal.TickSpeed(ReachedCount + 1);
+            : CircleTraversal.TickSpeedFrames(ReachedCount);
 
         if (++_tickCounter < speed)
         {
@@ -505,8 +506,9 @@ public sealed class HexImpetusEntity : ModTileEntity
         var stack = new List<Iota>(_vm.Image.Stack);
         if (stack.Count == 0)
         {
-            // 源项目报 MishapBoolDirectrixEmptyStack
+            // 源项目 MishapBoolDirectrixEmptyStack：惩罚是把这根导线打掉（destroyBlock(pos, true)，掉落物品）
             CircleMessages.Post($"({CurrentX},{CurrentY}) 布尔导线：栈是空的");
+            BreakDirectrix();
             shouldStop = true;
             return comp.Facing;
         }
@@ -516,8 +518,9 @@ public sealed class HexImpetusEntity : ModTileEntity
 
         if (top is not BooleanIota b)
         {
-            // 源项目报 MishapBoolDirectrixNotBool
+            // 源项目 MishapBoolDirectrixNotBool：同样把导线打掉
             CircleMessages.Post($"({CurrentX},{CurrentY}) 布尔导线：栈顶不是布尔值");
+            BreakDirectrix();
             shouldStop = true;
             return comp.Facing;
         }
@@ -527,6 +530,16 @@ public sealed class HexImpetusEntity : ModTileEntity
 
         // 真 -> Facing.Opposite()；假 -> Facing
         return b.Value ? comp.Facing.Opposite() : comp.Facing;
+    }
+
+    /// <summary>布尔导线出错的惩罚：打掉当前这一格并掉落（源项目 world.destroyBlock(pos, true)）。</summary>
+    private void BreakDirectrix()
+    {
+        WorldGen.KillTile(CurrentX, CurrentY, fail: false, effectOnly: false, noItem: false);
+        if (Main.netMode == NetmodeID.Server)
+        {
+            NetMessage.SendData(MessageID.TileManipulation, -1, -1, null, 0, CurrentX, CurrentY);
+        }
     }
 
     private void Stop(string reason)

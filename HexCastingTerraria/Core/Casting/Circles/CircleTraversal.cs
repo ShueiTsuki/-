@@ -80,8 +80,8 @@ public enum CircleClosureError
 /// </summary>
 public static class CircleTraversal
 {
-    /// <summary>环长度上限。对应源项目 `maxSpellCircleLength` 配置项。</summary>
-    public const int DefaultMaxLength = 512;
+    /// <summary>环长度上限。对应源项目 `maxSpellCircleLength` 配置项，默认 1024（这里曾是 512）。</summary>
+    public const int DefaultMaxLength = 1024;
 
     /// <summary>
     /// 闭包校验。移植自源项目 `CircleExecutionState.createNew`。
@@ -234,11 +234,17 @@ public static class CircleTraversal
     }
 
     /// <summary>
-    /// 走环的速度：隔多少 tick 走一格。
-    /// 移植自源项目 `getTickSpeed`：`max(2, 10 - (reachedSlate - 1) / 3)`。
+    /// 走环的速度：隔多少 **MC 游戏刻**（20/秒）走一格。
+    /// 移植自源项目 `getTickSpeed`：`max(2, 10 - (reachedSlate - 1) / 3)`，reachedSlate = 已经走过的格数。
     ///
-    /// 也就是**环走得越深越快**：起步 10 tick/格，每 3 格减 1，最低 2 tick。
+    /// 也就是**环走得越深越快**：起步 10 刻/格（半秒），每 3 格减 1，最低 2 刻。
+    /// 泰拉每秒 60 帧，用 <see cref="TickSpeedFrames"/> 换算。
     /// </summary>
     public static int TickSpeed(int reachedCount)
         => System.Math.Max(2, 10 - (reachedCount - 1) / 3);
+
+    /// <summary>
+    /// 同上，换算成泰拉帧（× 3）。⚠️ 这里曾经把 MC 刻直接当泰拉帧用，法术环快了 3 倍。
+    /// </summary>
+    public static int TickSpeedFrames(int reachedCount) => TickSpeed(reachedCount) * 3;
 }

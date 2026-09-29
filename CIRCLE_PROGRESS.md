@@ -20,7 +20,7 @@
 | **不能原路返回** | `ExitDirections` 减去来路反方向 |
 | **不能往 normal 方向出去**，但**允许**往其反方向穿过 | 只 `remove(normal)`，不加 `remove(normal.Opposite())` |
 | **恰好 1 个出口** | 0 个 / 2+ 个都停下并报出坐标 |
-| **长度上限** | `CircleTraversal.DefaultMaxLength = 512` |
+| **长度上限** | `CircleTraversal.DefaultMaxLength = 1024`（原版默认值；曾误写 512） |
 | **走环越快** | `TickSpeed(n) = max(2, 10-(n-1)/3)` |
 | **每格重置算力** | 环每步新建执行状态；接 VM 求值时要在那里显式清零 |
 | **媒质负数 = 无限** | `ExtractMedia` 里 `if (Media < 0) return 0` |

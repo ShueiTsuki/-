@@ -55,7 +55,7 @@ Mods: {
 
 				FastSpellCircles: {
 					Label: 法术环全速推进
-					Tooltip: 环原本每格要等 10→2 tick（环越长越快），长环测一次要十几秒。开启后每 tick 走一格。
+					Tooltip: 环原本每格要等半秒到 0.1 秒（环越长越快），长环测一次要几十秒。开启后每帧走一格。
 				}
 
 				FreeSpellCircles: {

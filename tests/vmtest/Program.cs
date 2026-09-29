@@ -3960,6 +3960,11 @@ static class Program
                    && CircleTraversal.TickSpeed(100) == 2;
             Check("环速度：max(2, 10-(n-1)/3) —— 越长越快，最低 2",
                 ok, $"{CircleTraversal.TickSpeed(1)},{CircleTraversal.TickSpeed(4)},{CircleTraversal.TickSpeed(25)}");
+            // 原版单位是 MC 刻（20/秒），泰拉 60 帧/秒 → × 3（曾经直接当帧用，环快了 3 倍）
+            Check("环速度换算成泰拉帧：起步 30 帧（半秒）、最低 6 帧",
+                CircleTraversal.TickSpeedFrames(0) == 30 && CircleTraversal.TickSpeedFrames(100) == 6,
+                $"{CircleTraversal.TickSpeedFrames(0)} {CircleTraversal.TickSpeedFrames(100)}");
+            Check("环长度上限默认 1024（原版 DEFAULT_MAX_SPELL_CIRCLE_LENGTH）", CircleTraversal.DefaultMaxLength == 1024);
         }
         {
             // 方向工具：位移 / 反方向 / 向量
