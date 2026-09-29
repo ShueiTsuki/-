@@ -38,6 +38,17 @@
 - 本模组用到：整个玩法体系、图案数据、材质与实现思路（本模组即其移植版）
 - MIT 要求保留版权声明与许可文本，见 `LICENSE-HexMod`（分发前需一并放入）
 
+### 书本内容与贴图（2026-09-29 起）
+
+| 文件 | 来源 | 许可 |
+|---|---|---|
+| `Core/Ui/BookContent.Generated.cs` 的正文 | FallingColors/HexMod v0.11.4：`lang/zh_cn.flatten.json5`（官方简体中文）+ `patchouli_books/thehexbook` 结构 | MIT |
+| `Client/UI/BookAtlas/patchi_book.png`、`patchi_filler.png` | FallingColors/HexMod v0.11.4：`textures/gui/` | MIT |
+| `Client/UI/BookAtlas/crafting.png` | VazkiiMods/Patchouli：`textures/gui/crafting.png` | CC BY-NC-SA 3.0 |
+| `Core/Ui/PatchouliRenderer.cs` 的布局常量 | VazkiiMods/Patchouli：`GuiBook*` / `GuiButton*` / `Page*` | CC BY-NC-SA 3.0 |
+
+生成器：`_tools/gen_book_content.py`（原始文件放在仓库外的 `D:\DeepSeekHarness\hexsrc_assets`）。
+
 ### 泰拉瑞亚 / tModLoader
 
 - Terraria 与 tModLoader 的**美术与代码资源不在本仓库内、也不随本模组分发**。

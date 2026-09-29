@@ -18,16 +18,6 @@ Mods: {
 					Tooltip: Casting costs no media and never triggers overcast health loss. Also toggleable in-game with J.
 				}
 
-				NewBookUi: {
-					Label: New book UI (experimental)
-					Tooltip: On = the new element-tree/skin UI. Off = the old pattern browser. The new UI had a rendering issue in game, so it is off by default.
-				}
-
-				VanillaBookSkin: {
-					Label: Use Terraria-style book
-					Tooltip: On = native Terraria panel and item slots. Off = the Patchouli handbook. Press F8 in game to flip temporarily.
-				}
-
 				GiveDevKitOnEnter: {
 					Label: Give developer kit on world enter
 					Tooltip: Grants one representative item per subsystem on every world entry (staff, book, media chain, data holders, scrolls, packaged spells, all three circle blocks, building blocks). Press K to grant it again at any time.

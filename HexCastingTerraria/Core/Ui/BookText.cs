@@ -35,6 +35,12 @@ public sealed class BookTextSegment
 
     /// <summary>链接目标（条目 id 或分类 id）。空 = 不是链接。</summary>
     public string LinkTarget { get; set; } = string.Empty;
+
+    /// <summary>显式颜色 0xRRGGBB；-1 = 用书的默认正文色。<c>$(#rrggbb)</c> 与 <c>$(0)…$(f)</c> 都落到这里。</summary>
+    public int Rgb { get; set; } = -1;
+
+    /// <summary>下划线（<c>$(n)</c>）。</summary>
+    public bool Underline { get; set; }
 }
 
 /// <summary>排好的一行。</summary>
@@ -78,17 +84,61 @@ public sealed class BookTextPage
 /// </summary>
 public static class BookTextLayout
 {
-    /// <summary>把一串标记文本拆成同质段。不做换行，不做分页。</summary>
+    /// <summary>
+    /// Patchouli 的内置宏（<c>BookTextParser</c> 的默认表）。先展开宏再解析，和原版顺序一致。
+    /// 书本自己的宏（咒法学 book.json 里的 <c>$(thing)</c> 等）见 <see cref="BookMacros"/>，先于这里展开。
+    /// </summary>
+    private static readonly (string From, string To)[] DefaultMacros =
+    {
+        ("$(obf)", "$(k)"), ("$(bold)", "$(l)"), ("$(strike)", "$(m)"),
+        ("$(italic)", "$(o)"), ("$(italics)", "$(o)"), ("$(list", "$(li"),
+        ("$(reset)", "$()"), ("$(clear)", "$()"), ("$(2br)", "$(br2)"), ("$(p)", "$(br2)"),
+        ("/$", "$()"), ("<br>", "$(br)"), ("$(nocolor)", "$(0)"),
+        ("$(item)", "$(#b0b)"), ("$(thing)", "$(#490)"),
+    };
+
+    /// <summary>
+    /// 书本级宏，照咒法学 <c>thehexbook/book.json</c> 的 <c>macros</c>。
+    /// <c>$(thing)</c> 在这里被咒法学覆盖成紫色，所以书本宏必须先于默认宏展开。
+    /// </summary>
+    public static readonly (string From, string To)[] BookMacros =
+    {
+        ("$(thing)", "$(#8d6acc)"), ("$(action)", "$(#fc77be)"), ("$(media)", "$(#74b3f2)"),
+        ("$(hex)", "$(#b38ef3)"),
+        ("_Media", "$(#74b3f2)Media/$"), ("_media", "$(#74b3f2)media/$"),
+        ("_Hexcasters", "$(#b38ef3)Hexcasters/$"), ("_Hexcaster", "$(#b38ef3)Hexcaster/$"),
+        ("_Hexcasting", "$(#b38ef3)Hexcasting/$"), ("_Hexes", "$(#b38ef3)Hexes/$"), ("_Hex", "$(#b38ef3)Hex/$"),
+    };
+
+    /// <summary>MC 的 16 色（<c>$(0)</c>…<c>$(f)</c>）。</summary>
+    private static readonly int[] McColors =
+    {
+        0x000000, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA, 0xFFAA00, 0xAAAAAA,
+        0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF,
+    };
+
+    public static string ExpandMacros(string markup)
+    {
+        foreach (var (from, to) in BookMacros) { markup = markup.Replace(from, to); }
+        foreach (var (from, to) in DefaultMacros) { markup = markup.Replace(from, to); }
+        return markup;
+    }
+
+    /// <summary>
+    /// 把一串标记文本拆成同质段。不做换行，不做分页。
+    /// 支持 Patchouli 的文本标记：<c>$(br) $(br2) $(li)</c>、<c>$(#rgb)/$(#rrggbb)</c>、
+    /// <c>$(0)…$(f)</c>、<c>$(k/l/m/n/o/r)</c>、<c>$(l:目标)…$(/l)</c>、<c>$()</c>（及 <c>/$</c> 等宏）。
+    /// 不认识的标记与未闭合的 <c>$(</c> 按原文保留 —— 宁可难看也不静默丢字。
+    /// </summary>
     public static System.Collections.Generic.List<BookTextSegment> Parse(string markup)
     {
         var result = new System.Collections.Generic.List<BookTextSegment>();
         if (string.IsNullOrEmpty(markup)) { return result; }
+        markup = ExpandMacros(markup);
 
-        bool bold = false, italic = false;
-        int color = 0;
+        bool bold = false, italic = false, underline = false;
+        int color = 0, rgb = -1;
         string link = string.Empty;
-
-        int i = 0;
         var pending = new System.Text.StringBuilder();
 
         void Flush()
@@ -96,88 +146,103 @@ public static class BookTextLayout
             if (pending.Length == 0) { return; }
             result.Add(new BookTextSegment
             {
-                Text = pending.ToString(),
-                Bold = bold,
-                Italic = italic,
-                ColorCode = color,
-                LinkTarget = link,
+                Text = pending.ToString(), Bold = bold, Italic = italic, Underline = underline,
+                ColorCode = color, Rgb = rgb, LinkTarget = link,
             });
             pending.Clear();
         }
 
+        void Break()
+        {
+            Flush();
+            result.Add(new BookTextSegment { Text = "\n", Bold = bold, Italic = italic, ColorCode = color, Rgb = rgb });
+        }
+
+        int i = 0;
         while (i < markup.Length)
         {
-            // 只有 "$(" 才是标记；单独的 '$' 当普通字符（金额之类）
-            if (markup[i] == '$' && i + 1 < markup.Length && markup[i + 1] == '(')
+            if (markup[i] != '$' || i + 1 >= markup.Length || markup[i + 1] != '(')
             {
-                int close = markup.IndexOf(')', i + 2);
-                if (close < 0)
-                {
-                    // 没有闭合 —— 当普通文本，绝不吞掉后面的内容
-                    pending.Append(markup[i]);
-                    i++;
-                    continue;
-                }
-
-                string token = markup.Substring(i + 2, close - i - 2);
-
-                if (token.StartsWith("l:"))
-                {
-                    Flush();
-                    link = token.Substring(2);
-                    i = close + 1;
-                    continue;
-                }
-
-                switch (token)
-                {
-                    case "br":
-                    case "br2":
-                    case "p":
-                        Flush();
-                        result.Add(new BookTextSegment { Text = "\n", Bold = bold, Italic = italic, ColorCode = color, LinkTarget = string.Empty });
-                        i = close + 1;
-                        continue;
-
-                    case "bold": Flush(); bold = true; i = close + 1; continue;
-                    case "italic": Flush(); italic = true; i = close + 1; continue;
-
-                    case "/l":
-                        Flush();
-                        link = string.Empty;
-                        i = close + 1;
-                        continue;
-
-                    case "":
-                        Flush();
-                        bold = false;
-                        italic = false;
-                        color = 0;
-                        link = string.Empty;
-                        i = close + 1;
-                        continue;
-                }
-
-                if (token.Length == 1 && token[0] >= '0' && token[0] <= '9')
-                {
-                    Flush();
-                    color = token[0] - '0';
-                    i = close + 1;
-                    continue;
-                }
-
-                // 不认识的标记：整段当普通文本保留（宁可显示难看的原文，也不静默丢内容）
-                pending.Append(markup, i, close - i + 1);
-                i = close + 1;
+                pending.Append(markup[i]);
+                i++;
                 continue;
             }
 
-            pending.Append(markup[i]);
-            i++;
+            int close = markup.IndexOf(')', i + 2);
+            if (close < 0)
+            {
+                pending.Append(markup[i]);
+                i++;
+                continue;
+            }
+
+            string token = markup.Substring(i + 2, close - i - 2);
+            bool handled = true;
+
+            if (token.StartsWith("l:", System.StringComparison.Ordinal))
+            {
+                Flush();
+                link = token.Substring(2);
+            }
+            else if (token.Length > 1 && token[0] == '#' && TryHex(token.Substring(1), out int hex))
+            {
+                Flush();
+                rgb = hex;
+            }
+            else
+            {
+                switch (token)
+                {
+                    case "br": Break(); break;
+                    case "br2": Break(); Break(); break;
+                    case "li": case "li2": case "li3": Break(); pending.Append("• "); break;
+                    case "/l": Flush(); link = string.Empty; break;
+                    case "": case "r":
+                        Flush();
+                        bold = italic = underline = false;
+                        color = 0;
+                        rgb = -1;
+                        link = string.Empty;
+                        break;
+                    case "l": Flush(); bold = true; break;
+                    case "o": Flush(); italic = true; break;
+                    case "n": Flush(); underline = true; break;
+                    case "k": case "m": Flush(); break;   // 乱码 / 删除线：泰拉字体画不出，忽略样式、保留文字
+                    default:
+                        if (token.Length == 1 && System.Uri.IsHexDigit(token[0]))
+                        {
+                            Flush();
+                            int idx = System.Convert.ToInt32(token, 16);
+                            color = idx <= 9 ? idx : 0;
+                            rgb = idx == 0 ? -1 : McColors[idx];
+                        }
+                        else
+                        {
+                            handled = false;
+                        }
+                        break;
+                }
+            }
+
+            if (!handled) { pending.Append(markup, i, close - i + 1); }
+            i = close + 1;
         }
 
         Flush();
         return result;
+    }
+
+    private static bool TryHex(string h, out int rgb)
+    {
+        rgb = 0;
+        if (h.Length == 3)
+        {
+            h = new string(new[] { h[0], h[0], h[1], h[1], h[2], h[2] });
+        }
+        if (h.Length != 6) { return false; }
+        foreach (char c in h) { if (!System.Uri.IsHexDigit(c)) { return false; } }
+        rgb = System.Convert.ToInt32(h, 16);
+        return true;
     }
 
     /// <summary>
@@ -248,7 +313,12 @@ public static class BookTextLayout
         int start = 0;
         for (int i = 0; i < chunk.Length; i++)
         {
-            if (chunk[i] == ' ')
+            // 空格后可断行；中日韩字符之间也可断行（中文没有空格，否则整段会被当成一个"词"硬切）。
+            // 行首禁则：中文标点不单独起一行，跟在前一个字后面。
+            bool nextOk = i + 1 >= chunk.Length || !IsNoLineStart(chunk[i + 1]);
+            bool breakAfter = (chunk[i] == ' ' || IsCjk(chunk[i])
+                               || (i + 1 < chunk.Length && IsCjk(chunk[i + 1]))) && nextOk;
+            if (breakAfter)
             {
                 words.Add(chunk.Substring(start, i - start + 1));
                 start = i + 1;
@@ -320,9 +390,18 @@ public static class BookTextLayout
         Text = text,
         Bold = src.Bold,
         Italic = src.Italic,
+        Underline = src.Underline,
         ColorCode = src.ColorCode,
+        Rgb = src.Rgb,
         LinkTarget = src.LinkTarget,
     };
+
+    private static bool IsCjk(char c)
+        => (c >= 0x2E80 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFF00 && c <= 0xFFEF)
+           || (c >= 0x3000 && c <= 0x303F);
+
+    /// <summary>不能出现在行首的标点（中文排版的行首禁则）。</summary>
+    private static bool IsNoLineStart(char c) => "，。、；：？！）》」』】〉”’…—·,.;:?!)]}".IndexOf(c) >= 0;
 
     /// <summary>把行切成每页 <paramref name="linesPerPage"/> 行。</summary>
     public static System.Collections.Generic.List<BookTextPage> Paginate(

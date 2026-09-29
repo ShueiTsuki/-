@@ -127,16 +127,12 @@
 | `Registry/PatternDisplay.cs` | 鍥炬鐨?*鏄剧ず鍚?*銆傜晫闈竴寰嬭蛋杩欓噷锛屼笉瑕佸悇鑷嫾 `Id.Replace("hexcasting:", "")`銆?/// |
 | `Registry/PatternNames.Generated.cs` | 图案的**正式中文名**（例如 get_caster → 「意识之精思」）。 |
 | `Registry/PatternRegistry.cs` | 鍥炬鍖归厤缁撴灉锛屽搴旀簮椤圭洰鐨?PatternShapeMatch 鑱斿悎绫诲瀷銆?/// </summary> |
-| `Ui/BookContent.Generated.cs` | 涔︽湰鍐呭楠ㄦ灦锛氫粠婧愰」鐩殑 Patchouli 鎵嬪唽锛? 鍒嗙被 / 82 鏉＄洰锛夌敓鎴愩€? |
-| `Ui/BookLayout.cs` | 娴偣鐭╁舰銆侰ore 涓嶈寮曠敤 XNA锛堜篃灏变笉鑳界敤 `Rectangle`/`Vector2`锛夛紝鎵€浠ヨ嚜甯︿竴涓€?/summary> |
+| `Ui/BookCanvas.cs` | 涔︾敤鍒扮殑璐村浘銆備笌鍘熺増鍚屽悕鍚屽昂瀵革紝婧愮煩褰㈢敤鍘熺増璐村浘鍧愭爣銆?/summary> |
+| `Ui/BookContent.Generated.cs` | 鏈枃浠剁敱 _tools/gen_book_content.py 鐢熸垚锛?*涓嶈鎵嬫敼**锛氭敼鐢熸垚鍣紝鐒跺悗閲嶆柊璺戣剼鏈€?//     鍐呭锛氬師鐗堝拻娉曞鎵嬪唽锛團allingColors/HexMod v0.11.4锛孧IT锛夌殑缁撴瀯 + 瀹樻柟绠€浣撲腑鏂囨鏂囥€?// </auto-generated> |
 | `Ui/BookModel.cs` | 椤甸潰绫诲瀷銆傚搴?Patchouli 娉ㄥ唽鍦?<c>patchouli:鈥?/c> 鍚嶄笅鐨勪竴缁勯〉闈㈢被锛?/// 杩欓噷鍙繚鐣欐嘲鎷変晶**鐪熶細鐢ㄥ埌**鐨勯偅鍑犵锛圡C 鐗规湁鐨勫鏂瑰潡棰勮 / 瀹炰綋棰勮 / 杩涘害浠诲姟宸插墧闄わ級銆?/// </summary> |
-| `Ui/BookSkin.cs` | 涓庢覆鏌撴鏋舵棤鍏崇殑棰滆壊锛圕ore/ 涓嶈兘鐢?XNA 鐨?Color锛夈€?/// |
 | `Ui/BookText.cs` | 閲忎竴娈垫枃鏈湁澶氬銆傜湡瀹炴覆鏌撴椂浼犲瓧浣撴祴閲忥紝绂荤嚎娴嬭瘯鏃朵紶鍋囧嚱鏁般€?/summary> |
-| `Ui/BookView.cs` | 涔﹀綋鍓嶅仠鍦ㄥ摢涓€灞傘€?/summary> |
-| `Ui/ListLayout.cs` | 绔栧垪琛ㄧ殑鍑犱綍锛氳浣嶇疆銆佸唴瀹规€婚珮銆佹粴鍔ㄨ寖鍥淬€佸彲瑙佽鍖洪棿銆?/// |
-| `Ui/NinePatch.cs` | 9 瀹牸锛坣ine-patch锛夌粯鍒躲€?/// |
-| `Ui/PatchouliSkin.cs` | 涔︿綋缂╂斁銆? = 杩樺師鍘熺増 GUI scale 2 鐨勬樉绀哄昂搴︼紙瑙佹枃浠跺ご璇存槑锛夈€?/summary> |
-| `Ui/VanillaSkin.cs` | 绐楀彛缂╂斁銆?*榛樿 1** 鈥斺€?娉版媺 UI 鏈韩灏辨槸 1:1 鐨勩€?    /// 锛堝笗绉嬭帀鐗堥粯璁?2锛屾槸鍥犱负瀹冪殑鍥鹃泦鏄寜 MC 鐨?GUI scale 2 鐢荤殑 鈥斺€?涓ゅ鐨勯粯璁ゅ昂搴︽湰鏉ュ氨涓嶈涓€鏍枫€傦級 |
+| `Ui/BookView.cs` | 鍒嗙被椤电涓€璺ㄩ〉鍙抽〉鑳芥斁鐨勬潯鐩暟锛圥atchouli ENTRIES_IN_FIRST_PAGE锛夈€?/summary> |
+| `Ui/PatchouliRenderer.cs` | 涔︿笂鍙偣鐨勪笢瑗裤€?/summary> |
 | `World/AmethystLoot.cs` | 鏅剁皣鐨勭敓闀块樁娈点€傚搴?MC 鐨勫洓涓柟鍧椼€?/summary> |
 | `World/LookResolver.cs` | 瑙嗙嚎瑙ｆ瀽鐨勮緭鍏ャ€?/// |
 | `World/SegmentSweep.cs` | 涓€涓疄浣撶殑鍒ゅ畾绠憋紝鍧愭爣鍗曚綅锛?*鍥炬牸**銆?/// 鐢辨父鎴忎晶濉ソ鍚庝氦缁?<see cref="SegmentSweep"/>锛屼簬鏄壂鎺犻€昏緫鍙互绂荤嚎娴嬭瘯銆?/// </summary> |
@@ -196,7 +192,6 @@
 
 | 文件 | 职责 |
 |---|---|
-| `BookUiSystem.cs` | 涔︽湰 UI 鐨?*楠ㄦ灦** 鈥斺€?鎸?tModLoader 瀹樻柟閭ｅ鏉ワ紝鑰屼笉鏄垜鑷繁鎺ャ€?/// |
 | `HexCanvasState.cs` | 鐢诲竷涓?HUD 鐨勫鎴风鍏变韩鐘舵€併€?/// |
 | `HexClientSystem.cs` | 瀹㈡埛绔郴缁燂細鐢诲竷杈撳叆銆佺敾甯冪粯鍒躲€丠UD锛堝獟璐ㄦ寚绀?+ 鍥炬璇嗗埆鍙嶉锛夈€?/// |
 | `HexColors.cs` | 鍜掓硶瀛︾殑琛ㄧ幇灞傞厤鑹层€?/// |
@@ -205,15 +200,12 @@
 | `HexPixel.cs` | 鍏变韩鐨?1脳1 鐧借壊璐村浘锛岀敤浜庣敾绾挎涓庢柟鍧楃偣銆?/// |
 | `HexVec.cs` | `Core` 鐨?<see cref="Vec2f"/> 鈫?XNA 鐨?<see cref="Vector2"/> 浜掕浆銆?/// |
 | `HexVmState.cs` | 瀹㈡埛绔晶鐨?VM 鐘舵€併€?/// |
-| `UI/BookUiState.cs` | 涔︽湰 UI 鐨勫唴瀹癸紙<see cref="UIState"/>锛夆€斺€?**鍘熺増鐨偆**锛岀敤娉版媺鑷繁鐨勬帶浠舵惌銆?/// |
-| `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︺€?/// |
-| `UI/HexBook.Themed.cs` | 涔︽湰鐨?*鏂版覆鏌撹矾寰?*锛氱敤 <see cref="BookView"/> + <see cref="BookSkin"/> 鐢汇€?/// |
+| `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€? |
 | `UI/HexCanvas.cs` | 宸茬敾瀹岀殑涓€鏉″浘妗?+ 娉ㄥ唽琛ㄥ尮閰嶇粨鏋滐紙null = 鏈懡涓級+ 姹傚€肩粨鏋滐紙鍐冲畾棰滆壊锛夈€?/summary> |
-| `UI/PatchouliBookElement.cs` | 甯曠鑾夌毊鑲わ紙閭ｆ湰鐨潻涔︼級浣滀负**涓€涓?UIElement**銆?/// |
 | `UI/PatternIconElement.cs` | 鎶婁竴涓?*鍥炬**鐢绘垚涓€涓?UIElement锛堢缉鐣ュ浘锛夈€?/// |
 | `UI/PatternRenderer.cs` | 鍥炬鐨勯潤鎬侀瑙堬紙涔︺€佺煶鏉裤€佸嵎杞淬€侀樋鍗″璁板綍锛変笌鍥炬妫€绱㈣緟鍔┿€?/// 鐢诲竷涓婄殑鐢靛厜绾垮瀷鍦?<see cref="Core.Canvas.PatternGeometry"/>锛堥€愯绉绘 RenderLib锛夈€?/// </summary> |
 | `UI/PrimitiveBatch.cs` | 鎶?<see cref="PatternGeometry"/> 浜у嚭鐨勪笁瑙掑舰鐩存帴浜ょ粰鏄惧崱銆?/// |
-| `UI/SpriteBatchBookCanvas.cs` | 鎶?<see cref="IBookCanvas"/> 钀藉埌 tModLoader 鐨?<see cref="SpriteBatch"/> 涓?鈥斺€?/// 杩欐槸銆岀灞忛瑙堛€嶄笌銆屾父鎴忓唴瀹為檯娓叉煋銆嶄箣闂村敮涓€鐨勬ˉ銆?/// |
+| `UI/SpriteBatchBookCanvas.cs` | <see cref="IBookCanvas"/> 鐨勬父鎴忓唴瀹炵幇锛氬叏閮ㄧ敤 <c>Main.spriteBatch</c> 鐢伙紙涓嶅垏鍒板浘鍏冪粯鍒讹紝 |
 
 ### （模组根目录）
 

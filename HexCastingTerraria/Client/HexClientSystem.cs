@@ -97,32 +97,10 @@ public sealed class HexClientSystem : ModSystem
 
         // 咒法学之书：输入处理放在最前面 —— 它开着的时候要**先**把
         // 鼠标与滚轮吃掉，否则滚动书页会同时切换快捷栏、点选图案会同时挖方块。
-        // 书本开 → 显示新的 UIState 骨架；关 → 隐藏。
-        // 新的界面层（BookUiSystem.ModifyInterfaceLayers）负责绘制，缩放也由
-        // InterfaceScaleType.UI 处理 —— 这里只同步可见性。
-        // 新版 UI 由配置开关控制，**默认关** —— 关着时开书走旧的图案浏览器（已知可用）。
-        // 默认关是因为新版在实机上出过"世界渲染异常"，而我看不到画面：
-        // 与其让你卡在一个异常状态里排查，不如先给你一个一定能玩的状态。
-        bool wantNewBookUi = HexClientConfig.Instance.NewBookUi;
-        if (HexCanvasState.Book.IsOpen && wantNewBookUi && !BookUiSystem.Visible) { BookUiSystem.Show(); }
-        else if ((!HexCanvasState.Book.IsOpen || !wantNewBookUi) && BookUiSystem.Visible) { BookUiSystem.Hide(); }
-
-        // 旧路径只在**新 UI 没显示**时才跑：否则两套会同时画、同时吃输入
-        if (HexCanvasState.Book.IsOpen && !BookUiSystem.Visible)
-        {
-            if (HexBook.UseThemedUi)
-            {
-                HexCanvasState.Book.HandleThemedInput(Main.screenWidth, Main.screenHeight,
-                    new Vector2(Main.mouseX, Main.mouseY),
-                    Main.mouseLeftRelease,
-                    Main.mouseRightRelease);
-            }
-            else
-            {
-                HexCanvasState.Book.HandleInput(Main.screenWidth, Main.screenHeight,
-                    new Vector2(Main.mouseX, Main.mouseY));
-            }
-        }
+        // 「刚按下」= 这一帧按着、上一帧松开（泰拉的惯用判断）
+        HexCanvasState.Book.HandleInput(
+            leftClick: Main.mouseLeft && Main.mouseLeftRelease,
+            rightClick: Main.mouseRight && Main.mouseRightRelease);
 
         // ⚠️ 这里必须**重新读一次**开关状态：上一句的 HandleInput 可能刚刚把书关掉
         //（右键 / Esc）。在关闭的那一帧继续压输入，会和下面的「解除压制」打架。
@@ -375,20 +353,8 @@ public sealed class HexClientSystem : ModSystem
                 // 开发者调试叠加层（默认关闭，见 设置 → 模组配置）
                 HexDebugOverlay.Draw(Main.spriteBatch, w, h, mouse);
 
-                // 新骨架显示时由 BookUiSystem 的界面层绘制，这里不重复画
-                if (!BookUiSystem.Visible)
-                {
-                    if (HexBook.UseThemedUi)
-                    {
-                        HexCanvasState.Book.DrawThemed(Main.spriteBatch, w, h, mouse);
-                    }
-                    else
-                    {
-                        HexCanvasState.Book.Draw(Main.spriteBatch, w, h, mouse,
-                            (a, b, thickness, c) => HexPixel.DrawLine(Main.spriteBatch, a, b, thickness, c),
-                            (p, r, c) => HexPixel.DrawDot(Main.spriteBatch, p, r, c));
-                    }
-                }
+                // 咒法学之书（帕秋莉手册）
+                HexCanvasState.Book.Draw(Main.spriteBatch);
 
                 return true;
             },

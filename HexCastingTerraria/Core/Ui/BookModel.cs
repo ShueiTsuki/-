@@ -42,6 +42,23 @@ public enum BookPageKind
 
     /// <summary>模板里的分隔线（<c>patchouli:separator</c>）。</summary>
     Separator = 5,
+
+    /// <summary>空白页（<c>patchouli:empty</c>，原版用它把图案页对齐到右页）。</summary>
+    Empty = 6,
+
+    /// <summary>剖念配方（<c>hexcasting:brainsweep</c>）：方块 + 生物 → 方块。</summary>
+    Brainsweep = 7,
+}
+
+/// <summary>页面上画的一个图案：起始方向（原版写法，如 <c>SOUTH_EAST</c>）+ 角度签名。</summary>
+public sealed class PagePattern
+{
+    public string StartDir { get; set; } = "EAST";
+    public string Signature { get; set; } = string.Empty;
+
+    /// <summary>多个图案画在同一张网格上时，本图案起点的格坐标偏移（原版 JSON 的 q / r）。</summary>
+    public int Q { get; set; }
+    public int R { get; set; }
 }
 
 /// <summary>
@@ -79,6 +96,21 @@ public sealed class BookPage
     /// <summary>模板参数（对应 Patchouli 模板里的 <c>#key#</c> 变量替换）。</summary>
     public System.Collections.Generic.Dictionary<string, string> Variables { get; }
         = new System.Collections.Generic.Dictionary<string, string>();
+
+    /// <summary>锚点（原版 <c>anchor</c>）：链接 <c>条目#锚点</c> 直接翻到这一页。</summary>
+    public string Anchor { get; set; } = string.Empty;
+
+    /// <summary>图案页的参数签名（原版模板的 <c>#input#</c> → <c>#output#</c>）。都空 = 不画签名行。</summary>
+    public string Input { get; set; } = string.Empty;
+    public string Output { get; set; } = string.Empty;
+
+    /// <summary>页面上直接画出的图案（<c>manual_pattern</c>），或由 <see cref="PatternId"/> 查到的那一个。</summary>
+    public System.Collections.Generic.List<PagePattern> Patterns { get; }
+        = new System.Collections.Generic.List<PagePattern>();
+
+    /// <summary>多配方页（<c>crafting_multi</c>）的全部产物；单配方页只用 <see cref="RecipeItem"/>。</summary>
+    public System.Collections.Generic.List<string> RecipeItems { get; }
+        = new System.Collections.Generic.List<string>();
 }
 
 /// <summary>
@@ -117,6 +149,12 @@ public sealed class BookEntry
     /// 泰拉侧暂时只解析不强制，等进度流程接上再启用。
     /// </summary>
     public string Advancement { get; set; } = string.Empty;
+
+    /// <summary>条目列表里的名字颜色 0xRRGGBB（原版 <c>entry_color</c>）；-1 = 书的默认正文色。</summary>
+    public int EntryColor { get; set; } = -1;
+
+    /// <summary>原版 <c>priority</c>：条目名用斜体显示，排在同分类前面。</summary>
+    public bool Priority { get; set; }
 
     /// <summary>条目正文，按顺序排好。</summary>
     public System.Collections.Generic.List<BookPage> Pages { get; }
@@ -160,6 +198,9 @@ public sealed class BookCategory
 
     public int SortNum { get; set; }
 
+    /// <summary>父分类 id（原版 <c>parent</c>）。非空 = 子分类：不上落地页，列在父分类的条目列表下面。</summary>
+    public string ParentId { get; set; } = string.Empty;
+
     public System.Collections.Generic.List<BookEntry> Entries { get; }
         = new System.Collections.Generic.List<BookEntry>();
 }
@@ -178,6 +219,9 @@ public sealed class BookDocument
 
     /// <summary>已解析好的书名（同 <see cref="BookEntry.DisplayName"/> 的说明）。</summary>
     public string DisplayTitle { get; set; } = string.Empty;
+
+    /// <summary>落地页左页的引言（原版 <c>landing_text</c>），带 Patchouli 排版标记。</summary>
+    public string LandingText { get; set; } = string.Empty;
 
     public System.Collections.Generic.List<BookCategory> Categories { get; }
         = new System.Collections.Generic.List<BookCategory>();

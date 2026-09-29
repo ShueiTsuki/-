@@ -103,21 +103,7 @@ public sealed class HexClientConfig : ModConfig
     [DefaultValue(false)]
     public bool ShowDebugPanel { get; set; } = false;
 
-    /// <summary>
-    /// 启用**新版书本 UI**（元素树 + 皮肤那套）。**默认关**。
-    ///
-    /// 默认关是有意的：新版在实机上出现过"世界渲染异常"，而我自己看不到画面。
-    /// 关着的时候开书走**旧的图案浏览器**（在我这一系列改动之前就是能用的），
-    /// 玩家随时有一个正常可玩的状态；要试新版就打开这个开关。
-    /// </summary>
-    [DefaultValue(false)]
-    public bool NewBookUi { get; set; }
 
-    /// <summary>
-    /// 书本用**泰拉原版外观**（否则用帕秋莉手册那套）。仅在新版 UI 打开时有意义。
-    /// </summary>
-    [DefaultValue(false)]
-    public bool VanillaBookSkin { get; set; }
 
     /// <summary>
     /// 显示「瞄准标记」：用粒子标出鼠标指向的世界位置。
