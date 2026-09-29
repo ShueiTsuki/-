@@ -6,24 +6,25 @@
     "阶段来自源项目的真实门槛，不是拍脑袋：",
     "  肉前  = 源项目解锁条件只是「拥有任意法杖」或更低（HexplatRecipes 的 unlockedBy has_item/staves）",
     "  肉后  = 泰拉侧的对应物本身就是肉后产物（神圣地妖精尘 / 水晶碎块 / 珍珠木）",
-    "  月后  = 源项目挂 Enlightenment 门槛（HexAdvancements.ENLIGHTEN = 一次过载消耗 ≥80% 生命、剩不到半颗心）",
-    "          或来自脑叶切除（HexActionTagProvider 的 REQUIRES_ENLIGHTENMENT 名单）",
+    "  肉后 · 启蒙 = 源项目挂 Enlightenment 门槛（HexAdvancements.ENLIGHTEN），或来自脑叶切除（大战法术）；",
+    "              泰拉侧：配方条件「已启蒙」+ 秘银砧（2026-09-29 由月后改来：启蒙现已可按原版获得）",
     "",
     "启蒙名单（源项目里仅这 15 个大战法术需要启蒙）：",
     "  lightning / flight / create_lava / teleport:great / sentinel:create:great",
     "  dispel_rain / summon_rain / brainsweep / craft:battery",
     "  potion:regeneration / night_vision / absorption / haste / strength",
-    "注意 edify（启迪树苗）**不在**名单里 —— 所以启迪木系是肉前，不是月后。"
+    "注意 edify（启迪树苗）**不在**名单里 —— 所以启迪木系是肉前。"
   ],
-
-  "stages": ["肉前", "肉后", "月后"],
-
+  "stages": [
+    "肉前",
+    "肉后",
+    "肉后 · 启蒙"
+  ],
   "stageNotes": {
     "肉前": "紫水晶 → 媒质 → 石板 → 法杖 → 工具与存储。源项目在这一段没有任何进度门槛。",
     "肉后": "淬灵系（泰拉对应物是神圣地妖精）、法术书（源项目要末地合唱果）、珍珠木法杖。",
-    "月后": "源项目挂「启蒙」门槛的那一族：原动力、导线、阿卡夏三件、剖念法杖。"
+    "肉后 · 启蒙": "源项目挂「启蒙」门槛的那一族：原动力、导线、阿卡夏三件、剖念法杖。启蒙 = 一次过载用掉 ≥80% 生命、只剩不到半颗心（按原版实现）；泰拉侧再要求肉后的秘银砧/山铜砧。"
   },
-
   "entries": {
     "肉前": {
       "AmethystDust": "源 ItemJewelerHammer：珠宝匠锤敲碎紫水晶（无手工配方）→ 泰拉：紫晶研磨",
@@ -91,7 +92,6 @@
       "HexBookItem": "源项目没有这本书：泰拉侧的引导书，让玩家能查到图案怎么画",
       "DevStaff": "开发者工具（泰拉自创，仅用于测试）"
     },
-
     "肉后": {
       "QuenchedAllayShard": "源 brainsweep：紫水晶块 + 悦灵 → 淬灵块。泰拉对应物 = 神圣地妖精（只在肉后出现），门槛自然落在肉后",
       "QuenchedAllayItem": "淬灵建材基底块：1 碎片 ↔ 1 块（源也是 1:1 的脑叶切除产物）",
@@ -104,16 +104,15 @@
       "SpookyStaff": "源 86 staffRecipe(红树)。泰拉用**阴森木**代替 —— 阴森木只在肉后的南瓜月掉落，门槛自带",
       "PearlwoodStaff": "源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带"
     },
-
-    "月后": {
-      "HexImpetusItem": "源 390-398：配方挂 enlightenment 门槛。泰拉站 = 远古操控器，紫珀块 → 月球砖",
-      "HexDirectrixEmptyItem": "源 400-408：同样挂 enlightenment。比较器/观察者 → 电线（泰拉红石本体）",
+    "肉后 · 启蒙": {
+      "HexImpetusItem": "源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书）",
+      "HexDirectrixEmptyItem": "源 400-408：同样挂 enlightenment → 秘银砧 + 已启蒙；比较器/观察者 → 电线（泰拉红石本体）",
       "HexDirectrixItemBase": "布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一",
       "HexDirectrixBooleanItem": "同 HexDirectrixItemBase（配方继承自基类的 RegisterRecipe）",
       "HexDirectrixRedstoneItem": "同 HexDirectrixItemBase",
-      "AkashicBookshelfItem": "源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment",
-      "AkashicLigatureItem": "源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment",
-      "AkashicRecordItem": "源 497-501 brainsweep(阿卡夏系带 + 图书管理员)：启蒙大战法术",
+      "AkashicBookshelfItem": "源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment → 秘银砧 + 已启蒙",
+      "AkashicLigatureItem": "源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment → 秘银砧 + 已启蒙",
+      "AkashicRecordItem": "源 497-501 brainsweep(阿卡夏系带 + 图书管理员)：启蒙大战法术 → 秘银砧 + 已启蒙",
       "MindspliceStaff": "源 91：这一把的「W」槽是 MINDFLAYED_CIRCLE_COMPONENTS，即脑叶切除产物"
     }
   }

@@ -115,20 +115,20 @@
 | `SpookyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 86 staffRecipe(红树)。泰拉用**阴森木**代替 —— 阴森木只在肉后的南瓜月掉落，门槛自带 |
 | `PearlwoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带 |
 
-## 月后（9 项）
+## 肉后 · 启蒙（9 项）
 
-源项目挂「启蒙」门槛的那一族：原动力、导线、阿卡夏三件、剖念法杖。
+源项目挂「启蒙」门槛的那一族：原动力、导线、阿卡夏三件、剖念法杖。启蒙 = 一次过载用掉 ≥80% 生命、只剩不到半颗心（按原版实现）；泰拉侧再要求肉后的秘银砧/山铜砧。
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
-| `HexImpetusItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + LunarBrick×2 + IronFence×2 | LunarCraftingStation | 源 390-398：配方挂 enlightenment 门槛。泰拉站 = 远古操控器，紫珀块 → 月球砖 |
-| `HexDirectrixEmptyItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + Wire×20 | LunarCraftingStation | 源 400-408：同样挂 enlightenment。比较器/观察者 → 电线（泰拉红石本体） |
-| `HexDirectrixItemBase` | 1 | HexDirectrixEmptyItem×1 | LunarCraftingStation | 布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一 |
-| `HexDirectrixBooleanItem` | 1 | HexDirectrixEmptyItem×1 | LunarCraftingStation | 同 HexDirectrixItemBase（配方继承自基类的 RegisterRecipe） |
-| `HexDirectrixRedstoneItem` | 1 | HexDirectrixEmptyItem×1 | LunarCraftingStation | 同 HexDirectrixItemBase |
-| `AkashicBookshelfItem` | 1 | EdifiedPlanksItem×2 + Book×3 + 〔HexRecipeGroups.EdifiedLogs〕×4 | LunarCraftingStation | 源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment |
-| `AkashicLigatureItem` | 4 | EdifiedPlanksItem×2 + AmethystDust×1 + AmethystShard×1 + ChargedAmethyst×1 + 〔HexRecipeGroups.EdifiedLogs〕×4 | LunarCraftingStation | 源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment |
-| `AkashicRecordItem` | 1 | AkashicLigatureItem×1 + Book×3 | LunarCraftingStation | 源 497-501 brainsweep(阿卡夏系带 + 图书管理员)：启蒙大战法术 |
+| `HexImpetusItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + CrystalShard×2 + IronFence×2 | MythrilAnvil + 已启蒙 | 源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书） |
+| `HexDirectrixEmptyItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + Wire×20 | MythrilAnvil + 已启蒙 | 源 400-408：同样挂 enlightenment → 秘银砧 + 已启蒙；比较器/观察者 → 电线（泰拉红石本体） |
+| `HexDirectrixItemBase` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一 |
+| `HexDirectrixBooleanItem` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 同 HexDirectrixItemBase（配方继承自基类的 RegisterRecipe） |
+| `HexDirectrixRedstoneItem` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 同 HexDirectrixItemBase |
+| `AkashicBookshelfItem` | 1 | EdifiedPlanksItem×2 + Book×3 + 〔HexRecipeGroups.EdifiedLogs〕×4 | MythrilAnvil + 已启蒙 | 源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment → 秘银砧 + 已启蒙 |
+| `AkashicLigatureItem` | 4 | EdifiedPlanksItem×2 + AmethystDust×1 + AmethystShard×1 + ChargedAmethyst×1 + 〔HexRecipeGroups.EdifiedLogs〕×4 | MythrilAnvil + 已启蒙 | 源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment → 秘银砧 + 已启蒙 |
+| `AkashicRecordItem` | 1 | AkashicLigatureItem×1 + Book×3 | MythrilAnvil + 已启蒙 | 源 497-501 brainsweep(阿卡夏系带 + 图书管理员)：启蒙大战法术 → 秘银砧 + 已启蒙 |
 | `MindspliceStaff` | 1 | HexDirectrixRedstoneItem×1 + ChargedAmethyst×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 91：这一把的「W」槽是 MINDFLAYED_CIRCLE_COMPONENTS，即脑叶切除产物 |
 
 ## 与源项目的阶段差异（有意为之）
@@ -136,7 +136,7 @@
 | 源项目阶段 | 泰拉阶段 | 为什么 |
 |---|---|---|
 | 序幕（无门槛） | 肉前 | 紫水晶在泰拉一开局就能挖到 |
-| 启蒙（濒死过载施法） | 月后 | 泰拉没有「过载用生命付媒质」这套机制，最接近的进度点是终局 |
+| 启蒙（濒死过载施法） | 肉后 · 启蒙 | 启蒙按原版实现（Core/Media/Overcast.cs）：配方条件「已启蒙」，再叠加肉后的秘银砧。曾经定在月后，是因为当时启蒙拿不到 |
 | 末地（合唱果 → 法术书） | 肉后 | 泰拉没有末地，取中间阶段；对应物用肉后的水晶碎块 |
 | 脑叶切除（启蒙大战法术） | 肉后 | 泰拉侧的对应物是**神圣地妖精**，只在肉后出现 —— 门槛由材料自带 |
 | 启迪树苗 → 阿卡夏树 | 肉前 | 源项目里 edify **不在**启蒙名单里，是普通法术；泰拉暂用保底配方 |

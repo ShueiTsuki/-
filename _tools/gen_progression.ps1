@@ -35,8 +35,9 @@ $baseOf    = @{}          # 类名 -> 基类名（用来识别「配方写在基
 
 function Get-StationText([string]$body) {
     $tiles = [regex]::Matches($body, '\.AddTile\(\s*TileID\.(\w+)\s*\)') | ForEach-Object { $_.Groups[1].Value }
-    if ($tiles.Count -eq 0) { return '（无：徒手）' }
-    return (($tiles | Select-Object -Unique) -join ' / ')
+    $text = if ($tiles.Count -eq 0) { '（无：徒手）' } else { ($tiles | Select-Object -Unique) -join ' / ' }
+    if ($body -match '\.AddCondition\(\s*HexConditions\.Enlightened\s*\)') { $text += ' + 已启蒙' }
+    return $text
 }
 
 function Get-IngredientText([string]$body) {
@@ -116,25 +117,23 @@ foreach ($k in $declared.Keys) {
     if (-not $inventory.Contains($k)) { $errors.Add("定了档但没有配方：$k") }
 }
 
-# 阶段与合成站的合理性：月后的东西必须**真的有月后门槛** ——
-# 要么站是远古操控器，要么材料里有一个本身就是月后的物品。
-# 只写「月后」但配方是「木材×3 @ 工作台」的话，这张表就是自欺欺人。
-$lateClasses = @{}
-foreach ($p in $cfg.entries.'月后'.PSObject.Properties) { $lateClasses[$p.Name] = $true }
-
-foreach ($p in $cfg.entries.'月后'.PSObject.Properties) {
-    $cls = $p.Name
+# 阶段与合成站的合理性：写在「肉后 · 启蒙」的东西必须**真的有这两道门槛** ——
+# 配方条件是「已启蒙」且合成站是秘银砧（肉后），或者材料里有同阶段的物品（如剖念法杖用红石导线）。
+# 只在表里写阶段、配方却是「木材×3 @ 工作台」的话，这张表就是自欺欺人。
+$gateStage = '肉后 · 启蒙'
+$gated = @{}
+foreach ($p in $cfg.entries.$gateStage.PSObject.Properties) { $gated[$p.Name] = $true }
+foreach ($cls in @($gated.Keys)) {
     if (-not $inventory.Contains($cls)) { continue }
     $tiles = ($inventory[$cls] | ForEach-Object { $_.Tile }) -join ' '
     $ing   = ($inventory[$cls] | ForEach-Object { $_.Ing }) -join ' '
-
-    if ($tiles -match 'LunarCraftingStation') { continue }
-    $gatedByMaterial = $false
-    foreach ($k in $lateClasses.Keys) {
-        if ($k -ne $cls -and $ing -match [regex]::Escape($k)) { $gatedByMaterial = $true; break }
+    if ($tiles -match 'MythrilAnvil' -and $tiles -match '已启蒙') { continue }
+    $byMaterial = $false
+    foreach ($k in $gated.Keys) {
+        if ($k -ne $cls -and $ing -match [regex]::Escape($k)) { $byMaterial = $true; break }
     }
-    if (-not $gatedByMaterial) {
-        $errors.Add("月后条目 $cls 既没有远古操控器，材料里也没有别的月后物品（站：$tiles）")
+    if (-not $byMaterial) {
+        $errors.Add("「$gateStage」条目 $cls 既不是「秘银砧 + 已启蒙」，材料里也没有同阶段物品（站：$tiles）")
     }
 }
 
@@ -183,14 +182,14 @@ foreach ($st in $stageOrder) {
 [void]$sb.AppendLine('| 源项目阶段 | 泰拉阶段 | 为什么 |')
 [void]$sb.AppendLine('|---|---|---|')
 [void]$sb.AppendLine('| 序幕（无门槛） | 肉前 | 紫水晶在泰拉一开局就能挖到 |')
-[void]$sb.AppendLine('| 启蒙（濒死过载施法） | 月后 | 泰拉没有「过载用生命付媒质」这套机制，最接近的进度点是终局 |')
+[void]$sb.AppendLine('| 启蒙（濒死过载施法） | 肉后 · 启蒙 | 启蒙按原版实现（Core/Media/Overcast.cs）：配方条件「已启蒙」，再叠加肉后的秘银砧。曾经定在月后，是因为当时启蒙拿不到 |')
 [void]$sb.AppendLine('| 末地（合唱果 → 法术书） | 肉后 | 泰拉没有末地，取中间阶段；对应物用肉后的水晶碎块 |')
 [void]$sb.AppendLine('| 脑叶切除（启蒙大战法术） | 肉后 | 泰拉侧的对应物是**神圣地妖精**，只在肉后出现 —— 门槛由材料自带 |')
 [void]$sb.AppendLine('| 启迪树苗 → 阿卡夏树 | 肉前 | 源项目里 edify **不在**启蒙名单里，是普通法术；泰拉暂用保底配方 |')
 [void]$sb.AppendLine()
 
 [System.IO.File]::WriteAllText($outPath, $sb.ToString(), (New-Object System.Text.UTF8Encoding($false)))
-Write-Host "阶段表：$($inventory.Count) 个物品（肉前 $(@($cfg.entries.'肉前'.PSObject.Properties).Count) / 肉后 $(@($cfg.entries.'肉后'.PSObject.Properties).Count) / 月后 $(@($cfg.entries.'月后'.PSObject.Properties).Count)）"
+Write-Host ("阶段表：$($inventory.Count) 个物品（" + (($stageOrder | ForEach-Object { "$_ $(@($cfg.entries.$_.PSObject.Properties).Count)" }) -join ' / ') + '）')
 Write-Host "-> $outPath"
 
 # ⚠️ 必须显式 exit 0：`.ps1` 用 `&` 调用时如果**没有** exit，`$LASTEXITCODE` 会

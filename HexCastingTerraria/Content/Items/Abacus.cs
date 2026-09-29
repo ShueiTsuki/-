@@ -42,13 +42,14 @@ public sealed class AkashicRecordItem : ModItem
         // 源 HexplatRecipes.java:497-501：`brainsweep/akashic_record` ——
         // 把**阿卡夏系带** + 图书管理员村民（5 级）脑叶切除 → 阿卡夏记录方块。
         //
-        // 阶段：**月后**。脑叶切除是启蒙大战法术之一，源项目这条也挂着 enlightenment 门槛。
+        // 阶段：**肉后 + 启蒙**。脑叶切除是启蒙大战法术之一，源项目这条也挂着 enlightenment 门槛。
         // 泰拉没有村民可切，所以用「系带 + 书」表达同一件事：系带提供阿卡夏的载体、
-        // 书提供「记录」的语义。站用远古操控器，把门槛落在进度上而不是运气上。
+        // 书提供「记录」的语义。站用秘银砧（肉后），并要求已启蒙。
         CreateRecipe()
             .AddIngredient<AkashicLigatureItem>(1)
             .AddIngredient(ItemID.Book, 3)
-            .AddTile(TileID.LunarCraftingStation)
+            .AddTile(TileID.MythrilAnvil)       // 秘银砧 / 山铜砧（肉后）
+            .AddCondition(HexConditions.Enlightened)
             .Register();
     }
 }

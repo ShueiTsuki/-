@@ -2,6 +2,10 @@
 
 Mods: {
 	HexCastingTerraria: {
+		Conditions: {
+			Enlightened: 已获得启迪（启蒙）
+		}
+
 		Items: {
 			Abacus: {
 				DisplayName: 算盘

@@ -260,7 +260,7 @@ public sealed class QuenchedStaff : HexStaff
 /// 原版的 14 把法杖里，这一把的「W」槽用的是 `HexBlocks.EDIFIED_PLANKS` 而不是木板 ——
 /// 这里是**唯一一处**它和 <see cref="WoodStaff"/> 不同的地方，所以没有继承那个基类。
 ///
-/// 进度门槛不在配方上，在**材料**上：启迪木板整族锁在远古操控器（月后）。
+/// 没有额外门槛：启迪木板整族是肉前（原版 edify 不在启蒙名单里），见 PROGRESSION.generated.md。
 ///
 /// ⚠️ 这段注释以前写的是「用**生命木**代替启迪木（用户决定）」，还专门论证了
 /// 生命木没有物品形态、只能落在合成站上 —— 而代码里从来就是 `EdifiedPlanksItem`。

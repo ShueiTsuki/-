@@ -96,12 +96,13 @@ public sealed class AkashicBookshelfItem : HexDecoBlockItem
         //     CCC        P = 任意启迪木板 ×2
         //     LPL        C = 书 ×3
         //
-        // 阶段：月后 —— 源项目这条挂 enlightenment 门槛（启蒙大战法术那条线）。
+        // 阶段：肉后 + 启蒙 —— 源项目这条挂 enlightenment 门槛（启蒙大战法术那条线）。
         CreateRecipe()
             .AddRecipeGroup(HexRecipeGroups.EdifiedLogs, 4)
             .AddIngredient<EdifiedPlanksItem>(2)
             .AddIngredient(ItemID.Book, 3)
-            .AddTile(TileID.LunarCraftingStation)
+            .AddTile(TileID.MythrilAnvil)       // 秘银砧 / 山铜砧（肉后）
+            .AddCondition(HexConditions.Enlightened)
             .Register();
     }
 }
@@ -118,14 +119,15 @@ public sealed class AkashicLigatureItem : HexDecoBlockItem
         //     123        P = 任意启迪木板 ×2
         //     LPL        1 = 紫水晶粉 ×1，2 = 紫水晶碎片 ×1，3 = 充能紫水晶 ×1
         //
-        // 阶段：月后（源挂 enlightenment 门槛）。
+        // 阶段：肉后 + 启蒙（源挂 enlightenment 门槛）。
         CreateRecipe(4)
             .AddRecipeGroup(HexRecipeGroups.EdifiedLogs, 4)
             .AddIngredient<EdifiedPlanksItem>(2)
             .AddIngredient<AmethystDust>(1)
             .AddIngredient<AmethystShard>(1)
             .AddIngredient<ChargedAmethyst>(1)
-            .AddTile(TileID.LunarCraftingStation)
+            .AddTile(TileID.MythrilAnvil)       // 秘银砧 / 山铜砧（肉后）
+            .AddCondition(HexConditions.Enlightened)
             .Register();
     }
 }

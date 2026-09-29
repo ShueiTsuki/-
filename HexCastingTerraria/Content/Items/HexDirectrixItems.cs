@@ -54,7 +54,7 @@ public abstract class HexDirectrixItemBase : ModItem
     /// （`brainsweep/directrix_boolean` = 空导线 + 牧羊人村民 ×1，
     ///   `brainsweep/directrix_redstone` = 空导线 + 石匠村民 ×1），
     /// 而脑叶切除在 `HexActionTagProvider` 的启蒙名单里 —— 是**大战法术**。
-    /// 整族因此锁在月后（远古操控器）。
+    /// 整族因此锁在肉后（秘银砧）+ 已启蒙。
     ///
     /// 泰拉没有村民可供切除，用宝石定语义：钻石=布尔、红宝石=红石，
     /// 和本模组的颜料体系（宝石定色）一致。
@@ -64,7 +64,8 @@ public abstract class HexDirectrixItemBase : ModItem
         CreateRecipe()
             .AddIngredient<HexDirectrixEmptyItem>(1)
             .AddIngredient(extraType, extraCount)
-            .AddTile(TileID.LunarCraftingStation)
+            .AddTile(TileID.MythrilAnvil)       // 秘银砧 / 山铜砧（肉后）
+            .AddCondition(HexConditions.Enlightened)
             .Register();
     }
 }
@@ -87,7 +88,7 @@ public sealed class HexDirectrixEmptyItem : HexDirectrixItemBase
         //     SSC        A = 充能紫水晶 ×1
         //                S = 板岩块 ×4
         //
-        // 阶段：月后（源挂 enlightenment 门槛，见上面的说明）。
+        // 阶段：肉后 + 启蒙（源挂 enlightenment 门槛，见上面的说明）。
         //
         // C/O 这两个「红石逻辑件」在泰拉的对应物是逻辑门/逻辑传感器那一族，
         // 但那一族各自还有自己的获取链，直接当成材料会让这条配方变得**不可控**
@@ -98,7 +99,8 @@ public sealed class HexDirectrixEmptyItem : HexDirectrixItemBase
             .AddIngredient<SlateBlockItem>(4)           // 板岩块 ×4
             .AddIngredient(ItemID.Wire, 20)             // 比较器 ×2 + 观察者 ×2 → 电线 ×20
             .AddIngredient<ChargedAmethyst>(1)
-            .AddTile(TileID.LunarCraftingStation)
+            .AddTile(TileID.MythrilAnvil)       // 秘银砧 / 山铜砧（肉后）
+            .AddCondition(HexConditions.Enlightened)
             .Register();
     }
 }

@@ -5,6 +5,10 @@
 
 Mods: {
 	HexCastingTerraria: {
+		Conditions: {
+			Enlightened: Enlightened
+		}
+
 		Items: {
 			Abacus: {
 				DisplayName: "Abacus"

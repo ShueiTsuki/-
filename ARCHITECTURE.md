@@ -152,6 +152,7 @@
 | `Items/DevStaff.cs` | 寮€鍙戣€呮硶鏉栵紙Dev Staff锛夈€?/// |
 | `Items/EdifiedFurniture.cs` | 鍚开鏈ㄧ殑銆屽鍏峰瑁呫€嶏細鐢ㄥ惎杩湪鏉垮幓鍚堟垚**鍘熺増瀹跺叿**銆?/// |
 | `Items/HexBookItem.cs` | 鍜掓硶瀛︿箣涔︺€傚搴旀簮椤圭洰鐨?`hexcasting:thehexbook`锛圥atchouli 鍐欑殑閭ｆ湰寮曞涔︼級銆?/// |
+| `Items/HexConditions.cs` | 本模组的配方条件。</summary> |
 | `Items/HexDecoBlockItem.cs` | 寤烘潗鏂瑰潡鐗╁搧鐨勫叕鍏卞疄鐜帮紙閰嶅悎 <see cref="HexDecoBlock"/>锛夈€?/// |
 | `Items/HexDirectrixItems.cs` | 瀵肩嚎鐨勫叕鍏辩墿鍝佸熀绫汇€傚搴旀簮椤圭洰涓夋牴 `*Directrix` 鐨勭墿鍝佸舰鎬併€?/// |
 | `Items/HexImpetusItem.cs` | 鍘熷姩鍔涳紙鐗╁搧褰㈡€侊級銆傚搴旀簮椤圭洰 `hexcasting:impetus/*`銆?/// |
