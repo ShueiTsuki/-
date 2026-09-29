@@ -133,6 +133,11 @@ Mods: {
 					Tooltip: '''How far you must drag before a step is recorded. 0.5 = the pattern follows the cursor
 exactly (upstream default). Above 0.5 the pattern lags one step behind and tends to drop the last segment.'''
 				}
+
+				StrokeScale: {
+					Label: Stroke thickness
+					Tooltip: Thickness of canvas lines, nodes and guide dots. 1.0 matches upstream at GUI scale 4; default 0.5.
+				}
 			}
 		}
 	}

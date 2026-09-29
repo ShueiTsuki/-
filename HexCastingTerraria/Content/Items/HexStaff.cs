@@ -62,6 +62,7 @@ public abstract class HexStaff : ModItem
         var config = HexClientConfig.Instance;
         canvas.Zoom = config.GridZoom;
         canvas.SnapThreshold = config.GridSnapThreshold;
+        canvas.StrokeScale = config.StrokeScale;
 
         HexCanvasState.OpenCanvas();
     }

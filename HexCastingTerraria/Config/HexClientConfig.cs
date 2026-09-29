@@ -180,4 +180,13 @@ public sealed class HexClientConfig : ModConfig
     [Increment(0.05f)]
     [DefaultValue(0.5f)]
     public float GridSnapThreshold { get; set; } = 0.5f;
+
+    /// <summary>
+    /// 画布笔迹粗细（线宽、节点、背景引导点一起缩放）。
+    /// 1.0 = 原版在 MC 界面缩放 4（1080p 自动）下的比例；玩家反馈偏粗，默认取 0.5（≈ MC 界面缩放 2）。
+    /// </summary>
+    [Range(0.2f, 1.5f)]
+    [Increment(0.05f)]
+    [DefaultValue(0.5f)]
+    public float StrokeScale { get; set; } = 0.5f;
 }

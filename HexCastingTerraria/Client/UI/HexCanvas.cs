@@ -60,6 +60,9 @@ public sealed class HexCanvas
     /// <summary>网格缩放（原版 GRID_ZOOM 属性）。</summary>
     public float Zoom { get; set; } = 1.0f;
 
+    /// <summary>笔迹粗细倍率（设置项 StrokeScale）。线宽、节点、引导点一起缩放。</summary>
+    public float StrokeScale { get; set; } = 0.5f;
+
     public bool IsOpen { get; private set; }
 
     public IReadOnlyList<ResolvedPattern> Patterns => _resolved;
@@ -145,7 +148,8 @@ public sealed class HexCanvas
         // 原版在 MC 的 GUI 坐标里画，线宽 5 / 点半径 2 都是 GUI 单位。
         // 原版格距 = √(宽×高/512) 个 GUI 单位；1080p 自动界面缩放 4 时约 16 个 GUI 单位。
         // 按「一个格距 = 16 GUI 单位」换算，保持线宽与格距的比例不随分辨率变。
-        float unit = size / 16f;
+        // 再乘玩家设置的粗细倍率（默认 0.5：按 1.0 画玩家反馈偏粗）。
+        float unit = size / 16f * StrokeScale;
         _verts.Clear();
 
         // ---- 引导点 ----
