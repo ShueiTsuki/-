@@ -17,4 +17,6 @@
 不知道该画什么？按 F7 打开开发者面板，里面有现成的示例咒术。
 
 原项目：https://github.com/FallingColors/HexMod (MIT License)
-Copyright (c) 2021-2024 Petrak, Falkory220, wiresegal and contributors
+Copyright (c) 2021 gamma-delta and contributors
+书本界面移植自 Patchouli（Vazkii，CC BY-NC-SA 3.0）。
+本模组为非官方移植，免费发布，以 CC BY-NC-SA 3.0 授权，详见 NOTICE.txt。

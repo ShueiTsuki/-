@@ -33,7 +33,7 @@
 ### 咒法学（Hex Casting / HexMod）—— MIT
 
 - 项目：[FallingColors/HexMod](https://github.com/FallingColors/HexMod)
-- 作者：**petrak@（gamma-delta）** 及贡献者
+- 作者：**petrak@（gamma-delta）** 及贡献者（LICENSE 原文版权行：`Copyright © 2021 gamma-delta`）
 - 许可：**MIT**
 - 本模组用到：整个玩法体系、图案数据、材质与实现思路（本模组即其移植版）
 - MIT 要求保留版权声明与许可文本，见 `LICENSE-HexMod`（分发前需一并放入）
@@ -73,8 +73,10 @@
 
 ## TODO（发布前必须完成）
 
-- [ ] 添加 `LICENSE`（CC BY-NC-SA 3.0 全文）
-- [ ] 添加 `LICENSE-Patchouli`（CC BY-NC-SA 3.0 全文，随 Patchouli 分发要求）
-- [ ] 添加 `LICENSE-HexMod`（MIT 全文 + 原版权行）
-- [ ] `description.txt` 里加上上面的署名
+- [x] 添加 `LICENSE.txt`（CC BY-NC-SA 3.0 全文）
+- [x] 添加 `LICENSE-Patchouli.txt`（CC BY-NC-SA 3.0 全文，随 Patchouli 分发要求）
+- [x] 添加 `LICENSE-HexMod.txt`（MIT 全文 + 原版权行 `Copyright © 2021 gamma-delta`）
+- [x] `description.txt` 里加上上面的署名
+- [x] 版权声明 `HexCastingTerraria/NOTICE.txt`（非官方移植声明、原作者版权、许可、异议联系）
+- [ ] NOTICE.txt 里的联系方式待填写
 - [ ] 确认模组分发渠道（Steam Workshop / GitHub）都为免费

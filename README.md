@@ -56,5 +56,6 @@ powershell -ExecutionPolicy Bypass -File _tools\run_all.ps1
 
 ## 许可
 
-原项目 HexMod 为 MIT License，Copyright (c) 2021-2024 Petrak, Falkory220, wiresegal and contributors。
-书的排版移植自 Patchouli（CC BY-NC-SA 3.0）。详见 [CREDITS.md](CREDITS.md)。
+非官方移植，与原作者无关联。原项目 HexMod 为 MIT License（Copyright (c) 2021 gamma-delta）；
+书的排版移植自 Patchouli（CC BY-NC-SA 3.0），因此本模组整体以 CC BY-NC-SA 3.0 发布、不可商用。
+版权声明见 [NOTICE.txt](HexCastingTerraria/NOTICE.txt)，逐文件来源见 [CREDITS.md](CREDITS.md)。
