@@ -285,21 +285,27 @@ public sealed class HexClientSystem : ModSystem
             return;
         }
 
-        // 画布打开时移除背包与悬停提示相关界面层。
+        // 画布打开时停用背包与悬停提示相关界面层（tML 每帧先把所有层重置为 Active = true，关掉画布就自动恢复）。
         // 官方文档（Vanilla Interface layers values）：
         //   Vanilla: Inventory = "Draws and handles logic for everything inventory related."
         //   Vanilla: Sign Tile Bubble = 墓碑/告示牌悬停气泡
         //   Vanilla: Mouse Over = 生物/玩家/掉落物悬停逻辑
         //   Vanilla: Mouse Text = 悬停 tooltip 文本
-        // 移除后画布内 Esc 与鼠标悬停都不再触发这些 UI。
+        // 停用后画布内 Esc 与鼠标悬停都不再触发这些 UI。
+        // 只停用（Active = false）不从列表里删：别的模组（如 ImproveGame）按名字找这些层来排序 / 插入，
+        // 删掉会让它们抛异常，整帧界面（包括画布）都画不出来。
         if (HexCanvasState.Canvas.IsOpen)
         {
-            layers.RemoveAll(l => l.Name == "Vanilla: Inventory"
-                               || l.Name == "Vanilla: Sign Tile Bubble"
-                               || l.Name == "Vanilla: Mouse Over"
-                               || l.Name == "Vanilla: Mouse Text");
+            foreach (var l in layers)
+            {
+                if (l.Name is "Vanilla: Inventory" or "Vanilla: Sign Tile Bubble" or "Vanilla: Mouse Over" or "Vanilla: Mouse Text")
+                {
+                    l.Active = false;
+                }
+            }
         }
 
+        // 画布开着时 Mouse Text 只是停用、仍在列表里，所以我们的层照样插在它前面（原版光标层在后面，压在笔迹上）。
         int index = layers.FindIndex(l => l.Name == "Vanilla: Mouse Text");
         if (index < 0)
         {

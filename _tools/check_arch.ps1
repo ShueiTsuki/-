@@ -548,6 +548,15 @@ Write-Host "`n⑫ 附属：每个功能都能找到文件、开关放对地方�
     }
     # 4. 图案形状对拍上游：check_patterns_vs_original.py 读每个清单的 patterns.file（第一个带图案的附属落地时接上）
 }
+# ── 界面层只停用不删除：别的模组按名字找原版层排序 / 插入，删掉会让它们抛异常、整帧界面画不出来（玩家日志里 ImproveGame 实际出过）──
+$rm = New-Object System.Collections.Generic.List[string]
+foreach ($f in (AllCs $mod)) {
+    foreach ($h in (Select-String -LiteralPath $f.FullName -Pattern 'layers\.(Remove|RemoveAt|RemoveAll|RemoveRange|Clear)\(')) {
+        $rm.Add((Rel $f.FullName $mod) + ':' + $h.LineNumber)
+    }
+}
+Check "界面层不从列表里删（用 Active = false 停用）" ($rm.Count -eq 0) ($rm -join ', ')
+
 # ─────────────────────────────────────────────────────────────────────
 Write-Host ''
 Write-Host "================ 架构断言：通过 $script:passed / 失败 $script:failed ================" `

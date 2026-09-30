@@ -87,19 +87,26 @@ public sealed class HexGlobalNPC : GlobalNPC
 
     public override void PostAI(NPC npc)
     {
-        // NPC 的 target 指向玩家数组下标；-1 表示没有目标
-        bool hasTarget = npc.HasValidTarget;
+        // NPC 的 target：0..254 是玩家下标，300 起是 NPC 下标（原版 NPC 互打、别的模组也会用），其余表示没有目标
+        bool hasTarget = false;
         Vector2 targetPos = default;
-        if (hasTarget)
+        if (npc.HasPlayerTarget)
         {
             var target = Main.player[npc.target];
+            // 死了 / 幽灵的玩家不算目标（与原来 HasValidTarget 的判定一致）
+            if (target is { active: true, dead: false, ghost: false })
+            {
+                targetPos = target.Center;
+                hasTarget = true;
+            }
+        }
+        else if (npc.HasNPCTarget)
+        {
+            var target = Main.npc[npc.TranslatedTargetIndex];
             if (target is { active: true })
             {
                 targetPos = target.Center;
-            }
-            else
-            {
-                hasTarget = false;
+                hasTarget = true;
             }
         }
 
