@@ -247,11 +247,12 @@ public sealed class HexBook
                     if (ing.IsAir) { continue; }
                     book.Ingredients.Add(("Id:" + ing.type, ing.stack));
                 }
-                // 1.4.5 起一条配方只有一个合成站（requiredTile 是 int，-1 = 徒手）
-                if (r.requiredTile >= 0)
+                // 书页只画一个合成站：取第一个（原版配方也只有一个工作方块）
+                foreach (int tile in r.requiredTile)
                 {
-                    int tileItem = Terraria.ModLoader.TileLoader.GetItemDropFromTypeAndStyle(r.requiredTile);
-                    if (tileItem > 0) { book.Station = "Id:" + tileItem; }
+                    if (tile < 0) { continue; }
+                    int tileItem = Terraria.ModLoader.TileLoader.GetItemDropFromTypeAndStyle(tile);
+                    if (tileItem > 0) { book.Station = "Id:" + tileItem; break; }
                 }
                 return book;
             }

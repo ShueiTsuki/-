@@ -304,6 +304,22 @@ public static class PlayerEffects
     /// <summary>MC 的 0.5 格/刻 → 泰拉像素/帧（1 格/刻 = 16/3 像素/帧，与 TerrariaCastingWorld.ApplyMotion 同一换算）。</summary>
     private const float YeetSpeed = 0.5f * 16f / 3f;
 
+    /// <summary>
+    /// 把一件物品的拷贝丢到地上（调用方随后把原物品清空）。
+    /// 原版 setPickUpDelay(40)：40 刻 = 2 秒内谁都捡不起来 —— 泰拉的对应物是 noGrabDelay（帧，120 = 2 秒）。
+    /// </summary>
+    private static void Throw(IEntitySource src, Vector2 pos, Item item, Vector2 vel)
+    {
+        int idx = Item.NewItem(src, pos, item.Clone(), noBroadcast: true);
+        var dropped = Main.item[idx];
+        dropped.velocity = vel;
+        dropped.noGrabDelay = 120;
+        if (Main.netMode != NetmodeID.SinglePlayer)
+        {
+            NetMessage.SendData(MessageID.SyncItem, -1, -1, null, idx);
+        }
+    }
+
     private static void ApplyYeetHeld(Player p, int[] slots, Vector2 targetPx)
     {
         var dir = targetPx - p.Center;
@@ -312,8 +328,7 @@ public static class PlayerEffects
         {
             if (Slot(p, s) is not { } held) { continue; }
             var vel = dir * YeetSpeed + new Vector2(Main.rand.NextFloat(-0.05f, 0.05f), Main.rand.NextFloat(-0.05f, 0.05f)) * 16f / 3f;
-            // 原版 setPickUpDelay(40)：丢出去的东西本人 2 秒内捡不回来 —— 1.4.5 用 GrabDelayForLocalPlayer 表达
-            Item.RequestNewItem(p.GetSource_Misc("HexMishap"), p.Center, held.Clone(), NewItemOwnership.GrabDelayForLocalPlayer, vel);
+            Throw(p.GetSource_Misc("HexMishap"), p.Center, held, vel);
             held.TurnToAir();
         }
     }
@@ -337,16 +352,14 @@ public static class PlayerEffects
         {
             ref Item it = ref p.inventory[i];
             if (it is null || it.IsAir) { continue; }
-            Item.RequestNewItem(src, p.Center, it.Clone(), NewItemOwnership.GrabDelayForLocalPlayer,
-                new Vector2(Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(-4f, -1f)));
+            Throw(src, p.Center, it, new Vector2(Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(-4f, -1f)));
             it.TurnToAir();
         }
         for (int i = 0; i < p.armor.Length; i++)
         {
             ref Item it = ref p.armor[i];
             if (it is null || it.IsAir) { continue; }
-            Item.RequestNewItem(src, p.Center, it.Clone(), NewItemOwnership.GrabDelayForLocalPlayer,
-                new Vector2(Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(-4f, -1f)));
+            Throw(src, p.Center, it, new Vector2(Main.rand.NextFloat(-3f, 3f), Main.rand.NextFloat(-4f, -1f)));
             it.TurnToAir();
         }
         Main.mouseItem = new Item();
@@ -367,7 +380,7 @@ public static class PlayerEffects
         void Roll(ref Item it, double chance)
         {
             if (it is null || it.IsAir || Main.rand.NextDouble() >= chance) { return; }
-            Item.RequestNewItem(src, p.Center, it.Clone(), NewItemOwnership.GrabDelayForLocalPlayer, Vector2.Zero);
+            Throw(src, p.Center, it, Vector2.Zero);
             it.TurnToAir();
         }
         // 护甲：头 / 胸 / 腿（原版 4 格护甲；时装、饰品不算）

@@ -545,7 +545,7 @@ public sealed class EdifiedLogItem : HexDecoBlockItem
     {
         // 源：Edify 把树苗变成启迪树苗 → 阿卡夏树（**无配方**）→ 这里给 1:1 保底转化
         CreateRecipe()
-            .AddRecipeGroup(RecipeGroups.Wood, 1)
+            .AddRecipeGroup(RecipeGroupID.Wood, 1)
             .AddTile(TileID.WorkBenches)
             .Register();
 

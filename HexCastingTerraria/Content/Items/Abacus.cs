@@ -127,9 +127,9 @@ public sealed class Abacus : ItemIotaStorage
         //     WAW        S = 木棍 ×2         → 泰拉没有木棍，折进木材里（W4 + S2 = 木材 ×6）
         //
         // 阶段：肉前。源项目这条的解锁条件是「拥有任意法杖」，没有任何进度门槛。
-        // 木材用原版配方组 `RecipeGroups.Wood`，这样橡木/北地木/红木……都能用。
+        // 木材用原版配方组 `RecipeGroupID.Wood`，这样橡木/北地木/红木……都能用。
         CreateRecipe()
-            .AddRecipeGroup(RecipeGroups.Wood, 6)
+            .AddRecipeGroup(RecipeGroupID.Wood, 6)
             .AddIngredient(ItemID.Amethyst, 2)
             .AddTile(TileID.WorkBenches)
             .Register();

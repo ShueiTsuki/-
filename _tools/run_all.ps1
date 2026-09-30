@@ -88,7 +88,7 @@ function Invoke-TestProject([string]$dir) {
     return @{ Ok = ($code -eq 0 -and $f -eq 0 -and $p -gt 0); Passed = $p; Failed = $f }
 }
 
-# ── 0. 环境指纹：tML 1.4.5-dev 随每次上游提交自动更新，API 会变 ────────
+# ── 0. 环境指纹：tML 1.4.4.9 stable；Steam 更新 tML 后 API 可能变 ────────
 $lastGreenPath = Join-Path $tools 'last_green.json'
 $tmlCommit = ''
 $commitsFile = Join-Path $tml 'RecentGitHubCommits.txt'
@@ -165,7 +165,7 @@ if ($Package) {
         ($r.Out -split "`n" | Where-Object { $_ -match '打包成功|异常|Exception|TML\d+|: error ' } | Select-Object -First 8) |
             ForEach-Object { Write-Host "  $($_.Trim())" }
         $script:packed = ($r.Code -eq 0)
-        $tm = Join-Path $env:USERPROFILE 'Documents\My Games\Terraria\tModLoader-dev\Mods\HexCastingTerraria.tmod'
+        $tm = Join-Path $env:USERPROFILE 'Documents\My Games\Terraria\tModLoader\Mods\HexCastingTerraria.tmod'
         $script:facts.package = [ordered]@{ ok = $script:packed; bytes = $(if (Test-Path $tm) { (Get-Item $tm).Length } else { 0 }) }
         return $script:packed
     }

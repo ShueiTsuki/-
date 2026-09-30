@@ -42,11 +42,8 @@ public sealed class GeodeWorldGen : ModSystem
     /// <summary>
     /// 插入晶洞生成 pass。
     ///
-    /// ⚠️ 1.4.5 的签名是 `ModifyWorldGenTasks(List&lt;GenPass&gt;)` ——
-    /// **没有** `ref double totalWeight` 参数（1.4.4 有）。
-    /// 照抄 1.4.4 的教程会编译不过。
     /// </summary>
-    public override void ModifyWorldGenTasks(List<GenPass> tasks)
+    public override void ModifyWorldGenTasks(List<GenPass> tasks, ref double totalWeight)
     {
         // 插在「Shinies」（矿石）之后 —— 那时地形已经定型，
         // 晶洞不会把已经挖好的洞穴结构再切一遍

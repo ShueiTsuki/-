@@ -133,7 +133,7 @@ public abstract class WoodStaff : HexStaff
     public override void AddRecipes()
     {
         CreateRecipe()
-            .AddRecipeGroup(RecipeGroups.Wood, 3)            // 木棍 ×3（泰拉替代物）
+            .AddRecipeGroup(RecipeGroupID.Wood, 3)            // 木棍 ×3（泰拉替代物）
             .AddIngredient(WoodType, 1)               // 对应木板 ×1
             .AddIngredient<ChargedAmethyst>(1)        // 充能紫水晶 ×1
             .AddTile(TileID.WorkBenches)
@@ -226,7 +226,7 @@ public sealed class CherryStaff : HexStaff
     public override void AddRecipes()
     {
         CreateRecipe()
-            .AddRecipeGroup(RecipeGroups.Wood, 3)              // 木棍 ×3（泰拉替代物）
+            .AddRecipeGroup(RecipeGroupID.Wood, 3)              // 木棍 ×3（泰拉替代物）
             .AddIngredient(ItemID.Pearlwood, 1)         // 樱花木板：泰拉用珍珠木代替
             .AddIngredient<ChargedAmethyst>(1)
             .AddTile(TileID.WorkBenches)
@@ -247,7 +247,7 @@ public sealed class QuenchedStaff : HexStaff
     public override void AddRecipes()
     {
         CreateRecipe()
-            .AddRecipeGroup(RecipeGroups.Wood, 3)
+            .AddRecipeGroup(RecipeGroupID.Wood, 3)
             .AddIngredient<QuenchedAllayShard>(1)       // 原版 staffRecipe 的「木板」槽位 = 淬灵晶碎片
             .AddIngredient<ChargedAmethyst>(1)
             .AddTile(TileID.WorkBenches)
@@ -274,7 +274,7 @@ public sealed class EdifiedStaff : HexStaff
     public override void AddRecipes()
     {
         CreateRecipe()
-            .AddRecipeGroup(RecipeGroups.Wood, 3)              // 木棍 ×3（泰拉替代物）
+            .AddRecipeGroup(RecipeGroupID.Wood, 3)              // 木棍 ×3（泰拉替代物）
             .AddIngredient<EdifiedPlanksItem>(1)        // 启迪木板 ×1 —— 原版就是这个
             .AddIngredient<ChargedAmethyst>(1)
             .AddTile(TileID.WorkBenches)
@@ -300,7 +300,7 @@ public sealed class MindspliceStaff : HexStaff
     {
         CreateRecipe()
             // 被剥离意识的环组件：脑叶切除「空导线」+ 对应职业的城镇 NPC 所得
-            .AddRecipeGroup(RecipeGroups.Wood, 3)
+            .AddRecipeGroup(RecipeGroupID.Wood, 3)
             .AddIngredient<HexDirectrixRedstoneItem>(1) // 被脑叶切除的环组件（原版是 MINDFLAYED_CIRCLE_COMPONENTS 标签）
             .AddIngredient<ChargedAmethyst>(1)
             .AddTile(TileID.WorkBenches)

@@ -124,7 +124,7 @@ foreach ($k in $layers.Keys) {
 [void]$sb.AppendLine("| 专用服务器加载 | $serverText | ``_tools\verify_server.ps1`` |")
 [void]$sb.AppendLine()
 [void]$sb.AppendLine("以上来自 ``_tools\run_all.ps1`` 于 $runWhen 的一次运行（``_tools\run_last.json``）；VM 测试时间 $vmWhen。")
-[void]$sb.AppendLine("验证时的 tModLoader：$tmlText。1.4.5-dev 随上游每次提交自动更新，API 会变 —— tML 更新后请重跑。")
+[void]$sb.AppendLine("验证时的 tModLoader：$tmlText。目标是 1.4.4.9 stable；tML 更新后请重跑。")
 [void]$sb.AppendLine()
 [void]$sb.AppendLine('## 验证**没有**覆盖什么')
 [void]$sb.AppendLine()

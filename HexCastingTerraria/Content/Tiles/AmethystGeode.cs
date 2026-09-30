@@ -58,18 +58,9 @@ public sealed class GeodeCore : ModTile
     ///   1. `rand.nextInt(5) == 0` 才继续（1/5 概率）
     ///   2. 随机挑一个方向
     ///   3. 该方向若是空位 → 长出小芽；若已是某一级晶簇 → 升一级；已成熟 → 不动
-    ///
-    /// ⚠️ 签名是 `(int i, int j, bool wall)` —— 不是两参数版本，
-    /// tModLoader 的 `ModBlockType.RandomUpdate` 是三个参数。
     /// </summary>
-    public override void RandomUpdate(int i, int j, bool wall)
+    public override void RandomUpdate(int i, int j)
     {
-        // 墙上的随机刻不处理：晶洞长在物块上，不长在背景墙上
-        if (wall)
-        {
-            return;
-        }
-
         // 调试开关：晶簇立即长成（跳过随机判定）
         bool forceGrow = HexClientConfig.Instance.InstantCrystalGrowth;
 

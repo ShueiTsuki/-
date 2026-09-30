@@ -1,6 +1,6 @@
 # 咒法学 · 泰拉瑞亚移植（HexCastingTerraria）
 
-把 Minecraft 模组 [Hex Casting（咒法学）](https://github.com/FallingColors/HexMod) 移植到泰拉瑞亚（tModLoader 1.4.5-dev）。
+把 Minecraft 模组 [Hex Casting（咒法学）](https://github.com/FallingColors/HexMod) 移植到泰拉瑞亚（tModLoader 1.4.4.9 stable）。
 玩家在六边形网格上画图案，每个图案是一条栈机指令，串起来就是一段咒术。
 
 **原则：一切以原版为基准。** 只有泰拉真的没有对应概念（3D → 2D、没有村民、没有末地……）时才偏离，
@@ -40,7 +40,7 @@ powershell -ExecutionPolicy Bypass -File _tools\run_all.ps1
 
 依次是：编译（要求 0 错 0 警）→ 离线栈机测试 → 画布 / 几何测试 → 贴图检查 → 生成状态表 → 架构断言。
 加 `-Package` 会另外打包 `.tmod`，并在专用服务器里真实加载一次（**需要先关游戏**）。
-包输出到 `Documents\My Games\Terraria\tModLoader-dev\Mods\`。
+包输出到 `Documents\My Games\Terraria\tModLoader\Mods\`。
 
 提交前跑一次 `python _tools/fix_eol.py` 统一换行。
 

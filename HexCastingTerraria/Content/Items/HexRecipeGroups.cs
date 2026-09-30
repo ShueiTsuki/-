@@ -23,8 +23,8 @@ namespace HexCastingTerraria.Content.Items;
 ///
 /// ## 显示名为什么是中文常量
 ///
-/// `RecipeGroup.Register(key, Func&lt;string&gt; getName, ...)` 这个重载的 `getName`
-/// 返回的是**最终显示文本**（另一个重载收的才是本地化 *键*）。这里直接给中文，
+/// `new RecipeGroup(Func&lt;string&gt; getName, ...)` 的 `getName`
+/// 返回的是**最终显示文本**。这里直接给中文，
 /// 免得再引入一层键名约定；键与常量的对应关系由 <c>HexRecipeGroups.*</c> 保证。
 /// </summary>
 public sealed class HexRecipeGroups : ModSystem
@@ -43,39 +43,39 @@ public sealed class HexRecipeGroups : ModSystem
 
     public override void AddRecipeGroups()
     {
-        RecipeGroup.Register(SlateBlocks, () => "任意板岩", new[]
+        RecipeGroup.RegisterGroup(SlateBlocks, new RecipeGroup(() => "任意板岩", new[]
         {
             ModContent.ItemType<SlateBlockItem>(),
             ModContent.ItemType<SlateBricksItem>(),
             ModContent.ItemType<SlateBricksSmallItem>(),
             ModContent.ItemType<SlateTilesItem>(),
             ModContent.ItemType<SlatePillarItem>(),
-        });
+        }));
 
-        RecipeGroup.Register(AmethystBlocks, () => "任意紫晶方块", new[]
+        RecipeGroup.RegisterGroup(AmethystBlocks, new RecipeGroup(() => "任意紫晶方块", new[]
         {
             ModContent.ItemType<AmethystDustBlockItem>(),
             ModContent.ItemType<AmethystBricksItem>(),
             ModContent.ItemType<AmethystBricksSmallItem>(),
             ModContent.ItemType<AmethystTilesItem>(),
             ModContent.ItemType<AmethystPillarItem>(),
-        });
+        }));
 
-        RecipeGroup.Register(QuenchedAllayBlocks, () => "任意淬灵方块", new[]
+        RecipeGroup.RegisterGroup(QuenchedAllayBlocks, new RecipeGroup(() => "任意淬灵方块", new[]
         {
             ModContent.ItemType<QuenchedAllayItem>(),
             ModContent.ItemType<QuenchedAllayBricksItem>(),
             ModContent.ItemType<QuenchedAllayBricksSmallItem>(),
             ModContent.ItemType<QuenchedAllayTilesItem>(),
-        });
+        }));
 
-        RecipeGroup.Register(EdifiedLogs, () => "任意启迪原木", new[]
+        RecipeGroup.RegisterGroup(EdifiedLogs, new RecipeGroup(() => "任意启迪原木", new[]
         {
             ModContent.ItemType<EdifiedLogItem>(),
             ModContent.ItemType<EdifiedLogAmethystItem>(),
             ModContent.ItemType<EdifiedLogAventurineItem>(),
             ModContent.ItemType<EdifiedLogCitrineItem>(),
             ModContent.ItemType<EdifiedLogPurpleItem>(),
-        });
+        }));
     }
 }

@@ -62,9 +62,9 @@ public sealed class JewelerHammer : ModItem
         // （珠宝匠锤就是「把紫晶敲成粉」的那把锤子，见 ItemJewelerHammer）。
         // 之前这里是「铁锭 ×8 + 粉 ×10 + 紫晶 ×3」—— 数量全部凭感觉，比原版贵一个数量级。
         CreateRecipe()
-            .AddRecipeGroup(RecipeGroups.IronBar, 1)
+            .AddRecipeGroup(RecipeGroupID.IronBar, 1)
             .AddIngredient<AmethystShard>(1)
-            .AddRecipeGroup(RecipeGroups.Wood, 2)
+            .AddRecipeGroup(RecipeGroupID.Wood, 2)
             .AddTile(TileID.Anvils)
             .Register();
     }

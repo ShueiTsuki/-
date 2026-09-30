@@ -754,10 +754,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (a.Index < 0 || a.Index >= Main.maxItems) return false;
         if (b.Index < 0 || b.Index >= Main.maxItems) return false;
 
-        // 1.4.5 的 Main.item 是 WorldItem 外壳，真正的 Item 在 .inner 里。
-        // 存活标记 active 只在外壳上（Item.active 已移除）。
-        WorldItem wa = Main.item[a.Index];
-        WorldItem wb = Main.item[b.Index];
+        Item wa = Main.item[a.Index];
+        Item wb = Main.item[b.Index];
         if (wa is null || wb is null) return false;
         if (!wa.active || !wb.active) return false;
 
@@ -782,14 +780,14 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// 源项目还能读物品展示框、盔甲架 —— 泰拉没有等价实体，见 ICastingWorld 的说明。
     ///
     /// ⚠️ 载体的状态挂在 <see cref="ModItem"/> 实例上（`ModItem` 是 per-Item 的），
-    /// 所以必须从 `Main.item[i].inner.ModItem` 取，不能自己 new 一个。
+    /// 所以必须从 `Main.item[i].ModItem` 取，不能自己 new 一个。
     /// </summary>
     private static Items.ItemIotaStorage? FindEntityStorage(EntityIota entity)
     {
         if (entity.Target != EntityIota.EntityKind.Item) return null;
         if (entity.Index < 0 || entity.Index >= Main.maxItems) return null;
 
-        WorldItem world = Main.item[entity.Index];
+        Item world = Main.item[entity.Index];
         if (world is null || !world.active || world.IsAir) return null;
 
         return world.ModItem as Items.ItemIotaStorage;
@@ -1295,11 +1293,10 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     }
 
     /// <summary>地上那个掉落物（活着的）；不是掉落物 → null。</summary>
-    private static WorldItem? GroundItem(EntityIota e)
+    private static Item? GroundItem(EntityIota e)
     {
         if (e.Target != EntityIota.EntityKind.Item || e.Index < 0 || e.Index >= Main.maxItems) return null;
-        // 存活标记在 WorldItem 外壳上（1.4.5 起 Item.active 已移除）
-        WorldItem w = Main.item[e.Index];
+        Item w = Main.item[e.Index];
         return w is null || !w.active || w.IsAir ? null : w;
     }
 
@@ -1308,9 +1305,9 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     {
         var w = GroundItem(itemEntity);
         if (w is null) return 0;
-        return w.inner.ModItem switch
+        return w.ModItem switch
         {
-            Items.MediaMaterial m => m.MediaValue * w.inner.stack,
+            Items.MediaMaterial m => m.MediaValue * w.stack,
             Items.MediaFlask f when !forBattery => f.Media,
             _ => 0,
         };
@@ -1325,7 +1322,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return 0;
         var w = GroundItem(itemEntity);
         if (w is null) return 0;
-        Item item = w.inner;
+        Item item = w;
         long got;
         switch (item.ModItem)
         {
@@ -1345,7 +1342,6 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         }
         if (item.stack <= 0)
         {
-            // 必须对外壳调用：inner.TurnToAir() 不会让地上的掉落物实体失活
             w.TurnToAir();
         }
         if (Main.netMode == Terraria.ID.NetmodeID.Server)

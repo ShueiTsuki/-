@@ -181,7 +181,7 @@ foreach ($m in $stoneMix) {
 # 属于早期内容。
 #
 # 泰拉侧还没有阿卡夏树与启迪树苗（世界生成那一块没做），所以下面给的是**保底转化**：
-# 站用工作台、材料用原版木材（`RecipeGroups.Wood` = 任意木材，原版配方组）。
+# 站用工作台、材料用原版木材（`RecipeGroupID.Wood` = 任意木材，原版配方组）。
 # 比例逐条照抄源项目，注释里标了行号。等启迪树苗做出来，这些保底配方可以原样保留
 # （源项目自己也留了 Create 兼容的粉碎/切割路径）。
 $WOOD = 'TileID.WorkBenches'
@@ -334,7 +334,7 @@ function Get-IngredientCode([string]$spec, [int]$count) {
     # 配方组用 C# 常量名而不是字符串字面量：名字写错就编译不过，不会静默少一组
     if ($spec.StartsWith('#')) { return ".AddRecipeGroup(HexRecipeGroups.$($spec.Substring(1)), $count)" }
     # % = 原版自带的配方组（Terraria.ID.RecipeGroups），如 %Wood 收任意木材、%IronBar 收铁锭或铅锭
-    if ($spec.StartsWith('%')) { return ".AddRecipeGroup(RecipeGroups.$($spec.Substring(1)), $count)" }
+    if ($spec.StartsWith('%')) { return ".AddRecipeGroup(RecipeGroupID.$($spec.Substring(1)), $count)" }
     if ($spec.StartsWith('!')) { return ".AddIngredient<$($spec.Substring(1))>($count)" }
     return ".AddIngredient<${spec}Item>($count)"
 }

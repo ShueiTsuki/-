@@ -3,8 +3,8 @@
     编译并打包咒法学模组，并自动处理「游戏正在运行导致 .tmod 被锁」的情况。
 
 .DESCRIPTION
-    踩过的坑（1.4.5 实测）：
-      1. tModLoader 命令行打包会写入 tModLoader-dev\Mods\*.tmod；
+    踩过的坑（实测）：
+      1. tModLoader 命令行打包会写入 tModLoader\Mods\*.tmod（1.4.4 stable；1.4.5-dev 写 tModLoader-dev）；
          如果游戏正在运行，该文件被锁，打包报
          "TML003: Please close tModLoader or disable the mod in-game to build mods directly."
       2. 游戏进程名不是 tModLoader，而是 dotnet.exe
@@ -42,7 +42,7 @@ $modName    = Split-Path -Leaf $source
 $modSources = Join-Path $env:USERPROFILE 'Documents\My Games\Terraria\tModLoader\ModSources'
 $projectDir = Join-Path $modSources $modName
 $csproj     = Join-Path $projectDir "$modName.csproj"
-$tmodOut    = Join-Path $env:USERPROFILE "Documents\My Games\Terraria\tModLoader-dev\Mods\$modName.tmod"
+$tmodOut    = Join-Path $env:USERPROFILE "Documents\My Games\Terraria\tModLoader\Mods\$modName.tmod"
 
 Write-Host "源目录  : $source"
 Write-Host "构建目录: $projectDir"

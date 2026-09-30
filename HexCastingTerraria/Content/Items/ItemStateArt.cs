@@ -116,14 +116,13 @@ public sealed class ItemStateArt : GlobalItem
         return false;
     }
 
-    /// <summary>1.4.5 起地上的物品是 WorldItem（外壳），物品数据在 inner 里。</summary>
-    public override bool PreDrawInWorld(WorldItem item, SpriteBatch spriteBatch, Color lightColor, Color alphaColor,
+    public override bool PreDrawInWorld(Item item, SpriteBatch spriteBatch, Color lightColor, Color alphaColor,
         ref float rotation, ref float scale, int whoAmI)
     {
-        if (Layers(item.inner) is not { } layers) return true;
+        if (Layers(item) is not { } layers) return true;
         // 与泰拉 Main.DrawItem 同一个摆法：底边对齐碰撞箱底边、水平居中
         var center = item.position - Main.screenPosition + new Vector2(item.width / 2f, item.height - 16f);
-        var color = item.inner.GetAlpha(lightColor);
+        var color = item.GetAlpha(lightColor);
         foreach (var l in layers)
         {
             spriteBatch.Draw(Sheet(l.Sheet), center, Cell(l), color.MultiplyRGBA(l.Tint), rotation,

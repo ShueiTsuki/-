@@ -33,7 +33,7 @@ public sealed class EdifiedDoorClosed : ModTile
         TileID.Sets.HasOutlines[Type] = true;
         TileID.Sets.DisableSmartCursor[Type] = true;
         TileID.Sets.OpenDoorID[Type] = ModContent.TileType<EdifiedDoorOpen>();
-        TileID.Sets.RoomNeeds.CountsAsDoor[Type] = true;   // 1.4.5：这是 BoolListSet，不再是数组（ExampleMod 1.4.4 的 AddToArray 写法编不过）
+        AddToArray(ref TileID.Sets.RoomNeeds.CountsAsDoor);
 
         DustType = DustID.Shadewood;
         AdjTiles = new int[] { TileID.ClosedDoor };
@@ -70,7 +70,7 @@ public sealed class EdifiedDoorOpen : ModTile
         TileID.Sets.DisableSmartCursor[Type] = true;
         TileID.Sets.CloseDoorID[Type] = ModContent.TileType<EdifiedDoorClosed>();
         TileID.Sets.DrawTileInSolidLayer[Type] = true;
-        TileID.Sets.RoomNeeds.CountsAsDoor[Type] = true;   // 1.4.5：这是 BoolListSet，不再是数组（ExampleMod 1.4.4 的 AddToArray 写法编不过）
+        AddToArray(ref TileID.Sets.RoomNeeds.CountsAsDoor);
 
         DustType = DustID.Shadewood;
         AdjTiles = new int[] { TileID.OpenDoor };
