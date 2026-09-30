@@ -5701,6 +5701,7 @@ static class Program
 
         // 附属的离线用例（tests/vmtest/Addons/*Tests.cs）
         Addons.HexParseTests.Run();
+        Addons.HexcessibleTests.Run();
 
         Console.WriteLine($"================ 通过 {_pass} / 失败 {_fail} ================");
         Environment.Exit(_fail == 0 ? 0 : 1);

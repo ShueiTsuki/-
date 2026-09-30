@@ -212,6 +212,19 @@ public sealed class PatternDrawer
     }
 
     /// <summary>
+    /// 直接把一整条图案放在 <paramref name="origin"/>（不经过鼠标拖拽）：附属 Hexcessible 的键盘绘制、自动补全用。
+    /// 占用的格点和手画的一样记下来；调用方负责先确认放得下。
+    /// </summary>
+    public DrawnPattern Place(HexPattern pattern, HexCoord origin)
+    {
+        Cancel();
+        var drawn = new DrawnPattern(pattern, origin);
+        _patterns.Add(drawn);
+        foreach (var p in pattern.Positions(origin)) _usedSpots.Add(p);
+        return drawn;
+    }
+
+    /// <summary>
     /// 求值结果回来了（单机即时，联机等服务端回包）。对应 recvServerUpdate：
     /// 把最后一条图案设成该结果；若是 Undone，则把它之前最近一条「可撤销」的图案标成 Undone，
     /// 最后一条（撤销图案本身）用 Evaluated 的颜色。

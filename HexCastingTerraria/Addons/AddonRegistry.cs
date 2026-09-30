@@ -33,7 +33,8 @@ public static class AddonRegistry
         {
             PatternRegistry.DeclareAddonPatterns(addon.Id, addon.Patterns);
             PatternRegistry.SetAddonEnabled(addon.Id, addon.IsEnabled);
-            if (addon.IsEnabled) addon.OnLoad(mod);
+            // 纯客户端附属的开关随时能改（不需要重载）：入口总是登记，生效与否由它自己每帧读开关
+            if (addon.IsEnabled || addon.Side == AddonSide.Client) addon.OnLoad(mod);
         }
         mod.Logger.Info("[HexCasting] 附属：" + string.Join("，", All.Select(a => $"{a.Name} {(a.IsEnabled ? "开" : "关")}")));
         foreach (var conflict in PatternRegistry.AddonConflicts)
@@ -46,7 +47,7 @@ public static class AddonRegistry
     {
         foreach (var addon in All)
         {
-            if (addon.IsEnabled) addon.OnUnload();
+            if (addon.IsEnabled || addon.Side == AddonSide.Client) addon.OnUnload();
         }
         PatternRegistry.ClearAddons();
     }

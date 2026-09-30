@@ -410,6 +410,21 @@ public sealed class HexPlayer : ModPlayer
 
         if (Player.whoAmI != Main.myPlayer || Terraria.GameInput.PlayerInput.ScrollWheelDelta == 0) return;
         bool canvas = Client.HexCanvasState.Canvas.IsOpen;
+
+        // 画布上的附属扩展（Hexcessible 键盘绘制用滚轮转起笔方向）先拿滚轮
+        if (canvas)
+        {
+            int wheel = Terraria.GameInput.PlayerInput.ScrollWheelDelta;
+            int wheelNotches = System.Math.Max(System.Math.Abs(wheel) / 120, 1) * System.Math.Sign(wheel);
+            foreach (var ext in Client.CanvasExtensions.Active)
+            {
+                if (ext.ConsumeScroll(wheelNotches))
+                {
+                    Terraria.GameInput.PlayerInput.ScrollWheelDelta = 0;
+                    return;
+                }
+            }
+        }
         if (!canvas && (!ShiftHeld() || Main.playerInventory || Main.mapFullscreen)) return;
 
         static bool Scrollable(Item? it) => it is { IsAir: false, ModItem: Items.Spellbook or Items.Abacus };

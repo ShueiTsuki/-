@@ -188,6 +188,11 @@ HexAddonsClientConfig: {
 		Label: Hexcessible
 		Tooltip: 施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu）。只影响自己，随时改。
 	}
+
+	HexcessibleOptions: {
+		Label: Hexcessible 设置
+		Tooltip: 开关打开后才有用。只影响自己，随时改。
+	}
 }
 
 HexParseOptions: {
@@ -300,6 +305,61 @@ UnknownMode: {
 
 	KeepNbt: {
 		Label: 编码保存
+		Tooltip: ""
+	}
+
+}
+
+HexcessibleOptions: {
+	Tooltip: Hexcessible 的配置项（上游 HexcessibleConfig，默认值照搬）
+
+	KeyboardAllow: {
+		Label: 使用键盘绘制图案
+		Tooltip: 按 q w e a d 画图，Enter / Tab / 空格施放，s 或退格撤销，方向键 / hjkl 移动，r 旋转
+	}
+
+	KeyboardTooltip: {
+		Label: 键盘绘制：显示提示文本
+		Tooltip: ""
+	}
+
+	KeyHint: {
+		Label: 显示按键提示
+		Tooltip: 在使用键盘进行绘制时，显示下一步绘制可按下的对应键位标记
+	}
+
+	Ghost: {
+		Label: 预览图案
+		Tooltip: 预览在该位置放置图案的效果（即便无法放置也进行预览）
+	}
+
+	ShortcutHints: {
+		Label: 快捷键提示
+		Tooltip: 在UI左下角显示快捷键
+	}
+
+	UppercaseSig: {
+		Label: 大写笔顺签名
+		Tooltip: 以大写显示笔顺签名，如将qaq显示为QAQ
+	}
+
+}
+
+TooltipMode: {
+	Tooltip: 提示文本
+
+	Hidden: {
+		Label: 不显示
+		Tooltip: ""
+	}
+
+	Simple: {
+		Label: 简单
+		Tooltip: ""
+	}
+
+	Descriptive: {
+		Label: 详细
 		Tooltip: ""
 	}
 

@@ -67,6 +67,8 @@ public static class HexCanvasState
     public static void CloseCanvas()
     {
         Canvas.Close(clearPatterns: false);
+        Canvas.Overlays.Clear();
+        foreach (var ext in CanvasExtensions.All) ext.OnClose();
     }
 
     /// <summary>每帧递减保护计数。</summary>

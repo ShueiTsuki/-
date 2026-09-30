@@ -9,6 +9,26 @@ Mods: {
 			OnlyHostCanChangeAddons: Only the host can change addon settings
 		}
 
+		// Hexcessible 附属（上游 lang 文件的官方译文）
+		Hexcessible: {
+			NoSpace: Can't place this here
+			CountQueued: "{0} more to go"
+
+			Hint: {
+				DrawStart: draw
+				AutoComplete: autocomplete
+				Cast: cast
+				Move: move
+				Rotate: rotate
+				Scroll: scroll
+				ScrollDefinitions: definitions
+				Search: search
+				Alias: alias this
+				AliasOff: remove alias
+				Undo: undo
+			}
+		}
+
 		Conditions: {
 			Sealable: The first one of this item in your inventory holds something and is not sealed
 			Enlightened: Enlightened

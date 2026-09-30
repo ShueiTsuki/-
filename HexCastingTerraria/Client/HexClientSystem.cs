@@ -92,6 +92,10 @@ public sealed class HexClientSystem : ModSystem
         HexCanvasState.TickMessage();
         HexCanvasState.TickGuard();
 
+        // 画布开着时 Enter 不开聊天栏（原版施法界面是 Screen，开着时也打不开聊天）。
+        // Main 每帧开头把它清成 null，然后调 PostUpdateInput，再检查 Enter —— 所以放在这里正好。
+        if (canvas.IsOpen) Main.CurrentInputTextTakerOverride = canvas;
+
         // 开发者面板（F7）与「点世界施放」：画布和书都没开的时候才接鼠标
         if (!canvas.IsOpen && !HexCanvasState.Book.IsOpen)
         {
@@ -151,7 +155,9 @@ public sealed class HexClientSystem : ModSystem
         {
             try
             {
-                if (HexCastingTerraria.ToggleInfiniteMediaKey?.JustPressed == true)
+                // 画布上有附属扩展（Hexcessible 键盘绘制用 j 往下挪）时让给它
+                if (HexCastingTerraria.ToggleInfiniteMediaKey?.JustPressed == true
+                    && !(HexCanvasState.Canvas.IsOpen && System.Linq.Enumerable.Any(CanvasExtensions.Active)))
                 {
                     HexPlayer.Get(Main.LocalPlayer).ToggleInfiniteMedia();
                 }
@@ -217,8 +223,19 @@ public sealed class HexClientSystem : ModSystem
 
         // Esc 关画布、换快捷栏格子关画布：都在 ModPlayer.PostUpdate()（本帧最后一个回调，能把 Esc 弹出的背包关回去）。
 
+        // 附属的画布扩展（Hexcessible 的键盘绘制等）先处理；它接管了这一帧，本体就不落笔、右键不关画布
+        canvas.Overlays.Clear();
+        var frame = new CanvasFrame(canvas, w, h, mouse, leftDown && !leftWasDown, rightDown && !rightWasDown);
+        bool consumed = false;
+        bool allowStart = true;
+        foreach (var ext in CanvasExtensions.Active)
+        {
+            consumed |= ext.Update(frame);
+            allowStart &= ext.AllowStartDrawing;
+        }
+
         // 左键按下 → 落笔。原版只在真的落笔时播 START_PATTERN（点在已用格点上不响）
-        if (leftDown && !leftWasDown)
+        if (!consumed && allowStart && leftDown && !leftWasDown)
         {
             if (canvas.DrawStart(mouse, w, h))
             {
@@ -245,36 +262,41 @@ public sealed class HexClientSystem : ModSystem
         if (!leftDown && leftWasDown)
         {
             var result = canvas.DrawEnd();
-            if (result != null)
-            {
-                // 立即送进 VM 求值（对齐原作：每画完一条就求值一次，栈在图案间累积）
-                HexVmState.EvaluatePattern(Main.LocalPlayer, result.Pattern);
-
-                // 识别提示受 `ShowPatternId` 控制：画得多了以后这条消息会挡住 HUD
-                HexCanvasState.SetMessage(result.IsValid
-                    ? (HexClientConfig.Instance.ShowPatternId ? $"识别到：{result.Matched!.Id}" : null)
-                    : DescribeUnknownPattern(result.Pattern));
-
-                // 开发者面板的临摹：对一下这条是不是当前这一步（放在识别提示之后，它的提示优先）
-                UI.DevPanel.OnPatternDrawn(result.Pattern);
-
-                // 对齐原作：栈已结算完毕（空栈 + 无括号 + 无待转义）时自动关闭画布。
-                // 只在**求值成功**时关闭，避免画到未实现图案时把界面弹掉。
-                if (result.IsValid
-                    && HexVmState.LastResolution.IsSuccess()
-                    && HexVmState.IsStackClear
-                    && HexVmState.OpsConsumed > 0)
-                {
-                    HexCanvasState.CloseCanvas();
-                }
-            }
+            if (result != null) Submit(result);
         }
 
         // 右键 → 关闭画布（返回）。保护帧内忽略，避免「打开的那次右键」立刻关掉。
-        if (rightDown && !rightWasDown && HexCanvasState.CloseGuardFrames == 0)
+        if (!consumed && rightDown && !rightWasDown && HexCanvasState.CloseGuardFrames == 0)
         {
             HexCanvasState.CloseCanvas();
             HexCanvasState.SetMessage("画布已关闭");
+        }
+    }
+
+    /// <summary>
+    /// 一条图案画完了（手画收笔，或附属直接放下的）：送进 VM 求值、给提示、栈结算完就关画布。
+    /// </summary>
+    public static void Submit(UI.ResolvedPattern result)
+    {
+        // 立即送进 VM 求值（对齐原作：每画完一条就求值一次，栈在图案间累积）
+        HexVmState.EvaluatePattern(Main.LocalPlayer, result.Pattern);
+
+        // 识别提示受 `ShowPatternId` 控制：画得多了以后这条消息会挡住 HUD
+        HexCanvasState.SetMessage(result.IsValid
+            ? (HexClientConfig.Instance.ShowPatternId ? $"识别到：{result.Matched!.Id}" : null)
+            : DescribeUnknownPattern(result.Pattern));
+
+        // 开发者面板的临摹：对一下这条是不是当前这一步（放在识别提示之后，它的提示优先）
+        UI.DevPanel.OnPatternDrawn(result.Pattern);
+
+        // 对齐原作：栈已结算完毕（空栈 + 无括号 + 无待转义）时自动关闭画布。
+        // 只在**求值成功**时关闭，避免画到未实现图案时把界面弹掉。
+        if (result.IsValid
+            && HexVmState.LastResolution.IsSuccess()
+            && HexVmState.IsStackClear
+            && HexVmState.OpsConsumed > 0)
+        {
+            HexCanvasState.CloseCanvas();
         }
     }
 
@@ -334,6 +356,11 @@ public sealed class HexClientSystem : ModSystem
                 // 原版：按住 Ctrl 才显示笔顺渐变（ctrlTogglesOffStrokeOrder 默认 false）
                 HexCanvasState.Canvas.DrawContent(Main.screenWidth, Main.screenHeight, RawMouse(),
                     showStrokeOrder: ctrl, Matrix.Identity);
+                if (HexCanvasState.Canvas.IsOpen)
+                {
+                    var frame = new CanvasFrame(HexCanvasState.Canvas, Main.screenWidth, Main.screenHeight, RawMouse(), false, false);
+                    foreach (var ext in CanvasExtensions.Active) ext.Draw(Main.spriteBatch, frame);
+                }
                 return true;
             },
             InterfaceScaleType.None));

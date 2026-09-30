@@ -7,7 +7,7 @@
 |---|---|---|---|---|
 | [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 1 / 15 |
 | [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 18 |
-| [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 1 / 12 |
+| [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 3 / 12 |
 
 <a id="hexdebug"></a>
 ## HexDebug
@@ -68,9 +68,9 @@
 
 | 功能 | 本模组文件 | 上游文件（相对 `src/main/java/dev/tizu/hexcessible/`） |
 |---|---|---|
-| 入口与开关 | `Game/HexcessibleAddon.cs` | `Hexcessible.java`<br>`HexcessibleConfig.java` |
-| 画布状态机（空闲 / 鼠标 / 键盘 / 自动补全 / 改别名） | （待做） | `drawstate/DrawState.java`<br>`mixin/DrawStateMixin.java`<br>`mixin/DrawStateParentElemMixin.java`<br>`mixin/DrawStateScreenMixin.java`<br>`accessor/CastRef.java`<br>`accessor/CastingInterfaceAccessor.java` |
-| 键盘绘制 | （待做） | `drawstate/KeyboardDrawing.java`<br>`Utils.java` |
+| 入口与开关 | `Game/HexcessibleAddon.cs`<br>`Core/HexcessibleSettings.cs`<br>`Game/HexcessibleOptions.cs` | `Hexcessible.java`<br>`HexcessibleConfig.java` |
+| 画布状态机（空闲 / 鼠标 / 键盘 / 自动补全 / 改别名） | `Game/HexcessibleCanvas.cs`<br>`Game/TooltipBox.cs` | `drawstate/DrawState.java`<br>`mixin/DrawStateMixin.java`<br>`mixin/DrawStateParentElemMixin.java`<br>`mixin/DrawStateScreenMixin.java`<br>`accessor/CastRef.java`<br>`accessor/CastingInterfaceAccessor.java` |
+| 键盘绘制 | `Core/KeyboardPlacement.cs`<br>`Core/KeyboardDrawingState.cs`<br>`Core/PatternEntries.cs` | `drawstate/KeyboardDrawing.java`<br>`Utils.java` |
 | 自动补全 | （待做） | `drawstate/AutoCompleting.java`<br>`entries/PatternEntries.java` |
 | 别名 | （待做） | `drawstate/AliasChanging.java` |
 | 智能签名：数字 / 簿记员 / 转义 | （待做） | `smartsig/SmartSig.java`<br>`smartsig/Number.java`<br>`smartsig/Bookkeeper.java`<br>`smartsig/Escape.java`<br>`numbers.txt` |

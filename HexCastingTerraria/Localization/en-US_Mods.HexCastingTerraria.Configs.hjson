@@ -188,6 +188,11 @@ HexAddonsClientConfig: {
 		Label: Hexcessible
 		Tooltip: Accessibility for the casting screen: keyboard drawing, search patterns by name, aliases, hover info (Ruby / tizu). Only affects you; change any time.
 	}
+
+	HexcessibleOptions: {
+		Label: Hexcessible options
+		Tooltip: Only used when the toggle is on. Affects only you; change any time.
+	}
 }
 
 HexParseOptions: {
@@ -300,6 +305,61 @@ UnknownMode: {
 
 	KeepNbt: {
 		Label: Keep as nbt_
+		Tooltip: ""
+	}
+
+}
+
+HexcessibleOptions: {
+	Tooltip: Hexcessible options (upstream HexcessibleConfig, same defaults)
+
+	KeyboardAllow: {
+		Label: Spellcasting with Keyboard
+		Tooltip: Draw with q w e a d; Enter / Tab / Space to cast; s or Backspace to undo; arrows / hjkl to move; r to rotate
+	}
+
+	KeyboardTooltip: {
+		Label: Keyboard drawing: show tooltip
+		Tooltip: ""
+	}
+
+	KeyHint: {
+		Label: Show key hints
+		Tooltip: When keyboard drawing, show markers for the keys you can press to advance drawing
+	}
+
+	Ghost: {
+		Label: Ghost preview
+		Tooltip: Preview where you're trying to place it (even if it can't place there)
+	}
+
+	ShortcutHints: {
+		Label: Hint at Shortcuts
+		Tooltip: Show shortcuts in the bottom left of the UI
+	}
+
+	UppercaseSig: {
+		Label: Uppercase Signature
+		Tooltip: Represent a signature, e.g. qaq, as QAQ
+	}
+
+}
+
+TooltipMode: {
+	Tooltip: Tooltip
+
+	Hidden: {
+		Label: No
+		Tooltip: ""
+	}
+
+	Simple: {
+		Label: Simple
+		Tooltip: ""
+	}
+
+	Descriptive: {
+		Label: Descriptive
 		Tooltip: ""
 	}
 

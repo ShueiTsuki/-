@@ -1,4 +1,7 @@
+using HexCastingTerraria.Client;
 using HexCastingTerraria.Config;
+using Terraria;
+using Terraria.ModLoader;
 
 namespace HexCastingTerraria.Addons.Hexcessible.Game;
 
@@ -15,4 +18,25 @@ public sealed class HexcessibleAddon : HexAddon
     public override AddonSide Side => AddonSide.Client;
 
     public override bool IsEnabled => HexAddonsClientConfig.Instance.Hexcessible;
+
+    private HexcessibleCanvas? _canvas;
+
+    /// <summary>
+    /// 纯客户端附属：开关随时能改，所以不论开没开都登记画布扩展（专用服务器上不登记），
+    /// 扩展自己每帧读开关（<see cref="HexcessibleCanvas.Enabled"/>）。
+    /// </summary>
+    public override void OnLoad(Mod mod)
+    {
+        if (Main.dedServ) return;
+        HexAddonsClientConfig.Instance?.HexcessibleOptions.Apply();
+        _canvas = new HexcessibleCanvas();
+        CanvasExtensions.All.Add(_canvas);
+    }
+
+    public override void OnUnload()
+    {
+        if (_canvas is not null) CanvasExtensions.All.Remove(_canvas);
+        _canvas = null;
+        Core.PatternEntries.Invalidate();
+    }
 }

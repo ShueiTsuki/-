@@ -21,7 +21,9 @@
     {
       "name": "入口与开关",
       "files": [
-        "Game/HexcessibleAddon.cs"
+        "Game/HexcessibleAddon.cs",
+        "Core/HexcessibleSettings.cs",
+        "Game/HexcessibleOptions.cs"
       ],
       "upstream": [
         "Hexcessible.java",
@@ -30,7 +32,10 @@
     },
     {
       "name": "画布状态机（空闲 / 鼠标 / 键盘 / 自动补全 / 改别名）",
-      "files": [],
+      "files": [
+        "Game/HexcessibleCanvas.cs",
+        "Game/TooltipBox.cs"
+      ],
       "upstream": [
         "drawstate/DrawState.java",
         "mixin/DrawStateMixin.java",
@@ -42,7 +47,11 @@
     },
     {
       "name": "键盘绘制",
-      "files": [],
+      "files": [
+        "Core/KeyboardPlacement.cs",
+        "Core/KeyboardDrawingState.cs",
+        "Core/PatternEntries.cs"
+      ],
       "upstream": [
         "drawstate/KeyboardDrawing.java",
         "Utils.java"

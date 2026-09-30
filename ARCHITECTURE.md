@@ -216,6 +216,7 @@
 
 | 文件 | 职责 |
 |---|---|
+| `CanvasExtensions.cs` | 画布这一帧的情况，交给 <see cref="ICanvasExtension"/>。坐标一律是屏幕像素（和画布同一套）。 |
 | `HexCanvasState.cs` | 画布与 HUD 的客户端共享状态。 |
 | `HexClientSystem.cs` | 客户端系统：画布输入、画布绘制、HUD（媒质指示 + 图案识别反馈）。 |
 | `HexColors.cs` | 咒法学的表现层配色。 |
@@ -240,7 +241,14 @@
 | `AddonContent.cs` | 附属的物品。</summary> |
 | `AddonRegistry.cs` | 所有附属的登记表 —— 唯一的总入口（ADDONS.md「目录」）。 |
 | `HexAddon.cs` | 附属跑在哪一侧：决定它的开关放在服务端还是客户端配置（ADDONS.md「开关的位置」）。</summary> |
+| `Hexcessible/Core/HexcessibleSettings.cs` | Hexcessible 的配置项（上游 HexcessibleConfig.java，默认值照搬）。纯数据：游戏侧从客户端附属配置抄进 <see cref="Current"/>。 |
+| `Hexcessible/Core/KeyboardDrawingState.cs` | 键盘绘制的状态（上游 drawstate/KeyboardDrawing.java 去掉渲染的部分）：当前签名、光标处的起点与起笔方向、 |
+| `Hexcessible/Core/KeyboardPlacement.cs` | 键盘绘制的纯逻辑（上游 accessor/CastRef.java 的 findClosestAvailable / fits / isValidPatternAddition + Utils.java 的角度字母表）。 |
+| `Hexcessible/Core/PatternEntries.cs` | 按签名查图案的说明（上游 entries/PatternEntries.java 的 getFromSig + Entry.toString， |
 | `Hexcessible/Game/HexcessibleAddon.cs` | Hexcessible 附属的入口：施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu，JSON License）。 |
+| `Hexcessible/Game/HexcessibleCanvas.cs` | Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing， |
+| `Hexcessible/Game/HexcessibleOptions.cs` | Hexcessible 的配置项，挂在客户端「附属兼容」页的 Hexcessible 开关下面（上游 HexcessibleConfig，默认值照搬）。 |
+| `Hexcessible/Game/TooltipBox.cs` | 画 Minecraft 样式的提示框（上游用 DrawContext.drawTooltip：深紫底、紫色渐变边框，贴在给定点右上方，出屏就往回挪）。 |
 | `HexDebug/Game/HexDebugAddon.cs` | HexDebug 附属的入口：调试杖逐步执行咒术、剪接台编辑咒术（object-Object，MIT）。 |
 | `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |
 | `HexParse/Core/CodeParser.cs` | 代码 -> iota 列表（上游 parsers/ParserMain.java 的 ParseCode + str2nbt/* 全部符号解析器 + macro/MacroProcessor.java）。 |

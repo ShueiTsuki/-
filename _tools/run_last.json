@@ -1,12 +1,12 @@
 {
-    "at":  "2026-10-01 05:28:29",
+    "at":  "2026-10-01 05:50:03",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
                     "warnings":  0
                 },
     "vmtest":  {
-                   "passed":  594,
+                   "passed":  622,
                    "failed":  0
                },
     "drawtest":  {
@@ -19,7 +19,7 @@
                },
     "package":  {
                     "ok":  true,
-                    "bytes":  844987
+                    "bytes":  864189
                 },
     "server":  {
                    "ok":  true

@@ -25,6 +25,9 @@ public sealed class ResolvedPattern
     public ResolvedPatternType Type => Drawn.Type;
 }
 
+/// <summary>附属画在画布上的一条图案（颜色 ARGB：尾 / 头渐变，同原版 RenderLib 的两色）。</summary>
+public readonly record struct CanvasOverlay(HexPattern Pattern, HexCoord Origin, uint Tail, uint Head);
+
 /// <summary>画布状态（兼容旧调用方的名字）。</summary>
 public enum DrawState
 {
@@ -131,6 +134,22 @@ public sealed class HexCanvas
         return rp;
     }
 
+    /// <summary>这个格点被已画的图案占了吗。</summary>
+    public bool IsUsed(HexCoord c) => _drawer.IsUsed(c);
+
+    /// <summary>把一整条图案直接放在某个格点上（附属的键盘绘制 / 自动补全）。放完照常送去求值，见 HexClientSystem.Submit。</summary>
+    public ResolvedPattern PlacePattern(HexPattern pattern, HexCoord origin)
+    {
+        var rp = new ResolvedPattern(_drawer.Place(pattern, origin));
+        _resolved.Add(rp);
+        return rp;
+    }
+
+    /// <summary>
+    /// 这一帧额外画的图案（附属的预览 / 虚影）：扩展每帧清空再填，和已画图案同一套线型、同一次提交。
+    /// </summary>
+    public List<CanvasOverlay> Overlays { get; } = new();
+
     /// <summary>求值结果回来了：给最后一条图案上色（原版 recvServerUpdate）。</summary>
     public void ApplyResolution(ResolvedPatternType type)
         => _drawer.ApplyResolution(type, p => PatternRegistry.Match(p)?.Id is "open_paren" or "read_into_parens");
@@ -179,6 +198,15 @@ public sealed class HexCanvas
             PatternGeometry.PatternFromPoints(_verts, pts, PatternGeometry.FindDupIndices(positions), true,
                 color | 0xC8000000u, fade | 0xC8000000u, success ? 0.2f : 0.9f,
                 PatternGeometry.DefaultReadabilityOffset, 1f, idx, Tick, unit, showStrokeOrder,
+                PatternGeometry.Variance * WobbleScale);
+        }
+
+        // ---- 附属的预览 / 虚影 ----
+        foreach (var o in Overlays)
+        {
+            var pts = HexGrid.PatternLinePoints(o.Pattern, o.Origin, size, offset);
+            PatternGeometry.PatternFromPoints(_verts, pts, PatternGeometry.FindDupIndices(o.Pattern.Positions()), false,
+                o.Tail, o.Head, 0.1f, PatternGeometry.DefaultReadabilityOffset, 1f, _resolved.Count, Tick, unit, false,
                 PatternGeometry.Variance * WobbleScale);
         }
 

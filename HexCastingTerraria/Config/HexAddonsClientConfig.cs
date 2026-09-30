@@ -17,4 +17,9 @@ public sealed class HexAddonsClientConfig : ModConfig
     /// <summary>Hexcessible（Ruby / tizu）：键盘画图、按名字搜索图案、别名、悬停说明。</summary>
     [DefaultValue(false)]
     public bool Hexcessible { get; set; }
+
+    /// <summary>Hexcessible 的配置项（上游 HexcessibleConfig）。</summary>
+    public Addons.Hexcessible.Game.HexcessibleOptions HexcessibleOptions { get; set; } = new();
+
+    public override void OnChanged() => HexcessibleOptions.Apply();
 }

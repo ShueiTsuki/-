@@ -6,6 +6,26 @@ Mods: {
 			OnlyHostCanChangeAddons: 只有房主能改附属设置
 		}
 
+		// Hexcessible 附属（上游 lang 文件的官方译文）
+		Hexcessible: {
+			NoSpace: 无法放置在此处
+			CountQueued: 还有{0}个
+
+			Hint: {
+				DrawStart: 绘制
+				AutoComplete: 自动补全
+				Cast: 施放
+				Move: 移动
+				Rotate: 旋转
+				Scroll: 滚动选项
+				ScrollDefinitions: 切换定义
+				Search: 搜索
+				Alias: 设置别名
+				AliasOff: 移除别名
+				Undo: 撤销
+			}
+		}
+
 		Conditions: {
 			Enlightened: 已获得启迪
 			Sealable: 背包里第一件同类物品存着东西、还没密封
