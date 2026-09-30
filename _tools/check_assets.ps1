@@ -27,13 +27,21 @@ Get-ChildItem $modRoot -Recurse -File -Filter *.cs |
         $dir = Split-Path $rel -Parent
         $text = Get-Content $_.FullName -Raw
 
-        foreach ($m in [regex]::Matches($text, '(?m)^public\s+(sealed\s+|abstract\s+|static\s+|partial\s+)*class\s+(\w+)\s*:\s*([\w\.]+)')) {
+        $ms = [regex]::Matches($text, '(?m)^public\s+(sealed\s+|abstract\s+|static\s+|partial\s+)*class\s+(\w+)\s*:\s*([\w\.]+)')
+        for ($k = 0; $k -lt $ms.Count; $k++) {
+            $m = $ms[$k]
+            # 这个类自己的那一段源码（到下一个类声明为止）
+            $end = if ($k + 1 -lt $ms.Count) { $ms[$k + 1].Index } else { $text.Length }
+            $body = $text.Substring($m.Index, $end - $m.Index)
             $classes[$m.Groups[2].Value] = [pscustomobject]@{
                 Name       = $m.Groups[2].Value
                 Base       = $m.Groups[3].Value.Split('.')[-1]
                 Abstract   = ($m.Groups[1].Value -match 'abstract')
                 Dir        = $dir
                 HasTexture = ($text -match 'override\s+string\s+Texture')
+                # TileID.Sets.HasOutlines = true 的方块还要一张 <类名>_Highlight.png（悬停时的描边），
+                # 缺了同样会让客户端加载失败、而专用服务器照样通过（2026-09-30 启迪木门就栽在这）
+                Outlines   = ($body -match 'HasOutlines\[Type\]\s*=\s*true')
             }
         }
     }
@@ -85,6 +93,13 @@ foreach ($c in $classes.Values) {
             Class      = $c.Name
             Expected   = "$($c.Dir)/$($c.Name).png"
             Candidates = ($candidates -join '  |  ')
+        }
+    }
+
+    if ($c.Outlines) {
+        $hl = Join-Path $modRoot (Join-Path $c.Dir "$($c.Name)_Highlight.png")
+        if (-not (Test-Path $hl)) {
+            $missing += [pscustomobject]@{ Class = $c.Name; Expected = "$($c.Dir)/$($c.Name)_Highlight.png"; Candidates = '' }
         }
     }
 }

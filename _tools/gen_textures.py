@@ -235,23 +235,48 @@ door.paste(up, (0, 0))
 for y in range(16):                       # 中段：下半块去掉底框的那几行，逐行拉满 16 行
     door.paste(lo.crop((0, min(y * 12 // 16, 11), 16, min(y * 12 // 16, 11) + 1)), (0, 16 + y))
 door.paste(lo, (0, 32))
-closed = Image.new('RGBA', (54, 54), (0, 0, 0, 0))   # 泰拉关着的门：3 个随机样式（横排）× 3 格高，间隔 18
-for c in range(3):
+
+
+def outline(img):
+    """悬停描边（<类名>_Highlight.png，TileID.Sets.HasOutlines 要）：贴图最外一圈不透明像素涂白，其余透明。
+    按整件物体（整扇门）算，拼成图集后格子之间不会多出接缝线。"""
+    out = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    w, h = img.size
+    for y in range(h):
+        for x in range(w):
+            if img.getpixel((x, y))[3] == 0:
+                continue
+            if any(not (0 <= x + dx < w and 0 <= y + dy < h) or img.getpixel((x + dx, y + dy))[3] == 0
+                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                out.putpixel((x, y), (255, 255, 255, 255))
+    return out
+
+
+def door_sheets(door_img):
+    """(关着的门图集, 开着的门图集)：关 = 3 个随机样式 × 3 格；开 = [门轴侧边, 翻过去的门板] 往右 / 往左。"""
+    closed_ = Image.new('RGBA', (54, 54), (0, 0, 0, 0))
+    for c in range(3):
+        for r in range(3):
+            closed_.paste(door_img.crop((0, r * 16, 16, r * 16 + 16)), (c * 18, r * 18))
+    edge_ = Image.new('RGBA', (16, 48), (0, 0, 0, 0))
+    edge_.paste(door_img.crop((0, 0, 3, 48)), (0, 0))
+    panel_ = door_img.transpose(Image.FLIP_LEFT_RIGHT)
+    opened_ = Image.new('RGBA', (72, 54), (0, 0, 0, 0))
     for r in range(3):
-        closed.paste(door.crop((0, r * 16, 16, r * 16 + 16)), (c * 18, r * 18))
+        box = (0, r * 16, 16, r * 16 + 16)
+        opened_.paste(edge_.crop(box), (0, r * 18))
+        opened_.paste(panel_.crop(box), (18, r * 18))
+        opened_.paste(door_img.crop(box), (36, r * 18))
+        opened_.paste(edge_.transpose(Image.FLIP_LEFT_RIGHT).crop(box), (54, r * 18))
+    return closed_, opened_
+
+
+closed, opened = door_sheets(door)
 save(closed, 'Tiles', 'EdifiedDoorClosed.png')
-# 开着的门 2×3：往右开 = [门轴那格只剩门板的侧边, 门板翻到隔壁]；往左开是镜像
-edge = Image.new('RGBA', (16, 48), (0, 0, 0, 0))
-edge.paste(door.crop((0, 0, 3, 48)), (0, 0))
-panel = door.transpose(Image.FLIP_LEFT_RIGHT)
-opened = Image.new('RGBA', (72, 54), (0, 0, 0, 0))
-for r in range(3):
-    box = (0, r * 16, 16, r * 16 + 16)
-    opened.paste(edge.crop(box), (0, r * 18))
-    opened.paste(panel.crop(box), (18, r * 18))
-    opened.paste(door.crop(box), (36, r * 18))
-    opened.paste(edge.transpose(Image.FLIP_LEFT_RIGHT).crop(box), (54, r * 18))
 save(opened, 'Tiles', 'EdifiedDoorOpen.png')
+hl_closed, hl_opened = door_sheets(outline(door))
+save(hl_closed, 'Tiles', 'EdifiedDoorClosed_Highlight.png')
+save(hl_opened, 'Tiles', 'EdifiedDoorOpen_Highlight.png')
 save(x2(src('item/edified_door')), 'Items', 'EdifiedDoorItem.png')
 
 planks = src('block/edified_planks')
@@ -320,6 +345,7 @@ for row in range(2):
     plank_rect(button, 2 * 18 + 13, row * 18 + 5, 3, 6)     # 贴右边方块
     plank_rect(button, 3 * 18 + 5, row * 18 + 6, 6, 4)      # 贴墙：正面
 save(button, 'Tiles', 'EdifiedButton.png')
+save(outline(button), 'Tiles', 'EdifiedButton_Highlight.png')   # 按钮每格互不相连，整张算即可
 bi = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
 plank_rect(bi, 4, 5, 8, 6)
 save(x2(bi), 'Items', 'EdifiedButtonItem.png')
