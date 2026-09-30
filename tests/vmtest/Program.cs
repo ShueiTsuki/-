@@ -5229,25 +5229,43 @@ static class Program
 
             // ── 掩码 ──
             {
-                // 一路直走 = 全保留
+                // 一路直走 = 全保留。源项目 directions() 含起笔那一段：3 个 w = 4 段 = 「----」
                 HexPattern.TryFromAngles("www", HexDir.East, out var straight, out _);
                 bool straightOk = SpecialPatterns.TryMask(straight!, out var m1)
-                                  && m1.Length == 3 && m1[0] && m1[1] && m1[2];
-                Check("掩码：连续直走 -> 全部保留", straightOk,
+                                  && m1.Length == 4 && m1.All(b => b);
+                Check("掩码：连续直走 4 段 -> 全部保留（----）", straightOk,
                     straightOk ? string.Join(",", m1!) : "没识别成掩码");
             }
             {
                 // 「先向右前、再向左前」的下凹 = 丢弃一个，再直走 = 保留
                 //
-                // 方向序列必须是 [SE, NE, E]（相对起点 East）：
-                //   SE 相对 East 是 Right，NE 相对 East 是 Left -> 命中下凹（丢弃两段）
-                //   末尾的 E 相对 East 是 Forward -> 保留
+                // 方向序列（源项目 directions()，含起笔）= [E, SE, NE, E]（相对起点 East）：
+                //   E Forward -> 保留；SE Right + NE Left -> 下凹，丢弃；末尾 E Forward -> 保留 = 「-v-」
                 // 对应签名：e(到 SE) a(到 NE) e(回到 E)
                 HexPattern.TryFromAngles("eae", HexDir.East, out var dip, out _);
                 bool dipOk = SpecialPatterns.TryMask(dip!, out var m2)
-                             && m2.Length == 2 && !m2[0] && m2[1];
-                Check("掩码：一个下凹 + 一段直走 = 丢弃/保留", dipOk,
+                             && m2.Length == 3 && m2[0] && !m2[1] && m2[2];
+                Check("掩码：直走 + 下凹 + 直走 = 「-v-」", dipOk,
                     dipOk ? string.Join(",", m2!) : "没识别成掩码");
+            }
+            {
+                // 玩家实测画不出来的那条：东南起笔、一个 a = 最常用的「v」（丢掉栈顶）
+                HexPattern.TryFromAngles("a", HexDir.SouthEast, out var v, out _);
+                bool vOk = SpecialPatterns.TryMask(v!, out var m3) && m3.Length == 1 && !m3[0];
+                Check("掩码：东南起笔 a = 「v」", vOk, vOk ? string.Join(",", m3!) : "没识别成掩码");
+                var imgV = new CastingImage(new Iota[] { new DoubleIota(1), new DoubleIota(2) });
+                var rV = new CastingVM(imgV, new TestEnv()).QueueExecute(imgV, new Iota[] { new PatternIota(v!) });
+                Check("掩码 v 在 VM 里丢掉栈顶", Sig(rV.Image) == "[1]", Sig(rV.Image));
+            }
+            {
+                // 源项目 Action.operateInParens：括号里的特殊图案（数字 / 掩码）只入列，不求值
+                HexPattern.TryFromAngles("aqaawww", HexDir.East, out var three, out _);
+                var imgP = new CastingImage();
+                var rP = new CastingVM(imgP, new TestEnv()).QueueExecute(imgP, new Iota[]
+                    { P("hexcasting:open_paren"), new PatternIota(three!), P("hexcasting:close_paren") });
+                Check("内省里画数字：被转义进列表，不压数字",
+                    rP.Image.Stack.Count == 1 && rP.Image.Stack[0] is ListIota { Count: 1 } l && l.Items[0] is PatternIota,
+                    Sig(rP.Image));
             }
         }
         Console.WriteLine("=== 收口：还有哪些图案没有行为 ===");

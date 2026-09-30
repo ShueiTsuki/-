@@ -121,12 +121,6 @@ public static class SpecialPatterns
         mask = System.Array.Empty<bool>();
 
         var directions = Directions(pattern);
-        if (directions.Count == 0)
-        {
-            // 一个格点都没有 = 空掩码。源项目里这也会命中（argc=0，什么都不做）。
-            mask = System.Array.Empty<bool>();
-            return true;
-        }
 
         // 源项目：若第一个角度是 LEFT_BACK，则「正前方」要在此基础上再左转一次。
         // 这条是为了让「起手先回头」的画法也能对齐到同一套掩码语义。
@@ -168,10 +162,14 @@ public static class SpecialPatterns
         return true;
     }
 
-    /// <summary>图案依次走过的方向序列（每走一段一个方向）。</summary>
+    /// <summary>
+    /// 图案依次走过的方向序列（每走一段一个方向）。源项目 `HexPattern.directions()`：
+    /// **第一项就是起笔方向**（第一段本身），之后每个角度一项 —— 共 角度数 + 1 项。
+    /// 这里曾经漏了起笔那一段：簿记员之策略整体错一位，最常用的 `v`（东南起笔、一个 a）根本认不出来。
+    /// </summary>
     private static List<HexDir> Directions(HexPattern pattern)
     {
-        var list = new List<HexDir>(pattern.Angles.Count);
+        var list = new List<HexDir>(pattern.Angles.Count + 1) { pattern.StartDir };
         var current = pattern.StartDir;
 
         foreach (var angle in pattern.Angles)

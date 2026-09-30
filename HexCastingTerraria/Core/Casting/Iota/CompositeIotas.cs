@@ -295,7 +295,22 @@ public sealed class PatternIota : Iota
 
         string signature = Pattern.AnglesSignature();
 
-        if (Math.SpecialPatterns.TryNumber(signature, out double number))
+        bool isNumber = Math.SpecialPatterns.TryNumber(signature, out double number);
+        bool[] mask = System.Array.Empty<bool>();
+        if (!isNumber && !Math.SpecialPatterns.TryMask(Pattern, out mask)) return false;
+
+        // 括号里：特殊图案和普通图案一样只是入列（源项目 Action.operateInParens 的默认实现）。
+        // 这里曾经不看 inParens，内省里画数字会直接求值压栈，而不是被转义进列表。
+        if (inParens)
+        {
+            result = new CastResult(
+                this, continuation, vm.Image.WithNewParenthesized(this, escaped: false),
+                System.Array.Empty<OperatorSideEffect>(),
+                ResolvedPatternType.Escaped, EvalSound.NormalExecute);
+            return true;
+        }
+
+        if (isNumber)
         {
             // 数字的取值为 0 消耗（对应源项目 InnerAction 的 ConstMediaAction(argc = 0)）
             var stack = new List<Iota>(vm.Image.Stack) { new DoubleIota(number) };
@@ -308,7 +323,6 @@ public sealed class PatternIota : Iota
             return true;
         }
 
-        if (Math.SpecialPatterns.TryMask(Pattern, out bool[] mask))
         {
             // 掩码从栈上取 mask.Length 个值，只把打了勾的留下（源项目 InnerAction）
             var stack = new List<Iota>(vm.Image.Stack);
@@ -338,8 +352,6 @@ public sealed class PatternIota : Iota
                 ResolvedPatternType.Evaluated, EvalSound.NormalExecute);
             return true;
         }
-
-        return false;
     }
 }
 
