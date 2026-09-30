@@ -1,476 +1,311 @@
 # Hex Casting config localization (English)
-# File name format: {language}_Mods.{ModName}.Configs.hjson
-
-Mods: {
-	HexCastingTerraria: {
-		Configs: {
-			HexClientConfig: {
-				DisplayName: Hex Casting Client Settings
-
-				Headers: {
-					DevGrants: Developer - Grant State
-					DevDisplay: Developer - Display
-					Display: Canvas and Display
-				}
-
-				InfiniteMedia: {
-					Label: Infinite media (developer mode)
-					Tooltip: Casting costs no media and never triggers overcast health loss. Also toggleable in-game with J.
-				}
-
-				GiveDevKitOnEnter: {
-					Label: Give developer kit on world enter
-					Tooltip: Grants one representative item per subsystem on every world entry (staff, book, media chain, data holders, scrolls, packaged spells, all three circle blocks, building blocks). Press K to grant it again at any time.
-				}
-
-				AlwaysEnlightened: {
-					Label: Always enlightened
-					Tooltip: Unlocks the 14 great spells (lightning, flight, create_lava, great teleport, great sentinel, weather, brainsweep, battery, 5 potions) without having to trigger an overcast first. Normally enlightenment requires a single cast costing at least 80% of your media capacity.
-				}
-
-				NoOvercastDamage: {
-					Label: No overcast health cost
-					Tooltip: Casting still succeeds when media runs out, but no health is deducted. It still counts as an overcast, so enlightenment is still granted.
-				}
-
-				RefillMediaAfterCast: {
-					Label: Refill media after each cast
-					Tooltip: Refills your media pool after every cast, so you do not have to keep drinking media flasks while testing.
-				}
-
-				UnlockWholeBook: {
-					Label: Unlock the whole book
-					Tooltip: Book entries normally unlock with progress (amethyst, enlightenment, a failed great spell, surviving an overcast, boss milestones for lore). Turn on to read everything. Also toggleable in the developer panel (F7).
-				}
-
-				NoPackagedCooldown: {
-					Label: No packaged spell cooldown
-					Tooltip: Cypher, trinket and artifact normally have 8 / 5 / 3 tick cooldowns. With this on you can spam right click to test the same spell repeatedly.
-				}
-
-				InfiniteFlight: {
-					Label: Infinite hex flight
-					Tooltip: Flight never ends, never times out and has no range limit, so you can evaluate what flight, flight/range and flight/time actually do.
-				}
-
-				FastSpellCircles: {
-					Label: Fast spell circles
-					Tooltip: Circles normally take 10 to 2 ticks per block. With this on a circle advances one block per tick, which makes testing long circles practical.
-				}
-
-				FreeSpellCircles: {
-					Label: Free spell circles
-					Tooltip: A circle's media pool drains as slates execute, after which every slate reports insufficient media and the rest of the circle cannot be tested. With this on the whole circle runs.
-				}
-
-
-				InstantCrystalGrowth: {
-					Label: Instant crystal growth
-					Tooltip: Skips the random growth roll so amethyst clusters advance a stage on every random tick. Useful for verifying budding block to cluster to drop.
-				}
-
-				ShowMediaRing: {
-					Label: Show media ring
-					Tooltip: Shows the media ring with amount and percentage in the top-left corner.
-				}
-
-				ShowDebugPanel: {
-					Label: Show debug panel
-					Tooltip: Shows coordinate conversions and snap threshold while the canvas is open (also toggled with F1).
-				}
-
-				ShowAimMarker: {
-					Label: Show aim marker
-					Tooltip: Marks the world position the mouse points at with particles. Other players see the same marker in multiplayer.
-				}
-
-				AimMarkerDustCount: {
-					Label: Aim marker particle count
-					Tooltip: How many particles are spent marking the aim position. Higher is more visible but uses more of the particle budget.
-				}
-
-				ShowEntityIds: {
-					Label: Show entity ids
-					Tooltip: Shows the kind and index of the entity under the cursor. Essential when debugging get_entity, zone_entity and every other entity pattern, since those take exactly that index.
-				}
-
-				ShowAimRay: {
-					Label: Show aim ray
-					Tooltip: Draws the ray from the player to the hit tile. Useful for debugging raycast, raycast/axis and raycast/entity.
-				}
-
-				ShowCircleDebug: {
-					Label: Show spell circle state
-					Tooltip: Shows the current block, blocks visited, speed and remaining media of running spell circles.
-				}
-
-				ShowPatternId: {
-					Label: Show recognized pattern
-					Tooltip: After drawing a pattern, shows its id, angle signature and argument count.
-				}
-
-				MaxOpCount: {
-					Label: Max operation count
-					Tooltip: Evaluation steps allowed per cast. Exceeding it triggers an out-of-mind mishap. Matches the original maxOpCount.
-				}
-
-				GridZoom: {
-					Label: Grid zoom
-					Tooltip: Adjusts the hex grid spacing on the drawing canvas. Higher values pack the grid tighter.
-				}
-
-				GridSnapThreshold: {
-					Label: Snap threshold
-					Tooltip: How far you must drag before a segment is committed. 0.5 = 58% of the dot spacing (upstream default, easy to misfire); 1.0 = 82% (default); 1.15 = 88% (maximum).
-				}
-
-				StrokeScale: {
-					Label: Stroke thickness
-					Tooltip: Thickness of canvas lines, nodes and guide dots. 1.0 matches upstream at GUI scale 4; default 0.5.
-				}
-
-				WobbleScale: {
-					Label: Wobble strength
-					Tooltip: How much canvas strokes wobble. 1.0 = upstream, 0 = none; default 0.5.
-				}
-
-				BookSize: {
-					Label: Book size
-					Tooltip: 1.0 = the book is about 88% of the screen height (integer scale, sharpest).
-				}
-			}
-
-			HexServerConfig: {
-				DisplayName: Hex Casting · Server (world rules)
-
-				GreatTeleportDropsItems: {
-					Label: Greater Teleport drops items
-					Tooltip: Greater Teleport may knock items out of the caster's inventory based on distance (upstream doesGreaterTeleportSplatItems, on by default).
-				}
-
-				GreatTeleportDropDivisor: {
-					Label: Greater Teleport drop divisor
-					Tooltip: Drop chance = distance (tiles) / this value. Upstream: 10000.
-				}
-
-				ExplosionsBreakBlocks: {
-					Label: Explosions break blocks
-					Tooltip: Explosion spells destroy blocks using Terraria bomb rules (upstream explosions break blocks). Off = damage only.
-				}
-
-				TrueNameHasAmbit: {
-					Label: True names ignore ambit
-					Tooltip: Upstream default: a reference to a player can be targeted from any distance (zone queries excepted). Turn off to apply the 32-block ambit to players too.
-				}
-
-				PlayersCanUseCommands: {
-					Label: All players can use /hexcasting in multiplayer
-					Tooltip: Upstream requires operator permission; Terraria has none, so in multiplayer only the host (Host & Play) and the server console may use these commands by default. Turn on to allow everyone. Singleplayer is unrestricted.
-				}
-			}
-
-			HexAddonsConfig: {
-				DisplayName: Hex Casting · Addons (server)
-
-				HexParse: {
-					Label: HexParse
-					Tooltip: Convert code text to and from iota lists, /hexParse command (YukkuriC). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
-				}
-
-				HexParseOptions: {
-					Label: HexParse settings
-					Tooltip: Only matters when the toggle is on. The host can change these in game, no reload needed.
-				}
-
-				HexDebug: {
-					Label: HexDebug
-					Tooltip: Debugger items that step through hexes, Splicing Table for editing hexes (object-Object). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
-				}
-			}
-
-			HexAddonsClientConfig: {
-				DisplayName: Hex Casting · Addons (client)
-
-				Hexcessible: {
-					Label: Hexcessible
-					Tooltip: Accessibility for the casting screen: keyboard drawing, search patterns by name, aliases, hover info (Ruby / tizu). Only affects you; change any time.
-				}
-			}
-
-			HexParseOptions: {
-				Tooltip: HexParse options (upstream HexParseConfig, same defaults)
-
-				ParseGreatSpells: {
-					Label: Parse great spells
-					Tooltip: Great spell names in code: by scroll (default, only learned ones) / all / disabled.
-				}
-
-				CommentParsing: {
-					Label: Comment parsing
-					Tooltip: How comments become iotas: all (also // and /* */) / manual (default, only comment_xxx) / disabled.
-				}
-
-				IndentParsing: {
-					Label: Indent parsing
-					Tooltip: How indentation becomes iotas: all (auto tab_N) / manual (default, only tab_N) / disabled.
-				}
-
-				AddIndentInsideMacro: {
-					Label: Add indent inside macros
-					Tooltip: tab_N inside macros adds the outer indentation.
-				}
-
-				AlwaysShortName: {
-					Label: Always short name
-					Tooltip: When reading code, addon patterns also use the short name (id path).
-				}
-
-				ParserBaseCost: {
-					Label: Cost per symbol
-					Tooltip: Media charged per parsed symbol (media units; 1 amethyst dust = 10000). Default 0.
-				}
-
-				ShowColorfulNested: {
-					Label: Colorful nesting
-					Tooltip: Color nested lists and brackets by depth.
-				}
-
-				ShowUnknownNbt: {
-					Label: Iotas without a text form
-					Tooltip: When reading code: keep as nbt_... (default, parses back) / UNKNOWN(data) / UNKNOWN.
-				}
-
-				MaxBlankLineCount: {
-					Label: Max blank lines
-					Tooltip: How many consecutive blank lines are kept when parsing. Default 0.
-				}
-
-				AttachCodeMeta: {
-					Label: Code header
-					Tooltip: Header of read code: 1 = author, 2 = required addons, 3 = both (default), 0 = none.
-				}
-
-			}
-
-			GreatMode: {
-				Tooltip: Great spell parsing
-
-				All: {
-					Label: All
-					Tooltip: ""
-				}
-
-				Disabled: {
-					Label: Disabled
-					Tooltip: ""
-				}
-
-				ByScroll: {
-					Label: By scroll
-					Tooltip: ""
-				}
-
-			}
-
-			CommentMode: {
-				Tooltip: Comment / indent parsing
-
-				Disabled: {
-					Label: Disabled
-					Tooltip: ""
-				}
-
-				Manual: {
-					Label: Manual
-					Tooltip: ""
-				}
-
-				All: {
-					Label: All
-					Tooltip: ""
-				}
-
-			}
-
-			UnknownMode: {
-				Tooltip: Iotas without a text form
-
-				Simple: {
-					Label: UNKNOWN
-					Tooltip: ""
-				}
-
-				ShowNbt: {
-					Label: UNKNOWN(data)
-					Tooltip: ""
-				}
-
-				KeepNbt: {
-					Label: Keep as nbt_
-					Tooltip: ""
-				}
-
-			}
-		}
-	}
-}
+# 文件名 {语言}_Mods.HexCastingTerraria.Configs.hjson 已经带了键的前缀 Mods.HexCastingTerraria.Configs，
+# 所以这里直接从配置类名开始写（不要再包一层 Mods: { HexCastingTerraria: { Configs: ...），否则键对不上、整页退回英文默认名。
 
 HexClientConfig: {
-	DisplayName: Hex Client Config
+	DisplayName: Hex Casting Client Settings
 
 	Headers: {
-		DevGrants: Dev Grants Header
-		DevDisplay: Dev Display Header
-		Display: Display Header
+		DevGrants: Developer - Grant State
+		DevDisplay: Developer - Display
+		Display: Canvas and Display
 	}
 
 	InfiniteMedia: {
-		Label: Infinite Media
-		Tooltip: ""
+		Label: Infinite media (developer mode)
+		Tooltip: Casting costs no media and never triggers overcast health loss. Also toggleable in-game with J.
 	}
 
 	GiveDevKitOnEnter: {
-		Label: Give Dev Kit On Enter
-		Tooltip: ""
+		Label: Give developer kit on world enter
+		Tooltip: Grants one representative item per subsystem on every world entry (staff, book, media chain, data holders, scrolls, packaged spells, all three circle blocks, building blocks). Press K to grant it again at any time.
 	}
 
 	AlwaysEnlightened: {
-		Label: Always Enlightened
-		Tooltip: ""
+		Label: Always enlightened
+		Tooltip: Unlocks the 14 great spells (lightning, flight, create_lava, great teleport, great sentinel, weather, brainsweep, battery, 5 potions) without having to trigger an overcast first. Normally enlightenment requires a single cast costing at least 80% of your media capacity.
 	}
 
 	NoOvercastDamage: {
-		Label: No Overcast Damage
-		Tooltip: ""
+		Label: No overcast health cost
+		Tooltip: Casting still succeeds when media runs out, but no health is deducted. It still counts as an overcast, so enlightenment is still granted.
 	}
 
 	RefillMediaAfterCast: {
-		Label: Refill Media After Cast
-		Tooltip: ""
+		Label: Refill media after each cast
+		Tooltip: Refills your media pool after every cast, so you do not have to keep drinking media flasks while testing.
 	}
 
 	UnlockWholeBook: {
-		Label: Unlock Whole Book
-		Tooltip: ""
+		Label: Unlock the whole book
+		Tooltip: Book entries normally unlock with progress (amethyst, enlightenment, a failed great spell, surviving an overcast, boss milestones for lore). Turn on to read everything. Also toggleable in the developer panel (F7).
 	}
 
 	NoPackagedCooldown: {
-		Label: No Packaged Cooldown
-		Tooltip: ""
+		Label: No packaged spell cooldown
+		Tooltip: Cypher, trinket and artifact normally have 8 / 5 / 3 tick cooldowns. With this on you can spam right click to test the same spell repeatedly.
 	}
 
 	InfiniteFlight: {
-		Label: Infinite Flight
-		Tooltip: ""
+		Label: Infinite hex flight
+		Tooltip: Flight never ends, never times out and has no range limit, so you can evaluate what flight, flight/range and flight/time actually do.
 	}
 
 	FastSpellCircles: {
-		Label: Fast Spell Circles
-		Tooltip: ""
+		Label: Fast spell circles
+		Tooltip: Circles normally take 10 to 2 ticks per block. With this on a circle advances one block per tick, which makes testing long circles practical.
 	}
 
 	FreeSpellCircles: {
-		Label: Free Spell Circles
-		Tooltip: ""
+		Label: Free spell circles
+		Tooltip: A circle's media pool drains as slates execute, after which every slate reports insufficient media and the rest of the circle cannot be tested. With this on the whole circle runs.
 	}
 
 
 	InstantCrystalGrowth: {
-		Label: Instant Crystal Growth
-		Tooltip: ""
+		Label: Instant crystal growth
+		Tooltip: Skips the random growth roll so amethyst clusters advance a stage on every random tick. Useful for verifying budding block to cluster to drop.
 	}
 
 	ShowMediaRing: {
-		Label: Show Media Ring
-		Tooltip: ""
+		Label: Show media ring
+		Tooltip: Shows the media ring with amount and percentage in the top-left corner.
 	}
 
 	ShowDebugPanel: {
-		Label: Show Debug Panel
-		Tooltip: ""
+		Label: Show debug panel
+		Tooltip: Shows coordinate conversions and snap threshold while the canvas is open (also toggled with F1).
 	}
 
 	ShowAimMarker: {
-		Label: Show Aim Marker
-		Tooltip: ""
+		Label: Show aim marker
+		Tooltip: Marks the world position the mouse points at with particles. Other players see the same marker in multiplayer.
 	}
 
 	AimMarkerDustCount: {
-		Label: Aim Marker Dust Count
-		Tooltip: ""
+		Label: Aim marker particle count
+		Tooltip: How many particles are spent marking the aim position. Higher is more visible but uses more of the particle budget.
 	}
 
 	ShowEntityIds: {
-		Label: Show Entity Ids
-		Tooltip: ""
+		Label: Show entity ids
+		Tooltip: Shows the kind and index of the entity under the cursor. Essential when debugging get_entity, zone_entity and every other entity pattern, since those take exactly that index.
 	}
 
 	ShowAimRay: {
-		Label: Show Aim Ray
-		Tooltip: ""
+		Label: Show aim ray
+		Tooltip: Draws the ray from the player to the hit tile. Useful for debugging raycast, raycast/axis and raycast/entity.
 	}
 
 	ShowCircleDebug: {
-		Label: Show Circle Debug
-		Tooltip: ""
+		Label: Show spell circle state
+		Tooltip: Shows the current block, blocks visited, speed and remaining media of running spell circles.
 	}
 
 	ShowPatternId: {
-		Label: Show Pattern Id
-		Tooltip: ""
+		Label: Show recognized pattern
+		Tooltip: After drawing a pattern, shows its id, angle signature and argument count.
 	}
 
 	MaxOpCount: {
-		Label: Max Op Count
-		Tooltip: ""
+		Label: Max operation count
+		Tooltip: Evaluation steps allowed per cast. Exceeding it triggers an out-of-mind mishap. Matches the original maxOpCount.
 	}
 
 	GridZoom: {
-		Label: Grid Zoom
-		Tooltip: ""
+		Label: Grid zoom
+		Tooltip: Adjusts the hex grid spacing on the drawing canvas. Higher values pack the grid tighter.
 	}
 
 	GridSnapThreshold: {
-		Label: Grid Snap Threshold
-		Tooltip: ""
+		Label: Snap threshold
+		Tooltip: How far you must drag before a segment is committed. 0.5 = 58% of the dot spacing (upstream default, easy to misfire); 1.0 = 82% (default); 1.15 = 88% (maximum).
 	}
 
 	StrokeScale: {
-		Label: Stroke Scale
-		Tooltip: ""
+		Label: Stroke thickness
+		Tooltip: Thickness of canvas lines, nodes and guide dots. 1.0 matches upstream at GUI scale 4; default 0.5.
 	}
 
 	WobbleScale: {
-		Label: Wobble Scale
-		Tooltip: ""
+		Label: Wobble strength
+		Tooltip: How much canvas strokes wobble. 1.0 = upstream, 0 = none; default 0.5.
 	}
 
 	BookSize: {
-		Label: Book Size
-		Tooltip: ""
+		Label: Book size
+		Tooltip: 1.0 = the book is about 88% of the screen height (integer scale, sharpest).
 	}
 }
 
 HexServerConfig: {
-	DisplayName: Hex Server Config
+	DisplayName: Hex Casting · Server (world rules)
 
 	GreatTeleportDropsItems: {
-		Label: Great Teleport Drops Items
-		Tooltip: ""
+		Label: Greater Teleport drops items
+		Tooltip: Greater Teleport may knock items out of the caster's inventory based on distance (upstream doesGreaterTeleportSplatItems, on by default).
 	}
 
 	GreatTeleportDropDivisor: {
-		Label: Great Teleport Drop Divisor
-		Tooltip: ""
+		Label: Greater Teleport drop divisor
+		Tooltip: Drop chance = distance (tiles) / this value. Upstream: 10000.
 	}
 
 	ExplosionsBreakBlocks: {
-		Label: Explosions Break Blocks
-		Tooltip: ""
+		Label: Explosions break blocks
+		Tooltip: Explosion spells destroy blocks using Terraria bomb rules (upstream explosions break blocks). Off = damage only.
 	}
 
 	TrueNameHasAmbit: {
-		Label: True Name Has Ambit
+		Label: True names ignore ambit
+		Tooltip: Upstream default: a reference to a player can be targeted from any distance (zone queries excepted). Turn off to apply the 32-block ambit to players too.
+	}
+
+	PlayersCanUseCommands: {
+		Label: All players can use /hexcasting in multiplayer
+		Tooltip: Upstream requires operator permission; Terraria has none, so in multiplayer only the host (Host & Play) and the server console may use these commands by default. Turn on to allow everyone. Singleplayer is unrestricted.
+	}
+}
+
+HexAddonsConfig: {
+	DisplayName: Hex Casting · Addons (server)
+
+	HexParse: {
+		Label: HexParse
+		Tooltip: Convert code text to and from iota lists, /hexParse command (YukkuriC). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
+	}
+
+	HexParseOptions: {
+		Label: HexParse settings
+		Tooltip: Only matters when the toggle is on. The host can change these in game, no reload needed.
+	}
+
+	HexDebug: {
+		Label: HexDebug
+		Tooltip: Debugger items that step through hexes, Splicing Table for editing hexes (object-Object). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
+	}
+}
+
+HexAddonsClientConfig: {
+	DisplayName: Hex Casting · Addons (client)
+
+	Hexcessible: {
+		Label: Hexcessible
+		Tooltip: Accessibility for the casting screen: keyboard drawing, search patterns by name, aliases, hover info (Ruby / tizu). Only affects you; change any time.
+	}
+}
+
+HexParseOptions: {
+	Tooltip: HexParse options (upstream HexParseConfig, same defaults)
+
+	ParseGreatSpells: {
+		Label: Parse great spells
+		Tooltip: Great spell names in code: by scroll (default, only learned ones) / all / disabled.
+	}
+
+	CommentParsing: {
+		Label: Comment parsing
+		Tooltip: How comments become iotas: all (also // and /* */) / manual (default, only comment_xxx) / disabled.
+	}
+
+	IndentParsing: {
+		Label: Indent parsing
+		Tooltip: How indentation becomes iotas: all (auto tab_N) / manual (default, only tab_N) / disabled.
+	}
+
+	AddIndentInsideMacro: {
+		Label: Add indent inside macros
+		Tooltip: tab_N inside macros adds the outer indentation.
+	}
+
+	AlwaysShortName: {
+		Label: Always short name
+		Tooltip: When reading code, addon patterns also use the short name (id path).
+	}
+
+	ParserBaseCost: {
+		Label: Cost per symbol
+		Tooltip: Media charged per parsed symbol (media units; 1 amethyst dust = 10000). Default 0.
+	}
+
+	ShowColorfulNested: {
+		Label: Colorful nesting
+		Tooltip: Color nested lists and brackets by depth.
+	}
+
+	ShowUnknownNbt: {
+		Label: Iotas without a text form
+		Tooltip: When reading code: keep as nbt_... (default, parses back) / UNKNOWN(data) / UNKNOWN.
+	}
+
+	MaxBlankLineCount: {
+		Label: Max blank lines
+		Tooltip: How many consecutive blank lines are kept when parsing. Default 0.
+	}
+
+	AttachCodeMeta: {
+		Label: Code header
+		Tooltip: Header of read code: 1 = author, 2 = required addons, 3 = both (default), 0 = none.
+	}
+
+}
+
+GreatMode: {
+	Tooltip: Great spell parsing
+
+	All: {
+		Label: All
 		Tooltip: ""
 	}
+
+	Disabled: {
+		Label: Disabled
+		Tooltip: ""
+	}
+
+	ByScroll: {
+		Label: By scroll
+		Tooltip: ""
+	}
+
+}
+
+CommentMode: {
+	Tooltip: Comment / indent parsing
+
+	Disabled: {
+		Label: Disabled
+		Tooltip: ""
+	}
+
+	Manual: {
+		Label: Manual
+		Tooltip: ""
+	}
+
+	All: {
+		Label: All
+		Tooltip: ""
+	}
+
+}
+
+UnknownMode: {
+	Tooltip: Iotas without a text form
+
+	Simple: {
+		Label: UNKNOWN
+		Tooltip: ""
+	}
+
+	ShowNbt: {
+		Label: UNKNOWN(data)
+		Tooltip: ""
+	}
+
+	KeepNbt: {
+		Label: Keep as nbt_
+		Tooltip: ""
+	}
+
 }

@@ -39,7 +39,7 @@ public sealed class HexAddonsConfig : ModConfig
     public override bool AcceptClientChanges(ModConfig pendingConfig, int whoAmI, ref NetworkText message)
     {
         if (Main.countsAsHostForGameplay[whoAmI]) return true;
-        message = NetworkText.FromLiteral("只有房主能改附属设置");
+        message = NetworkText.FromKey("Mods.HexCastingTerraria.Misc.OnlyHostCanChangeAddons");   // 按收到的那个客户端的语言显示
         return false;
     }
 }

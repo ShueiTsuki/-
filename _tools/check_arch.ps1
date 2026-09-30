@@ -119,6 +119,10 @@ $env:PYTHONUTF8 = '1'
 $patOut = & python (Join-Path $PSScriptRoot 'check_patterns_vs_original.py') 2>&1
 Check "188 个图案的角度串与起笔方向与原版源码逐条一致" ($LASTEXITCODE -eq 0) (($patOut | Select-Object -First 4) -join ' | ')
 
+# ── 模组配置的文字：中英文都齐全、键对得上 tML 实际查的键（曾经多包一层 Mods.… 导致整页退回英文默认名）──
+$cfgOut = & python (Join-Path $PSScriptRoot 'check_config_l10n.py') 2>&1
+Check "模组配置的每一项在中文与英文里都有文字，键对得上" ($LASTEXITCODE -eq 0) (($cfgOut | Select-Object -First 6) -join ' | ')
+
 
 # ─────────────────────────────────────────────────────────────────────
 Write-Host "`n② 离线测试不许有排除项（排除 = 那段代码从没被测过）"

@@ -1,476 +1,311 @@
-# Hex Casting config localization (English)
-# File name format: {language}_Mods.{ModName}.Configs.hjson
-
-Mods: {
-	HexCastingTerraria: {
-		Configs: {
-			HexClientConfig: {
-				DisplayName: 咒法学 客户端设置
-
-				Headers: {
-					DevGrants: 开发者 · 直接给状态
-					DevDisplay: 开发者 · 显示
-					Display: 画布与显示
-				}
-
-				InfiniteMedia: {
-					Label: 无限媒质（开发者模式）
-					Tooltip: 开启后施法不消耗媒质、也不会触发过载掉血，测试法术零成本。也可以在游戏里按 J 临时切换。
-				}
-
-				GiveDevKitOnEnter: {
-					Label: 进世界自动发放测试包
-					Tooltip: 每次进入世界时把每个子系统的代表性物品各发一份（法杖 / 书 / 媒质链 / 数据载体 / 卷轴 / 打包法术 / 法术环三方块 / 建材）。随时可以按 K 手动补发。
-				}
-
-				AlwaysEnlightened: {
-					Label: 始终视为已启蒙
-					Tooltip: 直接解锁 14 条大法术（闪电 / 飞行 / 岩浆 / 大传送 / 大哨卫 / 天气 / 脑叶切除 / 媒质瓶 / 5 种药水），不必真的去触发一次过载。正常玩法里启蒙需要单次施法消耗 ≥80% 媒质储量。
-				}
-
-				NoOvercastDamage: {
-					Label: 过载不扣血
-					Tooltip: 媒质不足时照常施放，但不会扣除生命值。仍然算"过载过"，所以照样能拿到启蒙。
-				}
-
-				RefillMediaAfterCast: {
-					Label: 施法后补满媒质
-					Tooltip: 每次施法结束把媒质补满。连续测多条法术时不用反复用媒质瓶。
-				}
-
-				UnlockWholeBook: {
-					Label: 咒法学之书全部解锁
-					Tooltip: 正常情况下书里的条目按进度解锁：拿到紫水晶开放大部分条目，启蒙、失败一次大法术、过载后活下来各开放对应条目，传说残页按 Boss 进度逐篇开放。打开后全部可读。开发者面板（F7）里也能切换。
-				}
-
-				NoPackagedCooldown: {
-					Label: 打包法术无冷却
-					Tooltip: 符纸 / 饰品 / 法器原本各有 8 / 5 / 3 tick 冷却。开启后可连续右键测同一发法术。
-				}
-
-				InfiniteFlight: {
-					Label: 咒法飞行永不结束
-					Tooltip: 飞行不落地、不计时、不限距。用来测 flight / flight/range / flight/time 三种飞行的实际效果。
-				}
-
-				FastSpellCircles: {
-					Label: 法术环全速推进
-					Tooltip: 环原本每格要等半秒到 0.1 秒（环越长越快），长环测一次要几十秒。开启后每帧走一格。
-				}
-
-				FreeSpellCircles: {
-					Label: 法术环不消耗媒质
-					Tooltip: 环的媒质池会随石板消耗而耗尽，之后所有石板都报"媒质不足"，根本测不到后面的图案。开启后可完整跑完长环。
-				}
-
-
-				InstantCrystalGrowth: {
-					Label: 晶簇立即长成
-					Tooltip: 跳过随机生长判定，紫水晶簇每次随机刻都往上长一阶。用来验证母岩 → 四阶晶簇 → 掉落的整条链路。
-				}
-
-				ShowMediaRing: {
-					Label: 显示媒质环
-					Tooltip: 左上角显示媒质环（数量与百分比）。
-				}
-
-				ShowDebugPanel: {
-					Label: 显示调试面板
-					Tooltip: 画布打开时显示坐标换算与吸附阈值（也可以在游戏里按 F1 切换）。
-				}
-
-				ShowAimMarker: {
-					Label: 显示瞄准标记
-					Tooltip: 用粒子标出鼠标指向的世界位置。联机时其他玩家也能看到同一个标记。
-				}
-
-				AimMarkerDustCount: {
-					Label: 瞄准标记粒子数
-					Tooltip: 标记瞄准点用多少粒子。越大越显眼，也越占粒子预算。
-				}
-
-				ShowEntityIds: {
-					Label: 显示实体编号
-					Tooltip: 显示鼠标指向实体的"种类#索引"。调试 get_entity / zone_entity / 各种 entity 类图案必备 —— 那些图案要的就是这个编号。
-				}
-
-				ShowAimRay: {
-					Label: 显示瞄准射线
-					Tooltip: 画出从玩家到命中点的射线与命中的图格。调试 raycast / raycast/axis / raycast/entity 用。
-				}
-
-				ShowCircleDebug: {
-					Label: 显示法术环状态
-					Tooltip: 显示正在运行的法术环的当前格、已走格数、速度与剩余媒质。
-				}
-
-				ShowPatternId: {
-					Label: 画布上显示识别结果
-					Tooltip: 画完一条图案后显示它的 id、角度签名与参数个数。
-				}
-
-				MaxOpCount: {
-					Label: 求值步数上限
-					Tooltip: 单次施法累计消耗的操作数超过此值会触发"算力耗尽"。对应原作 maxOpCount。
-				}
-
-				GridZoom: {
-					Label: 画布网格缩放
-					Tooltip: 调整画布上六边形网格的间距，越大网格越密。
-				}
-
-				GridSnapThreshold: {
-					Label: 吸附阈值
-					Tooltip: 拖多远才提交一笔。0.5 = 走到格距的 58%（原版默认，容易误碰）；1.0 = 82%（默认）；1.15 = 88%（上限）。
-				}
-
-				StrokeScale: {
-					Label: 笔迹粗细
-					Tooltip: 画布上线条、节点和背景引导点的粗细。1.0 ≈ 原版在界面缩放 4 时的比例，默认 0.5。
-				}
-
-				WobbleScale: {
-					Label: 电光抖动强度
-					Tooltip: 画布笔迹的电光抖动幅度。1.0 = 原版，0 = 不抖，默认 0.5。
-				}
-
-				BookSize: {
-					Label: 书本大小
-					Tooltip: 1.0 = 书高约占屏幕 88%（整数倍放大，最清楚）。觉得太大或太小就调这里。
-				}
-			}
-
-			HexServerConfig: {
-				DisplayName: 咒法学 · 服务端（世界规则）
-
-				GreatTeleportDropsItems: {
-					Label: 大传送震落物品
-					Tooltip: 大传送会按距离概率把施法者的物品震落（原版 doesGreaterTeleportSplatItems，默认开）。
-				}
-
-				GreatTeleportDropDivisor: {
-					Label: 大传送掉落分母
-					Tooltip: 掉落概率 = 传送距离（格）/ 这个数。原版 10000。
-				}
-
-				ExplosionsBreakBlocks: {
-					Label: 爆炸破坏方块
-					Tooltip: 爆炸法术会按泰拉炸弹的规则炸掉方块（原版就会破坏方块）。关掉则只造成伤害。
-				}
-
-				TrueNameHasAmbit: {
-					Label: 真名无视施法范围
-					Tooltip: 原版默认规则：拿到某个玩家的实体引用后，可以在任何距离对他施法（区域查询除外）。关掉后玩家和其它实体一样受 32 格施法范围限制。
-				}
-
-				PlayersCanUseCommands: {
-					Label: 联机时所有玩家可用 /hexcasting 指令
-					Tooltip: 原版这些指令要管理员权限；泰拉没有权限系统，联机时默认只有房主（创建并游玩的那个人）和服务器控制台能用。打开后所有玩家都能用。单人游戏不受限制。
-				}
-			}
-
-			HexAddonsConfig: {
-				DisplayName: 咒法学 · 附属兼容（服务端）
-
-				HexParse: {
-					Label: HexParse
-					Tooltip: 代码文本与 iota 列表互转、/hexParse 指令（YukkuriC）。关着 = 没装。联机由开服的人决定，改了要重载模组。
-				}
-
-				HexParseOptions: {
-					Label: HexParse 设置
-					Tooltip: 开关打开后才有用。房主在游戏里随时能改，不用重载。
-				}
-
-				HexDebug: {
-					Label: HexDebug
-					Tooltip: 调试杖逐步执行咒术、剪接台编辑咒术（object-Object）。关着 = 没装。联机由开服的人决定，改了要重载模组。
-				}
-			}
-
-			HexAddonsClientConfig: {
-				DisplayName: 咒法学 · 附属兼容（客户端）
-
-				Hexcessible: {
-					Label: Hexcessible
-					Tooltip: 施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu）。只影响自己，随时改。
-				}
-			}
-
-			HexParseOptions: {
-				Tooltip: HexParse 的配置项（上游 HexParseConfig，默认值照搬）
-
-				ParseGreatSpells: {
-					Label: 解析卓越法术
-					Tooltip: 代码里写大法术名字时怎么办：按古卷解锁（默认，学过的才行）/ 全部允许 / 全部禁止。
-				}
-
-				CommentParsing: {
-					Label: 注释解析
-					Tooltip: 注释怎么变成 iota：全部（连 // 与 /* */ 也算）/ 手动（默认，只认 comment_xxx）/ 禁用。
-				}
-
-				IndentParsing: {
-					Label: 缩进解析
-					Tooltip: 换行缩进怎么变成 iota：全部（自动转成 tab_N）/ 手动（默认，只认 tab_N）/ 禁用。
-				}
-
-				AddIndentInsideMacro: {
-					Label: 宏内缩进叠加
-					Tooltip: 宏里面的 tab_N 叠加外层的缩进。
-				}
-
-				AlwaysShortName: {
-					Label: 总是用短名
-					Tooltip: 读出代码时附属的图案也只写短名（id 的路径部分）。
-				}
-
-				ParserBaseCost: {
-					Label: 每个符号的解析费
-					Tooltip: 每解析一个符号收的媒质（单位：媒质点数，1 个紫水晶粉 = 10000）。默认 0。
-				}
-
-				ShowColorfulNested: {
-					Label: 嵌套彩色显示
-					Tooltip: 嵌套列表与括号按层数上色。
-				}
-
-				ShowUnknownNbt: {
-					Label: 没有写法的 iota
-					Tooltip: 读出代码时，没有文本写法的 iota 怎么写：编码保存（默认，nbt_…，能解析回来）/ 写 UNKNOWN(内容) / 只写 UNKNOWN。
-				}
-
-				MaxBlankLineCount: {
-					Label: 最多连续空行
-					Tooltip: 解析时连续空行最多保留几行，多的丢掉。默认 0。
-				}
-
-				AttachCodeMeta: {
-					Label: 代码开头附带信息
-					Tooltip: 读出的代码开头附带：1 = 作者，2 = 用到的附属，3 = 都要（默认），0 = 都不要。
-				}
-
-			}
-
-			GreatMode: {
-				Tooltip: 卓越法术解析方式
-
-				All: {
-					Label: 全部允许
-					Tooltip: ""
-				}
-
-				Disabled: {
-					Label: 全部禁止
-					Tooltip: ""
-				}
-
-				ByScroll: {
-					Label: 按古卷解锁
-					Tooltip: ""
-				}
-
-			}
-
-			CommentMode: {
-				Tooltip: 注释 / 缩进解析方式
-
-				Disabled: {
-					Label: 禁用
-					Tooltip: ""
-				}
-
-				Manual: {
-					Label: 手动
-					Tooltip: ""
-				}
-
-				All: {
-					Label: 全部
-					Tooltip: ""
-				}
-
-			}
-
-			UnknownMode: {
-				Tooltip: 没有写法的 iota
-
-				Simple: {
-					Label: 只写 UNKNOWN
-					Tooltip: ""
-				}
-
-				ShowNbt: {
-					Label: 写 UNKNOWN(内容)
-					Tooltip: ""
-				}
-
-				KeepNbt: {
-					Label: 编码保存（nbt_）
-					Tooltip: ""
-				}
-
-			}
-		}
-	}
-}
+# 咒法学 模组配置文字（简体中文）
+# 文件名 {语言}_Mods.HexCastingTerraria.Configs.hjson 已经带了键的前缀 Mods.HexCastingTerraria.Configs，
+# 所以这里直接从配置类名开始写（不要再包一层 Mods: { HexCastingTerraria: { Configs: ...），否则键对不上、整页退回英文默认名。
 
 HexClientConfig: {
-	// DisplayName: Hex Client Config
+	DisplayName: 咒法学 客户端设置
 
 	Headers: {
-		// DevGrants: Dev Grants Header
-		// DevDisplay: Dev Display Header
-		// Display: Display Header
+		DevGrants: 开发者 · 直接给状态
+		DevDisplay: 开发者 · 显示
+		Display: 画布与显示
 	}
 
 	InfiniteMedia: {
-		// Label: Infinite Media
-		// Tooltip: ""
+		Label: 无限媒质（开发者模式）
+		Tooltip: 开启后施法不消耗媒质、也不会触发过载掉血，测试法术零成本。也可以在游戏里按 J 临时切换。
 	}
 
 	GiveDevKitOnEnter: {
-		// Label: Give Dev Kit On Enter
-		// Tooltip: ""
+		Label: 进世界自动发放测试包
+		Tooltip: 每次进入世界时把每个子系统的代表性物品各发一份（法杖 / 书 / 媒质链 / 数据载体 / 卷轴 / 打包法术 / 法术环三方块 / 建材）。随时可以按 K 手动补发。
 	}
 
 	AlwaysEnlightened: {
-		// Label: Always Enlightened
-		// Tooltip: ""
+		Label: 始终视为已启蒙
+		Tooltip: 直接解锁 14 条大法术（闪电 / 飞行 / 岩浆 / 大传送 / 大哨卫 / 天气 / 脑叶切除 / 媒质瓶 / 5 种药水），不必真的去触发一次过载。正常玩法里启蒙需要单次施法消耗 ≥80% 媒质储量。
 	}
 
 	NoOvercastDamage: {
-		// Label: No Overcast Damage
-		// Tooltip: ""
+		Label: 过载不扣血
+		Tooltip: 媒质不足时照常施放，但不会扣除生命值。仍然算"过载过"，所以照样能拿到启蒙。
 	}
 
 	RefillMediaAfterCast: {
-		// Label: Refill Media After Cast
-		// Tooltip: ""
+		Label: 施法后补满媒质
+		Tooltip: 每次施法结束把媒质补满。连续测多条法术时不用反复用媒质瓶。
 	}
 
 	UnlockWholeBook: {
-		// Label: Unlock Whole Book
-		// Tooltip: ""
+		Label: 咒法学之书全部解锁
+		Tooltip: 正常情况下书里的条目按进度解锁：拿到紫水晶开放大部分条目，启蒙、失败一次大法术、过载后活下来各开放对应条目，传说残页按 Boss 进度逐篇开放。打开后全部可读。开发者面板（F7）里也能切换。
 	}
 
 	NoPackagedCooldown: {
-		// Label: No Packaged Cooldown
-		// Tooltip: ""
+		Label: 打包法术无冷却
+		Tooltip: 符纸 / 饰品 / 法器原本各有 8 / 5 / 3 tick 冷却。开启后可连续右键测同一发法术。
 	}
 
 	InfiniteFlight: {
-		// Label: Infinite Flight
-		// Tooltip: ""
+		Label: 咒法飞行永不结束
+		Tooltip: 飞行不落地、不计时、不限距。用来测 flight / flight/range / flight/time 三种飞行的实际效果。
 	}
 
 	FastSpellCircles: {
-		// Label: Fast Spell Circles
-		// Tooltip: ""
+		Label: 法术环全速推进
+		Tooltip: 环原本每格要等半秒到 0.1 秒（环越长越快），长环测一次要几十秒。开启后每帧走一格。
 	}
 
 	FreeSpellCircles: {
-		// Label: Free Spell Circles
-		// Tooltip: ""
+		Label: 法术环不消耗媒质
+		Tooltip: 环的媒质池会随石板消耗而耗尽，之后所有石板都报"媒质不足"，根本测不到后面的图案。开启后可完整跑完长环。
 	}
 
 
 	InstantCrystalGrowth: {
-		// Label: Instant Crystal Growth
-		// Tooltip: ""
+		Label: 晶簇立即长成
+		Tooltip: 跳过随机生长判定，紫水晶簇每次随机刻都往上长一阶。用来验证母岩 → 四阶晶簇 → 掉落的整条链路。
 	}
 
 	ShowMediaRing: {
-		// Label: Show Media Ring
-		// Tooltip: ""
+		Label: 显示媒质环
+		Tooltip: 左上角显示媒质环（数量与百分比）。
 	}
 
 	ShowDebugPanel: {
-		// Label: Show Debug Panel
-		// Tooltip: ""
+		Label: 显示调试面板
+		Tooltip: 画布打开时显示坐标换算与吸附阈值（也可以在游戏里按 F1 切换）。
 	}
 
 	ShowAimMarker: {
-		// Label: Show Aim Marker
-		// Tooltip: ""
+		Label: 显示瞄准标记
+		Tooltip: 用粒子标出鼠标指向的世界位置。联机时其他玩家也能看到同一个标记。
 	}
 
 	AimMarkerDustCount: {
-		// Label: Aim Marker Dust Count
-		// Tooltip: ""
+		Label: 瞄准标记粒子数
+		Tooltip: 标记瞄准点用多少粒子。越大越显眼，也越占粒子预算。
 	}
 
 	ShowEntityIds: {
-		// Label: Show Entity Ids
-		// Tooltip: ""
+		Label: 显示实体编号
+		Tooltip: 显示鼠标指向实体的"种类#索引"。调试 get_entity / zone_entity / 各种 entity 类图案必备 —— 那些图案要的就是这个编号。
 	}
 
 	ShowAimRay: {
-		// Label: Show Aim Ray
-		// Tooltip: ""
+		Label: 显示瞄准射线
+		Tooltip: 画出从玩家到命中点的射线与命中的图格。调试 raycast / raycast/axis / raycast/entity 用。
 	}
 
 	ShowCircleDebug: {
-		// Label: Show Circle Debug
-		// Tooltip: ""
+		Label: 显示法术环状态
+		Tooltip: 显示正在运行的法术环的当前格、已走格数、速度与剩余媒质。
 	}
 
 	ShowPatternId: {
-		// Label: Show Pattern Id
-		// Tooltip: ""
+		Label: 画布上显示识别结果
+		Tooltip: 画完一条图案后显示它的 id、角度签名与参数个数。
 	}
 
 	MaxOpCount: {
-		// Label: Max Op Count
-		// Tooltip: ""
+		Label: 求值步数上限
+		Tooltip: 单次施法累计消耗的操作数超过此值会触发"算力耗尽"。对应原作 maxOpCount。
 	}
 
 	GridZoom: {
-		// Label: Grid Zoom
-		// Tooltip: ""
+		Label: 画布网格缩放
+		Tooltip: 调整画布上六边形网格的间距，越大网格越密。
 	}
 
 	GridSnapThreshold: {
-		// Label: Grid Snap Threshold
-		// Tooltip: ""
+		Label: 吸附阈值
+		Tooltip: 拖多远才提交一笔。0.5 = 走到格距的 58%（原版默认，容易误碰）；1.0 = 82%（默认）；1.15 = 88%（上限）。
 	}
 
 	StrokeScale: {
-		// Label: Stroke Scale
-		// Tooltip: ""
+		Label: 笔迹粗细
+		Tooltip: 画布上线条、节点和背景引导点的粗细。1.0 ≈ 原版在界面缩放 4 时的比例，默认 0.5。
 	}
 
 	WobbleScale: {
-		// Label: Wobble Scale
-		// Tooltip: ""
+		Label: 电光抖动强度
+		Tooltip: 画布笔迹的电光抖动幅度。1.0 = 原版，0 = 不抖，默认 0.5。
 	}
 
 	BookSize: {
-		// Label: Book Size
-		// Tooltip: ""
+		Label: 书本大小
+		Tooltip: 1.0 = 书高约占屏幕 88%（整数倍放大，最清楚）。觉得太大或太小就调这里。
 	}
 }
 
 HexServerConfig: {
-	// DisplayName: Hex Server Config
+	DisplayName: 咒法学 · 服务端（世界规则）
 
 	GreatTeleportDropsItems: {
-		// Label: Great Teleport Drops Items
-		// Tooltip: ""
+		Label: 大传送震落物品
+		Tooltip: 大传送会按距离概率把施法者的物品震落（原版 doesGreaterTeleportSplatItems，默认开）。
 	}
 
 	GreatTeleportDropDivisor: {
-		// Label: Great Teleport Drop Divisor
-		// Tooltip: ""
+		Label: 大传送掉落分母
+		Tooltip: 掉落概率 = 传送距离（格）/ 这个数。原版 10000。
 	}
 
 	ExplosionsBreakBlocks: {
-		// Label: Explosions Break Blocks
-		// Tooltip: ""
+		Label: 爆炸破坏方块
+		Tooltip: 爆炸法术会按泰拉炸弹的规则炸掉方块（原版就会破坏方块）。关掉则只造成伤害。
 	}
 
 	TrueNameHasAmbit: {
-		// Label: True Name Has Ambit
-		// Tooltip: ""
+		Label: 真名无视施法范围
+		Tooltip: 原版默认规则：拿到某个玩家的实体引用后，可以在任何距离对他施法（区域查询除外）。关掉后玩家和其它实体一样受 32 格施法范围限制。
 	}
+
+	PlayersCanUseCommands: {
+		Label: 联机时所有玩家可用 /hexcasting 指令
+		Tooltip: 原版这些指令要管理员权限；泰拉没有权限系统，联机时默认只有房主（创建并游玩的那个人）和服务器控制台能用。打开后所有玩家都能用。单人游戏不受限制。
+	}
+}
+
+HexAddonsConfig: {
+	DisplayName: 咒法学 · 附属兼容（服务端）
+
+	HexParse: {
+		Label: HexParse
+		Tooltip: 代码文本与 iota 列表互转、/hexParse 指令（YukkuriC）。关着 = 没装。联机由开服的人决定，改了要重载模组。
+	}
+
+	HexParseOptions: {
+		Label: HexParse 设置
+		Tooltip: 开关打开后才有用。房主在游戏里随时能改，不用重载。
+	}
+
+	HexDebug: {
+		Label: HexDebug
+		Tooltip: 调试杖逐步执行咒术、剪接台编辑咒术（object-Object）。关着 = 没装。联机由开服的人决定，改了要重载模组。
+	}
+}
+
+HexAddonsClientConfig: {
+	DisplayName: 咒法学 · 附属兼容（客户端）
+
+	Hexcessible: {
+		Label: Hexcessible
+		Tooltip: 施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu）。只影响自己，随时改。
+	}
+}
+
+HexParseOptions: {
+	Tooltip: HexParse 的配置项（上游 HexParseConfig，默认值照搬）
+
+	ParseGreatSpells: {
+		Label: 解析卓越法术
+		Tooltip: 代码里写大法术名字时怎么办：按古卷解锁（默认，学过的才行）/ 全部允许 / 全部禁止。
+	}
+
+	CommentParsing: {
+		Label: 注释解析
+		Tooltip: 注释怎么变成 iota：全部（连 // 与 /* */ 也算）/ 手动（默认，只认 comment_xxx）/ 禁用。
+	}
+
+	IndentParsing: {
+		Label: 缩进解析
+		Tooltip: 换行缩进怎么变成 iota：全部（自动转成 tab_N）/ 手动（默认，只认 tab_N）/ 禁用。
+	}
+
+	AddIndentInsideMacro: {
+		Label: 宏内缩进叠加
+		Tooltip: 宏里面的 tab_N 叠加外层的缩进。
+	}
+
+	AlwaysShortName: {
+		Label: 总是用短名
+		Tooltip: 读出代码时附属的图案也只写短名（id 的路径部分）。
+	}
+
+	ParserBaseCost: {
+		Label: 每个符号的解析费
+		Tooltip: 每解析一个符号收的媒质（单位：媒质点数，1 个紫水晶粉 = 10000）。默认 0。
+	}
+
+	ShowColorfulNested: {
+		Label: 嵌套彩色显示
+		Tooltip: 嵌套列表与括号按层数上色。
+	}
+
+	ShowUnknownNbt: {
+		Label: 没有写法的 iota
+		Tooltip: 读出代码时，没有文本写法的 iota 怎么写：编码保存（默认，nbt_…，能解析回来）/ 写 UNKNOWN(内容) / 只写 UNKNOWN。
+	}
+
+	MaxBlankLineCount: {
+		Label: 最多连续空行
+		Tooltip: 解析时连续空行最多保留几行，多的丢掉。默认 0。
+	}
+
+	AttachCodeMeta: {
+		Label: 代码开头附带信息
+		Tooltip: 读出的代码开头附带：1 = 作者，2 = 用到的附属，3 = 都要（默认），0 = 都不要。
+	}
+
+}
+
+GreatMode: {
+	Tooltip: 卓越法术解析方式
+
+	All: {
+		Label: 全部允许
+		Tooltip: ""
+	}
+
+	Disabled: {
+		Label: 全部禁止
+		Tooltip: ""
+	}
+
+	ByScroll: {
+		Label: 按古卷解锁
+		Tooltip: ""
+	}
+
+}
+
+CommentMode: {
+	Tooltip: 注释 / 缩进解析方式
+
+	Disabled: {
+		Label: 禁用
+		Tooltip: ""
+	}
+
+	Manual: {
+		Label: 手动
+		Tooltip: ""
+	}
+
+	All: {
+		Label: 全部
+		Tooltip: ""
+	}
+
+}
+
+UnknownMode: {
+	Tooltip: 没有写法的 iota
+
+	Simple: {
+		Label: 只写 UNKNOWN
+		Tooltip: ""
+	}
+
+	ShowNbt: {
+		Label: 写 UNKNOWN(内容)
+		Tooltip: ""
+	}
+
+	KeepNbt: {
+		Label: 编码保存（nbt_）
+		Tooltip: ""
+	}
+
 }

@@ -2,6 +2,10 @@
 
 Mods: {
 	HexCastingTerraria: {
+		Misc: {
+			OnlyHostCanChangeAddons: 只有房主能改附属设置
+		}
+
 		Conditions: {
 			Enlightened: 已获得启迪（启蒙）
 			Sealable: 背包里第一件同类物品存着东西、还没密封
