@@ -26,6 +26,8 @@ public sealed class AncientScroll : ItemScroll
 
     public override int BlockSize => 3;
 
+    protected override bool AncientTooltip => true;
+
     private string _opId = string.Empty;
 
     public string OpId => _opId;

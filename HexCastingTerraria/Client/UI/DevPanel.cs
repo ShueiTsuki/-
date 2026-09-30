@@ -296,10 +296,7 @@ public sealed class DevPanel
             Terraria.Utils.DrawBorderString(sb, (i + 1).ToString(), new Vector2(cx + 5, cy + 3), Dim, 0.6f);
             if (step.ToPattern() is { } pattern)
             {
-                PatternRenderer.DrawStaticPreview(
-                    (a, b, w, c) => HexPixel.DrawLine(sb, a, b, w, c),
-                    (p, r, c) => HexPixel.DrawDot(sb, p, r, c),
-                    pattern, new Vector2(cx + (cellW - 5) / 2f, cy + 36), 26f, PatternColor);
+                PatternArt.DrawReadable(pattern, new Vector2(cx + (cellW - 5) / 2f, cy + 36), 26f * 1.6f);
             }
             string name = step.Label;
             float scale = 0.6f;
@@ -422,10 +419,7 @@ public sealed class DevPanel
         Terraria.Utils.DrawBorderString(sb, $"临摹「{s.Name}」  第 {i + 1}/{s.Steps.Length} 步", new Vector2(box.X + 12, box.Y + 8), Title, 0.8f);
         if (step.ToPattern() is { } pattern)
         {
-            PatternRenderer.DrawStaticPreview(
-                (a, b, w, c) => HexPixel.DrawLine(sb, a, b, w, c),
-                (p, r, c) => HexPixel.DrawDot(sb, p, r, c),
-                pattern, new Vector2(box.X + 80, box.Y + 88), 46f, PatternColor);
+            PatternArt.DrawReadable(pattern, new Vector2(box.X + 80, box.Y + 88), 46f * 1.6f);
         }
         Terraria.Utils.DrawBorderString(sb, step.Label, new Vector2(box.X + 160, box.Y + 44), step.IsNumber ? Great : Text, 0.9f);
         Terraria.Utils.DrawBorderString(sb, step.IsNumber ? "数字：画出这个数的任何写法都算" : "起笔方向随意，形状对就行",

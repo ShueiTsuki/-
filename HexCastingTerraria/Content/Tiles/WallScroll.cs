@@ -120,22 +120,9 @@ public abstract class WallScrollTile : ModTile
         var pattern = WallScrollEntity.FindAt(i, j)?.Pattern;
         if (pattern == null) return;
 
-        // 图案画在整个多格物体的**中心**
-        float half = ObjectSize / 2f;
-        var center = new Microsoft.Xna.Framework.Vector2(
-            (i + half) * 16f,
-            (j + half) * 16f) - Main.screenPosition;
-
-        // 半径随尺寸放大：图案要占满挂板，不然 4x4 的卷轴上只有一小撮线
-        float radius = ObjectSize * 7f;
-
-        PatternRenderer.DrawStaticPreview(
-            (a, b, w, c) => HexPixel.DrawLine(spriteBatch, a, b, w, c),
-            (p, r, c) => HexPixel.DrawDot(spriteBatch, p, r, c),
-            pattern,
-            center,
-            radius,
-            new Microsoft.Xna.Framework.Color(70, 50, 30));
+        // 原版 renderPatternForScroll：图案画满整张卷轴（SCROLL_SETTINGS，默认配色）
+        PatternArt.QueueWorld(pattern, new Microsoft.Xna.Framework.Vector2(i * 16f, j * 16f), ObjectSize * 16f,
+            Core.Canvas.PatternStyle.Worldly, Core.Canvas.PatternPalette.Default, (i * 31) ^ (j * 17));
     }
 
     /// <summary>这一格是不是多格物体的左上角。用帧值判定（泰拉的标准做法）。</summary>

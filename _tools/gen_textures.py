@@ -218,4 +218,9 @@ save(grid([x2(src(f'item/phial/phial_{s}_{f}')) for s in sizes for f in range(5)
 # 结念绳：[本体, 写入后的叠层]；石板：[空, 写了]
 save(grid([x2(src('item/thought_knot')), x2(src('item/thought_knot_overlay'))], 2), 'Items', 'States', 'ThoughtKnot.png')
 
+# 卷轴提示框的底图（原版 gui/scroll.png、scroll_ancient.png，48 → ×2 = 96）
+for name, path in [('ScrollTooltip', 'gui/scroll'), ('ScrollTooltipAncient', 'gui/scroll_ancient')]:
+    im = Image.open(os.path.join(JAR, path + '.png')).convert('RGBA')
+    save(x2(im), 'Items', 'States', name + '.png')
+
 print(f'写出 {len(written)} 张')

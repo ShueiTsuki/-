@@ -41,21 +41,28 @@ public abstract class ItemScroll : ItemIotaStorage
         tooltips.Add(new TooltipLine(Mod, "HexScrollHint", $"只能存图案（壁挂宽度 {BlockSize} 格）"));
         if (Read() is Core.Casting.Iotas.PatternIota)
         {
-            // 占几行空白，下面在这块地方画出图案（源项目的卷轴提示框里就是一张带笔顺的图）
+            // 占几行空白，在这块地方画出图案（原版 PatternTooltipComponent：卷轴底图 + 可读样式 + 起笔点 + 格点）
             tooltips.Add(new TooltipLine(Mod, "HexScrollPattern", "　\n　\n　\n　"));
         }
     }
 
-    /// <summary>提示框里画出卷轴上的图案：红点是起笔处，箭头是第一笔的方向（大法术的笔顺就靠这个学）。</summary>
+    /// <summary>远古卷轴用做旧的底图（原版 scroll_ancient.png）。</summary>
+    protected virtual bool AncientTooltip => false;
+
+    /// <summary>
+    /// 提示框里画出卷轴上的图案（原版 PatternTooltipComponent）：卷轴底图 + 可读样式（拐角内收、末段缩短）
+    /// + 蓝色起笔点 + 格点；按住 Ctrl 显示笔顺渐变。大法术的笔顺就靠这个学。
+    /// </summary>
     public override void PostDrawTooltipLine(DrawableTooltipLine line)
     {
         if (line.Name != "HexScrollPattern" || Read() is not Core.Casting.Iotas.PatternIota p) return;
-        var sb = Main.spriteBatch;
-        var center = new Microsoft.Xna.Framework.Vector2(line.X + 60, line.Y + 44);
-        Client.UI.PatternRenderer.DrawStaticPreview(
-            (a, b, w, c) => Client.HexPixel.DrawLine(sb, a, b, w, c),
-            (pt, r, c) => Client.HexPixel.DrawDot(sb, pt, r, c),
-            p.Pattern, center, 34f, new Microsoft.Xna.Framework.Color(200, 170, 255));
+        const float size = 96f;
+        var tl = new Microsoft.Xna.Framework.Vector2(line.X, line.Y);
+        var bg = ModContent.Request<Microsoft.Xna.Framework.Graphics.Texture2D>(
+            "HexCastingTerraria/Content/Items/States/" + (AncientTooltip ? "ScrollTooltipAncient" : "ScrollTooltip"),
+            ReLogic.Content.AssetRequestMode.ImmediateLoad).Value;
+        Main.spriteBatch.Draw(bg, tl, Microsoft.Xna.Framework.Color.White);
+        Client.UI.PatternArt.DrawReadable(p.Pattern, tl + new Microsoft.Xna.Framework.Vector2(size / 2f), size);
     }
 }
 

@@ -26,6 +26,13 @@ public static class PrimitiveBatch
     /// 只在界面层绘制回调里调用（那里 Main.spriteBatch 处于 Begin 状态）。
     /// </summary>
     public static void Flush(List<ColoredVertex> verts, Matrix spriteBatchTransform)
+        => Flush(verts, spriteBatchTransform, Matrix.Identity);
+
+    /// <summary>
+    /// 同上，但顶点先经过 <paramref name="vertexTransform"/>（界面缩放层传 UIScaleMatrix，
+    /// 让顶点和 SpriteBatch 在同一个坐标系里）。
+    /// </summary>
+    public static void Flush(List<ColoredVertex> verts, Matrix spriteBatchTransform, Matrix vertexTransform)
     {
         if (verts.Count < 3) return;
 
@@ -33,7 +40,7 @@ public static class PrimitiveBatch
         sb.End();
         try
         {
-            Draw(verts);
+            Draw(verts, vertexTransform);
         }
         catch (System.Exception e)
         {
@@ -51,7 +58,28 @@ public static class PrimitiveBatch
         }
     }
 
-    private static void Draw(List<ColoredVertex> verts)
+    /// <summary>
+    /// 不经过 SpriteBatch、直接画（调用方保证此刻没有 SpriteBatch 开着，例如 ModSystem.PostDrawTiles）。
+    /// 世界里的东西传 Main.GameViewMatrix.TransformationMatrix（镜头缩放）。
+    /// </summary>
+    public static void DrawDirect(List<ColoredVertex> verts, Matrix vertexTransform)
+    {
+        if (verts.Count < 3) return;
+        try
+        {
+            Draw(verts, vertexTransform);
+        }
+        catch (System.Exception e)
+        {
+            if (!_loggedFailure)
+            {
+                _loggedFailure = true;
+                HexCastingTerraria.Instance?.Logger.Error($"[HexCasting] 图案绘制失败：{e}");
+            }
+        }
+    }
+
+    private static void Draw(List<ColoredVertex> verts, Matrix vertexTransform)
     {
         var gd = Main.graphics.GraphicsDevice;
         if (_effect is null || _effect.IsDisposed)
@@ -60,7 +88,7 @@ public static class PrimitiveBatch
         }
 
         var vp = gd.Viewport;
-        _effect.World = Matrix.Identity;
+        _effect.World = vertexTransform;
         _effect.View = Matrix.Identity;
         _effect.Projection = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1);
 

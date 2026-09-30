@@ -107,24 +107,13 @@ public sealed class HexSlate : ModTile
         var pattern = HexSlateEntity.FindAt(i, j)?.Pattern;
         if (pattern == null) return;
 
+        // 原版 renderPatternForSlate：图案画满石板那一面（WORLDLY：留 2/16 边、线宽 0.8/16）；
+        // 法术环正走到这块（充能）时换成抖动的紫色电光（WOBBLY + SLATE_WOBBLY_PURPLE_COLOR）
         bool active = CircleCursor.IsActive(i, j);
-
-        var center = new Microsoft.Xna.Framework.Vector2(i * 16f + 8f, j * 16f + 8f) - Main.screenPosition;
-
-        // 正在执行的那块画得更大更亮，并且带一圈底色，远处也能一眼找到
-        var color = active
-            ? new Microsoft.Xna.Framework.Color(255, 245, 200)
-            : new Microsoft.Xna.Framework.Color(196, 170, 240);
-
-        float radius = active ? 7.5f : 6.0f;
-
-        PatternRenderer.DrawStaticPreview(
-            (a, b, w, c) => HexPixel.DrawLine(spriteBatch, a, b, w, c),
-            (p, r, c) => HexPixel.DrawDot(spriteBatch, p, r, c),
-            pattern,
-            center,
-            radius,
-            color);
+        PatternArt.QueueWorld(pattern, new Microsoft.Xna.Framework.Vector2(i * 16f, j * 16f), 16f,
+            active ? Core.Canvas.PatternStyle.Wobbly : Core.Canvas.PatternStyle.Worldly,
+            active ? Core.Canvas.PatternPalette.SlatePurple : Core.Canvas.PatternPalette.Default,
+            (i * 31) ^ (j * 17));
     }
 
     public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem)

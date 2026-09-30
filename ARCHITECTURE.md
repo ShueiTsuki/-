@@ -50,6 +50,7 @@
 | `Canvas/PatternDrawer.cs` | 鐢诲竷涓婂凡缁忕敾瀹岀殑涓€鏉″浘妗堛€?see cref="Type"/> 鍦ㄦ眰鍊肩粨鏋滃洖鏉ヤ箣鍓嶆槸 Unresolved锛堢伆鑹诧級銆?/summary> |
 | `Canvas/PatternGeometry.cs` | 涓€涓甫棰滆壊鐨勯《鐐广€傞鑹蹭负 0xAARRGGBB锛堥潪棰勪箻 alpha锛夈€備笁涓竴缁勬瀯鎴愪笁瑙掑舰銆?/summary> |
 | `Canvas/SimplexNoise.cs` | Minecraft 鐨?`SimplexNoise` + `SingleThreadedRandomSource`锛岄€愯绉绘銆?/// |
+| `Canvas/StaticPatternArt.cs` | 鍥炬鐨勩€屽舰鐘朵笌鎽嗘斁銆嶈缃€傜Щ妞嶈嚜婧愰」鐩?client/render/PatternSettings锛圥ositionSettings + StrokeSettings + ZappySettings锛夈€?/// 鎵€鏈夐暱搴﹂兘鏄€屽崟浣嶆柟鏍笺€嶉噷鐨勬瘮渚嬶紙鍘熺増鍙?pose units锛氫竴鍧楁柟鍧?/ 涓€寮犲嵎杞?= 1锛夈€?/// 鍙Щ妞嶄簡鍘熺増瀹為檯鐢ㄥ埌鐨勩€屽眳涓柟鍧椼€嶆憜娉曪紙PositionSettings.paddedSquare锛?脳1銆佷袱杞?CENTER_FIT锛夈€?/// </summary> |
 | `Casting/Actions/AkashicActions.cs` | `akashic/read`锛氫粠鏌愪釜鍧愭爣鐨勯樋鍗″璁板綍鏂瑰潡涓婏紝鎸?*鍥炬**鏌ヤ竴涓?iota銆?/// 绉绘鑷簮椤圭洰 akashic/OpAkashicRead.kt銆?/// |
 | `Casting/Actions/BasicActions.cs` | 甯告暟鍥炬锛氫笉鍙栧弬鏁帮紝寰€鏍堜笂鍘嬩竴涓浐瀹氬€笺€?/// 瀵瑰簲婧愰」鐩?Action.makeConstantOp(x)銆?/// </summary> |
 | `Casting/Actions/BlockActions.cs` | `conjure_block` 与 `conjure_light`：**凭空**造出一块方块 / 一盏光。 |
@@ -216,8 +217,8 @@
 | `UI/DevPanel.cs` | 寮€鍙戣€呴潰鏉匡紙榛樿 F7锛夛細涓嶇煡閬撹鏀句粈涔堟硶鏈椂鐢ㄣ€?/// |
 | `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€? |
 | `UI/HexCanvas.cs` | 宸茬敾瀹岀殑涓€鏉″浘妗?+ 娉ㄥ唽琛ㄥ尮閰嶇粨鏋滐紙null = 鏈懡涓級+ 姹傚€肩粨鏋滐紙鍐冲畾棰滆壊锛夈€?/summary> |
-| `UI/PatternIconElement.cs` | 鎶婁竴涓?*鍥炬**鐢绘垚涓€涓?UIElement锛堢缉鐣ュ浘锛夈€?/// |
-| `UI/PatternRenderer.cs` | 鍥炬鐨勯潤鎬侀瑙堬紙涔︺€佺煶鏉裤€佸嵎杞淬€侀樋鍗″璁板綍锛変笌鍥炬妫€绱㈣緟鍔┿€?/// 鐢诲竷涓婄殑鐢靛厜绾垮瀷鍦?<see cref="Core.Canvas.PatternGeometry"/>锛堥€愯绉绘 RenderLib锛夈€?/// </summary> |
+| `UI/PatternArt.cs` | 鎸夊師鐗堢敾娉曠敾闈欐€佸浘妗堬紙<see cref="StaticPatternArt"/>锛夌殑涓や釜鍏ュ彛锛?///   - <see cref="DrawUi"/>锛氱晫闈㈤噷锛堟彁绀烘銆佸紑鍙戣€呴潰鏉裤€丠UD锛夊綋鍦虹敾 |
+| `UI/PatternRenderer.cs` | 鍥炬妫€绱㈣緟鍔╋紙涓存懝鐩爣銆佹渶鎺ヨ繎鐨勫浘妗堬級銆?/// 鐢诲浘妗堬細鐢诲竷涓婄殑鍦?<see cref="Core.Canvas.PatternGeometry"/>锛堥€愯绉绘 RenderLib锛夛紝 |
 | `UI/PrimitiveBatch.cs` | 鎶?<see cref="PatternGeometry"/> 浜у嚭鐨勪笁瑙掑舰鐩存帴浜ょ粰鏄惧崱銆?/// |
 | `UI/SpriteBatchBookCanvas.cs` | <see cref="IBookCanvas"/> 鐨勬父鎴忓唴瀹炵幇锛氬叏閮ㄧ敤 <c>Main.spriteBatch</c> 鐢伙紙涓嶅垏鍒板浘鍏冪粯鍒讹紝 |
 

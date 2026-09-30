@@ -104,16 +104,9 @@ public sealed class AkashicRecord : ModTile
         var pattern = AkashicRecordEntity.FindAt(i, j)?.FirstPattern();
         if (pattern == null) return;
 
-        // 世界坐标 → 屏幕坐标
-        var center = new Microsoft.Xna.Framework.Vector2(i * 16f + 8f, j * 16f - 2f) - Main.screenPosition;
-
-        PatternRenderer.DrawStaticPreview(
-            (a, b, w, c) => HexPixel.DrawLine(spriteBatch, a, b, w, c),
-            (p, r, c) => HexPixel.DrawDot(spriteBatch, p, r, c),
-            pattern,
-            center,
-            7f,
-            new Microsoft.Xna.Framework.Color(214, 180, 255));
+        // 原版 renderPatternForAkashicBookshelf：画在方块正面（WORLDLY，默认配色）
+        PatternArt.QueueWorld(pattern, new Microsoft.Xna.Framework.Vector2(i * 16f, j * 16f), 16f,
+            Core.Canvas.PatternStyle.Worldly, Core.Canvas.PatternPalette.Default, (i * 31) ^ (j * 17));
     }
 
     /// <summary>右键查看内容（方便调试：不打开界面也能确认写了什么）。</summary>

@@ -679,10 +679,7 @@ public sealed class HexClientSystem : ModSystem
         var box = new Rectangle((int)(cx - 160f), (int)(cy - size - 30f), 320, (int)(size * 2f + 86f));
         Terraria.Utils.DrawInvBG(sb, box, new Color(24, 20, 40) * 0.82f);
 
-        PatternRenderer.DrawStaticPreview(
-            (a, b, wd, c) => DrawSegmentForPreview(sb, a, b, wd, c),
-            (p, r, c) => DrawDotForPreview(sb, p, r, c),
-            PatternRegistry.PatternInThisWorld(def), new Vector2(cx, cy), size, new Color(120, 200, 255));
+        UI.PatternArt.DrawReadable(PatternRegistry.PatternInThisWorld(def), new Vector2(cx, cy), size * 1.6f);
 
         string title = $"临摹目标 {idx + 1}/{all.Count}   {def.DisplayName()}";
         Terraria.Utils.DrawBorderString(sb, title,
@@ -795,7 +792,7 @@ public sealed class HexClientSystem : ModSystem
 
         // ---- 最简单的图案预览：照着画就能命中 ----
         y += 6f;
-        Terraria.Utils.DrawBorderString(sb, "照下面任一条画（白点=起笔处）：", new Vector2(x, y), TextColor, 0.72f);
+        Terraria.Utils.DrawBorderString(sb, "照下面任一条画（蓝点=起笔处）：", new Vector2(x, y), TextColor, 0.72f);
         y += 20f;
 
         var simplest = PatternRenderer.GetSimplestPatterns(6);
@@ -806,10 +803,7 @@ public sealed class HexClientSystem : ModSystem
             var def = simplest[i];
             var center = new Vector2(x + 26f + (i % 3) * slot, y + (i / 3) * 62f);
 
-            PatternRenderer.DrawStaticPreview(
-                (a, b, wd, c) => DrawSegmentForPreview(sb, a, b, wd, c),
-                (p, r, c) => DrawDotForPreview(sb, p, r, c),
-                PatternRegistry.PatternInThisWorld(def), center, previewSize, new Color(120, 200, 255));
+            UI.PatternArt.DrawReadable(PatternRegistry.PatternInThisWorld(def), center, previewSize * 1.6f);
 
             Terraria.Utils.DrawBorderString(sb, def.DisplayName(),
                 new Vector2(center.X - previewSize, center.Y + previewSize * 0.7f), MediaColor, 0.6f);

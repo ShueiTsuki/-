@@ -663,6 +663,7 @@ Console.WriteLine("\n=== ⑤ 法术序列的栈平衡检查 ===");
 }
 
 BookTests.Run(Check);
+PatternArtTests.Run(Check);
 Console.WriteLine($"\n================ 通过 {passed} / 失败 {failed} ================");
 
 // ── 把实测数字吐成机器可读文件 ──────────────────────────────────────
