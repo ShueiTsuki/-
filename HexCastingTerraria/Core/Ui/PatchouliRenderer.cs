@@ -102,13 +102,13 @@ public sealed class PatchouliRenderer
     public float Unit { get; private set; } = 3f;
 
     /// <summary>
-    /// 按视口选整数倍率：书占视口约 70%。1080p 下是 4 —— 与 MC 在 1080p 自动界面缩放（4）下的书一样大。
+    /// 按视口（真实屏幕像素）选整数倍率：书高约占屏幕 70%。1080p 下是 4（1088×720）——
+    /// 与 MC 在 1080p 自动界面缩放（4）下的书一样大。之前是 88%（1080p 下 5 倍），太大。
     /// </summary>
     public static float ChooseUnit(float viewportW, float viewportH, float sizeFactor = 1f)
     {
-        // 书占视口高度约 88%（1080p、界面缩放 100% 时是 5 倍 = 1360×900）。
         // 默认取整数倍（像素最规整）；玩家在设置里调了大小时允许半格步进。
-        float target = System.MathF.Min(viewportW * 0.9f / FullWidth, viewportH * 0.88f / FullHeight) * sizeFactor;
+        float target = System.MathF.Min(viewportW * 0.9f / FullWidth, viewportH * 0.7f / FullHeight) * sizeFactor;
         float u = System.MathF.Abs(sizeFactor - 1f) < 0.001f ? System.MathF.Floor(target) : System.MathF.Floor(target * 2f) / 2f;
         // 调大了也不能超出屏幕（留 2% 边）
         float fit = System.MathF.Floor(System.MathF.Min(viewportW * 0.98f / FullWidth, viewportH * 0.98f / FullHeight) * 2f) / 2f;

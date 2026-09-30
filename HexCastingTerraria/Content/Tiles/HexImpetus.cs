@@ -783,7 +783,8 @@ public static class CircleFacing
     /// <summary>在图格边缘画一个小三角，尖朝出口方向。</summary>
     public static void DrawArrow(SpriteBatch sb, int i, int j, CircleDir dir)
     {
-        var zero = Main.drawToScreen ? Vector2.Zero : new Vector2(Main.offScreenRange);
+        // 图格层画在带 offScreenRange 边距的渲染目标上（tML 里 drawToScreen 恒为 false）
+        var zero = new Vector2(Main.offScreenRange);
         var center = new Vector2(i * 16 + 8, j * 16 + 8) - Main.screenPosition + zero;
         var (dx, dy) = dir.Step();
         var fwd = new Vector2(dx, dy);

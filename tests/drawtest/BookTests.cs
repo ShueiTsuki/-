@@ -176,11 +176,13 @@ static class BookTests
         v.Open();
         Once("landing");
         var landing = r.Render(canvas, v, 1920, 1080, -1, -1);
-        Check(check, $"落地页：书按 {r.Unit} 倍整数放大（1080p、界面缩放 100% 应为 5：书高 900，约占屏幕 83%）", r.Unit == 5f);
-        Check(check, "书本大小设置：0.8 → 4 倍；1.2 → 放不下 6 倍时缩回能放下的最大半格（5.5）",
-            PatchouliRenderer.ChooseUnit(1920, 1080, 0.8f) == 4f && PatchouliRenderer.ChooseUnit(1920, 1080, 1.2f) == 5.5f,
+        Check(check, $"落地页：书按 {r.Unit} 倍整数放大（1080p 应为 4：1088×720，约占屏幕 67%，和 MC 在 1080p 自动界面缩放下一样大）", r.Unit == 4f);
+        Check(check, "书本大小设置：0.8 → 3 倍；1.2 → 5 倍（半格步进，不超出屏幕）",
+            PatchouliRenderer.ChooseUnit(1920, 1080, 0.8f) == 3f && PatchouliRenderer.ChooseUnit(1920, 1080, 1.2f) == 5f,
             $"{PatchouliRenderer.ChooseUnit(1920, 1080, 0.8f)} {PatchouliRenderer.ChooseUnit(1920, 1080, 1.2f)}");
-        Check(check, "界面缩放 150%（视口 1280×720）→ 3 倍，书仍在视口里", PatchouliRenderer.ChooseUnit(1280, 720) == 3f);
+        Check(check, "书按真实屏幕像素算（和界面缩放无关）：1440p → 5 倍、720p → 2 倍",
+            PatchouliRenderer.ChooseUnit(2560, 1440) == 5f && PatchouliRenderer.ChooseUnit(1280, 720) == 2f,
+            $"{PatchouliRenderer.ChooseUnit(2560, 1440)} {PatchouliRenderer.ChooseUnit(1280, 720)}");
         Check(check, "落地页每个分类都有可点的图标格",
             landing.Hits.Count(h => h.Kind == BookActionKind.OpenCategory) == v.TopCategories().Count);
 

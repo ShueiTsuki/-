@@ -58,14 +58,15 @@ public sealed class HexBook
         _view.EntryUnlocked = _renderer.IsUnlocked;
     }
 
-    private static Vector2 UiMouse() => HexClientSystem.RawMouse() / Main.UIScale;
+    /// <summary>书画在**真实屏幕像素**里（不套界面缩放）：整数倍放大才是真的整数倍，像素和文字才清楚。</summary>
+    private static Vector2 UiMouse() => HexClientSystem.RawMouse();
 
     /// <summary>
     /// 界面缩放空间里的屏幕大小。⚠️ 必须用**真实**屏幕像素再除以 UIScale：
     /// 绘制界面层时 PlayerInput.SetZoom_UI 已经把 Main.screenWidth 改成了「÷UIScale」之后的值，
     /// 这里曾经再除一次 —— 界面缩放 150% 时书只按 1080/2.25 = 480 高来排，又小又偏左上。
     /// </summary>
-    private static Vector2 UiViewport() => new(PlayerInput.RealScreenWidth / Main.UIScale, PlayerInput.RealScreenHeight / Main.UIScale);
+    private static Vector2 UiViewport() => new(PlayerInput.RealScreenWidth, PlayerInput.RealScreenHeight);
 
     private static BookDocument? _document;
 
@@ -163,11 +164,11 @@ public sealed class HexBook
     {
         if (!IsOpen || _view is null || _renderer is null) { return; }
 
-        // 像素风贴图整数放大必须用点采样，否则边缘发糊。画完**原样恢复**界面层的批次参数
+        // 画在真实屏幕像素里（不套 UIScaleMatrix —— 否则整数倍 × 界面缩放又变成非整数，像素糊掉）；
+        // 采样器由画布按内容切换（贴图点采样、文字线性）。画完**原样恢复**界面层的批次参数
         //（GameInterfaceLayer 用的是全默认值 + UIScaleMatrix，反编译确认）。
-        sb.End();
-        sb.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None,
-            RasterizerState.CullCounterClockwise, null, Main.UIScaleMatrix);
+        _canvas.Transform = Matrix.Identity;
+        _canvas.BeginFrame();
         try
         {
             var vp = UiViewport();

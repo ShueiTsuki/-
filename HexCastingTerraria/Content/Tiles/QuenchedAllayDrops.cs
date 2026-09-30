@@ -19,7 +19,7 @@ public sealed class QuenchedAllayDrops : GlobalTile
     public override void Drop(int i, int j, int type)
     {
         if (type != ModContent.TileType<QuenchedAllay>()) return;
-        Item.NewItem(new EntitySource_TileBreak(i, j), i * 16, j * 16, 16, 16,
-            ModContent.ItemType<Items.QuenchedAllayShard>(), WorldGen.genRand.Next(2, 5));
+        Item.NewItem(new EntitySource_TileBreak(i, j), new Microsoft.Xna.Framework.Vector2(i * 16, j * 16),
+            new Microsoft.Xna.Framework.Vector2(16, 16), ModContent.ItemType<Items.QuenchedAllayShard>(), WorldGen.genRand.Next(2, 5));
     }
 }

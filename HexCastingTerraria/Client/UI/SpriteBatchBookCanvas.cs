@@ -24,12 +24,48 @@ public sealed class SpriteBatchBookCanvas : IBookCanvas
 
     private static DynamicSpriteFont Font => FontAssets.MouseText.Value;
 
+    /// <summary>基准行高（小字体）。渲染器按它算缩放，真正画的时候再挑合适的字体（见 <see cref="Pick"/>）。</summary>
     public float LineHeight => Font.LineSpacing;
+
+    // ── 清晰度 ────────────────────────────────────────────────────
+    //
+    // 书是像素贴图 + 文字，两者要的采样方式相反：
+    //   - 像素贴图（书页、物品图标）整数倍放大 → 点采样，边缘才锐利
+    //   - 文字（泰拉的字体是位图字体）缩放时 → 线性采样，不然缩小后锯齿、放大后马赛克
+    // 所以按绘制内容切采样器（批次只在真的要换时才重开）。
+    // 另外泰拉的小字体（MouseText）行高只有 20 多像素，书在 1080p 下一行要 40 像素 ——
+    // 放大近 2 倍就是「码率低」的糊字。所以要放大时换成大字体（DeathText）再**缩小**着画。
+
+    private SamplerState? _sampler;
+
+    /// <summary>这一帧的变换矩阵（HexBook 在开画前设置）。</summary>
+    public Matrix Transform { get; set; } = Matrix.Identity;
+
+    public void BeginFrame() => _sampler = null;
+
+    private void Use(SamplerState s)
+    {
+        if (ReferenceEquals(_sampler, s)) { return; }
+        if (_sampler is not null) { Main.spriteBatch.End(); }
+        else { Main.spriteBatch.End(); }
+        Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, s, DepthStencilState.None,
+            RasterizerState.CullCounterClockwise, null, Transform);
+        _sampler = s;
+    }
+
+    /// <summary>按要画的像素大小挑字体：超过小字体原尺寸就换大字体缩小画。</summary>
+    private static (DynamicSpriteFont Font, float Scale) Pick(float scale)
+    {
+        if (scale <= 1.02f) { return (Font, scale); }
+        var big = FontAssets.DeathText.Value;
+        return (big, scale * Font.LineSpacing / big.LineSpacing);
+    }
 
     public void DrawImage(string texture, RectF src, RectF dst, Color32 tint)
     {
         var tex = Texture(texture);
         if (tex is null) { return; }
+        Use(SamplerState.PointClamp);
         Main.spriteBatch.Draw(tex, ToRect(dst),
             new Rectangle((int)src.X, (int)src.Y, (int)src.W, (int)src.H), ToColor(tint));
     }
@@ -39,6 +75,7 @@ public sealed class SpriteBatchBookCanvas : IBookCanvas
         int type = ItemType(itemKey);
         if (type <= 0) { return; }
         Main.instance.LoadItem(type);
+        Use(SamplerState.PointClamp);
         var tex = TextureAssets.Item[type].Value;
         var frame = Main.itemAnimations[type] is { } anim ? anim.GetFrame(tex) : tex.Frame();
         // 图标适配进格子，保持比例；小图标不放大超过格子（和物品栏一样）
@@ -49,13 +86,20 @@ public sealed class SpriteBatchBookCanvas : IBookCanvas
     }
 
     public void FillRect(RectF rect, Color32 color)
-        => Main.spriteBatch.Draw(HexPixel.Value, ToRect(rect), ToColor(color));
+    {
+        Use(SamplerState.PointClamp);
+        Main.spriteBatch.Draw(HexPixel.Value, ToRect(rect), ToColor(color));
+    }
 
     public void DrawLine(float x1, float y1, float x2, float y2, float width, Color32 color)
-        => HexPixel.DrawLine(Main.spriteBatch, new Vector2(x1, y1), new Vector2(x2, y2), width, ToColor(color));
+    {
+        Use(SamplerState.LinearClamp);
+        HexPixel.DrawLine(Main.spriteBatch, new Vector2(x1, y1), new Vector2(x2, y2), width, ToColor(color));
+    }
 
     public void FillCircle(float cx, float cy, float radius, Color32 color)
     {
+        Use(SamplerState.LinearClamp);
         var tex = Circle();
         float s = radius * 2f / tex.Width;
         Main.spriteBatch.Draw(tex, new Vector2(cx, cy), null, ToColor(color), 0f,
@@ -67,17 +111,25 @@ public sealed class SpriteBatchBookCanvas : IBookCanvas
         if (string.IsNullOrEmpty(text)) { return 0f; }
         // 纸面上的墨色文字：**不描边**（泰拉 UI 默认的 DrawBorderString 在纸上很难看）
         var c = ToColor(color);
-        Main.spriteBatch.DrawString(Font, text, new Vector2(x, y), c, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+        var (font, s) = Pick(scale);
+        Use(SamplerState.LinearClamp);
+        // 取整到像素：文字落在半像素上会整体发虚
+        var pos = new Vector2(System.MathF.Round(x), System.MathF.Round(y));
+        Main.spriteBatch.DrawString(font, text, pos, c, 0f, Vector2.Zero, s, SpriteEffects.None, 0f);
         if (bold)
         {
-            Main.spriteBatch.DrawString(Font, text, new Vector2(x + System.MathF.Max(1f, scale), y), c, 0f,
-                Vector2.Zero, scale, SpriteEffects.None, 0f);
+            Main.spriteBatch.DrawString(font, text, pos + new Vector2(System.MathF.Max(1f, scale), 0f), c, 0f,
+                Vector2.Zero, s, SpriteEffects.None, 0f);
         }
         return MeasureText(text, scale, bold);
     }
 
     public float MeasureText(string text, float scale, bool bold)
-        => string.IsNullOrEmpty(text) ? 0f : (Font.MeasureString(text).X * scale) + (bold ? System.MathF.Max(1f, scale) : 0f);
+    {
+        if (string.IsNullOrEmpty(text)) { return 0f; }
+        var (font, s) = Pick(scale);
+        return (font.MeasureString(text).X * s) + (bold ? System.MathF.Max(1f, scale) : 0f);
+    }
 
     /// <summary>物品键（<c>Mod:类名</c> / <c>Terraria:ItemID 字段名</c> / <c>Id:数字</c>）→ 物品类型；查不到返回 0。</summary>
     public int ItemType(string key)
