@@ -83,13 +83,6 @@ public sealed class HexClientConfig : ModConfig
     [DefaultValue(false)]
     public bool FreeSpellCircles { get; set; }
 
-    /// <summary>
-    /// 脑叶切除放宽限制：任意 NPC 都能切（正常只允许城镇 NPC 与小动物）。
-    /// 用来测 5 条配方，不必每次都去凑对应的 NPC。
-    /// </summary>
-    [DefaultValue(false)]
-    public bool LooseBrainsweepTargets { get; set; }
-
     /// <summary>晶簇立即长成（正常的生长间隔被压到 1 tick）。</summary>
     [DefaultValue(false)]
     public bool InstantCrystalGrowth { get; set; }

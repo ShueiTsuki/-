@@ -1466,9 +1466,9 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>
     /// 能不能被切除。
     ///
-    /// 源项目用 `NO_BRAINSWEEPING` 标签排除一批生物；泰拉侧的对应规则是
-    /// **只允许城镇 NPC 与小动物（critter）** —— 也就是「有脑子的、非战斗的」那些。
-    /// 史莱姆、 boss 之类切了没有意义，直接拒绝比默默出产物好。
+    /// 原版：任何 Mob 都行，只排除 `NO_BRAINSWEEPING` 标签（默认是空的）；没有配方的生物照样报 MishapBadBrainsweep。
+    /// 泰拉：任何非 Boss 的 NPC（小精灵这种敌怪也行 —— 它就是悦灵的对应物）。
+    /// 这里曾经只放行城镇 NPC 和小动物，是移植版自己加的限制。
     /// </summary>
     public bool IsBrainsweepable(EntityIota entity)
     {
@@ -1482,10 +1482,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         // 切掉 Boss 会让世界状态变得很难恢复（事件计数、进度标记都已写入）
         if (npc.boss) return false;
 
-        // 调试开关：放宽到任意非 Boss 生物，方便测 5 条配方
-        if (HexClientConfig.Instance.LooseBrainsweepTargets) return true;
-
-        return npc.townNPC || npc.CountsAsACritter;
+        return true;
     }
 
     public bool IsBrainswept(EntityIota entity)

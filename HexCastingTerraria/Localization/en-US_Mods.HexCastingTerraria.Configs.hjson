@@ -1,4 +1,4 @@
-﻿# Hex Casting config localization (English)
+# Hex Casting config localization (English)
 # File name format: {language}_Mods.{ModName}.Configs.hjson
 
 Mods: {
@@ -63,10 +63,6 @@ Mods: {
 					Tooltip: A circle's media pool drains as slates execute, after which every slate reports insufficient media and the rest of the circle cannot be tested. With this on the whole circle runs.
 				}
 
-				LooseBrainsweepTargets: {
-					Label: Loose brainsweep targets
-					Tooltip: Normally only town NPCs and critters can be swept. With this on any non-boss NPC works, so you can test all 5 recipes without hunting for the right NPC.
-				}
 
 				InstantCrystalGrowth: {
 					Label: Instant crystal growth
@@ -168,5 +164,165 @@ Mods: {
 				}
 			}
 		}
+	}
+}
+
+HexClientConfig: {
+	DisplayName: Hex Client Config
+
+	Headers: {
+		DevGrants: Dev Grants Header
+		DevDisplay: Dev Display Header
+		Display: Display Header
+	}
+
+	InfiniteMedia: {
+		Label: Infinite Media
+		Tooltip: ""
+	}
+
+	GiveDevKitOnEnter: {
+		Label: Give Dev Kit On Enter
+		Tooltip: ""
+	}
+
+	AlwaysEnlightened: {
+		Label: Always Enlightened
+		Tooltip: ""
+	}
+
+	NoOvercastDamage: {
+		Label: No Overcast Damage
+		Tooltip: ""
+	}
+
+	RefillMediaAfterCast: {
+		Label: Refill Media After Cast
+		Tooltip: ""
+	}
+
+	UnlockWholeBook: {
+		Label: Unlock Whole Book
+		Tooltip: ""
+	}
+
+	NoPackagedCooldown: {
+		Label: No Packaged Cooldown
+		Tooltip: ""
+	}
+
+	InfiniteFlight: {
+		Label: Infinite Flight
+		Tooltip: ""
+	}
+
+	FastSpellCircles: {
+		Label: Fast Spell Circles
+		Tooltip: ""
+	}
+
+	FreeSpellCircles: {
+		Label: Free Spell Circles
+		Tooltip: ""
+	}
+
+
+	InstantCrystalGrowth: {
+		Label: Instant Crystal Growth
+		Tooltip: ""
+	}
+
+	ShowMediaRing: {
+		Label: Show Media Ring
+		Tooltip: ""
+	}
+
+	ShowDebugPanel: {
+		Label: Show Debug Panel
+		Tooltip: ""
+	}
+
+	ShowAimMarker: {
+		Label: Show Aim Marker
+		Tooltip: ""
+	}
+
+	AimMarkerDustCount: {
+		Label: Aim Marker Dust Count
+		Tooltip: ""
+	}
+
+	ShowEntityIds: {
+		Label: Show Entity Ids
+		Tooltip: ""
+	}
+
+	ShowAimRay: {
+		Label: Show Aim Ray
+		Tooltip: ""
+	}
+
+	ShowCircleDebug: {
+		Label: Show Circle Debug
+		Tooltip: ""
+	}
+
+	ShowPatternId: {
+		Label: Show Pattern Id
+		Tooltip: ""
+	}
+
+	MaxOpCount: {
+		Label: Max Op Count
+		Tooltip: ""
+	}
+
+	GridZoom: {
+		Label: Grid Zoom
+		Tooltip: ""
+	}
+
+	GridSnapThreshold: {
+		Label: Grid Snap Threshold
+		Tooltip: ""
+	}
+
+	StrokeScale: {
+		Label: Stroke Scale
+		Tooltip: ""
+	}
+
+	WobbleScale: {
+		Label: Wobble Scale
+		Tooltip: ""
+	}
+
+	BookSize: {
+		Label: Book Size
+		Tooltip: ""
+	}
+}
+
+HexServerConfig: {
+	DisplayName: Hex Server Config
+
+	GreatTeleportDropsItems: {
+		Label: Great Teleport Drops Items
+		Tooltip: ""
+	}
+
+	GreatTeleportDropDivisor: {
+		Label: Great Teleport Drop Divisor
+		Tooltip: ""
+	}
+
+	ExplosionsBreakBlocks: {
+		Label: Explosions Break Blocks
+		Tooltip: ""
+	}
+
+	TrueNameHasAmbit: {
+		Label: True Name Has Ambit
+		Tooltip: ""
 	}
 }

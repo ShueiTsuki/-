@@ -100,7 +100,7 @@
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
-| `QuenchedAllayItem` | 1 | QuenchedAllayShard×4 | WorkBenches | 淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除妖精小动物，要启蒙） |
+| `QuenchedAllayItem` | 1 | QuenchedAllayShard×4 | WorkBenches | 淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除小精灵 Pixie —— 神圣地肉后敌怪，用户定的进度 —— 要启蒙） |
 | `QuenchedAllayTilesItem` | 4 | QuenchedAllayBricksItem×4 | WorkBenches | 源 433 stoneSet（这一族没有柱） |
 | `QuenchedAllayTilesItem` | 1 | 〔HexRecipeGroups.QuenchedAllayBlocks〕×1 | HeavyWorkBench | 源 433 stoneSet（这一族没有柱） |
 | `QuenchedAllayBricksItem` | 4 | QuenchedAllayItem×4 | WorkBenches | 源 433 stoneSet |

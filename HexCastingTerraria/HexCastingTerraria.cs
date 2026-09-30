@@ -155,13 +155,10 @@ namespace HexCastingTerraria
                 new Core.Casting.Actions.BrainsweepRecipe(dustBlock, wizard, akashicRecord, none, crystal10),
 
                 // 原版：紫水晶块 + 悦灵 → **淬灵块**（方块，敲掉掉 2~4 片碎片），1 晶体。
-                // 泰拉的悦灵 = 妖精（Fairy 小动物：友好、会飞、领人找宝藏，和悦灵一样是「帮你找东西」的精灵）——
-                // 肉前就能遇到（稀有小动物），粉 / 绿 / 蓝三种都算。
-                // 这里曾经写成 TownNpcSpecies(FairyCritterPink)：妖精是小动物不是城镇 NPC，种类编号是正的 netID，
-                // **这条配方永远匹配不上**；而且产物是碎片物品、不是方块。
-                new Core.Casting.Actions.BrainsweepRecipe(dustBlock, NPCID.FairyCritterPink, quenchedAllay, none, crystal1),
-                new Core.Casting.Actions.BrainsweepRecipe(dustBlock, NPCID.FairyCritterGreen, quenchedAllay, none, crystal1),
-                new Core.Casting.Actions.BrainsweepRecipe(dustBlock, NPCID.FairyCritterBlue, quenchedAllay, none, crystal1),
+                // 泰拉的悦灵 = **小精灵（Pixie）**：神圣地的精灵，肉后才有 —— 用户按进度特意定的，淬灵线整条落在肉后
+                //（与法术环「肉后 · 启蒙」同一档）。按 netID 匹配（它不是城镇 NPC）。
+                // 这里曾经写成 TownNpcSpecies(粉妖精)：城镇 NPC 编码配小动物，**这条配方永远匹配不上**；产物也错成了碎片物品。
+                new Core.Casting.Actions.BrainsweepRecipe(dustBlock, NPCID.Pixie, quenchedAllay, none, crystal1),
             });
 
             Logger.Info($"[HexCasting] 脑叶切除配方：{Core.Casting.Actions.BrainsweepRules.Recipes.Count} 条");
