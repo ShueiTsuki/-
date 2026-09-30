@@ -42,6 +42,7 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     private PatternEntries.Entry? _hoveredEntry;
     private long _hoverStart;
     private bool _allowStart = true;
+    private bool _initialized;
 
     private static HexcessibleSettings S => HexcessibleSettings.Current;
 
@@ -60,6 +61,13 @@ public sealed class HexcessibleCanvas : ICanvasExtension
 
     public bool Update(CanvasFrame f)
     {
+        if (!_initialized)
+        {
+            // 上游 DrawStateMixin.init：每次打开施法界面清一次查询缓存；PerWorldLearnMixin.init：学大法术
+            _initialized = true;
+            HexcessibleIndex.InvalidateCaches();
+            LearnFromScroll();
+        }
         _allowStart = CurrentAllowStart();
         f.Canvas.Dimmed = S.Dimmed;
         f.Canvas.ShowAllDots = S.ShowAllDots;
@@ -226,6 +234,25 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     {
         f.Canvas.CancelDrawing();
         _ac = null;
+    }
+
+    // ==================== 学大法术 ====================
+
+    /// <summary>
+    /// 上游 PerWorldLearnMixin：打开施法界面时另一只手拿着远古卷轴，就记下卷轴上这个大法术在本世界的画法。
+    /// 移植版的「另一只手」是快捷栏里手上那格右边一格（和本体「手持物品」类图案一样）。
+    /// </summary>
+    private static void LearnFromScroll()
+    {
+        var player = Main.LocalPlayer;
+        if (player is null || player.selectedItem is not (>= 0 and < 10)) return;
+        var other = player.inventory[(player.selectedItem + 1) % 10];
+        if (other?.ModItem is not global::HexCastingTerraria.Content.Items.AncientScroll scroll || scroll.OpId.Length == 0) return;
+        if (scroll.Read() is not global::HexCastingTerraria.Core.Casting.Iotas.PatternIota p) return;
+        var def = global::HexCastingTerraria.Core.Registry.PatternRegistry.FindById(scroll.OpId);
+        if (def is null || !global::HexCastingTerraria.Core.Registry.PatternRegistry.IsPerWorld(def)) return;
+        HexcessibleStore.LearnInThisWorld(def.Id, new string(p.Pattern.Angles.Select(KeyboardPlacement.LetterOf).ToArray()));
+        HexcessibleIndex.Reset();
     }
 
     // ==================== 按 N 查书 ====================
@@ -449,6 +476,7 @@ public sealed class HexcessibleCanvas : ICanvasExtension
         _ac = null;
         _alias = null;
         ClearHover();
+        _initialized = false;
         _lastMouse = null;
         _allowStart = true;
         HexcessibleIndex.InvalidateCaches();

@@ -16,25 +16,41 @@ public static class HexcessibleIndex
 {
     private static PatternEntries? _index;
     private static BookDocument? _book;
+    private static string? _world;
     private static BookProgress? _progress;
     private static uint _progressTick = uint.MaxValue;
 
     public static PatternEntries Get()
     {
         var book = HexBook.Document;
-        if (_index is null || !ReferenceEquals(_book, book))
+        var world = HexcessibleStore.WorldContext;
+        if (_index is null || !ReferenceEquals(_book, book) || _world != world)
         {
             var seen = new HashSet<string>();
             var defs = PatternRegistry.All.Concat(PatternRegistry.EnabledAddonPatterns()).Where(d => seen.Add(d.Id)).ToList();
-            // 大法术：学会本世界画法（上游 PerWorldLearnMixin）那项还没做，先一律当没学会
-            _index = new PatternEntries(defs, book, PatternRegistry.IsPerWorld)
+            // 大法术：只认这个世界学会的画法（上游 PerWorldLearnMixin：打开施法界面时另一只手拿着远古卷轴）
+            var known = HexcessibleStore.KnownInThisWorld();
+            _index = new PatternEntries(defs, book, PatternRegistry.IsPerWorld, d => Learned(d, known))
             {
                 AliasOf = HexcessibleStore.AliasOf,
                 Smart = new SmartSigs(SmartText()),
             };
             _book = book;
+            _world = world;
         }
         return _index;
+    }
+
+    private static global::HexCastingTerraria.Core.Casting.Math.HexPattern? Learned(PatternDef def, Dictionary<string, string> known)
+    {
+        if (!known.TryGetValue(def.Id, out var sig)) return null;
+        var angles = new List<global::HexCastingTerraria.Core.Casting.Math.HexAngle>();
+        foreach (var c in sig)
+        {
+            if (KeyboardPlacement.AngleOf(c) is not { } a) return null;
+            angles.Add(a);
+        }
+        return KeyboardPlacement.Pattern(def.StartDir, angles);
     }
 
     /// <summary>上游 Entry.locked()：图案所在书条目没解锁。进度一帧只算一次。</summary>

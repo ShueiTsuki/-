@@ -248,6 +248,7 @@
 | `Hexcessible/Core/JavaNum.cs` | 上游 Java 的几个数字细节（智能签名的结果取决于它们）：Float.parseFloat、Float.toString、Math.round(float)、(int) 强转。 |
 | `Hexcessible/Core/KeyboardDrawingState.cs` | 键盘绘制的状态（上游 drawstate/KeyboardDrawing.java 去掉渲染的部分）：当前签名、光标处的起点与起笔方向、 |
 | `Hexcessible/Core/KeyboardPlacement.cs` | 键盘绘制的纯逻辑（上游 accessor/CastRef.java 的 findClosestAvailable / fits / isValidPatternAddition + Utils.java 的角度字母表）。 |
+| `Hexcessible/Core/KnownWorldPatterns.cs` | 学会的大法术画法（上游 config.knownWorldPatterns，一行一条「世界 图案id 签名」，按世界分开）。 |
 | `Hexcessible/Core/NumberTable.Generated.cs` | 上游 numbers.txt：第 i 项是数字 i + 1 在「数字之精思」前缀（aqaa / dedd）后面的最短笔顺，共 2000 项。</summary> |
 | `Hexcessible/Core/PatternEntries.cs` | 图案索引（上游 entries/PatternEntries.java + entries/BookEntries.java）：每个图案的名字、签名、书里的图案页 |
 | `Hexcessible/Core/SmartSigs.cs` | 智能签名用到的文字（格式串里的 {0} 对应上游的 %s）。</summary> |
@@ -255,7 +256,7 @@
 | `Hexcessible/Game/HexcessibleCanvas.cs` | Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing + AutoCompleting， |
 | `Hexcessible/Game/HexcessibleIndex.cs` | 游戏侧的图案索引：本体 + 已开的附属图案 + 书（含附属书页），书条目锁不锁看当前玩家的解锁进度。 |
 | `Hexcessible/Game/HexcessibleOptions.cs` | Hexcessible 的配置项，挂在客户端「附属兼容」页的 Hexcessible 开关下面（上游 HexcessibleConfig，默认值照搬）。 |
-| `Hexcessible/Game/HexcessibleStore.cs` | Hexcessible 自己记的东西（上游放在配置文件里、界面上不显示的 patternAliases）：图案别名，id → 别名。 |
+| `Hexcessible/Game/HexcessibleStore.cs` | Hexcessible 自己记的东西（上游放在配置文件里、界面上不显示的 patternAliases / knownWorldPatterns）： |
 | `Hexcessible/Game/TooltipBox.cs` | 画 Minecraft 样式的提示框（上游用 DrawContext.drawTooltip：深紫底、紫色渐变边框，贴在给定点右上方，出屏就往回挪）。 |
 | `HexDebug/Game/HexDebugAddon.cs` | HexDebug 附属的入口：调试杖逐步执行咒术、剪接台编辑咒术（object-Object，MIT）。 |
 | `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |

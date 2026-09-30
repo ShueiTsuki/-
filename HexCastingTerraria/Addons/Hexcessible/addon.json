@@ -130,7 +130,11 @@
     },
     {
       "name": "每世界大法术：手持远古卷轴才补全",
-      "files": [],
+      "files": [
+        "Core/KnownWorldPatterns.cs",
+        "Game/HexcessibleStore.cs",
+        "Game/HexcessibleCanvas.cs"
+      ],
       "upstream": [
         "mixin/PerWorldLearnMixin.java"
       ]

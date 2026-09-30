@@ -316,6 +316,15 @@ static class HexcessibleTests
 
         SmartSigTests(real);
 
+        // 学会的大法术（上游 knownWorldPatterns：一行「世界 图案id 签名」）
+        var lines = new List<string> { "w1 hexcasting:lightning qaq", "w2 hexcasting:lightning ede", "坏行", "w1 hexcasting:flight wwa" };
+        var w1 = KnownWorldPatterns.ForWorld(lines, "w1");
+        Check("学会的大法术：按世界分开，坏行跳过", w1.Count == 2 && w1["hexcasting:lightning"] == "qaq" && w1["hexcasting:flight"] == "wwa");
+        var relearn = KnownWorldPatterns.Learn(lines, "w1", "hexcasting:lightning", "ddd");
+        Check("再学一次同一个：旧行换掉，别的世界不动", KnownWorldPatterns.ForWorld(relearn, "w1")["hexcasting:lightning"] == "ddd"
+            && KnownWorldPatterns.ForWorld(relearn, "w2")["hexcasting:lightning"] == "ede" && relearn.Count == lines.Count);
+        Check("世界名清洗：字母数字以外换成 _", KnownWorldPatterns.Sanitize("My World-1!") == "My_World_1_");
+
         // 显示选项：签名开关（tooltipRenderSigs）、减少动效（makeZappy 直接给原始折线）
         var casterEntry = real.All.First(x => x.Id == "hexcasting:get_caster");
         HexcessibleSettings.Current = new HexcessibleSettings { TooltipRenderSigs = false };
