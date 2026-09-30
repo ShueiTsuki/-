@@ -93,13 +93,6 @@ public sealed class HexClientConfig : ModConfig
     [DefaultValue(true)]
     public bool ShowMediaRing { get; set; } = true;
 
-    /// <summary>
-    /// 画布上的开发诊断信息（实时角度串、「已命中可以松手」、最近识别结果、调试面板、临摹引导）。
-    /// 原版画布上只有笔迹、栈和渡鸦之思；这些是开发期排错用的，默认关闭。
-    /// </summary>
-    [DefaultValue(false)]
-    public bool ShowDebugPanel { get; set; } = false;
-
 
 
     /// <summary>

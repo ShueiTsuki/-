@@ -24,12 +24,6 @@ namespace HexCastingTerraria
         public static ModKeybind? ToggleInfiniteMediaKey { get; private set; }
 
         /// <summary>
-        /// 翻页「临摹引导」（图案书替代品）的快捷键。
-        /// 默认 H；按住 Shift 时反向翻页。
-        /// </summary>
-        public static ModKeybind? CycleGuideKey { get; private set; }
-
-        /// <summary>
         /// 手动发放开发者测试包的快捷键（默认 K）。
         ///
         /// 与配置里的「进世界自动发放」互补：那个只在进世界时发一次，
@@ -47,7 +41,6 @@ namespace HexCastingTerraria
         {
             Instance = this;
             ToggleInfiniteMediaKey = KeybindLoader.RegisterKeybind(this, "ToggleInfiniteMedia", Keys.J);
-            CycleGuideKey = KeybindLoader.RegisterKeybind(this, "CycleGuide", Keys.H);
             GiveDevKitKey = KeybindLoader.RegisterKeybind(this, "GiveDevKit", Keys.K);
             DevPanelKey = KeybindLoader.RegisterKeybind(this, "DevPanel", Keys.F7);
 
@@ -103,7 +96,6 @@ namespace HexCastingTerraria
             Content.Net.ServerCastState.ClearAll();
             PatternLoad = null;
             ToggleInfiniteMediaKey = null;
-            CycleGuideKey = null;
             GiveDevKitKey = null;
             DevPanelKey = null;
             PatternRegistry.ClearActions();

@@ -337,7 +337,7 @@ Mods: {
 					'''
 					右键打开咒术绘制画布
 					潜行右键清空已绘制图案
-					画布内：左键拖拽绘制 · 右键或 Esc 关闭 · F1 调试面板
+					画布内：左键拖拽绘制 · 右键或 Esc 关闭
 					'''
 			}
 			AncientScroll: {
@@ -754,9 +754,6 @@ Mods: {
 			}
 			ToggleInfiniteMedia: {
 				DisplayName: 切换无限媒质
-			}
-			CycleGuide: {
-				DisplayName: 翻页临摹引导
 			}
 			DevPanel: {
 				DisplayName: 开发者面板

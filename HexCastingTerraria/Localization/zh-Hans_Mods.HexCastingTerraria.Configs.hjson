@@ -72,11 +72,6 @@ HexClientConfig: {
 		Tooltip: 左上角显示媒质环（数量与百分比）。
 	}
 
-	ShowDebugPanel: {
-		Label: 显示调试面板
-		Tooltip: 画布打开时显示坐标换算与吸附阈值（也可以在游戏里按 F1 切换）。
-	}
-
 	ShowAimMarker: {
 		Label: 显示瞄准标记
 		Tooltip: 用粒子标出鼠标指向的世界位置。联机时其他玩家也能看到同一个标记。

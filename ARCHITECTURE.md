@@ -230,7 +230,6 @@
 | `UI/HexBook.cs` | 咒法学之书（帕秋莉手册）的开关、输入与绘制。内容与排版在 Core（BookContent / PatchouliRenderer）。 |
 | `UI/HexCanvas.cs` | 已画完的一条图案 + 注册表匹配结果（null = 未命中）+ 求值结果（决定颜色）。</summary> |
 | `UI/PatternArt.cs` | 按原版画法画静态图案（<see cref="StaticPatternArt"/>）的两个入口： |
-| `UI/PatternRenderer.cs` | 图案检索辅助（临摹目标、最接近的图案）。 |
 | `UI/PrimitiveBatch.cs` | 把 <see cref="PatternGeometry"/> 产出的三角形直接交给显卡。 |
 | `UI/SpriteBatchBookCanvas.cs` | <see cref="IBookCanvas"/> 的游戏内实现：全部用 <c>Main.spriteBatch</c> 画（不切到图元绘制， |
 

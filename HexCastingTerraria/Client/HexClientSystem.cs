@@ -34,9 +34,6 @@ public sealed class HexClientSystem : ModSystem
     public static readonly Color BadColor = new Color(230, 96, 96);
     public static readonly Color DebugColor = new Color(255, 230, 140);
 
-    /// <summary>调试信息面板开关。定位问题时打开。</summary>
-    public static bool ShowDebug { get; set; } = true;
-
     private Texture2D? _pixel;
 
     /// <summary>
@@ -176,15 +173,6 @@ public sealed class HexClientSystem : ModSystem
                     HexCanvasState.Dev.Toggle();
                 }
 
-                // H 翻页临摹引导；Shift+H 反向。
-                // 只在画布打开时响应 —— 否则 H 会跟其它模组的键位抢。
-                if (HexCastingTerraria.CycleGuideKey?.JustPressed == true
-                    && HexCanvasState.Canvas.IsOpen)
-                {
-                    bool back = Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift)
-                                || Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightShift);
-                    CycleGuide(back ? -1 : 1);
-                }
             }
             catch (System.Collections.Generic.KeyNotFoundException)
             {
@@ -226,14 +214,6 @@ public sealed class HexClientSystem : ModSystem
         var mouse = RawMouse();
         var prevMouse = _prevCanvasMouse ?? mouse;
         _prevCanvasMouse = mouse;
-
-        // F1 切换调试面板
-        if (Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F1)
-            && Main.oldKeyState.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F1))
-        {
-            // 直接切配置里的开关（以前只切一个内部标志，而配置默认关 → 按 F1 什么都不出，玩家反馈）
-            HexClientConfig.Instance.ShowDebugPanel = !HexClientConfig.Instance.ShowDebugPanel;
-        }
 
         // Esc 关画布、换快捷栏格子关画布：都在 ModPlayer.PostUpdate()（本帧最后一个回调，能把 Esc 弹出的背包关回去）。
 
@@ -455,49 +435,6 @@ public sealed class HexClientSystem : ModSystem
 
         float msgY = shouldShowMedia ? y + 62 : y;
 
-        // ===== 正在画的这一笔（实时） =====
-        //
-        // 这是排查「画出来的和想画的不是一个形状」最直接的信息：
-        // 一边拖就能看到系统读到的角度串、以及当前是否已经命中某条图案。
-        // 没有它，玩家只有松手之后才知道画错了，而且只知道「无效」，不知道差在哪。
-        bool diag = HexClientConfig.Instance.ShowDebugPanel;
-        if (diag && canvas.IsOpen && canvas.WipPattern is { } wip)
-        {
-            var live = PatternRegistry.Match(wip);
-            string sig = wip.AnglesSignature();
-
-            string head = live != null
-                ? $"已命中「{live.DisplayName()}」可以松手"
-                : $"正在画 [{wip.StartDir} {sig}] {sig.Length} 笔";
-
-            Terraria.Utils.DrawBorderString(sb, head, new Vector2(x, msgY),
-                live != null ? GoodColor : new Color(150, 210, 255), 0.9f);
-            msgY += 22f;
-
-            if (live == null)
-            {
-                string? hint = Core.Casting.Math.PatternSuggestion.Describe(sig);
-                if (hint != null)
-                {
-                    Terraria.Utils.DrawBorderString(sb, hint, new Vector2(x, msgY),
-                        new Color(255, 210, 120), 0.8f);
-                    msgY += 20f;
-                }
-            }
-        }
-
-        // ===== 最近识别结果 =====
-        // （原版靠图案颜色表达结果：蓝=已求值 黄=已转义 红=出错/无效 灰=等待中）
-        if (diag && canvas.LastPattern != null)
-        {
-            var last = canvas.LastPattern;
-            string line = last.IsValid
-                ? $"识别：{last.Matched!.DisplayName()}"
-                : $"未识别 [{last.Pattern.StartDir} {last.Pattern.AnglesSignature()}]";
-            Terraria.Utils.DrawBorderString(sb, line, new Vector2(x, msgY), last.IsValid ? GoodColor : BadColor, 0.9f);
-            msgY += 22f;
-        }
-
         // ===== 一次性反馈（不常驻） =====
         if (!string.IsNullOrEmpty(HexCanvasState.LastMessage) && HexCanvasState.MessageTimer > 0)
         {
@@ -505,26 +442,8 @@ public sealed class HexClientSystem : ModSystem
             msgY += 20f;
         }
 
-        // ===== 临摹引导（**仅调试面板开启时**显示）=====
-        // 曾经做成画布上常驻，那是**不忠实的设计**：
-        // 原版画布上从不显示图案，玩家靠「咒法学之书」学图案（Patchouli 驱动，约 100 个条目）。
-        // 所以这里退回成开发期辅助手段，正式方案是自建书 UI（见 TODO_PLAN.md「咒法学之书」）。
-        if (canvas.IsOpen && GuideIndex >= 0 && HexClientConfig.Instance.ShowDebugPanel)
-        {
-            DrawGuideStrip(sb, w, h);
-        }
-
-        // ===== 调试面板（F1 开关，也可用设置里的开关彻底关掉）=====
-        if (canvas.IsOpen && ShowDebug && HexClientConfig.Instance.ShowDebugPanel)
-        {
-            DrawDebugPanel(sb, canvas, w, h, mouse);
-        }
-
         return msgY;
     }
-
-    /// <summary>当前临摹目标在「已实现图案」列表里的下标；-1 表示不显示引导。</summary>
-    public static int GuideIndex { get; private set; } = -1;
 
     /// <summary>
     /// 在瞄准位置撒一小撮粒子，让玩家看见「这次法术朝哪打」。
@@ -646,54 +565,6 @@ public sealed class HexClientSystem : ModSystem
         }
     }
     /// <summary>
-    /// 翻页选择临摹目标。delta = +1 下一个 / -1 上一个；从「未开启」出发时进入首/末项。
-    /// 列表来自 <see cref="PatternRenderer.GetImplementedPatterns"/>，只含**已实现行为**的图案。
-    /// </summary>
-    public static void CycleGuide(int delta)
-    {
-        var all = PatternRenderer.GetImplementedPatterns();
-        if (all.Count == 0) { GuideIndex = -1; return; }
-
-        int next = GuideIndex < 0 ? (delta >= 0 ? 0 : all.Count - 1) : GuideIndex + delta;
-        next %= all.Count;
-        if (next < 0) next += all.Count;
-        GuideIndex = next;
-    }
-
-    /// <summary>关闭临摹引导。</summary>
-    public static void HideGuide() => GuideIndex = -1;
-
-    /// <summary>屏幕底部的临摹引导条：大号幽灵图案 + Id + 起始方向 / 角度串。</summary>
-    private void DrawGuideStrip(SpriteBatch sb, float w, float h)
-    {
-        var all = PatternRenderer.GetImplementedPatterns();
-        if (all.Count == 0) return;
-
-        int idx = System.Math.Clamp(GuideIndex, 0, all.Count - 1);
-        var def = all[idx];
-
-        float cx = w * 0.5f;
-        float cy = h - 132f;
-        float size = 62f;
-
-        // 背板：不画的话图案会跟地形糊在一起，白色地形上几乎看不见
-        var box = new Rectangle((int)(cx - 160f), (int)(cy - size - 30f), 320, (int)(size * 2f + 86f));
-        Terraria.Utils.DrawInvBG(sb, box, new Color(24, 20, 40) * 0.82f);
-
-        UI.PatternArt.DrawReadable(PatternRegistry.PatternInThisWorld(def), new Vector2(cx, cy), size * 1.6f);
-
-        string title = $"临摹目标 {idx + 1}/{all.Count}   {def.DisplayName()}";
-        Terraria.Utils.DrawBorderString(sb, title,
-            new Vector2(cx - 150f, cy - size - 24f), Color.White, 0.82f);
-        Terraria.Utils.DrawBorderString(sb,
-            $"起始 {def.StartDir}   角度 {def.Angles}",
-            new Vector2(cx - 150f, cy + size + 6f), new Color(180, 175, 205), 0.68f);
-        Terraria.Utils.DrawBorderString(sb,
-            "[H] 下一个    [Shift+H] 上一个    （调试用）",
-            new Vector2(cx - 150f, cy + size + 26f), new Color(140, 135, 165), 0.6f);
-    }
-
-    /// <summary>
     /// 显示 VM 栈内容 —— 这是「画图案 → 求值」闭环的可见证据。
     /// </summary>
     private void DrawVmStack(SpriteBatch sb, float x, float y)
@@ -760,96 +631,6 @@ public sealed class HexClientSystem : ModSystem
                 new Vector2(x, y), BadColor, 0.65f);
         }
     }
-    /// <summary>
-    /// 调试面板：显示输入与坐标换算的中间量，并画出「最容易画对的几条图案」预览。
-    /// 「画不出线」「画了不识别」这类问题的根因基本都能在这里一眼看出。
-    /// </summary>
-    private void DrawDebugPanel(SpriteBatch sb, HexCanvas canvas, float w, float h, Vector2 mouse)
-    {
-        float size = canvas.HexSize(w, h);
-        var hex = canvas.PxToCoord(mouse, w, h);
-        var anchor = canvas.AnchorCoord;
-        var anchorPx = canvas.CoordToPx(anchor, w, h);
-        float distSq = (mouse - anchorPx).LengthSquared();
-        float snapSq = size * size * 2f * Math.Clamp(canvas.SnapThreshold, 0.5f, 1f);
-
-        float x = 18f;
-        float y = h - 210f;
-
-        string[] lines =
-        {
-            "── 咒法学调试 (F1 隐藏) ──",
-            $"屏幕 {w:0}x{h:0}  格距 {size:0.0}  格点 ({hex.X}, {hex.Y})",
-            $"状态 {canvas.State}  锚点 ({anchor.X}, {anchor.Y})",
-            $"距离² {distSq:0} / 阈值² {snapSq:0}   {(distSq >= snapSq ? "已达吸附" : "未达吸附")}",
-            $"左键 {(Main.mouseLeft ? "按下" : "抬起")}   右键 {(Main.mouseRight ? "按下" : "抬起")}   图案 {canvas.Patterns.Count} 条",
-        };
-
-        foreach (var line in lines)
-        {
-            Terraria.Utils.DrawBorderString(sb, line, new Vector2(x, y), DebugColor, 0.72f);
-            y += 17f;
-        }
-
-        // ---- 最简单的图案预览：照着画就能命中 ----
-        y += 6f;
-        Terraria.Utils.DrawBorderString(sb, "照下面任一条画（蓝点=起笔处）：", new Vector2(x, y), TextColor, 0.72f);
-        y += 20f;
-
-        var simplest = PatternRenderer.GetSimplestPatterns(6);
-        float previewSize = 34f;
-        float slot = 118f;
-        for (int i = 0; i < simplest.Count; i++)
-        {
-            var def = simplest[i];
-            var center = new Vector2(x + 26f + (i % 3) * slot, y + (i / 3) * 62f);
-
-            UI.PatternArt.DrawReadable(PatternRegistry.PatternInThisWorld(def), center, previewSize * 1.6f);
-
-            Terraria.Utils.DrawBorderString(sb, def.DisplayName(),
-                new Vector2(center.X - previewSize, center.Y + previewSize * 0.7f), MediaColor, 0.6f);
-            Terraria.Utils.DrawBorderString(sb, $"{def.StartDir} {def.Angles}",
-                new Vector2(center.X - previewSize, center.Y + previewSize * 0.7f + 13f),
-                new Color(170, 165, 190), 0.55f);
-        }
-
-        // ---- 若已有未命中的图案，给出最接近的一条 ----
-        if (canvas.LastPattern is { IsValid: false } last)
-        {
-            var closest = PatternRenderer.FindClosest(last.Pattern.AnglesSignature());
-            if (closest != null)
-            {
-                var (def, dist) = closest.Value;
-                string hint = dist == 0
-                    ? $"与「{def.DisplayName()}」签名相同"
-                    : $"最接近：「{def.DisplayName()}」（差 {dist}）  签名 {def.Angles}";
-                Terraria.Utils.DrawBorderString(sb, hint,
-                    new Vector2(x, y + 132f), new Color(255, 210, 120), 0.7f);
-            }
-        }
-    }
-
-    private void DrawSegmentForPreview(SpriteBatch sb, Vector2 a, Vector2 b, float width, Color color)
-    {
-        var pixel = Pixel;
-        var delta = b - a;
-        float len = delta.Length();
-        if (len < 0.01f)
-        {
-            return;
-        }
-        sb.Draw(pixel, a, null, color, MathF.Atan2(delta.Y, delta.X),
-            new Vector2(0f, pixel.Height * 0.5f), new Vector2(len, width), SpriteEffects.None, 0f);
-    }
-
-    private void DrawDotForPreview(SpriteBatch sb, Vector2 center, float radius, Color color)
-    {
-        var pixel = Pixel;
-        int s = Math.Max(1, (int)(radius * 2f));
-        sb.Draw(pixel, new Rectangle((int)(center.X - s * 0.5f), (int)(center.Y - s * 0.5f), s, s),
-            null, color, 0f, Vector2.Zero, SpriteEffects.None, 0f);
-    }
-
     /// <summary>
     /// 媒质进度条配色。逐行对齐源项目 MediaHelper.mediaBarColor：
     ///   r = lerp(amt, 84, 254)

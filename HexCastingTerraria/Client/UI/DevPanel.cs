@@ -343,7 +343,6 @@ public sealed class DevPanel
             ("过载不扣血", cfg.NoOvercastDamage, () => cfg.NoOvercastDamage = !cfg.NoOvercastDamage, "媒质不够时照常施放、不掉血"),
             ("施法后补满", cfg.RefillMediaAfterCast, () => cfg.RefillMediaAfterCast = !cfg.RefillMediaAfterCast, "每次求值后把媒质补满"),
             ("书全部解锁", cfg.UnlockWholeBook, () => cfg.UnlockWholeBook = !cfg.UnlockWholeBook, "咒法学之书不按进度锁条目"),
-            ("画布调试信息", cfg.ShowDebugPanel, () => cfg.ShowDebugPanel = !cfg.ShowDebugPanel, "画布上显示吸附距离、最近识别、临摹引导（H）"),
         };
         for (int i = 0; i < toggles.Length; i++)
         {

@@ -72,11 +72,6 @@ HexClientConfig: {
 		Tooltip: Shows the media ring with amount and percentage in the top-left corner.
 	}
 
-	ShowDebugPanel: {
-		Label: Show debug panel
-		Tooltip: Shows coordinate conversions and snap threshold while the canvas is open (also toggled with F1).
-	}
-
 	ShowAimMarker: {
 		Label: Show aim marker
 		Tooltip: Marks the world position the mouse points at with particles. Other players see the same marker in multiplayer.
