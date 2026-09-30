@@ -20,3 +20,9 @@ _watcher.log
 # 服务器验证的临时存档/日志（每次运行重建）
 _verify/
 __pycache__/
+
+# 从泰拉瑞亚本体导出的原版贴图（Re-Logic 版权，只在本地做 UI 参考，不进公开仓库）
+# 重新生成：游戏里 DevTextureDump 导出 → _tools/pack_ui_atlas.ps1
+_tools/vanilla_ui/
+_tools/vanilla_ui_sheet.png
+_tools/ui_atlas.raw
