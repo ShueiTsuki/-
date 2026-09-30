@@ -78,13 +78,13 @@ public abstract class ItemIotaStorage : ModItem
     public override void SaveData(TagCompound tag)
     {
         if (_stored == null) return;
-        tag["iota"] = _stored.Serialize();
+        tag["iota"] = Net.IotaTag.ToTag(_stored);
     }
 
     public override void LoadData(TagCompound tag)
     {
         // 读不出来就当作空，**不是**静默降级成某个默认值
-        _stored = tag.ContainsKey("iota") && IotaSerializer.TryDeserialize(tag["iota"], out var iota) ? iota : null;
+        _stored = tag.ContainsKey("iota") && Net.IotaTag.TryFromTag(tag["iota"], out var iota) ? iota : null;
     }
 
     // ── 联机 ───────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HexCastingTerraria.Client;
 using HexCastingTerraria.Client.UI;
+using HexCastingTerraria.Content.Net;
 using HexCastingTerraria.Core.Casting.Iotas;
 using HexCastingTerraria.Core.Casting.Math;
 using Terraria;
@@ -72,9 +73,11 @@ public abstract class WallScrollTile : ModTile
                 break;
 
             default:
-                TileObjectData.newTile.CopyFrom(TileObjectData.Style4x4);
-                TileObjectData.newTile.AnchorWall = true;
-                TileObjectData.newTile.AnchorBottom = AnchorData.Empty;
+                // 1.4.4 没有 4×4 的现成样式：从 3×3 挂墙样式放大
+                TileObjectData.newTile.CopyFrom(TileObjectData.Style3x3Wall);
+                TileObjectData.newTile.Width = 4;
+                TileObjectData.newTile.Height = 4;
+                TileObjectData.newTile.CoordinateHeights = new[] { 16, 16, 16, 16 };
                 break;
         }
 
@@ -266,7 +269,7 @@ public sealed class WallScrollEntity : ModTileEntity
     {
         if (Pattern != null)
         {
-            tag["pattern"] = new PatternIota(Pattern).Serialize()!;
+            tag["pattern"] = IotaTag.ToTag(new PatternIota(Pattern));
         }
     }
 
@@ -275,7 +278,7 @@ public sealed class WallScrollEntity : ModTileEntity
         Pattern = null;
 
         if (tag.ContainsKey("pattern")
-            && IotaSerializer.TryDeserialize(tag["pattern"], out var iota)
+            && IotaTag.TryFromTag(tag["pattern"], out var iota)
             && iota is PatternIota pi)
         {
             Pattern = pi.Pattern;

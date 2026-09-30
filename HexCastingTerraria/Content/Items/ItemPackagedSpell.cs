@@ -182,7 +182,7 @@ public abstract class ItemPackagedSpell : ModItem, IHexVariantItem
         if (_program.Count > 0)
         {
             // 复用 iota 的信封格式（键名沿用旧存档的 "patterns"）
-            tag["patterns"] = new ListIota(_program).Serialize();
+            tag["patterns"] = Content.Net.IotaTag.ToTag(new ListIota(_program));
         }
 
         tag["media"] = Media;
@@ -198,7 +198,7 @@ public abstract class ItemPackagedSpell : ModItem, IHexVariantItem
         Variant = 0;
 
         if (tag.TryGet("patterns", out TagCompound envelope)
-            && IotaSerializer.TryDeserialize(envelope, out var iota)
+            && Content.Net.IotaTag.TryFromTag(envelope, out var iota)
             && iota is ListIota list)
         {
             _program = new List<Iota>(list.Items);
@@ -269,7 +269,7 @@ public sealed class Trinket : ItemPackagedSpell
         //     铁锭 ×4 + 紫水晶碎片 ×1 → 1
         // 阶段：肉前。铁用原版配方组（铁锭/铅锭都收）；铁活放在铁砧。
         CreateRecipe()
-            .AddRecipeGroup(RecipeGroups.IronBar, 4)
+            .AddRecipeGroup(RecipeGroupID.IronBar, 4)
             .AddIngredient<AmethystShard>(1)
             .AddTile(TileID.Anvils)
             .Register();

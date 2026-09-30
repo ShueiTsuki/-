@@ -233,7 +233,7 @@ public sealed class HexSlateEntity : ModTileEntity
         if (Pattern != null)
         {
             // 图案用现有的信封格式存，直接落进 TagCompound
-            tag["pattern"] = new PatternIota(Pattern).Serialize()!;
+            tag["pattern"] = IotaTag.ToTag(new PatternIota(Pattern));
         }
     }
 
@@ -244,7 +244,7 @@ public sealed class HexSlateEntity : ModTileEntity
 
         Pattern = null;
         if (tag.ContainsKey("pattern")
-            && IotaSerializer.TryDeserialize(tag["pattern"], out var iota)
+            && IotaTag.TryFromTag(tag["pattern"], out var iota)
             && iota is PatternIota pi)
         {
             Pattern = pi.Pattern;

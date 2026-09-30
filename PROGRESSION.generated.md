@@ -47,16 +47,16 @@
 | `SlateAmethystBricksItem` | 2 | SlateBricksItem×1 + AmethystBricksItem×1 | WorkBenches | 源 441-459 混料 |
 | `SlateAmethystBricksSmallItem` | 2 | SlateBricksSmallItem×1 + AmethystBricksSmallItem×1 | WorkBenches | 源 441-459 混料 |
 | `SlateAmethystPillarItem` | 2 | SlatePillarItem×1 + AmethystPillarItem×1 | WorkBenches | 源 441-459 混料 |
-| `WoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 576-586：木棍 ×3 + 对应木板 ×1 + 充能紫水晶 ×1（14 把法杖共用这一个形状） |
-| `OakStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 同 WoodStaff（橡木 = 泰拉木材） |
-| `BorealStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 同 WoodStaff（云杉 = 北地木） |
-| `PalmStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 同 WoodStaff（竹子 = 棕榈木） |
-| `MahoganyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 同 WoodStaff（丛林木 = 红木） |
-| `EbonwoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 同 WoodStaff（深色橡木 = 乌木） |
-| `ShadewoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 同 WoodStaff（绯红木 = 阴影木） |
-| `DynastyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 同 WoodStaff（金合欢 = 王朝木，旅商处可买，肉前可得） |
-| `AshStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 同 WoodStaff（诡异木 = 灰烬木，地狱可得，肉前） |
-| `EdifiedLogItem` | 1 | 〔RecipeGroups.Wood〕×1 | WorkBenches | 源：启迪树苗法术长出的阿卡夏树产出（**无合成配方**）→ 泰拉保底：任意木材 1:1 |
+| `WoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 576-586：木棍 ×3 + 对应木板 ×1 + 充能紫水晶 ×1（14 把法杖共用这一个形状） |
+| `OakStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 同 WoodStaff（橡木 = 泰拉木材） |
+| `BorealStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 同 WoodStaff（云杉 = 北地木） |
+| `PalmStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 同 WoodStaff（竹子 = 棕榈木） |
+| `MahoganyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 同 WoodStaff（丛林木 = 红木） |
+| `EbonwoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 同 WoodStaff（深色橡木 = 乌木） |
+| `ShadewoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 同 WoodStaff（绯红木 = 阴影木） |
+| `DynastyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 同 WoodStaff（金合欢 = 王朝木，旅商处可买，肉前可得） |
+| `AshStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 同 WoodStaff（诡异木 = 灰烬木，地狱可得，肉前） |
+| `EdifiedLogItem` | 1 | 〔RecipeGroupID.Wood〕×1 | WorkBenches | 源：启迪树苗法术长出的阿卡夏树产出（**无合成配方**）→ 泰拉保底：任意木材 1:1 |
 | `EdifiedLogAmethystItem` | 1 | EdifiedLogItem×1 + Amethyst×1 | WorkBenches | 同上；彩色变体在源项目里来自不同树种，泰拉用宝石定色 |
 | `EdifiedLogAventurineItem` | 1 | EdifiedLogItem×1 + Emerald×1 | WorkBenches | 同上（翡翠 ≈ 东陵玉） |
 | `EdifiedLogCitrineItem` | 1 | EdifiedLogItem×1 + Topaz×1 | WorkBenches | 同上（黄玉 ≈ 黄晶） |
@@ -70,15 +70,15 @@
 | `AmethystEdifiedLeavesItem` | 4 | EdifiedPlanksItem×1 + Amethyst×1 | WorkBenches | 源：树叶由 Edify 转化（无配方）→ 保底：启迪木板定形 + 宝石定色 |
 | `AventurineEdifiedLeavesItem` | 4 | EdifiedPlanksItem×1 + Emerald×1 | WorkBenches | 同上 |
 | `CitrineEdifiedLeavesItem` | 4 | EdifiedPlanksItem×1 + Topaz×1 | WorkBenches | 同上 |
-| `EdifiedStaff` | 1 | EdifiedPlanksItem×1 + ChargedAmethyst×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 89 staffRecipe(MINDSPLICE…) 一族：这一把的「W」槽是 EDIFIED_PLANKS |
-| `JewelerHammer` | 1 | AmethystShard×1 + 〔RecipeGroups.IronBar〕×1 + 〔RecipeGroups.Wood〕×2 | Anvils | 源 245-253：铁锭 + 铁粒 + 紫水晶碎片 + 木棍 ×2 |
+| `EdifiedStaff` | 1 | EdifiedPlanksItem×1 + ChargedAmethyst×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 89 staffRecipe(MINDSPLICE…) 一族：这一把的「W」槽是 EDIFIED_PLANKS |
+| `JewelerHammer` | 1 | AmethystShard×1 + 〔RecipeGroupID.IronBar〕×1 + 〔RecipeGroupID.Wood〕×2 | Anvils | 源 245-253：铁锭 + 铁粒 + 紫水晶碎片 + 木棍 ×2 |
 | `ScryingLens` | 1 | AmethystDust×1 + Glass×4 | WorkBenches | 源 153 ringCornerless：玻璃 ×4 + 粉 ×1 |
 | `Focus` | 1 | ChargedAmethyst×1 + FallenStar×4 + Silk×4 | WorkBenches | 源 98-117：萤石粉 ×4 + 皮革 ×2 + 纸 ×2 + 充能紫水晶 ×1 |
 | `ThoughtKnot` | 1 | AmethystDust×1 + Silk×1 | Loom | 源 93-97：粉 ×1 + 线 ×1（徒手；泰拉用织布机） |
 | `ThoughtKnot` | 1 | Hive×1 | WorkBenches | 源 93-97：粉 ×1 + 线 ×1（徒手；泰拉用织布机） |
-| `Abacus` | 1 | Amethyst×2 + 〔RecipeGroups.Wood〕×6 | WorkBenches | 源 156-163 "WAW"/"SAS"/"WAW"：木板 ×4 + 紫水晶碎片 ×2 + 木棍 ×2 |
+| `Abacus` | 1 | Amethyst×2 + 〔RecipeGroupID.Wood〕×6 | WorkBenches | 源 156-163 "WAW"/"SAS"/"WAW"：木板 ×4 + 紫水晶碎片 ×2 + 木棍 ×2 |
 | `Cypher` | 1 | AmethystDust×1 + CopperBar×4 | WorkBenches | 源 131-135 ringCornerless：铜锭 ×4 + 粉 ×1 |
-| `Trinket` | 1 | AmethystShard×1 + 〔RecipeGroups.IronBar〕×4 | Anvils | 源 137-141 ringCornerless：铁锭 ×4 + 紫水晶碎片 ×1 |
+| `Trinket` | 1 | AmethystShard×1 + 〔RecipeGroupID.IronBar〕×4 | Anvils | 源 137-141 ringCornerless：铁锭 ×4 + 紫水晶碎片 ×1 |
 | `Artifact` | 1 | ChargedAmethyst×1 + GoldBar×4 + Diamond×1 | Anvils | 源 143-151：金锭 ×4 + 充能紫水晶 ×1 + 唱片 ×1（唱片 → 泰拉用钻石代替） |
 | `ScrollSmall` | 1 | AmethystDust×1 + Silk×1 | WorkBenches | 源 215-220：纸 ×1 + 粉 ×1 |
 | `ScrollMedium` | 1 | AmethystDust×1 + Silk×4 | WorkBenches | 源 222-228：纸 ×4 + 粉 ×1 |
@@ -149,11 +149,11 @@
 | `QuenchedAllayBricksItem` | 1 | 〔HexRecipeGroups.QuenchedAllayBlocks〕×1 | HeavyWorkBench | 源 433 stoneSet |
 | `QuenchedAllayBricksSmallItem` | 1 | QuenchedAllayBricksItem×1 | WorkBenches | 源 433 stoneSet |
 | `QuenchedAllayBricksSmallItem` | 1 | 〔HexRecipeGroups.QuenchedAllayBlocks〕×1 | HeavyWorkBench | 源 433 stoneSet |
-| `QuenchedStaff` | 1 | QuenchedAllayShard×1 + ChargedAmethyst×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 90 staffRecipe：这一把的「W」槽是 QUENCHED_SHARD 本身 |
+| `QuenchedStaff` | 1 | QuenchedAllayShard×1 + ChargedAmethyst×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 90 staffRecipe：这一把的「W」槽是 QUENCHED_SHARD 本身 |
 | `Spellbook` | 1 | ChargedAmethyst×2 + Book×1 + GoldBar×1 + CrystalShard×5 | Bookcases | 源 119-129：要求合唱果（末地特产）。泰拉无末地档，取中间阶段肉后；对应物 = 水晶碎块 |
-| `CherryStaff` | 1 | ChargedAmethyst×1 + Pearlwood×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 87 staffRecipe(樱花木)。泰拉没有樱花木，用珍珠木代替 —— 而珍珠木只长在肉后的神圣地，所以实际门槛是肉后 |
-| `SpookyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 86 staffRecipe(红树)。泰拉用**阴森木**代替 —— 阴森木只在肉后的南瓜月掉落，门槛自带 |
-| `PearlwoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带 |
+| `CherryStaff` | 1 | ChargedAmethyst×1 + Pearlwood×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 87 staffRecipe(樱花木)。泰拉没有樱花木，用珍珠木代替 —— 而珍珠木只长在肉后的神圣地，所以实际门槛是肉后 |
+| `SpookyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 86 staffRecipe(红树)。泰拉用**阴森木**代替 —— 阴森木只在肉后的南瓜月掉落，门槛自带 |
+| `PearlwoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带 |
 
 ## 肉后 · 启蒙（9 项）
 
@@ -169,7 +169,7 @@
 | `AkashicBookshelfItem` | 1 | EdifiedPlanksItem×2 + Book×3 + 〔HexRecipeGroups.EdifiedLogs〕×4 | MythrilAnvil + 已启蒙 | 源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment → 秘银砧 + 已启蒙 |
 | `AkashicLigatureItem` | 4 | EdifiedPlanksItem×2 + AmethystDust×1 + AmethystShard×1 + ChargedAmethyst×1 + 〔HexRecipeGroups.EdifiedLogs〕×4 | MythrilAnvil + 已启蒙 | 源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment → 秘银砧 + 已启蒙 |
 | `AkashicRecordItem` | 1 | AkashicLigatureItem×1 + Book×3 | MythrilAnvil + 已启蒙 | 源 497-501 brainsweep(阿卡夏系带 + 图书管理员)：启蒙大战法术 → 秘银砧 + 已启蒙 |
-| `MindspliceStaff` | 1 | HexDirectrixRedstoneItem×1 + ChargedAmethyst×1 + 〔RecipeGroups.Wood〕×3 | WorkBenches | 源 91：这一把的「W」槽是 MINDFLAYED_CIRCLE_COMPONENTS，即脑叶切除产物 |
+| `MindspliceStaff` | 1 | HexDirectrixRedstoneItem×1 + ChargedAmethyst×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 91：这一把的「W」槽是 MINDFLAYED_CIRCLE_COMPONENTS，即脑叶切除产物 |
 
 ## 与源项目的阶段差异（有意为之）
 

@@ -195,12 +195,12 @@ public sealed class AkashicRecordEntity : ModTileEntity
     public override void SaveData(TagCompound tag)
     {
         var keys = new List<string>();
-        var values = new List<object>();
+        var values = new List<TagCompound>();
 
         foreach (var kv in _entries)
         {
             keys.Add(kv.Key);
-            values.Add(kv.Value.Serialize()!);
+            values.Add(Net.IotaTag.ToTag(kv.Value));
         }
 
         // 键值分成两个平行列表存：
@@ -217,7 +217,7 @@ public sealed class AkashicRecordEntity : ModTileEntity
         if (!tag.ContainsKey("keys") || !tag.ContainsKey("values")) return;
 
         var keys = tag.GetList<string>("keys");
-        var values = tag.GetList<object>("values");
+        var values = tag.GetList<TagCompound>("values");
 
         // 两个列表长度不一致说明存档被改坏了 —— 直接放弃整份数据，
         // 而不是按较短的那个截断（截断会悄悄丢掉玩家的记录）。
@@ -231,7 +231,7 @@ public sealed class AkashicRecordEntity : ModTileEntity
         for (int i = 0; i < keys.Count; i++)
         {
             // 单条读不出来就跳过这一条，不影响其它条目
-            if (IotaSerializer.TryDeserialize(values[i], out var iota))
+            if (Net.IotaTag.TryFromTag(values[i], out var iota))
             {
                 _entries[keys[i]] = iota;
             }

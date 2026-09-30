@@ -154,7 +154,7 @@ public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
     {
         tag["page"] = _selected;
         var pages = new TagCompound();
-        foreach (var kv in _pages) pages[kv.Key.ToString()] = kv.Value.Serialize();
+        foreach (var kv in _pages) pages[kv.Key.ToString()] = Content.Net.IotaTag.ToTag(kv.Value);
         tag["pages"] = pages;
         tag["sealed"] = new List<int>(_sealed);
         tag["variant"] = Variant;
@@ -170,7 +170,7 @@ public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
             {
                 // 页码解析失败就跳过这一条，**不要把整本书读废**
                 if (!int.TryParse(kv.Key, out int index) || index < 1 || index > MaxPages) continue;
-                if (kv.Value is TagCompound envelope && IotaSerializer.TryDeserialize(envelope, out var iota))
+                if (Content.Net.IotaTag.TryFromTag(kv.Value, out var iota))
                 {
                     loaded[index] = iota;
                 }

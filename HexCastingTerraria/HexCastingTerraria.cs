@@ -83,6 +83,11 @@ namespace HexCastingTerraria
             Logger.Info($"[HexCasting] 图案注册表已装载 {PatternRegistry.Count} 条"
                        + $"（重复签名 {PatternLoad.DuplicateSignatures.Count} 条）");
 
+            // 存档自检：每种 iota 真写一遍 TagIO 再读回（之前信封直接塞 TagCompound，一存档就崩）
+            var (tagTotal, tagFailures) = Content.Net.IotaTag.SelfTest();
+            Logger.Info($"[HexCasting] iota 存档自检：共 {tagTotal} 条，失败 {tagFailures.Count} 条");
+            foreach (var failure in tagFailures) Logger.Warn($"[HexCasting] iota 存档自检未通过：{failure}");
+
             // 注册已实现的图案行为（VM 求值用）。
             // 目前只接「常数 + 栈操作」这一批，其余按批增量补齐。
             Core.Casting.Actions.HexActions.RegisterAll();

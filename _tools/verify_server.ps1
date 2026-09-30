@@ -36,6 +36,13 @@ $ErrorActionPreference = 'Stop'
 $tml     = "D:\steam\steamapps\common\tModLoader"
 $dll     = Join-Path $tml "tModLoader.dll"
 $dotnet  = Join-Path $tml "dotnet\dotnet.exe"
+# 自带 dotnet 要有 tModLoader.runtimeconfig.json 要求的那个大版本（1.4.4 = 8.x）；
+# 游戏首次启动前（或刚从 1.4.5-dev 切回来时）里面可能只有别的版本 → 用系统装的 dotnet
+$needMajor = ((Get-Content (Join-Path $tml "tModLoader.runtimeconfig.json") -Raw -Encoding UTF8 | ConvertFrom-Json).runtimeOptions.framework.version -split '\.')[0]
+if (-not (Get-ChildItem (Join-Path $tml "dotnet\shared\Microsoft.NETCore.App") -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "$needMajor.*" })) {
+    Write-Host "自带 dotnet 没有 .NET $needMajor 运行时，改用系统 dotnet"
+    $dotnet = (Get-Command dotnet).Source
+}
 $tmlLog  = Join-Path $tml "tModLoader-Logs\server.log"
 $modName = 'HexCastingTerraria'
 
@@ -46,7 +53,7 @@ $worldsDir = Join-Path $saveDir "Worlds"
 New-Item -ItemType Directory -Force -Path $modsDir, $worldsDir | Out-Null
 if ($FreshWorld) { Get-ChildItem $worldsDir -Filter '_verify_world*' | Remove-Item -Force }
 
-$modSrc = Join-Path $env:USERPROFILE "Documents\My Games\Terraria\tModLoader-dev\Mods\$modName.tmod"
+$modSrc = Join-Path $env:USERPROFILE "Documents\My Games\Terraria\tModLoader\Mods\$modName.tmod"
 if (-not (Test-Path $modSrc)) { throw "找不到打包产物 $modSrc —— 先跑 build.ps1（不带 -CompileOnly）" }
 Copy-Item $modSrc $modsDir -Force
 $utf8 = New-Object System.Text.UTF8Encoding($false)
@@ -135,6 +142,7 @@ $checks = [ordered]@{
     '模组加载完成（Mod Load Completed）' = ($log -match 'Mod Load Completed')
     "本模组被自动加载（$modName）"       = ($log -match "自动加载中：$modName|Autoloading: $modName")
     '图案数据自检失败 0 条'              = ($log -match '图案数据自检：.*失败 0 条')
+    'iota 存档自检失败 0 条'             = ($log -match 'iota 存档自检：.*失败 0 条')
     '服务器进入世界（服务器已启动）'     = ($log -match '服务器已启动|Server started')
     '没有未登记的错误/异常'              = ($problems.Count -eq 0)
     '未超时'                             = (-not $timedOut)
