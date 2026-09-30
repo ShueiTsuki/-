@@ -47,7 +47,14 @@ public static class HexCanvasState
     {
         Canvas.Open();
         CloseGuardFrames = guardFrames;
+        OpenedWithSlot = Terraria.Main.LocalPlayer?.selectedItem ?? -1;
     }
+
+    /// <summary>
+    /// 打开画布时手上是快捷栏第几格。之后切到别的格子（数字键、滚轮、自动选工具…）就关画布 ——
+    /// 原版施法界面开着时根本切不了物品；以前这里不管，切走以后画布还开着、人却动不了（玩家反馈）。
+    /// </summary>
+    public static int OpenedWithSlot { get; private set; } = -1;
 
     /// <summary>
     /// 关闭画布。

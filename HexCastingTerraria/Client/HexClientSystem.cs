@@ -231,12 +231,11 @@ public sealed class HexClientSystem : ModSystem
         if (Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F1)
             && Main.oldKeyState.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F1))
         {
-            ShowDebug = !ShowDebug;
+            // 直接切配置里的开关（以前只切一个内部标志，而配置默认关 → 按 F1 什么都不出，玩家反馈）
+            HexClientConfig.Instance.ShowDebugPanel = !HexClientConfig.Instance.ShowDebugPanel;
         }
 
-        // 注意：Esc 不再关闭画布（用户明确要求 Esc 无效）。
-        // 物品栏的压制交给 ModPlayer.PostUpdate()，它每帧强制 Main.playerInventory = false，
-        // 所以画布内按 Esc 既不会关画布、也不会弹背包。
+        // Esc 关画布、换快捷栏格子关画布：都在 ModPlayer.PostUpdate()（本帧最后一个回调，能把 Esc 弹出的背包关回去）。
 
         // 左键按下 → 落笔。原版只在真的落笔时播 START_PATTERN（点在已用格点上不响）
         if (leftDown && !leftWasDown)

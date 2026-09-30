@@ -401,6 +401,13 @@ public sealed class HexPlayer : ModPlayer
     /// </summary>
     public override void SetControls()
     {
+        // 拿着法杖（或画布开着）时不让泰拉的 Shift「自动选择工具」换手：
+        // 潜行 + 右键是原版的「清空重画」，按住 Shift 泰拉会先把手上的法杖换成镐子 / 火把（玩家反馈）
+        if (Player.whoAmI == Main.myPlayer && (Player.HeldItem?.ModItem is Items.HexStaff || Client.HexCanvasState.Canvas.IsOpen))
+        {
+            Player.controlTorch = false;
+        }
+
         if (Player.whoAmI != Main.myPlayer || Terraria.GameInput.PlayerInput.ScrollWheelDelta == 0) return;
         bool canvas = Client.HexCanvasState.Canvas.IsOpen;
         if (!canvas && (!ShiftHeld() || Main.playerInventory || Main.mapFullscreen)) return;
@@ -718,6 +725,22 @@ public sealed class HexPlayer : ModPlayer
 
         bool canvasOpen = Client.HexCanvasState.Canvas.IsOpen;
         bool bookOpen = Client.HexCanvasState.Book.IsOpen;
+
+        if (canvasOpen && Player.selectedItem != Client.HexCanvasState.OpenedWithSlot)
+        {
+            Client.HexCanvasState.CloseCanvas();
+            Client.HexCanvasState.SetMessage("换了手上的物品，画布已关闭（图案保留）");
+            canvasOpen = false;
+        }
+
+        // Esc（泰拉的「物品栏」键）关画布 —— 原版施法界面是个普通 Screen，Esc 就是关。
+        // 这里是本帧最后一个回调：泰拉刚因为这次按键打开了物品栏，顺手关回去，就不会「一按 Esc 弹背包」。
+        if (canvasOpen && Terraria.GameInput.PlayerInput.Triggers.JustPressed.Inventory)
+        {
+            Main.playerInventory = false;
+            Client.HexCanvasState.CloseCanvas();
+            canvasOpen = false;
+        }
 
         if (canvasOpen || bookOpen)
         {

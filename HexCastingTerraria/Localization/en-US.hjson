@@ -337,7 +337,7 @@ Mods: {
 					'''
 					Right click to open the hex drawing canvas
 					Shift + right click to clear drawn patterns
-					In canvas: hold LMB to draw, RMB to undo, Esc to close, F1 for debug
+					In canvas: hold LMB to draw, RMB or Esc to close (patterns kept), F1 for debug
 					'''
 			}
 
