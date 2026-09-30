@@ -38,6 +38,10 @@ public sealed class BookView
     /// <summary>条目是否可打开（未解锁的条目点不开、链接也跳不过去）。默认全部解锁。</summary>
     public System.Func<BookEntry, bool> EntryUnlocked { get; set; } = _ => true;
 
+    /// <summary>目录里显示的条目：Patchouli 的 secret 条目没解锁时整条不显示（普通条目没解锁时显示成锁）。</summary>
+    public System.Collections.Generic.List<BookEntry> VisibleEntries(BookCategory c)
+        => c.Entries.FindAll(e => !e.Secret || EntryUnlocked(e));
+
     public BookDocument Document { get; }
     public BookViewKind Kind { get; private set; } = BookViewKind.Landing;
     public string CategoryId { get; private set; } = string.Empty;
@@ -71,7 +75,7 @@ public sealed class BookView
             switch (Kind)
             {
                 case BookViewKind.Category:
-                    int n = CurrentCategory?.Entries.Count ?? 0;
+                    int n = CurrentCategory is { } c ? VisibleEntries(c).Count : 0;
                     int rest = System.Math.Max(0, n - EntriesInFirstPage);
                     return 1 + ((rest + (2 * EntriesPerPage) - 1) / (2 * EntriesPerPage));
                 case BookViewKind.Entry:

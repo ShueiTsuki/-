@@ -35,6 +35,11 @@ public sealed class HexPlayer : ModPlayer
             {
                 list.Add(new MediaSource { Slot = i, Priority = MediaPriority.Battery, Stored = flask.Media });
             }
+            else if (item.ModItem is Items.CreativeUnlocker)
+            {
+                // 原版：媒质立方 = 取之不尽的媒质瓶（getMedia = Long.MAX_VALUE、扣了也不少）
+                list.Add(new MediaSource { Slot = i, Priority = MediaPriority.Battery, Stored = long.MaxValue });
+            }
             else if (item.ModItem is Items.MediaMaterial material)
             {
                 list.Add(new MediaSource { Slot = i, Priority = material.Priority, UnitValue = material.MediaValue, Count = item.stack });
@@ -47,7 +52,7 @@ public sealed class HexPlayer : ModPlayer
     public long InventoryMedia()
     {
         long total = 0;
-        foreach (var s in CollectMediaSources()) total += s.Total;
+        foreach (var s in CollectMediaSources()) total = s.Total > long.MaxValue - total ? long.MaxValue : total + s.Total;
         return total;
     }
 
@@ -85,6 +90,9 @@ public sealed class HexPlayer : ModPlayer
 
     /// <summary>过载后活了下来（原版进度 opened_eyes「睁开双眼」）。</summary>
     public bool Overcasted { get; set; }
+
+    /// <summary>拿到过媒质立方（原版进度 creative_unlocker「无尽能量！」）。</summary>
+    public bool FoundMediaCube { get; set; }
 
     /// <summary>读过的传说篇章（原版 lore/* 进度；读「故事残卷」随机获得一篇）。</summary>
     public System.Collections.Generic.HashSet<string> FoundLore { get; } = new();
@@ -154,12 +162,25 @@ public sealed class HexPlayer : ModPlayer
     public int PackagedCooldown { get; private set; }
 
     /// <summary>
-    /// 法术配色（`colorize` 设置的染料物品类型；0 = 默认色）。
+    /// 法术配色（原版 FrozenPigment）：`colorize` 消耗的颜料 id（<see cref="Core.Media.Pigments"/>；空 = 没用过，按原版默认「空无」）
+    /// 与施放它的人（灵魂闪光的颜色由这个人决定）。
     ///
     /// 它是**纯表现**，但必须进存档：源项目把颜料存在玩家数据里，
     /// 重登回来颜色还在 —— 不然每次上线都要重新染一遍。
     /// </summary>
-    public int PigmentDyeType { get; set; }
+    public string PigmentId { get; set; } = string.Empty;
+
+    public System.Guid PigmentOwner { get; set; }
+
+    public string PigmentIdOrDefault => PigmentId.Length > 0 ? PigmentId : Core.Media.Pigments.DefaultId;
+
+    /// <summary>
+    /// 这个角色的唯一标识，代替 MC 的玩家 UUID（泰拉角色没有）。灵魂闪光染色剂用它播种颜色，
+    /// 所以每个角色的灵魂闪光都不一样、而且换存档位置也不变。第一次加载时生成，存进角色存档。
+    /// </summary>
+    public System.Guid Uuid { get; private set; }
+
+    public override void Initialize() => Uuid = System.Guid.NewGuid();
 
     public void StartPackagedCooldown(int ticks)
     {
@@ -332,7 +353,6 @@ public sealed class HexPlayer : ModPlayer
             (float)(cx * Core.Casting.HexUnits.PixelsPerTile),
             (float)(cy * Core.Casting.HexUnits.PixelsPerTile + Player.height * 0.5f));
 
-        var normal = HexPigment.Current;
         int dangerCount = (int)System.Math.Round(5 * danger);
         int okCount = 5 - dangerCount;
 
@@ -341,7 +361,7 @@ public sealed class HexPlayer : ModPlayer
             var d = Dust.NewDustPerfect(center, Terraria.ID.DustID.PurpleTorch,
                 new Microsoft.Xna.Framework.Vector2(Main.rand.NextFloat(-0.6f, 0.6f), Main.rand.NextFloat(0.2f, 0.8f)));
             d.noGravity = true;
-            d.color = normal;
+            d.color = HexPigment.Sample(Player);
             d.scale = 0.9f;
         }
 
@@ -423,7 +443,8 @@ public sealed class HexPlayer : ModPlayer
         w.Write(Overcasted);
         w.Write(ObtainedAmethyst);
         w.Write(InfiniteMedia);
-        w.Write(PigmentDyeType);
+        w.Write(PigmentId);
+        w.Write(PigmentOwner.ToByteArray());
         w.Write(Sentinel.HasValue);
         if (Sentinel is { } s)
         {
@@ -437,7 +458,8 @@ public sealed class HexPlayer : ModPlayer
     {
         bool enlightened = r.ReadBoolean(), failed = r.ReadBoolean(), overcasted = r.ReadBoolean(), amethyst = r.ReadBoolean();
         bool infinite = r.ReadBoolean();
-        int pigment = r.ReadInt32();
+        string pigment = r.ReadString();
+        var pigmentOwner = new System.Guid(r.ReadBytes(16));
         Core.Casting.Eval.CastingEnvironment.SentinelState? sentinel = r.ReadBoolean()
             ? new(r.ReadDouble(), r.ReadDouble(), r.ReadBoolean())
             : null;
@@ -448,7 +470,6 @@ public sealed class HexPlayer : ModPlayer
             if (overcasted) Overcasted = true;
             if (amethyst) ObtainedAmethyst = true;
             if (enlightened) GrantEnlightenment();   // 本地调用才会在聊天框出「获得启迪」
-            if (pigment != PigmentDyeType) HexPigment.Refresh(pigment);
         }
         else
         {
@@ -458,7 +479,8 @@ public sealed class HexPlayer : ModPlayer
             ObtainedAmethyst = amethyst;
             InfiniteMedia = infinite;
         }
-        PigmentDyeType = pigment;
+        PigmentId = pigment;
+        PigmentOwner = pigmentOwner;
         Sentinel = sentinel;
     }
 
@@ -503,7 +525,8 @@ public sealed class HexPlayer : ModPlayer
         t.Overcasted = Overcasted;
         t.ObtainedAmethyst = ObtainedAmethyst;
         t.InfiniteMedia = InfiniteMedia;
-        t.PigmentDyeType = PigmentDyeType;
+        t.PigmentId = PigmentId;
+        t.PigmentOwner = PigmentOwner;
         t.Sentinel = Sentinel;
     }
 
@@ -512,7 +535,7 @@ public sealed class HexPlayer : ModPlayer
         var c = (HexPlayer)clientPlayer;
         if (c.Enlightened != Enlightened || c.FailedGreatSpell != FailedGreatSpell || c.Overcasted != Overcasted
             || c.ObtainedAmethyst != ObtainedAmethyst || c.InfiniteMedia != InfiniteMedia
-            || c.PigmentDyeType != PigmentDyeType || c.Sentinel != Sentinel)
+            || c.PigmentId != PigmentId || c.PigmentOwner != PigmentOwner || c.Sentinel != Sentinel)
         {
             SendState(-1, -1);
         }
@@ -524,10 +547,13 @@ public sealed class HexPlayer : ModPlayer
         tag["failedGreatSpell"] = FailedGreatSpell;
         tag["obtainedAmethyst"] = ObtainedAmethyst;
         tag["overcasted"] = Overcasted;
+        tag["foundMediaCube"] = FoundMediaCube;
         tag["foundLore"] = new System.Collections.Generic.List<string>(FoundLore);
         tag["ravenmindCount"] = RavenmindCount;
         tag["infiniteMedia"] = InfiniteMedia;
-        tag["pigmentDye"] = PigmentDyeType;
+        tag["uuid"] = Uuid.ToString();
+        tag["pigment"] = PigmentId;
+        tag["pigmentOwner"] = PigmentOwner.ToString();
 
         if (Sentinel is { } s)
         {
@@ -548,6 +574,7 @@ public sealed class HexPlayer : ModPlayer
         FailedGreatSpell = tag.GetBool("failedGreatSpell");
         ObtainedAmethyst = tag.GetBool("obtainedAmethyst");
         Overcasted = tag.GetBool("overcasted");
+        FoundMediaCube = tag.GetBool("foundMediaCube");
         FoundLore.Clear();
         foreach (var lore in tag.GetList<string>("foundLore")) { FoundLore.Add(lore); }
         if (tag.TryGet("ravenmindCount", out long count))
@@ -558,10 +585,13 @@ public sealed class HexPlayer : ModPlayer
         {
             InfiniteMedia = infinite;
         }
-        if (tag.TryGet("pigmentDye", out int pigment))
+        if (tag.TryGet("uuid", out string uuid) && System.Guid.TryParse(uuid, out var g))
         {
-            PigmentDyeType = pigment;
+            Uuid = g;
         }
+        // 旧存档的 "pigmentDye"（泰拉染料当颜料的临时方案）不再读：颜料已按原版做成物品，回到默认色
+        PigmentId = tag.TryGet("pigment", out string pigment) && Core.Media.Pigments.Find(pigment) is not null ? pigment : string.Empty;
+        PigmentOwner = tag.TryGet("pigmentOwner", out string owner) && System.Guid.TryParse(owner, out var o) ? o : System.Guid.Empty;
 
         if (tag.TryGet("sentinelX", out double sx) && tag.TryGet("sentinelY", out double sy))
         {

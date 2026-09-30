@@ -19,6 +19,9 @@ public sealed class BookProgress
     /// <summary>读过的传说篇章（原版 lore/* 进度，读「故事残卷」随机获得一篇）。</summary>
     public HashSet<string> FoundLore { get; } = new();
 
+    /// <summary>拿到过媒质立方（原版 creative_unlocker）。</summary>
+    public bool MediaCube { get; set; }
+
     /// <summary>开发者：全部解锁。</summary>
     public bool UnlockAll { get; set; }
 }
@@ -60,12 +63,13 @@ public static class BookUnlocks
             case "hexcasting:enlightenment": return p.Enlightened;
             case "hexcasting:y_u_no_cast_angy": return p.FailedGreatSpell;
             case "hexcasting:opened_eyes": return p.Overcasted;
+            case "hexcasting:creative_unlocker": return p.MediaCube;
         }
         if (System.Array.IndexOf(LoreIds, advancement) >= 0)
         {
             return p.FoundLore.Contains(advancement);
         }
-        // 泰拉侧没有对应物的进度（如创造模式物品）：只有开发者全部解锁时才开
+        // 泰拉侧没有对应物的进度：只有开发者全部解锁时才开
         return false;
     }
 

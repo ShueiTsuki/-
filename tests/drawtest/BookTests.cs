@@ -26,7 +26,7 @@ static class BookTests
     static void Unlocks(BookDocument doc, CheckFn check)
     {
         var entries = doc.Categories.SelectMany(c => c.Entries).ToList();
-        var everything = new BookProgress { Amethyst = true, FailedGreatSpell = true, Overcasted = true, Enlightened = true };
+        var everything = new BookProgress { Amethyst = true, FailedGreatSpell = true, Overcasted = true, Enlightened = true, MediaCube = true };
         foreach (var id in BookUnlocks.LoreIds) { everything.FoundLore.Add(id); }
         var stuck = entries.Where(e => !BookUnlocks.IsUnlocked(e.Advancement, everything)).Select(e => $"{e.Id}({e.Advancement})").ToList();
         Check(check, "每个条目的解锁条件在泰拉侧都有对应（全部达成 → 全部解锁）", stuck.Count == 0, string.Join(",", stuck.Take(5)));
@@ -51,8 +51,11 @@ static class BookTests
         Check(check, "故事残卷：读 8 次恰好集齐 8 篇，第 9 次提示已找齐（null）",
             got.Count == 8 && BookUnlocks.PickUnfoundLore(got, rng) is null);
         Check(check, "未知的进度条件默认锁着，开发者全部解锁时打开",
-            !BookUnlocks.IsUnlocked("hexcasting:creative_unlocker", everything)
-            && BookUnlocks.IsUnlocked("hexcasting:creative_unlocker", new BookProgress { UnlockAll = true }));
+            !BookUnlocks.IsUnlocked("hexcasting:no_such_advancement", everything)
+            && BookUnlocks.IsUnlocked("hexcasting:no_such_advancement", new BookProgress { UnlockAll = true }));
+        Check(check, "媒质立方：拿到过才解锁「无尽能量！」（原版 creative_unlocker 进度）",
+            !BookUnlocks.IsUnlocked("hexcasting:creative_unlocker", new BookProgress { Amethyst = true })
+            && BookUnlocks.IsUnlocked("hexcasting:creative_unlocker", new BookProgress { MediaCube = true }));
 
         // 渲染：锁住的分类 / 条目画锁、不可点；链接到锁住条目不可点
         var data = new FakeData { Progress = amethyst };
@@ -91,7 +94,22 @@ static class BookTests
             string.Join(",", top.Select(c => c.Id)));
 
         var entries = doc.Categories.SelectMany(c => c.Entries).ToList();
-        Check(check, $"条目数 {entries.Count}（原版 82，去掉 2 个 interop 与 1 个 secret）", entries.Count == 79);
+        Check(check, $"条目数 {entries.Count}（原版 82，去掉 2 个 interop）", entries.Count == 80);
+
+        // 原版 secret 条目（仅创造物品）：没拿到媒质立方时目录里整条不出现，拿到了才出现
+        var items = doc.FindCategory("items")!;
+        var viewNoCube = new BookView(doc) { EntryUnlocked = e => BookUnlocks.IsUnlocked(e.Advancement, new BookProgress { Amethyst = true }) };
+        var viewCube = new BookView(doc) { EntryUnlocked = e => BookUnlocks.IsUnlocked(e.Advancement, new BookProgress { Amethyst = true, MediaCube = true }) };
+        Check(check, "secret 条目「仅创造物品」：拿到媒质立方之前隐藏，之后出现",
+            items.Entries.Any(e => e.Id == "items/creative_items" && e.Secret)
+            && !viewNoCube.VisibleEntries(items).Any(e => e.Id == "items/creative_items")
+            && viewCube.VisibleEntries(items).Any(e => e.Id == "items/creative_items"));
+
+        // 染色剂页（crafting_multi）：16 种染料的配方在同一个框里轮换，产物都是本模组的颜料
+        var multi = doc.FindEntry("items/pigments")!.Pages.FirstOrDefault(pg => pg.CycleRecipes);
+        Check(check, "染色剂页：多配方轮换页映射到本模组颜料（原版 15 个配方）",
+            multi is not null && multi.RecipeItems.Count == 15 && multi.RecipeItems.All(r => r.StartsWith("Mod:PigmentDye")),
+            multi is null ? "没有轮换页" : string.Join(",", multi.RecipeItems.Take(3)));
 
         static bool IsChinese(string s) => s.Any(ch => ch >= 0x4E00 && ch <= 0x9FFF);
         var notZh = entries.Where(e => !IsChinese(e.DisplayName)).Select(e => e.Id).ToList();

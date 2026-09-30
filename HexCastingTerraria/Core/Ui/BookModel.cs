@@ -108,6 +108,12 @@ public sealed class BookPage
     public System.Collections.Generic.List<PagePattern> Patterns { get; }
         = new System.Collections.Generic.List<PagePattern>();
 
+    /// <summary>
+    /// 咒法学的 <c>crafting_multi</c> 页：一个配方框，每秒轮换一个配方（原版 MultiCraftingProcessor 把各配方的物品
+    /// 交给 Patchouli 的物品轮播）；标题是页面自己的 heading，不是物品名。
+    /// </summary>
+    public bool CycleRecipes { get; set; }
+
     /// <summary>多配方页（<c>crafting_multi</c>）的全部产物；单配方页只用 <see cref="RecipeItem"/>。</summary>
     public System.Collections.Generic.List<string> RecipeItems { get; }
         = new System.Collections.Generic.List<string>();
@@ -155,6 +161,9 @@ public sealed class BookEntry
 
     /// <summary>原版 <c>priority</c>：条目名用斜体显示，排在同分类前面。</summary>
     public bool Priority { get; set; }
+
+    /// <summary>原版 <c>secret</c>：没解锁时目录里整条不显示（例如「仅创造物品」，拿到媒质立方才出现）。</summary>
+    public bool Secret { get; set; }
 
     /// <summary>条目正文，按顺序排好。</summary>
     public System.Collections.Generic.List<BookPage> Pages { get; }

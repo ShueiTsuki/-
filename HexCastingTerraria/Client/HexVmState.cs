@@ -200,7 +200,7 @@ public static class HexVmState
                 if (localPlayer is { active: true })
                 {
                     Content.SpellSounds.EmitEval(outcome.Sound, localPlayer.Center);
-                    Content.SpellVisuals.SpawnLocal(outcome.Particles, HexPigment.Current);
+                    Content.SpellVisuals.SpawnLocal(outcome.Particles, localPlayer);
                 }
             }
             LastError = outcome.ResolutionType switch

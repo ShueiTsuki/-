@@ -185,18 +185,12 @@ public class PlayerCastingEnvironment : CastingEnvironment
 
     // ── 法术配色（colorize）────────────────────────────────────────
 
-    /// <summary>
-    /// 手上（两个位置之一）的颜料（泰拉侧 = 基础染料）。原版只看手上，不翻背包。
-    /// 特殊染料（火焰/渐变/彩虹）没有单一颜色，不算。
-    /// </summary>
+    /// <summary>手上（两个位置之一）的颜料（原版 isPigment）。原版只看手上，不翻背包。</summary>
     public override int FindPigmentItem()
-        => HeldAt(i => Client.HexPigment.ColorOf(i.type) is not null)?.type ?? 0;
+        => HeldAt(i => i.ModItem is PigmentItem)?.type ?? 0;
 
-    /// <summary>
-    /// 消耗一份同种染料并把配色记到玩家身上。
-    /// 原版 withdrawItem 的顺序：背包从后往前（跳过手上那格），最后才是手上。
-    /// </summary>
-    public override void ApplyPigment(int itemType)
+    /// <summary>原版 withdrawItem 的顺序：背包从后往前（跳过手上那格），最后才是手上。</summary>
+    public override bool WithdrawPigment(int itemType)
     {
         int slot = -1;
         for (int i = 49; i >= 0 && slot < 0; i--)
@@ -204,18 +198,29 @@ public class PlayerCastingEnvironment : CastingEnvironment
             if (i != _player.selectedItem && _player.inventory[i] is { IsAir: false } item && item.type == itemType) slot = i;
         }
         if (slot < 0 && _player.HeldItem.type == itemType) slot = _player.selectedItem;
-        if (slot < 0) return;
+        if (slot < 0) return false;
         PlayerEffects.ConsumeSlot(_player, slot, 1);
+        return true;
+    }
 
-        HexPlayer.Get(_player).PigmentDyeType = itemType;
+    /// <summary>
+    /// 原版 OpColorize.Spell.cast：扣一份颜料，施法者的颜料换成 FrozenPigment(颜料, 施法者 UUID)。
+    /// </summary>
+    public override void ApplyPigment(int itemType)
+    {
+        if (!Terraria.ID.ContentSamples.ItemsByType.TryGetValue(itemType, out var sample) || sample.ModItem is not PigmentItem pigment) return;
+        if (!WithdrawPigment(itemType)) return;
+
+        var hp = HexPlayer.Get(_player);
+        hp.PigmentId = pigment.PigmentId;
+        hp.PigmentOwner = hp.Uuid;
 
         if (_player.whoAmI == Main.myPlayer)
         {
-            Client.HexPigment.Refresh(itemType);
             Client.HexCanvasState.SetMessage("法术配色已更换");
         }
 
-        HexPlayer.Get(_player).SyncFromServer();
+        hp.SyncFromServer();
     }
 
     /// <summary>

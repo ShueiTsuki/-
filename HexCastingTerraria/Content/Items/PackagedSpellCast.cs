@@ -112,8 +112,8 @@ internal static class PackagedSpellCast
 
         var outcome = vm.QueueExecute(image, queue);
 
-        // 粒子：这里跑在服务端（或单机），服务端要广播给附近玩家
-        SpellVisuals.Broadcast(outcome.Particles, player.Center.X, player.Center.Y);
+        // 粒子：这里跑在服务端（或单机）：服务端广播给附近玩家，单机直接生成
+        SpellVisuals.Broadcast(outcome.Particles, player);
 
         // 符纸：用完就消失。源项目是 `breakAfterDepletion() && getMedia == 0`，
         // 即「池子空了」才算用完 —— 而不是「放了一次就消失」。

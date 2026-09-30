@@ -1,5 +1,5 @@
 {
-    "at":  "2026-09-30 18:29:25",
+    "at":  "2026-09-30 23:25:02",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
@@ -10,23 +10,23 @@
                    "failed":  0
                },
     "drawtest":  {
-                     "passed":  126,
+                     "passed":  141,
                      "failed":  0
                  },
     "assets":  {
-                   "needTexture":  99,
+                   "needTexture":  101,
                    "missing":  0
                },
     "package":  {
                     "ok":  true,
-                    "bytes":  615935
+                    "bytes":  774853
                 },
     "server":  {
                    "ok":  true
                },
     "tml":  {
-                "commit":  "7ab6cd1c3978bccb1bdddee101c30a5b883a78f7",
-                "dllBuilt":  "2026-09-30 17:05"
+                "commit":  "dc47fbf5eda234ef7013a9e2f24021f7b35cc0ae",
+                "dllBuilt":  "2026-09-30 21:27"
             },
     "skipped":  [
 

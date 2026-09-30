@@ -109,6 +109,7 @@ public sealed class HexBook
         p.Amethyst = hp.ObtainedAmethyst;
         p.FailedGreatSpell = hp.FailedGreatSpell;
         p.Overcasted = hp.Overcasted;
+        p.MediaCube = hp.FoundMediaCube;
         p.Enlightened = hp.Enlightened || Config.HexClientConfig.Instance.AlwaysEnlightened;
         foreach (var lore in hp.FoundLore) { p.FoundLore.Add(lore); }
         return p;
@@ -202,6 +203,7 @@ public sealed class HexBook
             var mouse = UiMouse();
             _renderer.SizeFactor = Config.HexClientConfig.Instance.BookSize;
             _progress = CurrentProgress();
+            _renderer.Ticks = Main.GameUpdateCount;
             _lastFrame = _renderer.Render(_canvas, _view, vp.X, vp.Y, mouse.X, mouse.Y);
         }
         finally

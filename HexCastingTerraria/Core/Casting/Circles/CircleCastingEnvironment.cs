@@ -56,17 +56,21 @@ public sealed class CircleCastingEnvironment : CastingEnvironment
     private readonly System.Func<long, bool, long> _extractMedia;
     private readonly CastingEnvironment? _caster;
     private readonly System.Action<string, bool> _display;
+    private readonly System.Action<int>? _setPigment;
 
     /// <param name="world">世界访问（泰拉侧由 TerrariaCastingWorld 提供，施法者 / 范围都在里面）。</param>
     /// <param name="state">环的状态。</param>
     /// <param name="extractMedia">媒质支取：(消耗, 是否试算) -> 还未付清的量。</param>
     /// <param name="caster">施法者的环境（手持物品、启蒙、哨卫、配色都转给它）；null = 没有施法者。</param>
     /// <param name="display">原动力上的显示：(文字, 是不是 mishap)。</param>
+    /// <param name="setPigment">给原动力换颜料（参数 = 颜料物品类型）。</param>
     public CircleCastingEnvironment(ICastingWorld world, CircleState state,
                                     System.Func<long, bool, long> extractMedia,
                                     CastingEnvironment? caster = null,
-                                    System.Action<string, bool>? display = null)
+                                    System.Action<string, bool>? display = null,
+                                    System.Action<int>? setPigment = null)
     {
+        _setPigment = setPigment;
         _world = world;
         _state = state;
         _extractMedia = extractMedia;
@@ -121,7 +125,14 @@ public sealed class CircleCastingEnvironment : CastingEnvironment
     public override bool HeldHasVariants() => _caster?.HeldHasVariants() ?? false;
     public override bool CycleHeldVariant() => _caster?.CycleHeldVariant() ?? false;
     public override int FindPigmentItem() => _caster?.FindPigmentItem() ?? 0;
-    public override void ApplyPigment(int itemType) => _caster?.ApplyPigment(itemType);
+
+    /// <summary>
+    /// 原版 OpColorize 在环里：颜料从施法者身上扣（withdrawItem），染的却是**原动力**（CircleCastEnv.setPigment）。
+    /// </summary>
+    public override void ApplyPigment(int itemType)
+    {
+        if (_caster is not null && _caster.WithdrawPigment(itemType)) { _setPigment?.Invoke(itemType); }
+    }
 
     /// <summary>哨卫挂在施法者身上（原版 setSentinel(castingEntity)）；没有施法者时图案先报 MishapBadCaster。</summary>
     public override SentinelState? Sentinel => _caster?.Sentinel;

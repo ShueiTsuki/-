@@ -257,14 +257,6 @@ public sealed class HexClientSystem : ModSystem
             Content.SpellSounds.Play("casting.pattern.add_segment");
         }
 
-        // 法术配色跟着本地玩家的存档值走（`colorize` 改的就是它）。
-        // 放在这里而不是做成事件：颜色是**每帧都要用**的东西，
-        // 事件驱动的写法漏一次刷新就会「颜色偶尔不生效」，很难查。
-        if (!Main.gameMenu && Main.LocalPlayer is { active: true })
-        {
-            HexPigment.Refresh(Content.HexPlayer.Get(Main.LocalPlayer).PigmentDyeType);
-        }
-
         // 法术环执行游标的存活时间。
         // 放在这里而不是 TileEntity 里：多人时「别人家的环」也要画高亮，
         // 而那个环的 TileEntity 不在我们这边跑。

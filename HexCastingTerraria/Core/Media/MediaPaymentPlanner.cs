@@ -87,7 +87,7 @@ public static class MediaPaymentPlanner
         {
             if (s.Total <= 0) continue;
             usable.Add(s);
-            total += s.Total;
+            total = s.Total > long.MaxValue - total ? long.MaxValue : total + s.Total;   // 媒质立方是 long.MaxValue
         }
 
         if (cost == 0)

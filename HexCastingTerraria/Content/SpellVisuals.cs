@@ -31,7 +31,15 @@ internal static class SpellVisuals
     private const int MaxDustPerCast = 600;
 
     /// <summary>在本地生成粒子。**只能在客户端调用**（服务端调用没有意义）。</summary>
-    public static void SpawnLocal(IReadOnlyList<ParticleSpray> sprays, Color color, int budget = MaxDustPerCast)
+    public static void SpawnLocal(IReadOnlyList<ParticleSpray> sprays, Player owner, int budget = MaxDustPerCast)
+    {
+        var hp = HexPlayer.Get(owner);
+        SpawnLocal(sprays, hp.PigmentIdOrDefault, hp.PigmentOwner, budget);
+    }
+
+    /// <summary>同上，按给定的颜料上色（原版 sprayParticles(world, pigment)：玩家施法用自己的，法术环用原动力的）。</summary>
+    public static void SpawnLocal(IReadOnlyList<ParticleSpray> sprays, string pigmentId, System.Guid pigmentOwner,
+                                  int budget = MaxDustPerCast)
     {
         if (Main.dedServ || sprays == null || sprays.Count == 0) return;
 
@@ -66,7 +74,7 @@ internal static class SpellVisuals
                     Terraria.ID.DustID.PurpleTorch,
                     offset.SafeNormalize(Vector2.Zero) * speedPx,
                     0,
-                    color,
+                    Client.HexPigment.Sample(pigmentId, pigmentOwner),   // 原版每个粒子各取一次色：多色颜料喷出来是五颜六色的
                     1.0f);
 
                 dust.noGravity = true;
@@ -93,10 +101,26 @@ internal static class SpellVisuals
     /// 而服务端生成 dust 客户端看不见 —— 不广播的话，联机时只有主机看不到自己的法术特效
     /// 这种事会一直没人发现（单机测试永远正常）。
     /// </summary>
-    public static void Broadcast(IReadOnlyList<ParticleSpray> sprays, float originX, float originY)
+    public static void Broadcast(IReadOnlyList<ParticleSpray> sprays, Player caster)
     {
-        if (Main.netMode != Terraria.ID.NetmodeID.Server) return;
+        var hp = HexPlayer.Get(caster);
+        Broadcast(sprays, caster.Center.X, caster.Center.Y, hp.PigmentIdOrDefault, hp.PigmentOwner);
+    }
+
+    /// <summary>
+    /// 同上，颜料显式给出。单人时直接在本地生成 ——
+    /// ⚠️ 这里曾经在非服务端直接 return：单人游戏里杂件 / 缀品 / 造物、法术环的粒子一个都不出。
+    /// </summary>
+    public static void Broadcast(IReadOnlyList<ParticleSpray> sprays, float originX, float originY,
+                                 string pigmentId, System.Guid pigmentOwner)
+    {
         if (sprays == null || sprays.Count == 0) return;
+        if (Main.netMode == Terraria.ID.NetmodeID.SinglePlayer)
+        {
+            SpawnLocal(sprays, pigmentId, pigmentOwner);
+            return;
+        }
+        if (Main.netMode != Terraria.ID.NetmodeID.Server) return;
 
         var packet = HexCastingTerraria.Instance?.GetPacket();
         if (packet == null) return;
@@ -105,6 +129,8 @@ internal static class SpellVisuals
         int count = System.Math.Min(sprays.Count, 24);
 
         packet.Write((byte)Net.HexMessage.SpellParticles);
+        packet.Write(pigmentId);
+        packet.Write(pigmentOwner.ToByteArray());
         packet.Write((byte)count);
 
         for (int i = 0; i < count; i++)
@@ -135,6 +161,8 @@ internal static class SpellVisuals
     {
         if (Main.dedServ) return;
 
+        string pigmentId = reader.ReadString();
+        var pigmentOwner = new System.Guid(reader.ReadBytes(16));
         int count = reader.ReadByte();
         var sprays = new List<ParticleSpray>(count);
 
@@ -149,8 +177,7 @@ internal static class SpellVisuals
             sprays.Add(new ParticleSpray { X = x, Y = y, Spread = spread, Speed = speed, Count = n });
         }
 
-        // 颜色用本地玩家的配色：对方的法术颜色在他自己那边是对的，
-        // 但把「谁施的法」也同步过来只为染色，收益不值这个包大小
-        SpawnLocal(sprays, Client.HexPigment.Current);
+        // 颜色用施法者的颜料（原版 MsgCastParticleS2C 带着 FrozenPigment）
+        SpawnLocal(sprays, pigmentId, pigmentOwner);
     }
 }

@@ -101,6 +101,9 @@ public sealed class PatchouliRenderer
     /// <summary>每 GUI 单位的像素数（整数最近邻放大，像素才不会糊）。</summary>
     public float Unit { get; private set; } = 3f;
 
+    /// <summary>游戏刻（60/秒），轮播用；游戏内由 HexBook 每帧设置。</summary>
+    public ulong Ticks { get; set; }
+
     /// <summary>
     /// 按视口（真实屏幕像素）选整数倍率：书高约占屏幕 70%。1080p 下是 4（1088×720）——
     /// 与 MC 在 1080p 自动界面缩放（4）下的书一样大。之前是 88%（1080p 下 5 倍），太大。
@@ -190,7 +193,7 @@ public sealed class PatchouliRenderer
     {
         var cat = view.CurrentCategory;
         if (cat is null) { return; }
-        var entries = cat.Entries;
+        var entries = view.VisibleEntries(cat);
 
         if (view.Spread == 0)
         {
@@ -356,6 +359,11 @@ public sealed class PatchouliRenderer
         var items = new List<string>();
         if (page.RecipeItem.Length > 0) { items.Add(page.RecipeItem); }
         items.AddRange(page.RecipeItems);
+        if (page.CycleRecipes && items.Count > 1)
+        {
+            // crafting_multi：同一个框里每秒换一个配方
+            items = new List<string> { items[(int)(Ticks / 60 % (ulong)items.Count)] };
+        }
 
         int recipeX = px + (PageWidth / 2) - 49;
         int recipeY = py + 4;

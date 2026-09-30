@@ -63,13 +63,14 @@ internal static class SentinelRenderer
             rot = Matrix.CreateRotationX(spinSpeed * time / 8f) * rot;
         }
 
-        var color = HexPigment.Current;
         Vector2 P(Vector3 v)
         {
             var r = Vector3.Transform(v, rot);
             return center + new Vector2(r.X, -r.Y) * RadiusPx;
         }
-        void L(Vector3 a, Vector3 b) => HexPixel.DrawLine(sb, P(a), P(b), LineWidth, color);
+        // 原版按顶点（模型坐标）取色：多色颜料在哨卫上是一圈渐变。这里一条边取两端的中点
+        void L(Vector3 a, Vector3 b) => HexPixel.DrawLine(sb, P(a), P(b), LineWidth,
+            HexPigment.ColorOf(player, 0.1f * (a.X + a.Y + a.Z + b.X + b.Y + b.Z) / 2f));
 
         for (int side = 0; side <= 1; side++)
         {

@@ -297,6 +297,33 @@ public sealed class HexImpetusEntity : ModTileEntity
 
     private CastingVM? _vm;
 
+    /// <summary>
+    /// 原动力自己的颜料（原版 BlockEntityAbstractImpetus.pigment）：在环里施放「内化染色剂」染的是它，不是施法者。
+    /// 空 = 没染过，用启动时施法者的颜料（原版 executionState.casterPigment），再没有就是默认。
+    /// </summary>
+    public string PigmentId { get; private set; } = string.Empty;
+
+    public System.Guid PigmentOwner { get; private set; }
+
+    private (string Id, System.Guid Owner)? _casterPigment;
+
+    private System.Guid _casterUuid;
+
+    /// <summary>环里施放「内化染色剂」（原版 CircleCastEnv.setPigment → impetus.setPigment，施法者 UUID 记为颜料主人）。</summary>
+    private void SetPigment(int itemType)
+    {
+        if (Terraria.ID.ContentSamples.ItemsByType.TryGetValue(itemType, out var sample) && sample.ModItem is Items.PigmentItem pigment)
+        {
+            PigmentId = pigment.PigmentId;
+            PigmentOwner = _casterUuid;
+        }
+    }
+
+    /// <summary>原版 getPigment()：自己的 → 施法者的 → 默认。</summary>
+    public (string Id, System.Guid Owner) EffectivePigment()
+        => PigmentId.Length > 0 ? (PigmentId, PigmentOwner)
+            : _casterPigment ?? (Core.Media.Pigments.DefaultId, System.Guid.Empty);
+
     public override bool IsTileValidForEntity(int x, int y)
         => Main.tile[x, y].HasTile && TileLoader.GetTile(Main.tile[x, y].TileType) is HexImpetusBase;
 
@@ -335,7 +362,8 @@ public sealed class HexImpetusEntity : ModTileEntity
 
     /// <summary>能塞进促动石的东西：媒质材料、媒质之瓶（原版 extractMedia(stack, drainForBatteries = true) > 0）。</summary>
     public static bool IsMediaItem(Item item)
-        => !item.IsAir && (item.ModItem is Items.MediaMaterial || item.ModItem is Items.MediaFlask { Media: > 0 });
+        => !item.IsAir && (item.ModItem is Items.MediaMaterial || item.ModItem is Items.MediaFlask { Media: > 0 }
+                           || item.ModItem is Items.CreativeUnlocker);
 
     /// <summary>
     /// 原版 insertMedia：`extractMedia(stack, remainingCapacity, drainForBatteries = true)`，
@@ -348,6 +376,11 @@ public sealed class HexImpetusEntity : ModTileEntity
         long room = MaxCapacity - Media;
         switch (item.ModItem)
         {
+            case Items.CreativeUnlocker:
+                // 原版 insertMedia：塞进媒质立方 → 原动力的媒质变成无限（-1），立方被消耗
+                PlayerEffects.ConsumeSlot(p, slot, 1);
+                Media = -1;
+                break;
             case Items.MediaMaterial m:
             {
                 int n = (int)System.Math.Min(item.stack, room / m.MediaValue);
@@ -426,8 +459,11 @@ public sealed class HexImpetusEntity : ModTileEntity
         };
 
         var casterEnv = live is null ? null : new PlayerCastingEnvironment(live) { CircleHands = true };
+        _casterPigment = live is null ? null : (HexPlayer.Get(live).PigmentIdOrDefault, HexPlayer.Get(live).PigmentOwner);
+        _casterUuid = live is null ? System.Guid.Empty : HexPlayer.Get(live).Uuid;
         var env = new CircleCastingEnvironment(circleWorld, state, ExtractMedia, casterEnv,
-            (msg, mishap) => Display(msg, mishap ? ImpetusDisplay.Mishap : ImpetusDisplay.Print));
+            (msg, mishap) => Display(msg, mishap ? ImpetusDisplay.Mishap : ImpetusDisplay.Print),
+            SetPigment);
         _vm = CastingVM.Empty(env);
 
         IsRunning = true;
@@ -497,7 +533,8 @@ public sealed class HexImpetusEntity : ModTileEntity
             var outcome = _vm.QueueExecute(_vm.Image, new Iota[] { new PatternIota(slatePattern) });
 
             SpellSounds.EmitEval(outcome.Sound, at);
-            SpellVisuals.Broadcast(outcome.Particles, at.X, at.Y);
+            var (pid, powner) = EffectivePigment();
+            SpellVisuals.Broadcast(outcome.Particles, at.X, at.Y, pid, powner);
 
             if (!outcome.ResolutionType.IsSuccess())
             {
@@ -722,6 +759,11 @@ public sealed class HexImpetusEntity : ModTileEntity
             tag["displayIcon"] = (byte)DisplayIcon;
         }
         if (BoundName is not null) tag["bound"] = BoundName;
+        if (PigmentId.Length > 0)
+        {
+            tag["pigment"] = PigmentId;
+            tag["pigmentOwner"] = PigmentOwner.ToString();
+        }
         // 走环状态**不存档**：世界重载后控制流位置已无意义（原版会存执行状态，这里是有意简化）
     }
 
@@ -733,6 +775,8 @@ public sealed class HexImpetusEntity : ModTileEntity
         DisplayMsg = tag.TryGet("displayMsg", out string msg) ? msg : null;
         DisplayIcon = DisplayMsg is null ? ImpetusDisplay.None : (ImpetusDisplay)tag.GetByte("displayIcon");
         BoundName = tag.TryGet("bound", out string name) ? name : null;
+        PigmentId = tag.TryGet("pigment", out string pigment) && Core.Media.Pigments.Find(pigment) is not null ? pigment : string.Empty;
+        PigmentOwner = tag.TryGet("pigmentOwner", out string owner) && System.Guid.TryParse(owner, out var g) ? g : System.Guid.Empty;
         IsRunning = false;
     }
 

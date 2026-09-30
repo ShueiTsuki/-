@@ -50,6 +50,12 @@ internal static class DevKit
         yield return ModContent.ItemType<AmethystShard>();
         yield return ModContent.ItemType<ChargedAmethyst>();
         yield return ModContent.ItemType<QuenchedAllayShard>();
+        yield return ModContent.ItemType<CreativeUnlocker>();   // 媒质立方（原版的创造模式物品）
+
+        // 颜料（内化染色剂用）：单色、多色渐变、灵魂闪光各一
+        yield return ModContent.ItemType<PigmentDyeRed>();
+        yield return ModContent.ItemType<PigmentPrideTransgender>();
+        yield return ModContent.ItemType<PigmentSoulglimmer>();
 
         // 数据载体（读写图案的三种）
         yield return ModContent.ItemType<Focus>();

@@ -8,9 +8,9 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **81** 个可合成物品。
+共 **118** 个可合成物品。
 
-## 肉前（63 项）
+## 肉前（100 项）
 
 紫水晶 → 媒质 → 石板 → 法杖 → 工具与存储。源项目在这一段没有任何进度门槛。
 
@@ -93,6 +93,43 @@
 | `WallScrollFrameLarge` | 2 | Wood×20 + Silk×8 | WorkBenches | 同上 |
 | `HexBookItem` | 1 | Wood×10 + Hay×10 | Bookcases | 源项目没有这本书：泰拉侧的引导书，让玩家能查到图案怎么画 |
 | `DevStaff` | 1 | Wood×20 | WorkBenches | 开发者工具（泰拉自创，仅用于测试） |
+| `PigmentItem` | 1 | AmethystShard×1 | WorkBenches | 颜料（染色剂）基类：源 HexplatRecipes 176-213，全部挂 has_item(紫水晶粉)，无门槛 → 肉前。材料见 AUDIT_VS_ORIGINAL.md「颜料」 |
+| `PigmentDyeWhite` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeOrange` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeMagenta` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeLightBlue` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeYellow` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeLime` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyePink` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeGray` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeLightGray` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeCyan` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyePurple` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeBlue` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeBrown` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeGreen` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeRed` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentDyeBlack` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 同色染料 |
+| `PigmentPrideAgender` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideAroace` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideAromantic` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideAsexual` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideBisexual` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideDemiboy` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideDemigirl` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideGay` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideGenderfluid` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideGenderqueer` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideIntersex` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideLesbian` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideNonbinary` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPridePansexual` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPridePlural` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentPrideTransgender` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 一件泰拉常见物（全年可得） |
+| `PigmentDefault` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 紫水晶碎片 |
+| `PigmentAncient` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 铜锭 |
+| `PigmentSoulglimmer` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×8 + 紫水晶碎片 |
+| `SubSandwich` | 1 | — | WorkBenches | 源 165-174 潜艇三明治：has_item(紫水晶碎片)，无门槛 → 肉前；熟牛肉 → 烤松鼠、面包 → 干草 |
 
 ## 肉后（9 项）
 

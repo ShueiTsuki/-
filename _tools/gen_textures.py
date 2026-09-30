@@ -7,6 +7,8 @@
   - 有状态的物品：状态图集（每格 32×32），运行时按实例状态取格（Content/Items/ItemStateArt.cs）
   - 原版没有 / MC 原生物品不在 jar 里的：保留现有贴图，只修图集格式
 
+颜料（染色剂）的动画贴图在 _tools/gen_pigments.py。
+
 来源：本地原版 jar（hexwork/jar/assets/hexcasting/textures，HexMod v0.11.4，MIT）。
 """
 import os
@@ -184,6 +186,8 @@ ITEMS = {
     'QuenchedStaff': 'item/staff/quenched_0',
     'MindspliceStaff': 'item/staff/mindsplice',
     'DevStaff': 'item/staff/old',                # 原版彩蛋「老法杖」
+    'SubSandwich': 'item/sub_sandwich',
+    'CreativeUnlocker': 'item/creative_unlocker',
 }
 for name, path in ITEMS.items():
     save(x2(src(path)), 'Items', name + '.png')

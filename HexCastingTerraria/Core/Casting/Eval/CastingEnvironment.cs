@@ -268,13 +268,17 @@ public abstract class CastingEnvironment
     public virtual bool HeldHasVariants() => false;
 
     /// <summary>
-    /// 施法者身上有没有可用的**颜料**（泰拉侧 = 染料）。返回物品类型，0 = 没有。
+    /// 施法者手上有没有可用的**颜料**（染色剂）。返回物品类型，0 = 没有。
     /// 对应源项目 `env.getHeldItemToOperateOn(IXplatAbstractions::isPigment)`。
     /// </summary>
     public virtual int FindPigmentItem() => 0;
 
     /// <summary>消耗一份颜料，并把施法者的法术配色换成它。</summary>
     public virtual void ApplyPigment(int itemType) { }
+
+    /// <summary>从施法者身上扣掉一份这种颜料（原版 withdrawItem）；扣到了返回 true。</summary>
+    public virtual bool WithdrawPigment(int itemType) => false;
+
     /// <summary>放置哨卫。</summary>
     public virtual void SetSentinel(double x, double y, bool great) { }
 

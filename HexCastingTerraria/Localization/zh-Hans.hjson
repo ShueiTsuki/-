@@ -8,6 +8,157 @@ Mods: {
 		}
 
 		Items: {
+			PigmentDyeWhite: {
+				DisplayName: 白色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeOrange: {
+				DisplayName: 橙色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeMagenta: {
+				DisplayName: 品红色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeLightBlue: {
+				DisplayName: 淡蓝色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeYellow: {
+				DisplayName: 黄色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeLime: {
+				DisplayName: 黄绿色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyePink: {
+				DisplayName: 粉红色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeGray: {
+				DisplayName: 灰色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeLightGray: {
+				DisplayName: 淡灰色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeCyan: {
+				DisplayName: 青色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyePurple: {
+				DisplayName: 紫色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeBlue: {
+				DisplayName: 蓝色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeBrown: {
+				DisplayName: 棕色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeGreen: {
+				DisplayName: 绿色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeRed: {
+				DisplayName: 红色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDyeBlack: {
+				DisplayName: 黑色染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideAgender: {
+				DisplayName: 无性别染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideAroace: {
+				DisplayName: 无浪漫倾向无性恋染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideAromantic: {
+				DisplayName: 无浪漫倾向染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideAsexual: {
+				DisplayName: 无性恋染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideBisexual: {
+				DisplayName: 双性恋染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideDemiboy: {
+				DisplayName: 部分男性染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideDemigirl: {
+				DisplayName: 部分女性染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideGay: {
+				DisplayName: 男同性恋染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideGenderfluid: {
+				DisplayName: 性别流体染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideGenderqueer: {
+				DisplayName: 性别酷儿染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideIntersex: {
+				DisplayName: 双性人染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideLesbian: {
+				DisplayName: 女同性恋染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideNonbinary: {
+				DisplayName: 非二元性别染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPridePansexual: {
+				DisplayName: 泛性恋染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPridePlural: {
+				DisplayName: 多重人格染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentPrideTransgender: {
+				DisplayName: 跨性别染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentDefault: {
+				DisplayName: 空无染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentAncient: {
+				DisplayName: 远古染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			PigmentSoulglimmer: {
+				DisplayName: 灵魂闪光染色剂
+				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
+			}
+			SubSandwich: {
+				DisplayName: 潜艇三明治
+			}
+			CreativeUnlocker: {
+				DisplayName: 媒质立方
+				Tooltip:
+					'''
+					存有：无限媒质
+					食用以解锁所有有关咒法学的知识。
+					'''
+			}
 			Abacus: {
 				DisplayName: 算盘
 			}

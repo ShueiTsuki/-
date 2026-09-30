@@ -107,7 +107,7 @@ internal static class ServerCastState
         }
 
         // 粒子与音效：求值在服务端跑，服务端的表现客户端看不到/听不到 —— 都广播出去
-        SpellVisuals.Broadcast(outcome.Particles, player.Center.X, player.Center.Y);
+        SpellVisuals.Broadcast(outcome.Particles, player);
         SpellSounds.EmitEval(outcome.Sound, player.Center);
 
         SetVm(player, vm);

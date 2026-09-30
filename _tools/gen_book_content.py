@@ -7,7 +7,7 @@
 #
 # 泰拉侧的取舍（都写在这里，不藏在生成物里）：
 #   - 跳过带 flag 的条目（只在装了别的 MC 模组时才出现：interop / pehkui），interop 分类随之为空、不生成。
-#   - 跳过 secret 条目（原版要特殊进度才显示）。
+#   - secret 条目照生成，标 Secret：没解锁时整条隐藏（Patchouli 的做法），解锁了才出现在目录里。
 #   - 物品图标与配方产物映射到本模组 / 泰拉原版物品（见 ITEM_MAP），映射不到就不画图标，**不报错不瞎画**。
 #
 # 用法：python _tools/gen_book_content.py        （输出路径固定）
@@ -44,8 +44,8 @@ ITEM_MAP = {
     'hexcasting:impetus/storedplayer': 'Mod:HexImpetusItem',
     'hexcasting:directrix/empty': 'Mod:HexDirectrixEmptyItem', 'hexcasting:directrix/redstone': 'Mod:HexDirectrixRedstoneItem',
     'hexcasting:directrix/boolean': 'Mod:HexDirectrixBooleanItem', 'hexcasting:lore_fragment': 'Terraria:Book',
-    'hexcasting:creative_unlocker': 'Mod:ChargedAmethyst', 'hexcasting:uuid_colorizer': 'Terraria:RainbowDye',
-    'hexcasting:pride_colorizer_gay': 'Terraria:RainbowDye', 'hexcasting:book': 'Mod:HexBookItem',
+    'hexcasting:creative_unlocker': 'Mod:CreativeUnlocker', 'hexcasting:sub_sandwich': 'Mod:SubSandwich',
+    'hexcasting:book': 'Mod:HexBookItem',
     # MC 原版物品 → 泰拉的对应物（取「玩家一眼能认出是什么」的那件）
     'minecraft:amethyst_shard': 'Mod:AmethystShard', 'minecraft:amethyst_block': 'Mod:AmethystDustBlockItem',
     'minecraft:bookshelf': 'Terraria:Bookcase', 'minecraft:chain': 'Terraria:Chain', 'minecraft:piston': 'Terraria:Actuator',
@@ -70,6 +70,20 @@ ITEM_MAP = {
     'minecraft:textures/item/enchanted_book.png': 'Terraria:SpellTome', 'minecraft:smithing_table': 'Terraria:IronAnvil',
     'minecraft:textures/mob_effect/conduit_power.png': 'Terraria:BookofSkulls',
 }
+
+# 颜料（染色剂）：原版 dye_colorizer_* / pride_colorizer_* / uuid / default / ancient → 生成的 PigmentXxx 类（_tools/gen_pigments.py）
+def _camel(x):
+    return ''.join(p.capitalize() for p in x.split('_'))
+
+
+for _d in ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray',
+           'light_gray', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black']:
+    ITEM_MAP[f'hexcasting:dye_colorizer_{_d}'] = f'Mod:PigmentDye{_camel(_d)}'
+for _p in ['agender', 'aroace', 'aromantic', 'asexual', 'bisexual', 'demiboy', 'demigirl', 'gay',
+           'genderfluid', 'genderqueer', 'intersex', 'lesbian', 'nonbinary', 'pansexual', 'plural', 'transgender']:
+    ITEM_MAP[f'hexcasting:pride_colorizer_{_p}'] = f'Mod:PigmentPride{_camel(_p)}'
+ITEM_MAP.update({'hexcasting:uuid_colorizer': 'Mod:PigmentSoulglimmer', 'hexcasting:default_colorizer': 'Mod:PigmentDefault',
+                 'hexcasting:ancient_colorizer': 'Mod:PigmentAncient'})
 
 
 def item_key(src):
@@ -136,7 +150,7 @@ def main():
     for f in sorted(glob.glob(os.path.join(BOOK, 'entries/**/*.json'), recursive=True)):
         e = json.load(open(f, encoding='utf-8'))
         rel = os.path.relpath(f, os.path.join(BOOK, 'entries')).replace('\\', '/')[:-5]
-        if 'flag' in e or e.get('secret'):
+        if 'flag' in e:
             skipped.append(rel)
             continue
         e['id'] = rel
@@ -184,7 +198,8 @@ def main():
             color = int(e['entry_color'], 16) if 'entry_color' in e else -1
             w(f'        e = new BookEntry {{ Id = {cs(e["id"])}, CategoryId = {cs(c["id"])}, NameKey = {cs(e["name"])}, '
               f'DisplayName = {cs(t(e["name"]))}, IconItem = {cs(icon)}, SortNum = {e.get("sortnum", 0)}, '
-              f'Advancement = {cs(e.get("advancement", ""))}, EntryColor = {color}, Priority = {str(e.get("priority", False)).lower()} }};')
+              f'Advancement = {cs(e.get("advancement", ""))}, EntryColor = {color}, Priority = {str(e.get("priority", False)).lower()}, '
+              f'Secret = {str(e.get("secret", False)).lower()} }};')
             w('        c.Entries.Add(e);')
             for pg in e['pages']:
                 if isinstance(pg, str):
@@ -201,7 +216,7 @@ def main():
     open(OUT, 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
 
     print(f'书本内容：{sum(1 for c in cats if c["entries"])} 分类 / {n_entries} 条目 / {n_pages} 页 -> {OUT}')
-    print(f'  跳过（flag / secret）：{", ".join(skipped)}')
+    print(f'  跳过（flag）：{", ".join(skipped)}')
     if missing:
         print(f'  中文缺失、用英文回退的键：{len(missing)} 个，如 {missing[:5]}')
     if unmapped:
@@ -239,6 +254,8 @@ def emit_page(w, pg, t, unmapped):
         props.append(f'Output = {cs(pg.get("output", ""))}')
     if typ == 'patchouli:crafting':
         props.append(f'RecipeItem = {cs(recipe_item(pg.get("recipe", "")))}')
+    if typ == 'hexcasting:crafting_multi':
+        props.append('CycleRecipes = true')
     if typ == 'patchouli:spotlight':
         icon = item_key(pg.get('item', ''))
         if not icon:
