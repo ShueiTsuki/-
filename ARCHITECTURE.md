@@ -148,6 +148,7 @@
 |---|---|
 | `DevTextureDump.cs` | 寮€鍙戠敤锛氭妸**鍘熺増娉版媺鐨?UI 璐村浘**瀵煎嚭鎴?PNG锛屼緵绂荤嚎姣斿銆?/// |
 | `HexChestLoot.cs` | 寰€涓栫晫閲岀殑绠卞瓙濉炲師鐗堢殑涓夌鎴樺埄鍝侊紙婧愰」鐩?HexLootHandler锛夛細 |
+| `HexCommands.cs` | /hexcasting 鎸囦护銆傜Щ妞嶈嚜婧愰」鐩?common/command锛圚exCommands.register锛夛細 |
 | `HexGlobalNPC.cs` | 涓烘瘡涓?NPC 缁存姢涓€涓寔涔呫€岃绾挎柟鍚戙€嶃€?/// |
 | `HexGlobalProjectile.cs` | 涓烘瘡涓脊骞曠淮鎶や竴涓寔涔呫€岃绾挎柟鍚戙€嶏紝鍗抽琛屾柟鍚戙€?/// |
 | `HexPlayer.cs` | 鐜╁渚у拻鏈暟鎹€?/// |

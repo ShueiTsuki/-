@@ -150,6 +150,15 @@
 
 另：泰拉的 `Wiring.HitSwitch` 只认原版开关，模组的按钮 / 压力板要直接 `TripWire` 并自己转发（HexMessage.TripWire）。
 
+## 剖念（脑叶切除）的生物 / 指令（2026-10-01）
+
+- **剖念**：原版第一次剖念后生物**活着但失去意识**（MixinMob 取消 AI、不出声、不能交互），对已剖念的生物再施放才杀死
+  （MishapAlreadyBrainswept）。移植版第一次就把生物杀了 —— 已按原版改：失去意识的 NPC 停止 AI、不造成接触伤害、
+  城镇 NPC 不能对话；状态随 NPC 同步、城镇 NPC 随世界存档。第二次施放杀死的逻辑本来就对。
+- **指令**：原版有 `/hexcasting`，移植版一个都没有。已补：`perWorldPatterns list / give / giveAll`、`recalcPatterns`、`brainsweep`。
+  **偏差**：泰拉没有实体选择器 —— brainsweep 的目标写 NPC 编号，不写就取离自己最近的生物；泰拉没有权限系统 ——
+  联机时默认只有服务器控制台和房主（Main.countsAsHostForGameplay，「创建并游玩」的那个人）能用，服务端配置可放开给所有人；单人不限。`textureToggle / textureRepaint` 是 MC 图案贴图缓存的调试开关，不做。
+
 ## 已审、与原版一致
 
 VM 主循环（提前退出、NewData 语义、步数上限）、三个续延帧（求值 / 托特 / 结束求值）、

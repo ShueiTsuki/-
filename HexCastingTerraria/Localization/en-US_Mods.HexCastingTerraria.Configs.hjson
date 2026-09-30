@@ -162,6 +162,11 @@ Mods: {
 					Label: True names ignore ambit
 					Tooltip: Upstream default: a reference to a player can be targeted from any distance (zone queries excepted). Turn off to apply the 32-block ambit to players too.
 				}
+
+				PlayersCanUseCommands: {
+					Label: All players can use /hexcasting in multiplayer
+					Tooltip: Upstream requires operator permission; Terraria has none, so in multiplayer only the host (Host & Play) and the server console may use these commands by default. Turn on to allow everyone. Singleplayer is unrestricted.
+				}
 			}
 		}
 	}

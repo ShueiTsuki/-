@@ -27,13 +27,57 @@ public sealed class HexGlobalNPC : GlobalNPC
     public override bool InstancePerEntity => true;
 
     /// <summary>
-    /// 这只 NPC 是否已经被「脑叶切除」过。
+    /// 这只 NPC 是否已经被「脑叶切除」过（失去意识）。
     ///
-    /// 为什么要记：源项目用 `IXplatAbstractions.isBrainswept(entity)`，
-    /// 目的是让同一只生物只能切一次 —— 否则玩家可以对着同一只村民反复刷母岩。
-    /// 泰拉的 NPC 没有这种附加状态位，所以由这个 GlobalNPC 承担。
+    /// 原版（IXplatAbstractions.isBrainswept）：生物**还活着**，但 AI 停止（MixinMob.serverAiStep）、
+    /// 不出声（playAmbientSound）、不能交互（BrainsweepingEvents）；再切一次才会死（MishapAlreadyBrainswept）。
+    /// 同一只只能切一次 —— 否则玩家可以对着同一只村民反复刷母岩。
     /// </summary>
     public bool Brainswept { get; set; }
+
+    /// <summary>标记失去意识并同步（服务端 / 单人）。</summary>
+    public static void MakeBrainswept(NPC npc)
+    {
+        npc.GetGlobalNPC<HexGlobalNPC>().Brainswept = true;
+        npc.netUpdate = true;
+        if (Main.netMode == Terraria.ID.NetmodeID.Server)
+        {
+            NetMessage.SendData(Terraria.ID.MessageID.SyncNPC, -1, -1, null, npc.whoAmI);
+        }
+    }
+
+    /// <summary>原版 MixinMob.serverAiStep：失去意识的生物不再思考 —— 停下来原地飘着（重力照旧）。</summary>
+    public override bool PreAI(NPC npc)
+    {
+        if (!Brainswept) return true;
+        npc.velocity.X *= 0.9f;
+        if (npc.noGravity) npc.velocity.Y *= 0.9f;
+        else npc.velocity.Y = System.Math.Min(npc.velocity.Y + 0.3f, 10f);
+        return false;
+    }
+
+    /// <summary>失去意识就不会攻击（泰拉的接触伤害不走 AI，要单独关）。</summary>
+    public override bool CanHitPlayer(NPC npc, Player target, ref int cooldownSlot) => !Brainswept;
+
+    public override bool CanHitNPC(NPC npc, NPC target) => !Brainswept;
+
+    /// <summary>原版 BrainsweepingEvents.interactWithBrainswept：不能交互（城镇 NPC 不能对话、不能交易）。</summary>
+    public override bool? CanChat(NPC npc) => Brainswept ? false : null;
+
+    public override void SendExtraAI(NPC npc, Terraria.ModLoader.IO.BitWriter bitWriter, System.IO.BinaryWriter binaryWriter)
+        => bitWriter.WriteBit(Brainswept);
+
+    public override void ReceiveExtraAI(NPC npc, Terraria.ModLoader.IO.BitReader bitReader, System.IO.BinaryReader binaryReader)
+        => Brainswept = bitReader.ReadBit();
+
+    /// <summary>城镇 NPC 会随世界存档：失去意识的状态也要存（原版是生物的持久数据）。</summary>
+    public override void SaveData(NPC npc, Terraria.ModLoader.IO.TagCompound tag)
+    {
+        if (Brainswept) tag["brainswept"] = true;
+    }
+
+    public override void LoadData(NPC npc, Terraria.ModLoader.IO.TagCompound tag)
+        => Brainswept = tag.ContainsKey("brainswept");
 
     /// <summary>
     /// 上一次解析出的视线（单位向量）。

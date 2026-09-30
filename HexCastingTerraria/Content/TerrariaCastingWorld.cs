@@ -1533,26 +1533,20 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 new Vector2(16, 16), recipe.ResultItem, 1);
         }
 
-        // ③ 生物：标记为已切除再杀掉。
-        //    标记必须在杀掉之前 —— NPC 死亡后索引可能立刻被复用，
-        //    那时候再取 GetGlobalNPC 会打到别的 NPC 身上。
+        // ③ 生物：**失去意识，但活着**（原版 HexAPI.brainsweep：AI 停止、不出声、不能交互，见 HexGlobalNPC）。
+        //    这里曾经直接杀掉 —— 原版只有对「已经失去意识」的生物再施放一次（MishapAlreadyBrainswept）才会杀死。
+        //    原版还会放一声它的死亡音效 + 升级音效。
         if (target.Target == EntityIota.EntityKind.Npc
             && target.Index >= 0 && target.Index < Main.maxNPCs)
         {
             var npc = Main.npc[target.Index];
             if (npc is { active: true })
             {
-                npc.GetGlobalNPC<HexGlobalNPC>().Brainswept = true;
-
-                // 直接清空生命值并走原版死亡流程：这样掉落、旗帜计数、
-                // 「已击败」之类都由游戏自己处理，不需要我们复刻一遍
-                npc.life = 0;
-                npc.HitEffect();
-                npc.checkDead();
-
-                if (Main.netMode == Terraria.ID.NetmodeID.Server)
+                HexGlobalNPC.MakeBrainswept(npc);
+                if (Main.netMode != Terraria.ID.NetmodeID.Server)
                 {
-                    NetMessage.SendData(Terraria.ID.MessageID.SyncNPC, -1, -1, null, npc.whoAmI);
+                    Terraria.Audio.SoundEngine.PlaySound(npc.DeathSound, npc.Center);
+                    Terraria.Audio.SoundEngine.PlaySound(Terraria.ID.SoundID.Item4 with { Volume = 0.5f, Pitch = -0.2f }, npc.Center);
                 }
             }
         }

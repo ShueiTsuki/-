@@ -48,4 +48,12 @@ public sealed class HexServerConfig : ModConfig
     /// </summary>
     [DefaultValue(true)]
     public bool TrueNameHasAmbit { get; set; } = true;
+
+    /// <summary>
+    /// 联机时**所有**玩家能不能用 /hexcasting 指令（发大法术古卷、重生成笔顺、剖念）。
+    /// 原版这些指令要管理员 / 游戏管理员权限；泰拉没有权限系统，默认只有**服务器控制台**和**房主**
+    /// （「创建并游玩」开服的人）能用。单人游戏不受限制。
+    /// </summary>
+    [DefaultValue(false)]
+    public bool PlayersCanUseCommands { get; set; }
 }
