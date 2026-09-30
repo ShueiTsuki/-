@@ -294,7 +294,7 @@ public sealed class HexClientSystem : ModSystem
         if (rightDown && !rightWasDown && HexCanvasState.CloseGuardFrames == 0)
         {
             HexCanvasState.CloseCanvas();
-            HexCanvasState.SetMessage("画布已关闭（图案保留）");
+            HexCanvasState.SetMessage("画布已关闭");
         }
     }
 
@@ -821,7 +821,7 @@ public sealed class HexClientSystem : ModSystem
             {
                 var (def, dist) = closest.Value;
                 string hint = dist == 0
-                    ? $"与「{def.DisplayName()}」签名相同（异常：应当已命中）"
+                    ? $"与「{def.DisplayName()}」签名相同"
                     : $"最接近：「{def.DisplayName()}」（差 {dist}）  签名 {def.Angles}";
                 Terraria.Utils.DrawBorderString(sb, hint,
                     new Vector2(x, y + 132f), new Color(255, 210, 120), 0.7f);

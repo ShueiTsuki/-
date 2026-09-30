@@ -341,7 +341,7 @@ Mods: {
 					'''
 					Right click to open the hex drawing canvas
 					Shift + right click to clear drawn patterns
-					In canvas: hold LMB to draw, RMB or Esc to close (patterns kept), F1 for debug
+					In canvas: hold LMB to draw, RMB or Esc to close, F1 for debug
 					'''
 			}
 
@@ -392,7 +392,7 @@ Mods: {
 				DisplayName: Amethyst Shard
 				Tooltip:
 					'''
-					Holds 50,000 media (5 dust)
+					Holds 50,000 media
 					Spent straight from your inventory when casting
 					'''
 			}
@@ -401,7 +401,7 @@ Mods: {
 				DisplayName: Charged Amethyst
 				Tooltip:
 					'''
-					Holds 100,000 media (10 dust)
+					Holds 100,000 media
 					A thought not yet dispersed, sealed in crystal
 					Spent straight from your inventory when casting
 					'''
@@ -411,7 +411,7 @@ Mods: {
 				DisplayName: Shard of Quenched Allay
 				Tooltip:
 					'''
-					Holds 300,000 media (30 dust)
+					Holds 300,000 media
 					Something once joyful, now only cold peace
 					Spent straight from your inventory when casting
 					'''
@@ -517,9 +517,9 @@ Mods: {
 				DisplayName: Toolsmith Impetus
 				Tooltip:
 					'''
-					Starts a spell circle when right-clicked (not sneaking)
+					Starts a spell circle when right-clicked
 					Right-click holding a media item to insert its media
-					Faces the mouse direction when placed (sneak to invert)
+					Faces the mouse direction when placed
 					'''
 			}
 			HexImpetusEmptyItem: {
@@ -535,7 +535,7 @@ Mods: {
 				Tooltip:
 					'''
 					Starts a spell circle on a wire signal
-					Right-click with a focus holding a player to bind them (sneak empty-handed to clear)
+					Right-click with a focus holding a player to bind them
 					Right-click holding a media item to insert its media
 					'''
 			}
@@ -545,7 +545,7 @@ Mods: {
 					'''
 					Starts a spell circle after being looked at for 1.5 seconds
 					Right-click holding a media item to insert its media
-					Faces the mouse direction when placed (sneak to invert)
+					Faces the mouse direction when placed
 					'''
 			}
 			HexDirectrixEmptyItem: {
@@ -553,7 +553,7 @@ Mods: {
 				Tooltip:
 					'''
 					Media leaves from a random end of its axis
-					Faces the mouse direction when placed (sneak to invert)
+					Faces the mouse direction when placed
 					'''
 			}
 			HexDirectrixBooleanItem: {
@@ -561,7 +561,7 @@ Mods: {
 				Tooltip:
 					'''
 					Pops a boolean: true exits against the arrow, false along it
-					Faces the mouse direction when placed (sneak to invert)
+					Faces the mouse direction when placed
 					'''
 			}
 			HexDirectrixRedstoneItem: {
@@ -569,7 +569,7 @@ Mods: {
 				Tooltip:
 					'''
 					Powered: exits along the arrow; otherwise against it
-					Faces the mouse direction when placed (sneak to invert)
+					Faces the mouse direction when placed
 					'''
 			}
 		Tiles: {
@@ -774,13 +774,13 @@ Mods: {
 		}
 		Keybinds: {
 			ToggleInfiniteMedia: {
-				DisplayName: Toggle infinite media (developer mode)
+				DisplayName: Toggle infinite media
 			}
 			CycleGuide: {
-				DisplayName: Cycle tracing guide (in canvas, Shift reverses)
+				DisplayName: Cycle tracing guide
 			}
 			DevPanel: {
-				DisplayName: Developer panel (sample hexes / debug toggles)
+				DisplayName: Developer panel
 			}
 		}
 	}

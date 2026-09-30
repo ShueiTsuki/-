@@ -178,7 +178,7 @@ public sealed class HexSlate : ModTile
 
     private static string DescribeNormal(CircleDir dir) => dir switch
     {
-        CircleDir.Up => "上（控制流从下方以外进出）",
+        CircleDir.Up => "上",
         CircleDir.Down => "下",
         CircleDir.Left => "左",
         _ => "右",

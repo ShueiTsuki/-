@@ -39,7 +39,7 @@ public sealed class HexParseCommand : AddonCommand
         "/hexParse <代码> [重命名]  |  read / read_signatures / read_hexbug / share  |  clipboard [重命名]\n"
         + "mind_stack peek|push <代码>|push_clipboard  |  macro / dialect list|define|remove  |  conflict  |  lehmer  |  donate  |  learn_great  |  unlock_great";
 
-    public override string Description => "HexParse：代码文本与 iota 列表互转（详见咒法学之书「HexParse指令」）";
+    public override string Description => "HexParse：代码文本与 iota 列表互转";
 
     public override void Action(CommandCaller caller, string input, string[] args)
     {
@@ -279,7 +279,7 @@ public sealed class HexParseCommand : AddonCommand
     {
         if (!long.TryParse(amountText, out long amount) || amount < 1)
         {
-            Say("/hexParse donate <数量（≥1）>");
+            Say("/hexParse donate <数量>");
             return;
         }
         HexParseIO.ChargeCost(player, amount * MediaConstants.DustUnit);
@@ -289,7 +289,7 @@ public sealed class HexParseCommand : AddonCommand
     {
         if (HexParseSettings.Current.ParseGreatSpells != HexParseSettings.GreatMode.ByScroll)
         {
-            Say("当前设置不需要学习卓越法术（「解析卓越法术」不是「按古卷解锁」）");
+            Say("当前设置不需要学习卓越法术");
             return;
         }
         if (Main.netMode == NetmodeID.MultiplayerClient) HexParseNet.SendWorldOp(HexParseNet.Op.Learn);

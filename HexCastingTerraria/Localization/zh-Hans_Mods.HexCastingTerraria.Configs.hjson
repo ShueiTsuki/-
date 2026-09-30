@@ -12,7 +12,7 @@ HexClientConfig: {
 	}
 
 	InfiniteMedia: {
-		Label: 无限媒质（开发者模式）
+		Label: 无限媒质
 		Tooltip: 开启后施法不消耗媒质、也不会触发过载掉血，测试法术零成本。也可以在游戏里按 J 临时切换。
 	}
 
@@ -139,7 +139,7 @@ HexClientConfig: {
 }
 
 HexServerConfig: {
-	DisplayName: 咒法学 · 服务端（世界规则）
+	DisplayName: 咒法学 · 服务端
 
 	GreatTeleportDropsItems: {
 		Label: 大传送震落物品
@@ -168,7 +168,7 @@ HexServerConfig: {
 }
 
 HexAddonsConfig: {
-	DisplayName: 咒法学 · 附属兼容（服务端）
+	DisplayName: 咒法学 · 附属兼容 · 服务端
 
 	HexParse: {
 		Label: HexParse
@@ -187,7 +187,7 @@ HexAddonsConfig: {
 }
 
 HexAddonsClientConfig: {
-	DisplayName: 咒法学 · 附属兼容（客户端）
+	DisplayName: 咒法学 · 附属兼容 · 客户端
 
 	Hexcessible: {
 		Label: Hexcessible
@@ -304,7 +304,7 @@ UnknownMode: {
 	}
 
 	KeepNbt: {
-		Label: 编码保存（nbt_）
+		Label: 编码保存
 		Tooltip: ""
 	}
 

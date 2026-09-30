@@ -173,7 +173,7 @@ public sealed class DevPanel
         HexCanvasState.Canvas.Reset();
         Close();
         Content.Items.HexStaff.OpenCanvas();
-        HexCanvasState.SetMessage($"临摹「{sample.Name}」：照屏幕上方的图案一步步画（已清空栈）", 240);
+        HexCanvasState.SetMessage($"临摹「{sample.Name}」：照屏幕上方的图案一步步画", 240);
     }
 
     /// <summary>画布上刚画完一条（已经送进 VM）。临摹中就对一下是不是这一步。</summary>
@@ -362,7 +362,7 @@ public sealed class DevPanel
             {
                 hp.Enlightened = false; hp.FailedGreatSpell = false; hp.Overcasted = false; hp.ObtainedAmethyst = false;
                 hp.FoundLore.Clear();
-                HexCanvasState.SetMessage("已重置咒法学进度（紫水晶 / 盲目绘制 / 睁开双眼 / 启蒙 / 已读传说）");
+                HexCanvasState.SetMessage("已重置咒法学进度");
             }, "清掉本角色的咒法学进度标记（背包里还有紫水晶的话马上又会记上）"),
             ("清空栈", () => { HexVmState.Reset(); HexCanvasState.Canvas.Reset(); StopTracing(); }, "清空 VM 栈与画布（等于潜行 + 右键法杖）"),
             ("发远古卷轴", () =>
@@ -373,7 +373,7 @@ public sealed class DevPanel
                     (item.ModItem as Content.Items.AncientScroll)!.SetOp(id);
                     player.QuickSpawnItem(player.GetSource_Misc("HexDevScrolls"), item);
                 }
-                HexCanvasState.SetMessage("已发放 14 张远古卷轴（本世界所有大法术的笔顺）");
+                HexCanvasState.SetMessage("已发放 14 张远古卷轴");
             }, "大法术的笔顺每个世界不同：一次发齐本世界全部 14 张远古卷轴（正常只能在箱子里找）"),
         };
         for (int i = 0; i < actions.Length; i++)

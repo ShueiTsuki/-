@@ -115,7 +115,7 @@ public sealed class AkashicRecord : ModTile
         var entity = AkashicRecordEntity.FindAt(i, j);
         if (entity == null)
         {
-            Main.NewText("这块阿卡夏记录是空的（实体丢失）");
+            Main.NewText("这块阿卡夏记录是空的");
             return true;
         }
 

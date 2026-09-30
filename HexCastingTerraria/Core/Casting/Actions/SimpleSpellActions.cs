@@ -157,7 +157,7 @@ public sealed class OpPlaceBlock : SpellAction
         }
         if (!world.IsReplaceable(x, y))
         {
-            throw new MishapBadBlock(x, y, "这一格不是可替换的（要空气、草或水）");
+            throw new MishapBadBlock(x, y, "这一格不是可替换的");
         }
 
         // 放下去之后还要消耗背包里的物品 —— 由世界侧在**施放阶段**做，

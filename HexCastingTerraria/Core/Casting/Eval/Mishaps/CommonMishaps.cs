@@ -369,7 +369,7 @@ public sealed class MishapNoWorld : Mishap
     }
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "当前施法环境不支持世界访问（世界类图案无法在此使用）";
+        => "当前施法环境不支持世界访问";
 }
 
 /// <summary>

@@ -38,7 +38,7 @@ public abstract class ItemScroll : ItemIotaStorage
     public override void ModifyTooltips(System.Collections.Generic.List<TooltipLine> tooltips)
     {
         base.ModifyTooltips(tooltips);
-        tooltips.Add(new TooltipLine(Mod, "HexScrollHint", $"只能存图案（壁挂宽度 {BlockSize} 格）"));
+        tooltips.Add(new TooltipLine(Mod, "HexScrollHint", "只能存图案"));
         if (Read() is Core.Casting.Iotas.PatternIota)
         {
             // 占几行空白，在这块地方画出图案（原版 PatternTooltipComponent：卷轴底图 + 可读样式 + 起笔点 + 格点）

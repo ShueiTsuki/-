@@ -12,7 +12,7 @@ HexClientConfig: {
 	}
 
 	InfiniteMedia: {
-		Label: Infinite media (developer mode)
+		Label: Infinite media
 		Tooltip: Casting costs no media and never triggers overcast health loss. Also toggleable in-game with J.
 	}
 
@@ -139,7 +139,7 @@ HexClientConfig: {
 }
 
 HexServerConfig: {
-	DisplayName: Hex Casting · Server (world rules)
+	DisplayName: Hex Casting · Server
 
 	GreatTeleportDropsItems: {
 		Label: Greater Teleport drops items
@@ -168,7 +168,7 @@ HexServerConfig: {
 }
 
 HexAddonsConfig: {
-	DisplayName: Hex Casting · Addons (server)
+	DisplayName: Hex Casting · Addons · Server
 
 	HexParse: {
 		Label: HexParse
@@ -187,7 +187,7 @@ HexAddonsConfig: {
 }
 
 HexAddonsClientConfig: {
-	DisplayName: Hex Casting · Addons (client)
+	DisplayName: Hex Casting · Addons · Client
 
 	Hexcessible: {
 		Label: Hexcessible
@@ -299,7 +299,7 @@ UnknownMode: {
 	}
 
 	ShowNbt: {
-		Label: UNKNOWN(data)
+		Label: UNKNOWN with data
 		Tooltip: ""
 	}
 

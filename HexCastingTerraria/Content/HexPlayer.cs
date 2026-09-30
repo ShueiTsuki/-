@@ -642,7 +642,7 @@ public sealed class HexPlayer : ModPlayer
             var flask = new Item(ModContent.ItemType<Items.MediaFlask>());
             (flask.ModItem as Items.MediaFlask)!.SetMedia(_legacyPoolMedia, _legacyPoolMedia);
             Player.QuickSpawnItem(Player.GetSource_Misc("HexLegacyMedia"), flask);
-            Main.NewText($"咒法学：媒质不再存在玩家身上（与原版一致），原来的 {MediaConstants.Format(_legacyPoolMedia)} 媒质已装进一个媒质瓶还给你。", HexColors.Media);
+            Main.NewText($"咒法学：媒质不再存在玩家身上，原来的 {MediaConstants.Format(_legacyPoolMedia)} 媒质已装进一个媒质瓶还给你。", HexColors.Media);
             _legacyPoolMedia = 0;
         }
 
@@ -663,7 +663,7 @@ public sealed class HexPlayer : ModPlayer
         if (HexClientConfig.Instance.GiveDevKitOnEnter)
         {
             Items.DevKit.Give(Player);
-            Main.NewText("已发放开发者测试包（可在 设置 → 模组配置 里关闭）", HexColors.Media);
+            Main.NewText("已发放开发者测试包", HexColors.Media);
         }
 
         // 不再自动发开发者法杖：原版开局什么都不给，法杖要自己合成（开发者法杖只在上面的测试包里）
@@ -729,7 +729,7 @@ public sealed class HexPlayer : ModPlayer
         if (canvasOpen && Player.selectedItem != Client.HexCanvasState.OpenedWithSlot)
         {
             Client.HexCanvasState.CloseCanvas();
-            Client.HexCanvasState.SetMessage("换了手上的物品，画布已关闭（图案保留）");
+            Client.HexCanvasState.SetMessage("画布已关闭");
             canvasOpen = false;
         }
 

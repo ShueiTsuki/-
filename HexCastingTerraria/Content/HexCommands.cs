@@ -40,7 +40,7 @@ public sealed class HexCommands : ModCommand
         + "/hexcasting recalcPatterns\n"
         + "/hexcasting brainsweep [NPC编号]";
 
-    public override string Description => "咒法学指令：大法术的笔顺与远古卷轴、重生成笔顺、剖念生物（图案可写 hexcasting:lightning / lightning / 中文名）";
+    public override string Description => "咒法学指令：大法术的笔顺与远古卷轴、重生成笔顺、剖念生物";
 
     private static readonly Color Ok = new(116, 179, 242);
     private static readonly Color Bad = new(255, 110, 110);

@@ -93,7 +93,7 @@ public static class HexParseIO
         if (code == null) return;
         Main.NewText("结果：" + code, new Color(85, 255, 85));
         SetClipboard(code);
-        Main.NewText("（已复制到剪贴板）", new Color(170, 170, 170));
+        Main.NewText("已复制到剪贴板", new Color(170, 170, 170));
     }
 
     public static string GetClipboard()

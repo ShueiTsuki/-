@@ -143,7 +143,7 @@ public static class HexVmState
         LastError = resolution switch
         {
             ResolvedPatternType.Invalid => "图案无效或行为未实现",
-            ResolvedPatternType.Errored => "执行出错（参数不足／类型不符／媒质不足等）",
+            ResolvedPatternType.Errored => "执行出错",
             _ => null,
         };
     }
@@ -214,7 +214,7 @@ public static class HexVmState
             LastError = outcome.ResolutionType switch
             {
                 ResolvedPatternType.Invalid => "图案无效或行为未实现",
-                ResolvedPatternType.Errored => "执行出错（参数不足／类型不符／算力耗尽等）",
+                ResolvedPatternType.Errored => "执行出错",
                 _ => null,
             };
         }
