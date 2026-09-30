@@ -45,6 +45,54 @@ public abstract class ItemIotaStorage : ModItem
     /// <summary>writeDatum(datum)：只在 <see cref="CanWrite"/> 通过后调用。</summary>
     protected virtual void WriteDatum(Iota? datum) => _stored = datum;
 
+    /// <summary>
+    /// 不管密封 / 只能写一次，直接改内容（HexParse 的 IOMethod 就是直接改物品数据，上游如此）。
+    /// 只给「工具指令」这类不走施法的写入用；施法写入一律走 <see cref="WriteIota"/>。
+    /// </summary>
+    public virtual void ForceWrite(Iota? datum) => _stored = datum;
+
+    // ── 自定义名（HexParse 的「重命名」，上游 setHoverName）─────────────────
+    // 泰拉的物品没有改名功能：存一个名字，加载 / 同步后用 SetNameOverride 显示在名字那一行。
+
+    [CloneByReference]
+    private string? _customName;
+
+    public string? CustomName
+    {
+        get => _customName;
+        set
+        {
+            _customName = string.IsNullOrEmpty(value) ? null : value;
+            ApplyCustomName();
+        }
+    }
+
+    private void ApplyCustomName()
+    {
+        if (_customName != null) Item.SetNameOverride(_customName);
+        else Item.ClearNameOverride();
+    }
+
+    protected void SaveCustomName(TagCompound tag)
+    {
+        if (_customName != null) tag["customName"] = _customName;
+    }
+
+    protected void LoadCustomName(TagCompound tag)
+    {
+        _customName = tag.TryGet("customName", out string name) && name.Length > 0 ? name : null;
+        ApplyCustomName();
+    }
+
+    protected void SendCustomName(System.IO.BinaryWriter writer) => writer.Write(_customName ?? string.Empty);
+
+    protected void ReceiveCustomName(System.IO.BinaryReader reader)
+    {
+        string name = reader.ReadString();
+        _customName = name.Length > 0 ? name : null;
+        ApplyCustomName();
+    }
+
     /// <summary>原版 writeIota(datum, simulate)。</summary>
     public bool WriteIota(Iota? datum, bool simulate)
     {
@@ -77,6 +125,7 @@ public abstract class ItemIotaStorage : ModItem
 
     public override void SaveData(TagCompound tag)
     {
+        SaveCustomName(tag);
         if (_stored == null) return;
         tag["iota"] = Net.IotaTag.ToTag(_stored);
     }
@@ -85,6 +134,7 @@ public abstract class ItemIotaStorage : ModItem
     {
         // 读不出来就当作空，**不是**静默降级成某个默认值
         _stored = tag.ContainsKey("iota") && Net.IotaTag.TryFromTag(tag["iota"], out var iota) ? iota : null;
+        LoadCustomName(tag);
     }
 
     // ── 联机 ───────────────────────────────────────────────────────
@@ -98,11 +148,13 @@ public abstract class ItemIotaStorage : ModItem
     {
         writer.Write(_stored != null);
         if (_stored != null) Net.IotaWire.Write(writer, _stored);
+        SendCustomName(writer);
     }
 
     public override void NetReceive(System.IO.BinaryReader reader)
     {
         _stored = reader.ReadBoolean() ? Net.IotaWire.Read(reader) : null;
+        ReceiveCustomName(reader);
     }
 }
 

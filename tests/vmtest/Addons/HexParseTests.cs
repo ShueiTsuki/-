@@ -209,5 +209,12 @@ static class HexParseTests
         Check("反向：开头附作者与用到的附属", meta == "// Author: Tester\n// Requires: hexparse\nadd,comment_x", meta.Replace("\n", "\\n"));
 
         Check("lehmer：0 1 2 = 0，2 1 0 = 5", IotaWriter.Lehmer(new[] { 0, 1, 2 }) == 0 && IotaWriter.Lehmer(new[] { 2, 1, 0 }) == 5);
+
+        // .hexpattern（实验性）：按显示名反查、前缀、<…> 常量、括号原样；注释先去掉
+        string dot = DotHexPattern.ProcessCode(string.Join("\n", new[] { "// 注释", "内省", "加法之馏化", "数字之精思：5", "簿记员之策略：-v", "<(1, 2, 3)>", "<EAST qaq>", "反思" }));
+        var dotParsed = p.ParseCode(dot);
+        Check(".hexpattern：内省 / 加法 / 数字 / 簿记员 / 向量 / 签名 / 反思 全部认出",
+            dotParsed.Count == 7 && Id(dotParsed.Items[0]) == "hexcasting:open_paren" && Id(dotParsed.Items[1]) == "hexcasting:add"
+            && dotParsed.Items[4] is VectorIota { X: 1, Y: 2, Z: 3 } && Id(dotParsed.Items[6]) == "hexcasting:close_paren", dot + " => " + Ids(dotParsed));
     }
 }

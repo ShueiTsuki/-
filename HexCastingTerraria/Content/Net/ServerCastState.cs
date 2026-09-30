@@ -87,6 +87,30 @@ internal static class ServerCastState
         Envs.Clear();
     }
 
+    /// <summary>把某个玩家的栈发给他（HUD 显示）。HexParse 的 mind_stack push 也用它。</summary>
+    public static void SendStackSync(int whoAmI, IReadOnlyList<Iota> stack, ResolvedPatternType resolution)
+    {
+        var toClient = HexCastingTerraria.Instance!.GetPacket();
+        toClient.Write((byte)HexMessage.StackSync);
+        toClient.Write((byte)resolution);
+        var limit = System.Math.Min(stack.Count, 64);
+        toClient.Write((ushort)limit);
+        for (int i = 0; i < limit; i++)
+        {
+            IotaWire.Write(toClient, stack[i]);
+        }
+        toClient.Send(whoAmI);
+    }
+
+    /// <summary>往某个玩家的施法栈顶压一个 iota（HexParse 的 mind_stack push，上游 writeStackWithIota）。</summary>
+    public static IReadOnlyList<Iota> PushIota(Player player, Iota iota)
+    {
+        var vm = GetVm(player);
+        var stack = new List<Iota>(vm.Image.Stack) { iota };
+        vm.SetImage(vm.Image.WithStack(stack));
+        return stack;
+    }
+
     /// <summary>
     /// 服务端权威求值一条图案。返回求值结果供发包。
     /// </summary>

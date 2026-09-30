@@ -25,10 +25,16 @@ public sealed class HexAddonsConfig : ModConfig
     [ReloadRequired]
     public bool HexParse { get; set; }
 
+    /// <summary>HexParse 的配置项（开关打开才有意义；房主随时能改）。</summary>
+    public Addons.HexParse.Game.HexParseOptions HexParseOptions { get; set; } = new();
+
     /// <summary>HexDebug（object-Object）：调试杖逐步执行咒术、剪接台编辑咒术。</summary>
     [DefaultValue(false)]
     [ReloadRequired]
     public bool HexDebug { get; set; }
+
+    /// <summary>配置改了（包括进服时收到服务器的值）：把附属的子配置写进各自的设置。</summary>
+    public override void OnChanged() => HexParseOptions.Apply();
 
     public override bool AcceptClientChanges(ModConfig pendingConfig, int whoAmI, ref NetworkText message)
     {

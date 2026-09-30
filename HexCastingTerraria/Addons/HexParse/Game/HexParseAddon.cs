@@ -1,4 +1,11 @@
+using System.Collections.Generic;
+using HexCastingTerraria.Addons.HexParse.Core;
 using HexCastingTerraria.Config;
+using HexCastingTerraria.Core.Casting.Castables;
+using HexCastingTerraria.Core.Casting.Iotas;
+using HexCastingTerraria.Core.Registry;
+using HexCastingTerraria.Core.Ui;
+using Terraria.ModLoader;
 
 namespace HexCastingTerraria.Addons.HexParse.Game;
 
@@ -15,4 +22,38 @@ public sealed class HexParseAddon : HexAddon
     public override AddonSide Side => AddonSide.Both;
 
     public override bool IsEnabled => HexAddonsConfig.Instance.HexParse;
+
+    public override IEnumerable<PatternData> Patterns => HexParsePatterns.All;
+
+    public override void OnLoad(Mod mod)
+    {
+        IotaSerializer.RegisterKind(CommentIota.KindTag, CommentIota.Read);
+        foreach (var (id, name) in HexParsePatterns.Names) PatternDisplay.RegisterAddonName(id, name);
+
+        var actions = new Dictionary<string, IAction>
+        {
+            ["hexparse:code2focus"] = new HexParseActions.Code2Focus(),
+            ["hexparse:focus2code"] = new HexParseActions.Focus2Code(),
+            ["hexparse:remove_comments"] = new ActionRemoveComments(),
+            ["hexparse:learn_patterns"] = new HexParseActions.LearnGreatPatterns(),
+            ["hexparse:create_linebreak"] = new ActionCreateLineBreak(),
+            ["hexparse:donate"] = new ActionDonate(),
+            // 上游没装 MoreIotas（字符串 iota）时这两个就是空动作；泰拉侧没有 MoreIotas
+            ["hexparse:compile"] = ActionNull.Instance,
+            ["hexparse:switch_comment"] = ActionNull.Instance,
+        };
+        foreach (var (id, action) in actions) PatternRegistry.RegisterAction(id, action);
+
+        HexAddonsConfig.Instance.HexParseOptions.Apply();
+    }
+
+    public override void OnUnload()
+    {
+        IotaSerializer.UnregisterKind(CommentIota.KindTag);
+        foreach (var id in HexParsePatterns.Names.Keys) PatternDisplay.UnregisterAddonName(id);
+    }
+
+    public override void HandlePacket(System.IO.BinaryReader reader, int whoAmI) => HexParseNet.Handle(reader, whoAmI);
+
+    public override void AddBookContent(BookDocument book) => HexParseBook.AddTo(book);
 }

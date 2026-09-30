@@ -176,6 +176,11 @@ if ($Package) {
             $script:facts.server = [ordered]@{ ok = ($r.Code -eq 0) }
             return ($r.Code -eq 0)
         }
+        Step '专用服务器加载（附属全开）' {
+            $r = Invoke-Ps1 (Join-Path $tools 'verify_server.ps1') @('-Addons')
+            ($r.Out -split "`n" | Where-Object { $_ -match 'PASS|FAIL|问题|附属：' }) | ForEach-Object { Write-Host "  $($_.Trim())" }
+            return ($r.Code -eq 0)
+        }
     } else { Skip '专用服务器加载 + 进入世界' '打包失败' }
 } else {
     Skip '打包 + 专用服务器加载' '未指定 -Package'

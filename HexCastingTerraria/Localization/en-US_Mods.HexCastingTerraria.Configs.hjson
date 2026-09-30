@@ -177,6 +177,11 @@ Mods: {
 					Tooltip: Convert code text to and from iota lists, /hexParse command (YukkuriC). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
 				}
 
+				HexParseOptions: {
+					Label: HexParse settings
+					Tooltip: Only matters when the toggle is on. The host can change these in game, no reload needed.
+				}
+
 				HexDebug: {
 					Label: HexDebug
 					Tooltip: Debugger items that step through hexes, Splicing Table for editing hexes (object-Object). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
@@ -190,6 +195,121 @@ Mods: {
 					Label: Hexcessible
 					Tooltip: Accessibility for the casting screen: keyboard drawing, search patterns by name, aliases, hover info (Ruby / tizu). Only affects you; change any time.
 				}
+			}
+
+			HexParseOptions: {
+				Tooltip: HexParse options (upstream HexParseConfig, same defaults)
+
+				ParseGreatSpells: {
+					Label: Parse great spells
+					Tooltip: Great spell names in code: by scroll (default, only learned ones) / all / disabled.
+				}
+
+				CommentParsing: {
+					Label: Comment parsing
+					Tooltip: How comments become iotas: all (also // and /* */) / manual (default, only comment_xxx) / disabled.
+				}
+
+				IndentParsing: {
+					Label: Indent parsing
+					Tooltip: How indentation becomes iotas: all (auto tab_N) / manual (default, only tab_N) / disabled.
+				}
+
+				AddIndentInsideMacro: {
+					Label: Add indent inside macros
+					Tooltip: tab_N inside macros adds the outer indentation.
+				}
+
+				AlwaysShortName: {
+					Label: Always short name
+					Tooltip: When reading code, addon patterns also use the short name (id path).
+				}
+
+				ParserBaseCost: {
+					Label: Cost per symbol
+					Tooltip: Media charged per parsed symbol (media units; 1 amethyst dust = 10000). Default 0.
+				}
+
+				ShowColorfulNested: {
+					Label: Colorful nesting
+					Tooltip: Color nested lists and brackets by depth.
+				}
+
+				ShowUnknownNbt: {
+					Label: Iotas without a text form
+					Tooltip: When reading code: keep as nbt_... (default, parses back) / UNKNOWN(data) / UNKNOWN.
+				}
+
+				MaxBlankLineCount: {
+					Label: Max blank lines
+					Tooltip: How many consecutive blank lines are kept when parsing. Default 0.
+				}
+
+				AttachCodeMeta: {
+					Label: Code header
+					Tooltip: Header of read code: 1 = author, 2 = required addons, 3 = both (default), 0 = none.
+				}
+
+			}
+
+			GreatMode: {
+				Tooltip: Great spell parsing
+
+				All: {
+					Label: All
+					Tooltip: ""
+				}
+
+				Disabled: {
+					Label: Disabled
+					Tooltip: ""
+				}
+
+				ByScroll: {
+					Label: By scroll
+					Tooltip: ""
+				}
+
+			}
+
+			CommentMode: {
+				Tooltip: Comment / indent parsing
+
+				Disabled: {
+					Label: Disabled
+					Tooltip: ""
+				}
+
+				Manual: {
+					Label: Manual
+					Tooltip: ""
+				}
+
+				All: {
+					Label: All
+					Tooltip: ""
+				}
+
+			}
+
+			UnknownMode: {
+				Tooltip: Iotas without a text form
+
+				Simple: {
+					Label: UNKNOWN
+					Tooltip: ""
+				}
+
+				ShowNbt: {
+					Label: UNKNOWN(data)
+					Tooltip: ""
+				}
+
+				KeepNbt: {
+					Label: Keep as nbt_
+					Tooltip: ""
+				}
+
 			}
 		}
 	}

@@ -88,6 +88,17 @@ public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
         }
     }
 
+    /// <summary>HexParse 的写入（上游 IOMethod：直接改当前页，不看密封；null = 删掉这一页的内容）。</summary>
+    public override void ForceWrite(Iota? datum)
+    {
+        int page = GetPage(1);
+        var pages = new Dictionary<int, Iota>(_pages);
+        if (datum == null) pages.Remove(page);
+        else pages[page] = datum;
+        _pages = pages;
+        if (datum != null) _selected = page;
+    }
+
     /// <summary>密封当前页（原版 setSealed(stack, true)）。</summary>
     public void SealCurrentPage() => _sealed = new HashSet<int>(_sealed) { GetPage(1) };
 
@@ -158,6 +169,7 @@ public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
         tag["pages"] = pages;
         tag["sealed"] = new List<int>(_sealed);
         tag["variant"] = Variant;
+        SaveCustomName(tag);
     }
 
     public override void LoadData(TagCompound tag)
@@ -187,6 +199,7 @@ public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
         }
         _sealed = seals;
         Variant = System.Math.Clamp(tag.GetInt("variant"), 0, Variants - 1);
+        LoadCustomName(tag);
     }
 
     public override void NetSend(System.IO.BinaryWriter writer)
@@ -201,6 +214,7 @@ public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
         writer.Write((byte)_sealed.Count);
         foreach (int page in _sealed) writer.Write((byte)page);
         writer.Write((byte)Variant);
+        SendCustomName(writer);
     }
 
     public override void NetReceive(System.IO.BinaryReader reader)
@@ -220,5 +234,6 @@ public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
         for (int i = 0; i < sealedCount; i++) seals.Add(reader.ReadByte());
         _sealed = seals;
         Variant = System.Math.Clamp((int)reader.ReadByte(), 0, Variants - 1);
+        ReceiveCustomName(reader);
     }
 }

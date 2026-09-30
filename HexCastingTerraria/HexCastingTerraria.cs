@@ -310,6 +310,10 @@ namespace HexCastingTerraria
                     Content.Tiles.HexImpetusEntity.Handle(reader, whoAmI);
                     break;
 
+                case Content.Net.HexMessage.Addon:
+                    Addons.AddonRegistry.HandlePacket(reader, whoAmI);
+                    break;
+
                 case Content.Net.HexMessage.TripWire:
                     Content.Tiles.EdifiedWiring.Receive(reader, whoAmI);
                     break;
@@ -363,16 +367,7 @@ namespace HexCastingTerraria
             var (stack, resolution) = Content.Net.ServerCastState.EvaluatePattern(player, pattern);
 
             // ② 回传栈状态
-            var toClient = GetPacket();
-            toClient.Write((byte)Content.Net.HexMessage.StackSync);
-            toClient.Write((byte)resolution);
-            var limit = System.Math.Min(stack.Count, 64);
-            toClient.Write((ushort)limit);
-            for (int i = 0; i < limit; i++)
-            {
-                Content.Net.IotaWire.Write(toClient, stack[i]);
-            }
-            toClient.Send(whoAmI);
+            Content.Net.ServerCastState.SendStackSync(whoAmI, stack, resolution);
 
             // ③ 广播瞄准点（只给附近玩家，避免全服刷屏）
             var visual = GetPacket();

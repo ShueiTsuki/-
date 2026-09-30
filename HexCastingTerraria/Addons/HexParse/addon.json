@@ -23,7 +23,8 @@
     {
       "name": "入口与开关",
       "files": [
-        "Game/HexParseAddon.cs"
+        "Game/HexParseAddon.cs",
+        "Game/HexParseOptions.cs"
       ],
       "upstream": [
         "HexParse.java",
@@ -83,8 +84,10 @@
       ]
     },
     {
-      "name": "token：实体（泰拉偏差：玩家名 / NPC 编号）",
-      "files": [],
+      "name": "token：实体（泰拉偏差：没有 UUID，entity_player_编号 / entity_npc_编号）",
+      "files": [
+        "Game/HexParseHost.cs"
+      ],
       "upstream": [
         "parsers/str2nbt/ToEntity.java",
         "parsers/IPlayerBinder.java"
@@ -92,7 +95,10 @@
     },
     {
       "name": "别名与宏",
-      "files": [],
+      "files": [
+        "Core/CodeParser.cs",
+        "Game/HexParseMacros.cs"
+      ],
       "upstream": [
         "parsers/str2nbt/ToDialect.java",
         "macro/MacroClient.java",
@@ -136,14 +142,19 @@
     },
     {
       "name": "大法术解锁表",
-      "files": [],
+      "files": [
+        "Game/HexParseWorld.cs"
+      ],
       "upstream": [
         "hooks/GreatPatternUnlocker.java"
       ]
     },
     {
       "name": "图案 x8",
-      "files": [],
+      "files": [
+        "Core/HexParsePatterns.cs",
+        "Game/HexParseActions.cs"
+      ],
       "upstream": [
         "actions/HexParsePatterns.java",
         "actions/ActionCode2Focus.kt",
@@ -158,7 +169,10 @@
     },
     {
       "name": "指令 /hexParse",
-      "files": [],
+      "files": [
+        "Game/HexParseCommand.cs",
+        "Game/HexParseIO.cs"
+      ],
       "upstream": [
         "hooks/HexParseCommands.java",
         "commands/CommandWrite.java",
@@ -177,7 +191,9 @@
     },
     {
       "name": "剪贴板与显示同步（联机）",
-      "files": [],
+      "files": [
+        "Game/HexParseNet.cs"
+      ],
       "upstream": [
         "network/MsgPullClipboard.java",
         "network/MsgPushClipboard.java",
@@ -191,7 +207,9 @@
     },
     {
       "name": ".hexpattern 格式",
-      "files": [],
+      "files": [
+        "Core/DotHexPattern.cs"
+      ],
       "upstream": [
         "parsers/hexpattern/DotHexPatternMapper.kt",
         "parsers/hexpattern/TriePrefixMap.kt"
@@ -208,7 +226,9 @@
     },
     {
       "name": "书：HexParse 指令分类 + 图案条目",
-      "files": [],
+      "files": [
+        "Core/HexParseBook.Generated.cs"
+      ],
       "upstream": [
         "assets/hexcasting/patchouli_books/thehexbook",
         "assets/hexparse/lang/zh_cn.json"

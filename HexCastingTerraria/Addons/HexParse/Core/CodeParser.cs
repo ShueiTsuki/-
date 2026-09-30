@@ -382,7 +382,7 @@ public sealed class CodeParser
         {
             if (_cachedError != null) throw _cachedError;
             _count++;
-            if (_count >= MaxTokens) throw new HexParseException("栈中 iota 过多");
+            if (_count >= MaxTokens) throw new HexParseException("超出了栈的大小上限");
             string res = _cachedNext!;
             _cachedNext = ApplyForIndent(CalcCache());
             return res;

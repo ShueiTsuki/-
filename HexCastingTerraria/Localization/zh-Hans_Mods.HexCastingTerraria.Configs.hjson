@@ -177,6 +177,11 @@ Mods: {
 					Tooltip: 代码文本与 iota 列表互转、/hexParse 指令（YukkuriC）。关着 = 没装。联机由开服的人决定，改了要重载模组。
 				}
 
+				HexParseOptions: {
+					Label: HexParse 设置
+					Tooltip: 开关打开后才有用。房主在游戏里随时能改，不用重载。
+				}
+
 				HexDebug: {
 					Label: HexDebug
 					Tooltip: 调试杖逐步执行咒术、剪接台编辑咒术（object-Object）。关着 = 没装。联机由开服的人决定，改了要重载模组。
@@ -190,6 +195,121 @@ Mods: {
 					Label: Hexcessible
 					Tooltip: 施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu）。只影响自己，随时改。
 				}
+			}
+
+			HexParseOptions: {
+				Tooltip: HexParse 的配置项（上游 HexParseConfig，默认值照搬）
+
+				ParseGreatSpells: {
+					Label: 解析卓越法术
+					Tooltip: 代码里写大法术名字时怎么办：按古卷解锁（默认，学过的才行）/ 全部允许 / 全部禁止。
+				}
+
+				CommentParsing: {
+					Label: 注释解析
+					Tooltip: 注释怎么变成 iota：全部（连 // 与 /* */ 也算）/ 手动（默认，只认 comment_xxx）/ 禁用。
+				}
+
+				IndentParsing: {
+					Label: 缩进解析
+					Tooltip: 换行缩进怎么变成 iota：全部（自动转成 tab_N）/ 手动（默认，只认 tab_N）/ 禁用。
+				}
+
+				AddIndentInsideMacro: {
+					Label: 宏内缩进叠加
+					Tooltip: 宏里面的 tab_N 叠加外层的缩进。
+				}
+
+				AlwaysShortName: {
+					Label: 总是用短名
+					Tooltip: 读出代码时附属的图案也只写短名（id 的路径部分）。
+				}
+
+				ParserBaseCost: {
+					Label: 每个符号的解析费
+					Tooltip: 每解析一个符号收的媒质（单位：媒质点数，1 个紫水晶粉 = 10000）。默认 0。
+				}
+
+				ShowColorfulNested: {
+					Label: 嵌套彩色显示
+					Tooltip: 嵌套列表与括号按层数上色。
+				}
+
+				ShowUnknownNbt: {
+					Label: 没有写法的 iota
+					Tooltip: 读出代码时，没有文本写法的 iota 怎么写：编码保存（默认，nbt_…，能解析回来）/ 写 UNKNOWN(内容) / 只写 UNKNOWN。
+				}
+
+				MaxBlankLineCount: {
+					Label: 最多连续空行
+					Tooltip: 解析时连续空行最多保留几行，多的丢掉。默认 0。
+				}
+
+				AttachCodeMeta: {
+					Label: 代码开头附带信息
+					Tooltip: 读出的代码开头附带：1 = 作者，2 = 用到的附属，3 = 都要（默认），0 = 都不要。
+				}
+
+			}
+
+			GreatMode: {
+				Tooltip: 卓越法术解析方式
+
+				All: {
+					Label: 全部允许
+					Tooltip: ""
+				}
+
+				Disabled: {
+					Label: 全部禁止
+					Tooltip: ""
+				}
+
+				ByScroll: {
+					Label: 按古卷解锁
+					Tooltip: ""
+				}
+
+			}
+
+			CommentMode: {
+				Tooltip: 注释 / 缩进解析方式
+
+				Disabled: {
+					Label: 禁用
+					Tooltip: ""
+				}
+
+				Manual: {
+					Label: 手动
+					Tooltip: ""
+				}
+
+				All: {
+					Label: 全部
+					Tooltip: ""
+				}
+
+			}
+
+			UnknownMode: {
+				Tooltip: 没有写法的 iota
+
+				Simple: {
+					Label: 只写 UNKNOWN
+					Tooltip: ""
+				}
+
+				ShowNbt: {
+					Label: 写 UNKNOWN(内容)
+					Tooltip: ""
+				}
+
+				KeepNbt: {
+					Label: 编码保存（nbt_）
+					Tooltip: ""
+				}
+
 			}
 		}
 	}

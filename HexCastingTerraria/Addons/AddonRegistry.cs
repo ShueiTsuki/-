@@ -51,6 +51,14 @@ public static class AddonRegistry
         PatternRegistry.ClearAddons();
     }
 
+    /// <summary>附属消息：读出附属 id 转给它。附属没开（或不认识）就丢掉 —— 联机时两端的开关由 tML 保证一致。</summary>
+    internal static void HandlePacket(System.IO.BinaryReader reader, int whoAmI)
+    {
+        string id = reader.ReadString();
+        var addon = All.FirstOrDefault(a => a.Id == id);
+        if (addon is { IsEnabled: true }) addon.HandlePacket(reader, whoAmI);
+    }
+
     /// <summary>建咒法学之书时调用：开着的附属往书里加内容（关着的附属在书里不存在）。</summary>
     public static void AddBookContent(BookDocument book)
     {

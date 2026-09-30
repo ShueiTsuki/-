@@ -49,4 +49,16 @@ public abstract class HexAddon
 
     /// <summary>开着时，建书的时候调用：把附属的分类 / 条目加进咒法学之书。</summary>
     public virtual void AddBookContent(BookDocument book) { }
+
+    /// <summary>收到这个附属的联机消息（<see cref="GetPacket"/> 发的；附属 id 已经读掉了）。</summary>
+    public virtual void HandlePacket(System.IO.BinaryReader reader, int whoAmI) { }
+
+    /// <summary>开一个这个附属的联机包：已经写好「附属消息 + 附属 id」，接着写自己的内容再 Send。</summary>
+    public ModPacket GetPacket()
+    {
+        var packet = HexCastingTerraria.Instance!.GetPacket();
+        packet.Write((byte)Content.Net.HexMessage.Addon);
+        packet.Write(Id);
+        return packet;
+    }
 }

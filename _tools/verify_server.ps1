@@ -28,7 +28,9 @@ param(
     [int]$TimeoutSeconds = 300,
     [string]$WorkDir = "D:\DeepSeekHarness\tmod\_verify",
     # 保留自动生成的世界（下次启动直接加载，快很多）。-FreshWorld 强制重新生成。
-    [switch]$FreshWorld
+    [switch]$FreshWorld,
+    # 把服务端的附属开关全部打开再启动（验证「附属开着」时也能加载、进世界）；不带就全部关（默认配置）
+    [switch]$Addons
 )
 
 $ErrorActionPreference = 'Stop'
@@ -58,6 +60,13 @@ if (-not (Test-Path $modSrc)) { throw "找不到打包产物 $modSrc —— 先�
 Copy-Item $modSrc $modsDir -Force
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 [IO.File]::WriteAllText((Join-Path $modsDir "enabled.json"), "[`"$modName`"]", $utf8)
+
+# 附属开关（服务端配置，存在独立存档目录的 ModConfigs 里）
+$cfgDir = Join-Path $saveDir "ModConfigs"
+New-Item -ItemType Directory -Force -Path $cfgDir | Out-Null
+$addonCfg = Join-Path $cfgDir "${modName}_HexAddonsConfig.json"
+if ($Addons) { [IO.File]::WriteAllText($addonCfg, '{"HexParse": true, "HexDebug": true}', $utf8) }
+elseif (Test-Path $addonCfg) { Remove-Item $addonCfg -Force }
 
 $cfg = Join-Path $WorkDir "serverconfig.txt"
 [IO.File]::WriteAllLines($cfg, [string[]]@(
@@ -143,6 +152,7 @@ $checks = [ordered]@{
     "本模组被自动加载（$modName）"       = ($log -match "自动加载中：$modName|Autoloading: $modName")
     '图案数据自检失败 0 条'              = ($log -match '图案数据自检：.*失败 0 条')
     'iota 存档自检失败 0 条'             = ($log -match 'iota 存档自检：.*失败 0 条')
+    '附属开关与要求一致'                  = $(if ($Addons) { $log -match '附属：HexParse 开，Hexcessible 关，HexDebug 开' } else { $log -match '附属：HexParse 关，Hexcessible 关，HexDebug 关' })
     '服务器进入世界（服务器已启动）'     = ($log -match '服务器已启动|Server started')
     '没有未登记的错误/异常'              = ($problems.Count -eq 0)
     '未超时'                             = (-not $timedOut)

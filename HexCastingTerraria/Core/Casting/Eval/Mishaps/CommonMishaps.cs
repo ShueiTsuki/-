@@ -786,6 +786,25 @@ public sealed class MishapLackingHotbarItem : Mishap
         => $"快捷栏里没有{_what}";
 }
 
+/// <summary>
+/// 原版 MishapDisallowedSpell：这个图案被禁用了（服务器配置禁用，或附属规定「只能用法杖施放」时在别的地方施放）。
+/// 结果 Invalid、黑色火花、不做别的事。本体目前只有附属在用（HexParse 的解码 / 编码之策略）。
+/// </summary>
+public sealed class MishapDisallowedSpell : Mishap
+{
+    private readonly string? _actionName;
+
+    /// <param name="actionName">被禁的图案名；null = 上游的「_generic」写法。</param>
+    public MishapDisallowedSpell(string? actionName = null) : base("disallowed") => _actionName = actionName;
+
+    public override ResolvedPatternType ResolutionType(CastingEnvironment env) => ResolvedPatternType.Invalid;
+
+    public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack) { }
+
+    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
+        => _actionName == null ? "该图案已被服务器管理员禁用" : $"{_actionName}已被服务器管理员禁用";
+}
+
 /// <summary>这个图案需要玩家施法者（原版 MishapBadCaster，比如法术环里用哨卫图案）。NO-OP。</summary>
 public sealed class MishapBadCaster : Mishap
 {

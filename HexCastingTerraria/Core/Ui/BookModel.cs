@@ -183,6 +183,20 @@ public sealed class BookEntry
 }
 
 /// <summary>
+/// 条目在分类里的顺序（原版 Patchouli：priority 在前，再按 sortnum，再按名字）。
+/// 生成器（gen_book_content.py）按同一个规则排好本体的条目；附属往本体分类里加条目后用它重排。
+/// </summary>
+public static class BookEntryOrder
+{
+    public static int Compare(BookEntry a, BookEntry b)
+    {
+        if (a.Priority != b.Priority) return a.Priority ? -1 : 1;
+        if (a.SortNum != b.SortNum) return a.SortNum.CompareTo(b.SortNum);
+        return string.CompareOrdinal(a.DisplayName, b.DisplayName);
+    }
+}
+
+/// <summary>
 /// 一个分类。对应 <c>client/book/BookCategory.java</c>。
 ///
 /// 注意：源项目的分类**没有自己的美术**，落地页画的是 <see cref="IconItem"/> 指的那个物品 ——

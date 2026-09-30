@@ -24,5 +24,12 @@ public static class PatternDisplay
     /// 否则出错时对不上源代码。
     /// </summary>
     public static string DisplayName(this PatternDef def)
-        => GeneratedPatternNames.NameOf(def.Id) ?? def.ShortId();
+        => GeneratedPatternNames.NameOf(def.Id) ?? (AddonNames.TryGetValue(def.Id, out var n) ? n : def.ShortId());
+
+    /// <summary>附属图案的官方中文名（附属打开时登记，id 带附属命名空间）。</summary>
+    private static readonly System.Collections.Generic.Dictionary<string, string> AddonNames = new();
+
+    public static void RegisterAddonName(string id, string name) => AddonNames[id] = name;
+
+    public static void UnregisterAddonName(string id) => AddonNames.Remove(id);
 }

@@ -80,6 +80,12 @@ internal enum HexMessage : byte
     /// 所以自己转发：谁触发谁先本地 TripWire，服务端再执行并转给其他客户端（同原版开关的 HitSwitch 消息）。
     /// </summary>
     TripWire = 20,
+
+    /// <summary>
+    /// 双向：附属自己的消息。后面跟附属 id（字符串）再跟附属的内容，由 AddonRegistry 转给那个附属的 HandlePacket。
+    /// 附属不占用本体的消息编号，几十个附属也不会撞号。
+    /// </summary>
+    Addon = 21,
 }
 
 /// <summary>

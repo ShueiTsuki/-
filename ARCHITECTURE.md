@@ -246,14 +246,25 @@
 | `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |
 | `HexParse/Core/CodeParser.cs` | 代码 -> iota 列表（上游 parsers/ParserMain.java 的 ParseCode + str2nbt/* 全部符号解析器 + macro/MacroProcessor.java）。 |
 | `HexParse/Core/CommentIota.cs` | 注释 iota（上游 hooks/CommentIota.java + CommentIotaType.java）。 |
+| `HexParse/Core/DotHexPattern.cs` | <c>.hexpattern</c> 格式 -> HexParse 代码（上游 parsers/hexpattern/DotHexPatternMapper.kt + TriePrefixMap.kt）。 |
 | `HexParse/Core/FallbackBinary.cs` | <c>nbt_…</c>：没有文本写法的 iota 整个编码进代码（上游 parsers/FallbackBinaryParser.kt）。 |
+| `HexParse/Core/HexParseBook.Generated.cs` | 本文件由 _tools/gen_addon_book.py 生成，**不要手改**：改生成器，然后重新跑脚本。 |
+| `HexParse/Core/HexParsePatterns.cs` | HexParse 的 8 个图案（上游 actions/HexParsePatterns.java）：形状、官方中文名，以及不碰游戏世界的那几个行为。 |
 | `HexParse/Core/HexParseSettings.cs` | HexParse 的配置项（上游 config/HexParseConfig.java + fabric/HexParseConfigFabric.java 的默认值）。 |
 | `HexParse/Core/IHexParseHost.cs` | 消息的样式（上游用聊天颜色区分）。</summary> |
 | `HexParse/Core/IotaWriter.cs` | iota -> 代码（上游 ParserMain.ParseIotaNbt + nbt2str/* + misc/StringProcessors.java + parsers/meta/MetaHolder.java）。 |
 | `HexParse/Core/NumEvaluator.cs` | 数字 -> 数字之精思的笔画（上游 misc/NumEvaluatorBrute.java，逐行照搬），以及数字的最短文本写法。 |
 | `HexParse/Core/PatternNames.cs` | 图案名 -> 图案（上游 hooks/PatternMapper.java）。 |
 | `HexParse/Core/StringEscaper.cs` | 注释字符串的转义 / 反转义（上游 misc/StringEscaper.kt，逐行照搬）。</summary> |
+| `HexParse/Game/HexParseActions.cs` | HexParse 里要碰游戏的三个图案（上游 actions/ActionCode2Focus.kt、ActionFocus2Code.kt、ActionLearnGreatPatterns.kt）。 |
 | `HexParse/Game/HexParseAddon.cs` | HexParse 附属的入口：代码文本与 iota 列表互转、/hexParse 指令（YukkuriC，MIT）。 |
+| `HexParse/Game/HexParseCommand.cs` | 指令 <c>/hexParse</c>（上游 hooks/HexParseCommands.java + commands/*）。子指令照搬上游： |
+| `HexParse/Game/HexParseHost.cs` | 解析器在游戏里的宿主（<see cref="IHexParseHost"/>）：施法者是谁、大法术解锁表、宏、实体、消息往哪发。 |
+| `HexParse/Game/HexParseIO.cs` | 剪贴板读进来之后干什么（上游 network/ClipboardMsgMode.java）。</summary> |
+| `HexParse/Game/HexParseMacros.cs` | 宏与别名（上游 macro/MacroClient.java + MacroManager.java）：存在**客户端**，所有世界通用。 |
+| `HexParse/Game/HexParseNet.cs` | HexParse 的联机消息（走本体的「附属消息」，见 HexAddon.GetPacket）。上游 network/*： |
+| `HexParse/Game/HexParseOptions.cs` | HexParse 的配置项，挂在服务端「附属兼容」页的 HexParse 开关下面（上游 fabric/config/HexParseConfigFabric.java，默认值照搬）。 |
+| `HexParse/Game/HexParseWorld.cs` | HexParse 存在世界里的东西： |
 
 ### （模组根目录）
 

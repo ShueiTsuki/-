@@ -148,6 +148,14 @@ public static class HexVmState
         };
     }
 
+    /// <summary>单人：往本地施法栈顶压一个 iota（HexParse 的 mind_stack push）。联机走服务端（ServerCastState.PushIota）。</summary>
+    public static void PushIota(Player player, Iota iota)
+    {
+        var vm = EnsureVm(player);
+        var stack = new List<Iota>(vm.Image.Stack) { iota };
+        vm.SetImage(vm.Image.WithStack(stack));
+    }
+
     private static CastingVM EnsureVm(Player player)
     {
         if (_vm == null || _env == null || _env.Player != player)
