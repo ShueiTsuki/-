@@ -6,7 +6,7 @@
 
 **开关**：模组配置「咒法学 · 附属兼容（服务端）」-> HexParse。默认关；关着 = 没装。联机由开服的人决定，改了要重载模组。开关下面的「HexParse 设置」是上游的 10 项配置，房主随时能改。
 
-**状态**：P1 完成（纯逻辑 + 游戏侧 + 书页），**只差「嵌套列表 / 括号彩色显示」**（配置项已在，显示还没做）；离线用例在 `tests/vmtest/Addons/HexParseTests.cs`。功能与文件的对照见 `addon.json` / 仓库根目录的 `ADDONS.generated.md`。
+**状态**：P1 完成（纯逻辑 + 游戏侧 + 书页），**只差「嵌套列表 / 括号彩色显示」**（配置项已在；本体目前把列表显示成「N 项」、不显示内容，见 AUDIT_VS_ORIGINAL.md 待审，本体改好后再接）；离线用例在 `tests/vmtest/Addons/HexParseTests.cs`。功能与文件的对照见 `addon.json` / 仓库根目录的 `ADDONS.generated.md`。
 
 ## 怎么用（最常用的）
 
