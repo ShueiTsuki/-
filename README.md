@@ -52,10 +52,16 @@ powershell -ExecutionPolicy Bypass -File _tools\run_all.ps1
 - [ARCHITECTURE.md](ARCHITECTURE.md)：每个源文件是干什么的
 - [TERRARIA_RENDERING_NOTES.md](TERRARIA_RENDERING_NOTES.md)：泰拉渲染的坑
 
-`MyFirstMod/` 是最早搭环境时的示例模组，与本项目无关。
-
 ## 许可
 
 非官方移植，与原作者无关联。原项目 HexMod 为 MIT License（Copyright (c) 2021 gamma-delta）；
 书的排版移植自 Patchouli（CC BY-NC-SA 3.0），因此本模组整体以 CC BY-NC-SA 3.0 发布、不可商用。
-版权声明见 [NOTICE.txt](HexCastingTerraria/NOTICE.txt)，逐文件来源见 [CREDITS.md](CREDITS.md)。
+许可证全文见 [LICENSE](LICENSE)，逐文件来源与署名见 [CREDITS.md](CREDITS.md)。
+
+- 署名：转载或修改请保留原作者（Hex Casting：gamma-delta 及贡献者；Patchouli：Vazkii 及贡献者）和本移植的署名
+- 非商业：本模组免费发布，不得用于商业用途
+- 相同方式共享：分发修改版须同样采用 CC BY-NC-SA 3.0
+- 来自 Hex Casting 的部分同时保留其 MIT 版权声明（[LICENSE-HexMod.txt](HexCastingTerraria/LICENSE-HexMod.txt)）
+
+Terraria 是 Re-Logic 的商标；本仓库不包含泰拉瑞亚或 tModLoader 的任何美术与代码资源。
+如果原作者或任何权利人有异议，请在本仓库提 Issue，会按要求修改、补充署名或下架。
