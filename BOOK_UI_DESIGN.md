@@ -247,7 +247,7 @@ BossChecklist 和 Recipe Browser 也都是直接在 `UIState` 上写的 —— �
 | **帕秋莉版** | **直接用 Patchouli 原图集**（512×256），整数倍缩放渲染 | 要的就是原味；合法；零美术成本 |
 | **原版版** | 泰拉自带的 UI 贴图（面板 / 按钮 / 滚动条） | 要的是泰拉本土观感，两者的像素密度与配色都不同 |
 
-> ⚠️ 但**两套共用同一套几何**是不行的 —— MC 的 GUI 在 GUI scale 2~3 下画，
+> 注意：但**两套共用同一套几何**是不行的 —— MC 的 GUI 在 GUI scale 2~3 下画，
 > 泰拉 UI 默认 1x，像素密度不是一个量级。所以 `BookSkin` 契约里 `Measure` 必须各自实现，
 > 不能只换贴图。
 
@@ -307,11 +307,11 @@ BossChecklist 和 Recipe Browser 也都是直接在 `UIState` 上写的 —— �
 
 | 步 | 状态 | 产物 |
 |---|---|---|
-| 1 数据模型 + 内容骨架 | ✅ 完成 | `Core/Ui/BookModel.cs` · `Core/Ui/BookContent.Generated.cs` · `_tools/gen_book_content.ps1` |
-| 2 排版引擎 | ✅ 完成 | `Core/Ui/BookText.cs`（+ 离线断言已接入 drawtest） |
-| 3 视图状态机 | ✅ 完成 | `Core/Ui/BookView.cs`（+ 离线断言已接入 drawtest） |
-| 4 两套 Skin | 🔶 契约已完成 | `Core/Ui/BookSkin.cs`（`IBookCanvas` / `BookMetrics` / `BookSkin` / `Color32` / `BookHit`）<br>`PatchouliSkin` / `VanillaSkin` 待写 |
-| 5 离屏出图 | ⬜ 未开工 | 见下面「第 5 步怎么做」 |
+| 1 数据模型 + 内容骨架 | 完成 | `Core/Ui/BookModel.cs` · `Core/Ui/BookContent.Generated.cs` · `_tools/gen_book_content.ps1` |
+| 2 排版引擎 | 完成 | `Core/Ui/BookText.cs`（+ 离线断言已接入 drawtest） |
+| 3 视图状态机 | 完成 | `Core/Ui/BookView.cs`（+ 离线断言已接入 drawtest） |
+| 4 两套 Skin | 契约已完成 | `Core/Ui/BookSkin.cs`（`IBookCanvas` / `BookMetrics` / `BookSkin` / `Color32` / `BookHit`）<br>`PatchouliSkin` / `VanillaSkin` 待写 |
+| 5 离屏出图 | 未开工 | 见下面「第 5 步怎么做」 |
 
 ---
 

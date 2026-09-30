@@ -118,7 +118,7 @@ public sealed class OpPotionEffect : SpellAction
 
         public CastingImage? Cast(CastingEnvironment env, CastingImage image)
         {
-            // ⚠️ 源项目这条判定很关键：**持续不足 1 tick 就不施加**。
+            // 注意：源项目这条判定很关键：**持续不足 1 tick 就不施加**。
             // MC 里 1 秒 = 20 tick，所以阈值是 1/20 秒。
             // 泰拉 1 秒 = 60 tick —— 这里沿用源项目的**秒数**语义，
             // 换算成泰拉 tick 时用 60。

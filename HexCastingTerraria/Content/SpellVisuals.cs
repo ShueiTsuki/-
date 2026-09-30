@@ -53,7 +53,7 @@ internal static class SpellVisuals
             if (spawned + count > budget) count = budget - spawned;
 
             // Core 给的是法术坐标（方块、Y 朝上）—— 换成世界像素。
-            // ⚠️ 这里曾经直接当像素用：所有法术粒子都画在世界左上角附近，扩散也只有一两个像素。
+            // 注意：这里曾经直接当像素用：所有法术粒子都画在世界左上角附近，扩散也只有一两个像素。
             var center = HexSpaceWorld.ToWorldPixels(spray.X, spray.Y);
             float spreadPx = spray.Spread * 16f;
             float speedPx = spray.Speed * 16f / 3f;   // 方块/刻 → 像素/帧
@@ -109,7 +109,7 @@ internal static class SpellVisuals
 
     /// <summary>
     /// 同上，颜料显式给出。单人时直接在本地生成 ——
-    /// ⚠️ 这里曾经在非服务端直接 return：单人游戏里杂件 / 缀品 / 造物、法术环的粒子一个都不出。
+    /// 注意：这里曾经在非服务端直接 return：单人游戏里杂件 / 缀品 / 造物、法术环的粒子一个都不出。
     /// </summary>
     public static void Broadcast(IReadOnlyList<ParticleSpray> sprays, float originX, float originY,
                                  string pigmentId, System.Guid pigmentOwner)

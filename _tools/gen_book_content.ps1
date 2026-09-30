@@ -3,7 +3,7 @@
 # 源：D:\DeepSeekHarness\hexsrc\Common\src\main\resources\assets\hexcasting\patchouli_books\thehexbook\en_us\
 #     7 个分类 + 82 个条目（含 patterns/great_spells、patterns/spells 两个子目录）
 #
-# ⚠️ **正文拿不到**：源文件里 `"text"` 存的是**本地化键**（如 hexcasting.page.jeweler_hammer.1），
+# 注意：**正文拿不到**：源文件里 `"text"` 存的是**本地化键**（如 hexcasting.page.jeweler_hammer.1），
 #    真正的英文正文在 mod 的 lang 文件里，而 hexsrc 里没有 lang 目录（已确认，见 BOOK_UI_DESIGN §10）。
 #    所以这里只生成**结构与排版信息**（分类、条目、页面类型、图案 id、配方 id），
 #    正文留空、把原来的键放进注释里 —— 将来补正文时照着键填。
@@ -157,7 +157,7 @@ $sb = New-Object System.Text.StringBuilder
 [void]$sb.AppendLine('/// <summary>')
 [void]$sb.AppendLine('/// 书本内容骨架：从源项目的 Patchouli 手册（7 分类 / ' + $entries.Count + ' 条目）生成。')
 [void]$sb.AppendLine('///')
-[void]$sb.AppendLine('/// ⚠️ **正文是空的**：源文件里 <c>text</c> 存的是本地化键，而真正的英文正文在 mod 的')
+[void]$sb.AppendLine('/// 注意：**正文是空的**：源文件里 <c>text</c> 存的是本地化键，而真正的英文正文在 mod 的')
 [void]$sb.AppendLine('/// lang 文件里，参考源码里没有那个目录。所以这里只有结构与排版信息，')
 [void]$sb.AppendLine('/// 每个页面的原键保留在紧随其后的注释里，补正文时照着填。')
 [void]$sb.AppendLine('/// </summary>')
@@ -224,6 +224,6 @@ foreach ($e in ($entries | Sort-Object Cat, Sort, Id)) {
 Write-Host "-> $OutFile  ($([math]::Round((Get-Item $OutFile).Length / 1KB, 1)) KB)"
 
 if ($unknownCat.Count -gt 0) {
-    Write-Host '⚠️ 分类对不上的条目（已跳过）：' -ForegroundColor Yellow
+    Write-Host '注意：分类对不上的条目（已跳过）：' -ForegroundColor Yellow
     $unknownCat.GetEnumerator() | ForEach-Object { Write-Host "  $($_.Key) ×$($_.Value)" }
 }

@@ -12,7 +12,7 @@ namespace HexCastingTerraria.Core.Casting.Actions;
 /// `compare_entity`：两个实体**是不是同类**。
 /// 移植自源项目 `OpEntityEquality`。
 ///
-/// ⚠️ 注意比的是**种类（type）**，不是「是不是同一个实体」——
+/// 注意比的是**种类（type）**，不是「是不是同一个实体」——
 /// 源项目 `entityA.type == entityB.type`。
 /// 想判「是不是同一个」应该用 `equals`。
 /// </summary>
@@ -62,7 +62,7 @@ public sealed class OpBlockEquality : ConstMediaAction
 /// `compare_item/lenient` 与 `/strict`：两个物品实体是不是同一种物品。
 /// 移植自源项目 `OpItemEquality`。
 ///
-/// ⚠️ **与源项目的差异**：源项目要求参数是「能持有物品的实体」
+/// 注意：**与源项目的差异**：源项目要求参数是「能持有物品的实体」
 /// （MC 的物品展示框、盔甲架之类）。
 /// 泰拉侧没有等价的通用实体，所以改为接受**掉在地上的物品**（`EntityKind.Item`）——
 /// 它们同样是「持有物品的实体」，语义最接近。

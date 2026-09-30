@@ -192,7 +192,7 @@ foreach ($st in $stageOrder) {
 Write-Host ("阶段表：$($inventory.Count) 个物品（" + (($stageOrder | ForEach-Object { "$_ $(@($cfg.entries.$_.PSObject.Properties).Count)" }) -join ' / ') + '）')
 Write-Host "-> $outPath"
 
-# ⚠️ 必须显式 exit 0：`.ps1` 用 `&` 调用时如果**没有** exit，`$LASTEXITCODE` 会
+# 注意：必须显式 exit 0：`.ps1` 用 `&` 调用时如果**没有** exit，`$LASTEXITCODE` 会
 # **保留上一个命令的值**。调用方（check_arch / run_all）拿它判成败，
 # 于是脚本明明成功了却因为前一条命令失败而报红 —— 一个只在特定调用顺序下出现的假红。
 exit 0

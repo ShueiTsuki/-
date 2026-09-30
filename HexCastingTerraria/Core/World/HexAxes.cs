@@ -6,7 +6,7 @@ namespace HexCastingTerraria.Core.World;
 ///
 /// 位置：y ↔ H − y（自己是自己的逆）。方向：y ↔ −y。
 /// 方块下标：原版「点在哪个方块里」= floor(y)；对应泰拉图格 H − 1 − floor(y)。
-/// ⚠️ 不能写成 floor(H − y)：y 恰好是整数时（人站在地上，脚底 y 就是整数）会差一格。
+/// 注意：不能写成 floor(H − y)：y 恰好是整数时（人站在地上，脚底 y 就是整数）会差一格。
 /// </summary>
 public static class HexAxes
 {

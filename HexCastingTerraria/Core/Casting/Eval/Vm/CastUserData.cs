@@ -14,7 +14,7 @@ namespace HexCastingTerraria.Core.Casting.Eval.Vm;
 ///
 /// 生命周期：**只在一次施法内有效**，施法结束即丢弃。
 ///
-/// ⚠️ 但是「一次施法」在**法术环**里比想象的长：
+/// 注意：但是「一次施法」在**法术环**里比想象的长：
 /// 环会带着同一个 <see cref="CastingImage"/> 走完所有石板，
 /// 所以一块石板 `write/local` 写进去的东西，**后面几块石板读得到**。
 /// 这正是 locals 在源项目里的主要用途。
@@ -52,7 +52,7 @@ public sealed class CastUserData
     /// <summary>
     /// 复制一份。对应源项目 `userData.copy()`。
     ///
-    /// ⚠️ 必须深拷贝：`CastingImage` 是不可变的，若新旧 image 共享同一个袋子，
+    /// 注意：必须深拷贝：`CastingImage` 是不可变的，若新旧 image 共享同一个袋子，
     /// 写入会「回溯污染」之前的状态 —— mishap 回滚时数据已经改掉了。
     /// </summary>
     public CastUserData Clone()

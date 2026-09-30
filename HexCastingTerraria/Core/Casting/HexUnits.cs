@@ -3,7 +3,7 @@ namespace HexCastingTerraria.Core.Casting;
 /// <summary>
 /// 单位换算常量。
 ///
-/// ⚠️ 这是 3D→2D 移植中**最容易漏掉但影响全局**的一点（见 TERRARIA_2D_ADAPTATION.md §7.5）：
+/// 注意：这是 3D→2D 移植中**最容易漏掉但影响全局**的一点（见 TERRARIA_2D_ADAPTATION.md §7.5）：
 ///   Minecraft 里 1 格 = 1.0 距离单位
 ///   泰拉瑞亚里 1 图格 = 16 像素
 ///

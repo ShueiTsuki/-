@@ -69,7 +69,7 @@ public sealed class OpWeather : SpellAction
 ///
 /// 参数是实体就烧它；是向量就烧那个位置。
 ///
-/// ⚠️ **泰拉没有 MC 那样的「火焰方块」**，所以位置分支用
+/// 注意：**泰拉没有 MC 那样的「火焰方块」**，所以位置分支用
 /// 「烧这一格附近的实体 + 撒火粒子」近似，而不是真的生成会蔓延的火。
 /// </summary>
 public sealed class OpIgnite : SpellAction

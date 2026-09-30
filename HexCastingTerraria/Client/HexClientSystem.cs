@@ -110,10 +110,10 @@ public sealed class HexClientSystem : ModSystem
             leftClick: Main.mouseLeft && Main.mouseLeftRelease,
             rightClick: Main.mouseRight && Main.mouseRightRelease);
 
-        // ⚠️ 这里必须**重新读一次**开关状态：上一句的 HandleInput 可能刚刚把书关掉
+        // 注意：这里必须**重新读一次**开关状态：上一句的 HandleInput 可能刚刚把书关掉
         //（右键 / Esc）。在关闭的那一帧继续压输入，会和下面的「解除压制」打架。
         //
-        // ⚠️ 而且必须把 BlockedInput 也置上 —— 解除压制的那段只在**登记过**的情况下才清。
+        // 注意：而且必须把 BlockedInput 也置上 —— 解除压制的那段只在**登记过**的情况下才清。
         // 之前书这里只设了 blockInput 没设标记，结果关书之后 blockInput 永远停在 true：
         // 玩家打开一次书就再也动不了（而且不报错）。
         if (HexCanvasState.Book.IsOpen)
@@ -467,8 +467,8 @@ public sealed class HexClientSystem : ModSystem
             string sig = wip.AnglesSignature();
 
             string head = live != null
-                ? $"✓ 已命中「{live.DisplayName()}」可以松手"
-                : $"✎ 正在画 [{wip.StartDir} {sig}] {sig.Length} 笔";
+                ? $"已命中「{live.DisplayName()}」可以松手"
+                : $"正在画 [{wip.StartDir} {sig}] {sig.Length} 笔";
 
             Terraria.Utils.DrawBorderString(sb, head, new Vector2(x, msgY),
                 live != null ? GoodColor : new Color(150, 210, 255), 0.9f);
@@ -492,8 +492,8 @@ public sealed class HexClientSystem : ModSystem
         {
             var last = canvas.LastPattern;
             string line = last.IsValid
-                ? $"✓ {last.Matched!.DisplayName()}"
-                : $"✗ 未识别 [{last.Pattern.StartDir} {last.Pattern.AnglesSignature()}]";
+                ? $"识别：{last.Matched!.DisplayName()}"
+                : $"未识别 [{last.Pattern.StartDir} {last.Pattern.AnglesSignature()}]";
             Terraria.Utils.DrawBorderString(sb, line, new Vector2(x, msgY), last.IsValid ? GoodColor : BadColor, 0.9f);
             msgY += 22f;
         }

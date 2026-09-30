@@ -26,7 +26,7 @@ public abstract class SpellAction : IAction
     /// <summary>
     /// 参数类型契约。见 <see cref="ActionTypes"/>。
     ///
-    /// ⚠️ 与 <see cref="ConstMediaAction.Types"/> 同样的理由：必须声明成 virtual，
+    /// 注意：与 <see cref="ConstMediaAction.Types"/> 同样的理由：必须声明成 virtual，
     /// 只靠接口的默认实现不会被派生类重新绑定。
     ///
     /// 另外注意：SpellAction 的净栈效果是 **-Argc**（弹出 Argc 个、什么都不压回），

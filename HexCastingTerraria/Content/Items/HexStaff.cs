@@ -51,7 +51,7 @@ public abstract class HexStaff : ModItem
     /// <summary>
     /// 打开画布。
     ///
-    /// ⚠️ 这里**只负责打开**，关闭交给 <see cref="HexClientSystem.PostUpdateInput"/> 的右键处理。
+    /// 注意：这里**只负责打开**，关闭交给 <see cref="HexClientSystem.PostUpdateInput"/> 的右键处理。
     /// 两边都处理会双触发（同一次右键既开又关，表现成闪烁/无响应）。
     /// </summary>
     public static void OpenCanvas()
@@ -123,7 +123,7 @@ public abstract class WoodStaff : HexStaff
     /// S         A = 充能紫水晶 ×1
     /// </code>
     ///
-    /// ⚠️ **泰拉没有「木棍」物品**（MC 的 Stick 在泰拉没有对应物），
+    /// 注意：**泰拉没有「木棍」物品**（MC 的 Stick 在泰拉没有对应物），
     /// 用 `ItemID.Wood` 代替 —— 它是泰拉里语义最接近的基础材料。
     /// 这是本配方唯一的替换，其余（木板 1、充能紫水晶 1）与原版逐项一致。
     ///
@@ -210,7 +210,7 @@ public sealed class AshStaff : WoodStaff
 /// <summary>
 /// 樱花木法杖。对应源项目 `staff/cherry`。
 ///
-/// ⚠️ 泰拉**没有樱花木**，而且十种泰拉木材**已经全部被原版的十种木材用掉了**
+/// 注意：泰拉**没有樱花木**，而且十种泰拉木材**已经全部被原版的十种木材用掉了**
 /// （橡木=木材 / 云杉=北地木 / 白桦=珍珠木 / 丛林=红木 / 金合欢=王朝木 /
 /// 深色橡木=乌木 / 绯红=阴影木 / 红树=阴森木 / 诡异=灰烬木 / 竹子=棕榈木）。
 ///
@@ -263,7 +263,7 @@ public sealed class QuenchedStaff : HexStaff
 ///
 /// 没有额外门槛：启迪木板整族是肉前（原版 edify 不在启蒙名单里），见 PROGRESSION.generated.md。
 ///
-/// ⚠️ 这段注释以前写的是「用**生命木**代替启迪木（用户决定）」，还专门论证了
+/// 注意：这段注释以前写的是「用**生命木**代替启迪木（用户决定）」，还专门论证了
 /// 生命木没有物品形态、只能落在合成站上 —— 而代码里从来就是 `EdifiedPlanksItem`。
 /// 那个方案用户当天就收回了；注释比代码多活了很久，属于最容易误导后来人的那类。
 /// </summary>

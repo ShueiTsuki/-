@@ -23,10 +23,10 @@ MC 里这些全部成立，因为**每个实体都有持久的 yaw/pitch**。
 
 | 能力 | MC | 泰拉 |
 |---|---|---|
-| 持久朝向角 | ✅ yaw/pitch | ❌ NPC 只有 `int direction`（±1，仅水平） |
-| 瞄准方向 | 准星（= 视线） | ✅ **鼠标世界坐标**（`Main.MouseWorld`），但**只有本地玩家有** |
-| 运动方向 | 可从 velocity 得 | ⚠️ `velocity` 静止时为零向量 |
-| 目标方向 | — | ✅ NPC 有 `target`，可算 `DirectionToTarget` |
+| 持久朝向角 | yaw/pitch | 否：NPC 只有 `int direction`（±1，仅水平） |
+| 瞄准方向 | 准星（= 视线） | **鼠标世界坐标**（`Main.MouseWorld`），但**只有本地玩家有** |
+| 运动方向 | 可从 velocity 得 | 注意：`velocity` 静止时为零向量 |
+| 目标方向 | — | NPC 有 `target`，可算 `DirectionToTarget` |
 
 **空缺**：NPC 与"其他玩家"没有可靠的朝向来源。
 

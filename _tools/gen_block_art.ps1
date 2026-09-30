@@ -34,7 +34,7 @@ function Mask-Cluster([int]$size) {
     }
     # 竖直晶体，数量与高度随阶数增长。
     #
-    # ⚠️ 这里用字符串 "x:top:half" 而不是数组套数组：
+    # 注意：这里用字符串 "x:top:half" 而不是数组套数组：
     # PowerShell 的 `switch` 把结果送进管道时会**展开一层**，
     # `@(@(7,11,1))` 出来变成 `7,11,1` 三个标量，
     # 于是 `$c[1]` 变成 $null，掩码悄悄画不出来（而且只在某些阶数上报错）。
@@ -109,7 +109,7 @@ function Mask-HexSigil([int]$size) {
 
 New-PixelArt -Name "icon.png"       -OutDir $root -Mask (Mask-HexSigil 80) -Body @(58, 46, 92) -Gem @(206, 178, 255) -Seed 301 -NoNoise
 
-# ⚠️ **不要**再生成 `icon_small.png`。
+# 注意：**不要**再生成 `icon_small.png`。
 #
 # 它曾经在这里生成（30x30 六边形符印），而每次打包都会多一条警告：
 #     Image loading failed: unknown image type

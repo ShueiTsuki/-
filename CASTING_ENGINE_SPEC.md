@@ -18,7 +18,7 @@
 | `CastingImage` | **模拟器的内存快照**（栈 + 括号 + 用户数据） | `api/casting/eval/vm/CastingImage.kt:19` | **是，唯一被序列化的东西** |
 | `CastingEnvironment` | **"谁在施法"的抽象**（法杖/饰品/法术环） | `api/casting/eval/CastingEnvironment.java:50` | 否 |
 
-> ⚠️ README 与实际实现有差异，不要照抄 README：
+> 注意：README 与实际实现有差异，不要照抄 README：
 > - README 说入口是 `CastingVM#queueAndExecuteIotas`（`README.md:18`），实际方法是 **`queueExecuteAndWrapIotas`**（`CastingVM.kt:41`）。
 > - README 的 11 步流水线（`README.md:15-37`）描述的是意图，实际控制流以 `CastingVM.queueExecuteAndWrapIotas`（`CastingVM.kt:41-102`）为准。
 
@@ -106,7 +106,7 @@ if (result.newData != null && IotaType.isTooLargeToSerialize(result.newData.stac
 - `isTooLargeToSerialize`：`depth() >= MAX_SERIALIZATION_DEPTH (=256)` 或累计 `size() >= MAX_SERIALIZATION_TOTAL (=1024)`（`IotaType.java:83-95`、`HexIotaTypes.java`）
 - `maxOpCount()`：来自服务端配置（`CastingEnvironment.java:107-109` → `HexConfig.server().maxOpCount()`）
 
-> 🔴 **移植要点**：`newData = null` 表示"丢弃这次状态更新"，主循环里 `if (image2.newData != null) this.image = image2.newData`（`CastingVM.kt:75-77`）会保留旧 image。C# 侧必须用可空语义，不能用"就地修改"。
+> **移植要点**：`newData = null` 表示"丢弃这次状态更新"，主循环里 `if (image2.newData != null) this.image = image2.newData`（`CastingVM.kt:75-77`）会保留旧 image。C# 侧必须用可空语义，不能用"就地修改"。
 
 ### 1.4 单 iota 执行：`executeInner`
 
@@ -212,7 +212,7 @@ userdata       → CompoundTag
 
 **`SpellContinuation` 不持久化**——这就是为什么"每个图案一笔"能成立：每画一笔，服务端从存盘的 `CastingImage` 重建 VM，然后把新图案作为**只有一个元素的 `FrameEvaluate`** 执行（见 §6）。
 
-> 🔴 **移植要点**：continuation 不存盘，但 `ContinuationIota` 会把 continuation 序列化进栈里（`ContinuationIota.serialize()` → `getContinuation().serializeToNBT()`，`ContinuationIota.java:44-47`）。所以 continuation 的序列化格式**仍然必须实现**，否则 `OpEvalBreakable` 产生的续延 iota 无法存盘。
+> **移植要点**：continuation 不存盘，但 `ContinuationIota` 会把 continuation 序列化进栈里（`ContinuationIota.serialize()` → `getContinuation().serializeToNBT()`，`ContinuationIota.java:44-47`）。所以 continuation 的序列化格式**仍然必须实现**，否则 `OpEvalBreakable` 产生的续延 iota 无法存盘。
 
 ---
 
@@ -439,7 +439,7 @@ public Component typeName();
 
 ### 3.4 类型签名如何参与图案匹配
 
-> ⚠️ **重要纠偏**：图案匹配**不依赖 iota 的类型签名**。
+> 注意：**重要纠偏**：图案匹配**不依赖 iota 的类型签名**。
 
 实际匹配流程（`PatternRegistryManifest.matchPattern`，`common/casting/PatternRegistryManifest.java:92-119`）：
 

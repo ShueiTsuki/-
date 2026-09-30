@@ -16,7 +16,7 @@ namespace HexCastingTerraria.Content.Items;
 ///
 /// 这个缺口是「对照原版物品清单」时才发现的：方块存在 ≠ 内容完整。
 ///
-/// ⚠️ 它**不含**存储内容：拆下来再放回去，里面的键值对会丢（内容在 TileEntity 上）。
+/// 注意：它**不含**存储内容：拆下来再放回去，里面的键值对会丢（内容在 TileEntity 上）。
 /// 原版是同一个行为（掉落的是空记录），所以这里保持一致，不做特殊处理。
 /// </summary>
 public sealed class AkashicRecordItem : ModItem

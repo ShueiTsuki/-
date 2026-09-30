@@ -17,7 +17,7 @@ internal static class RaycastCommon
 {
     /// <summary>
     /// 射线最大长度。源项目 `Action.RAYCAST_DISTANCE = 32.0`（单位：格）。
-    /// ⚠️ 单位是**图格**不是像素 —— 泰拉 1 图格 = 16 像素，
+    /// 注意：单位是**图格**不是像素 —— 泰拉 1 图格 = 16 像素，
     /// 直接抄成 32 像素会变成只能打 2 格。
     /// </summary>
     public const double DistanceTiles = HexUnits.RaycastDistanceTiles;
@@ -71,7 +71,7 @@ internal static class RaycastCommon
 /// `raycast`：从起点沿方向打射线，返回命中的**图格中心**坐标；没打中返回 NullIota。
 /// 移植自源项目 raycast/OpBlockRaycast.kt。
 ///
-/// ⚠️ 返回的是**图格中心**而不是命中点 —— 源项目特意这么做的，注释写着：
+/// 注意：返回的是**图格中心**而不是命中点 —— 源项目特意这么做的，注释写着：
 /// 命中点在方块**外表面**，拿它去 `break_block` 会挖到隔壁那一格。
 /// 所以宁可丢掉「精确命中点」也要返回图格中心。
 /// </summary>

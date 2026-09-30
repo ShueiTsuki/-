@@ -7,7 +7,7 @@ namespace HexCastingTerraria.Client;
 /// <summary>
 /// 共享的 1×1 白色贴图，用于画线段与方块点。
 ///
-/// ⚠️ **必须延迟创建**：FNA3D 要求图形 API 只在主线程调用，
+/// 注意：**必须延迟创建**：FNA3D 要求图形 API 只在主线程调用，
 /// 而模组 `Load()` 不在主线程 —— 在那里 `new Texture2D` 会抛
 /// `ThreadStateException` 并导致模组被禁用（这个坑本项目踩过一次）。
 /// 所以这里等到第一次绘制时才创建。

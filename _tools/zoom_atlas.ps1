@@ -24,7 +24,7 @@ if (-not $Out) {
     else { $Out = Join-Path $PSScriptRoot 'atlas_zoom_full.png' }
 }
 
-# ⚠️ 局部变量**不能**叫 $src：PowerShell 变量名大小写不敏感，它会和参数 $Src 是同一个变量。
+# 注意：局部变量**不能**叫 $src：PowerShell 变量名大小写不敏感，它会和参数 $Src 是同一个变量。
 # 一旦 FromFile 抛错，finally 里就会对一个字符串调 Dispose()，把真正的错误盖掉
 # （报的是"String 没有 Dispose 方法"，看起来完全不相干）。
 try { $bmpSrc = [System.Drawing.Bitmap]::FromFile($Src) }

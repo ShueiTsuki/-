@@ -357,7 +357,7 @@ public abstract class CastingEnvironment
     }
 
     /// <summary>
-    /// 源项目 `getPositiveDouble`：`0 <= x`。⚠️ 原版的「positive」**包含 0** ——
+    /// 源项目 `getPositiveDouble`：`0 <= x`。注意：原版的「positive」**包含 0** ——
     /// 这里曾在多处手写成 `x <= 0` 报错（爆炸威力、药水时长、区域半径、飞行参数），把 0 错杀了。
     /// </summary>
     public static double RequirePositiveDouble(Iota iota, string what)

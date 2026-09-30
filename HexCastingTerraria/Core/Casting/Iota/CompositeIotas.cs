@@ -37,7 +37,7 @@ public sealed class ListIota : Iota
     /// <summary>
     /// 真假值：**列表非空为真**（源项目 `getList().getNonEmpty()`）。
     ///
-    /// ⚠️ 不覆写会落到基类的 `false` —— 于是**非空列表在布尔语境里也是假**，
+    /// 注意：不覆写会落到基类的 `false` —— 于是**非空列表在布尔语境里也是假**，
     /// 条件分支静默走错边，而且不报错。这个缺陷是写 `bool_coerce` 用例时跑出来的。
     /// </summary>
     public override bool IsTruthy() => Count > 0;
@@ -150,7 +150,7 @@ public sealed class PatternIota : Iota
         {
             var def = PatternRegistry.Match(Pattern);
 
-            // ★ 特殊图案：数字字面量与掩码。
+            // 特殊图案：数字字面量与掩码。
             // 它们**不在 188 条注册表里**，而是「前缀 + 图案本身算参数」的另一类。
             // 漏掉它们的后果很隐蔽：注册表全实现、用例全过，但玩家**画不出任何数字**,
             // 于是所有「要一个数当参数」的法术都用不了（而且只报「图案无效」）。

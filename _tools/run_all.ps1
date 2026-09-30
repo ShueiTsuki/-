@@ -100,7 +100,7 @@ Write-Host "tModLoader: commit $($tmlCommit.Substring(0, [Math]::Min(10, $tmlCom
 if (Test-Path $lastGreenPath) {
     $lg = [System.IO.File]::ReadAllText($lastGreenPath, $enc) | ConvertFrom-Json
     if ($lg.tmlCommit -ne $tmlCommit) {
-        Write-Host "  ⚠ tModLoader 自上次全绿（$($lg.at)，commit $($lg.tmlCommit.Substring(0,10))）以来已更新 —— 编译错误多半来自上游 API 变动。" -ForegroundColor Yellow
+        Write-Host "  注意：tModLoader 自上次全绿（$($lg.at)，commit $($lg.tmlCommit.Substring(0,10))）以来已更新 —— 编译错误多半来自上游 API 变动。" -ForegroundColor Yellow
     }
 }
 

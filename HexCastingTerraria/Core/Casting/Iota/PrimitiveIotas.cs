@@ -90,7 +90,7 @@ public sealed class DoubleIota : Iota
 /// 泰拉世界是二维的，但**向量保持三维**，与原版一致：±Z 常量、叉积（得向量）、三分量拆装都能用。
 /// 世界是 z = 0 的平面（方块沿 z 无限延伸）：世界给出的位置 / 视线 / 速度 z 恒为 0；
 /// 作为位置使用时方块查询忽略 z，但施法范围按三维距离算（见 CastingEnvironment.AssertVecInRange）。
-/// ⚠️ 这里曾经砍成二维：±Z 常量删了、叉积改成返回数字、拆装只有两个分量。
+/// 注意：这里曾经砍成二维：±Z 常量删了、叉积改成返回数字、拆装只有两个分量。
 /// </summary>
 public sealed class VectorIota : Iota
 {

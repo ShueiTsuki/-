@@ -26,7 +26,7 @@ public sealed class MishapContext
 /// 咒法学里的「错误」。命名沿用原作的 mishap。
 /// 移植自 at.petrak.hexcasting.api.casting.mishaps.Mishap。
 ///
-/// ⚠️ 注意：mishap 是**异常**，但它的作用是「反噬」——
+/// 注意：mishap 是**异常**，但它的作用是「反噬」——
 /// 由 DoMishap 副作用调用 <see cref="Execute"/> 来修改栈并产生游戏效果。
 /// </summary>
 public abstract class Mishap : Exception

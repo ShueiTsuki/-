@@ -49,14 +49,14 @@ public sealed class CastingVM
         int iterations = 0;
 
         // 本次求值产生的粒子。
-        // ⚠️ 必须在这里收集：`ParticlesSideEffect.PerformEffect` 是空的
+        // 注意：必须在这里收集：`ParticlesSideEffect.PerformEffect` 是空的
         //（Core 不能引用 Terraria），真正的生成在表现层 ——
         // 只有把「该在哪喷」带出去，客户端才有东西可画。
         // 之前没人带，所以**所有法术粒子都不显示**，而且不报错。
         var particles = new List<ParticleSpray>();
 
         // 本次求值要播的音效。
-        // ⚠️ 和粒子同样的坑：EvalSound 一直**被算出来但没人播** ——
+        // 注意：和粒子同样的坑：EvalSound 一直**被算出来但没人播** ——
         // 法杖的 UseSound 又是 null（注释还写着「施法音效由 EvalSound 负责」），
         // 结果整个模组的施法**一声不响**。这里把它带出来交给表现层。
         EvalSound sound = EvalSound.Nothing;
@@ -150,7 +150,7 @@ public sealed class CastingVM
     /// 执行单个 iota。
     /// 移植自源项目 executeInner（CastingVM.kt:108-162）。
     ///
-    /// ⚠️ 三个分支的顺序不可调换（spec 7.3 第③条）：
+    /// 注意：三个分支的顺序不可调换（spec 7.3 第③条）：
     /// escapeNext → inParens → 普通执行。
     /// </summary>
     public CastResult ExecuteInner(Iota iota, SpellContinuation continuation)

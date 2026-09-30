@@ -28,7 +28,7 @@ namespace HexCastingTerraria.Core.Casting.Iotas;
 ///
 /// `null` / `bool` / `double` / `string` / `List&lt;object?&gt;` / `Dictionary&lt;string, object?&gt;`
 ///
-/// ⚠️ 这**不是** `TagCompound` 能直接收的形状（它不收字典、不收 null、列表必须同类型）——
+/// 注意：这**不是** `TagCompound` 能直接收的形状（它不收字典、不收 null、列表必须同类型）——
 /// 存档一律走游戏侧的 `Content/Net/IotaTag`，不要把信封直接塞进 tag。
 /// </summary>
 public static class IotaSerializer

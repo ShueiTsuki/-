@@ -13,7 +13,7 @@ namespace HexCastingTerraria.Core.Casting.Math;
 ///   x = √3·q + (√3/2)·r
 ///   y = 1.5·r
 ///
-/// ⚠️ 本文件**必须保持不依赖 XNA / tModLoader**（因此用 <see cref="Vec2f"/> 而不是 `Vector2`）。
+/// 注意：本文件**必须保持不依赖 XNA / tModLoader**（因此用 <see cref="Vec2f"/> 而不是 `Vector2`）。
 /// 原因：坐标换算是画布、射线、瞄准预览共用的底座，错一点就会「预览指着一个地方、
 /// 真正施法打到另一个地方」，而且两边都不报错。它必须留在离线测试工程里，
 /// 而且测的必须是**这份真代码**，不是手抄的副本。

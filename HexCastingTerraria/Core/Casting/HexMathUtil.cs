@@ -10,7 +10,7 @@ namespace HexCastingTerraria.Core.Casting;
 ///
 /// 对应源项目 api/utils/HexUtils.kt 里的 fixNAN 等函数。
 ///
-/// ⚠️ 为什么必须做 NaN 清洗（见 TERRARIA_2D_ADAPTATION.md 高危点③）：
+/// 注意：为什么必须做 NaN 清洗（见 TERRARIA_2D_ADAPTATION.md 高危点③）：
 /// 泰拉的 NPC **没有持久朝向**（只有 int direction ±1），
 /// 如果拿 velocity 当视线方向，静止实体的速度是零向量 →
 /// Normalize 得到 NaN → 之后所有比较、范围检查、isTruthy 全部静默失败

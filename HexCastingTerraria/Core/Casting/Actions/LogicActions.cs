@@ -88,7 +88,7 @@ public sealed class OpCoerceToAxial : ConstMediaAction
 
                 // 源项目 Direction.getNearest(x, y, z)：按 DOWN, UP, NORTH(−z), SOUTH(+z), WEST(−x), EAST(+x)
                 // 的顺序取点积最大的方向，**平局取先出现的**（所以 (1,1,0) 得到的是「上」）。
-                // ⚠️ 这里曾经只看 x/y、平局取 x 轴。
+                // 注意：这里曾经只看 x/y、平局取 x 轴。
                 (double X, double Y, double Z)[] dirs = { (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1), (-1, 0, 0), (1, 0, 0) };
                 var best = (X: 0.0, Y: 0.0, Z: -1.0);   // NORTH（MC 的初值）
                 double bestDot = float.Epsilon;          // Float.MIN_VALUE
@@ -112,7 +112,7 @@ public sealed class OpCoerceToAxial : ConstMediaAction
 ///
 /// 栈效果：`[..., a, b, c, n]` → `[..., list(a, b, c)]`（n = 3）
 ///
-/// ⚠️ 个数上限是 `stack.size - 1` —— 也就是**不能把整个栈都打包**，
+/// 注意：个数上限是 `stack.size - 1` —— 也就是**不能把整个栈都打包**，
 /// 至少要留一项位置给结果列表本身。
 /// </summary>
 public sealed class OpLastNToList : IAction
@@ -198,7 +198,7 @@ public sealed class OpSwizzle : IAction
         stack.RemoveAt(stack.Count - 1);
 
         // 源项目 FactorialIter：0!, 1!, 2!, 3!… = 1, 1, 2, 6, 24…，取所有 ≤ code 的。
-        // ⚠️ 这里曾经从 1! 开始（漏了 0! 那个 1），所有置换码都错一位 ——
+        // 注意：这里曾经从 1! 开始（漏了 0! 那个 1），所有置换码都错一位 ——
         //    code=1 在原版是「交换栈顶两项」，这里什么都不做；code=0 原版不碰栈，这里却要求栈上至少一项。
         var strides = new List<long>();
         long acc = 1, n = 1;

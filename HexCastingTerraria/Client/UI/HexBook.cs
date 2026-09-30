@@ -89,7 +89,7 @@ public sealed class HexBook
     private static Vector2 UiMouse() => HexClientSystem.RawMouse();
 
     /// <summary>
-    /// 界面缩放空间里的屏幕大小。⚠️ 必须用**真实**屏幕像素再除以 UIScale：
+    /// 界面缩放空间里的屏幕大小。注意：必须用**真实**屏幕像素再除以 UIScale：
     /// 绘制界面层时 PlayerInput.SetZoom_UI 已经把 Main.screenWidth 改成了「÷UIScale」之后的值，
     /// 这里曾经再除一次 —— 界面缩放 150% 时书只按 1080/2.25 = 480 高来排，又小又偏左上。
     /// </summary>

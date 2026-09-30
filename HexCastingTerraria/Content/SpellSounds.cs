@@ -24,7 +24,7 @@ namespace HexCastingTerraria.Content;
 /// **泰拉自带的音效**上 —— 与 `beep` 用泰拉真实存在的乐器是同一套思路：
 /// 宁可少而真，不要多而假。
 ///
-/// ⚠️ 下面这张表是按**音效名字的含义**选的，不是听出来的。它们集中在一个表里，
+/// 注意：下面这张表是按**音效名字的含义**选的，不是听出来的。它们集中在一个表里，
 /// 就是为了以后能一处改完（换音色只需要动 <see cref="Map"/>）。
 /// </summary>
 internal static class SpellSounds

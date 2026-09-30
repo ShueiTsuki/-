@@ -17,7 +17,7 @@ namespace HexCastingTerraria.Content.Tiles;
 /// <summary>
 /// 石板。对应源项目 `hexcasting:slate` —— **法术环的「指令」**。
 ///
-/// ⚠️ 关键机制（读 `BlockSlate.acceptControlFlow` 得到）：
+/// 注意：关键机制（读 `BlockSlate.acceptControlFlow` 得到）：
 /// **石板存一个图案，走环时执行它**；空石板是直通（只改流向，不执行任何东西）。
 /// 所以环是**可改写的物理程序** —— 换掉某块石板就改了程序。
 ///
@@ -28,7 +28,7 @@ namespace HexCastingTerraria.Content.Tiles;
 ///   - **不能从哪进来**：不能从 `Normal` 的反方向进来
 ///
 /// 所以部件的 `Normal` 必须**垂直于局部流向**，否则会挡住控制流。
-/// ⚠️ 这一点对玩家不直观 —— 见下方 RightClick 的「空手右键旋转」设计。
+/// 注意：这一点对玩家不直观 —— 见下方 RightClick 的「空手右键旋转」设计。
 ///
 /// ## 与源项目的差异
 ///

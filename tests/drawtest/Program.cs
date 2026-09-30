@@ -73,7 +73,7 @@ void Check(string name, bool ok, string? detail = null)
 
 PatternRegistry.EnsureLoaded();
 
-// ⚠️ 必须显式注册图案行为：注册表只装**图案数据**，
+// 注意：必须显式注册图案行为：注册表只装**图案数据**，
 // 「这条图案能干什么」是 HexActions.RegisterAll() 灌进去的
 // （模组里由 HexCastingTerraria.Load 调用）。漏了这一步，
 // 所有图案都会显示成「未实现」—— 这个坑我在写本工程时踩过一次。
@@ -365,10 +365,10 @@ Console.WriteLine("\n=== ⑤ 法术序列的栈平衡检查 ===");
               "hexcasting:raycast", "hexcasting:break_block" }),
     };
 
-    // ⚠️ 本检查的**能力边界**：它只看栈深度，看不出「类型对不上」。
+    // 注意：本检查的**能力边界**：它只看栈深度，看不出「类型对不上」。
     //
     // 反例：`get_caster → entity_pos/eye → const/vec/ny → add_motion`
-    //   · 深度：1 → 1 → 2 → 需要 2 ✓ 不欠账，检查通过；
+    //   · 深度：1 → 1 → 2 → 需要 2（对） 不欠账，检查通过；
     //   · 但 add_motion 的第一个参数要的是**实体**，而这里被 entity_pos/eye 换成了**坐标**，
     //     实际运行会报「参数不是实体」。
     //
@@ -503,7 +503,7 @@ Console.WriteLine("\n=== ⑤ 法术序列的栈平衡检查 ===");
     {
         var trace = new List<string>();
         string? err = CheckSpell(ids, trace, out _);
-        Console.WriteLine($"  {(err == null ? "·" : "✗")} {name}");
+        Console.WriteLine($"  {(err == null ? "·" : "X")} {name}");
         Console.WriteLine($"      {string.Join("  ", trace)}");
         Check($"{name} 栈与类型都成立", err == null, err);
     }
@@ -604,7 +604,7 @@ Console.WriteLine("\n=== ⑤ 法术序列的栈平衡检查 ===");
     }
 
     // ⑤ 硬换行标记。
-    //    ⚠️ 这里有个**分层**要分清：Parse 只认标记（$(br) 等），
+    //    注意：这里有个**分层**要分清：Parse 只认标记（$(br) 等），
     //    裸 `\n` 是**文本里的字符**，由 Wrap 在折行时切开 —— 上一版把两者混为一谈，
     //    断言写成「Parse 出 5 个断行」自然对不上（实得 3）。
     {

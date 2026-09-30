@@ -158,7 +158,7 @@ public sealed class OpMakeBattery : SpellAction
 /// 消耗 `DUST_UNIT / 10`（1 千）。
 /// 原版有变体的物品：符纸、饰品、法器、核心、法术书（VariantItem；封了的核心 / 书页不变，但法术照放）。
 ///
-/// ⚠️ 泰拉侧目前的变体**只影响 tooltip 上显示的编号**，贴图还没做 ——
+/// 注意：泰拉侧目前的变体**只影响 tooltip 上显示的编号**，贴图还没做 ——
 /// 这属于「美术最后统一处理」的欠账，机制本身是完整的
 /// （`variant = (variant + 1) % numVariants`，与源项目逐字一致）。
 /// </summary>

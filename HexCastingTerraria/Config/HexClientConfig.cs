@@ -158,7 +158,7 @@ public sealed class HexClientConfig : ModConfig
     /// 每记一步所需的拖拽距离 = hexSize × √(2 × 阈值)；相邻格点相距 √3 × hexSize。
     /// 0.5 → 走到格距的 58% 就提交（原版默认，玩家反馈太容易碰到点画错）；
     /// 1.0 → 82%（本模组默认）；1.15 → 88%（上限，再高带手抖的画法会出错，见 PatternDrawer）。
-    /// ⚠️ 这里曾写「0.5 = 恰好 1 个格距、1.0 = 1.41 个格距」—— 把 hexSize 当成了格距，是错的。
+    /// 注意：这里曾写「0.5 = 恰好 1 个格距、1.0 = 1.41 个格距」—— 把 hexSize 当成了格距，是错的。
     /// </summary>
     [Range(Core.Canvas.PatternDrawer.MinSnapThreshold, Core.Canvas.PatternDrawer.MaxSnapThreshold)]
     [Increment(0.05f)]

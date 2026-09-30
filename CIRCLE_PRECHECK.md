@@ -2,7 +2,7 @@
 # 法术环实施前完整核查清单
 
 > 按用户要求，动手前把**四层**都过一遍：咒法学源码 / 泰拉瑞亚 API / 本项目已有代码 / 待写入代码。
-> 核查结论：**发现 3 处会直接改变实现的细节**，已分别标注 ⚠️。
+> 核查结论：**发现 3 处会直接改变实现的细节**，已分别标注 注意：。
 
 ---
 
@@ -12,17 +12,17 @@
 
 | 文件 | 核对结果 |
 |---|---|
-| `ICircleComponent.java` | ✅ 全文读完。三个方法 + `ControlFlow`（sealed，`Continue`/`Stop` 二选一） |
-| `CircleExecutionState.java` | ✅ 337 行读完。`createNew`（闭包校验）+ `tick`（走图）+ `getTickSpeed` |
-| `BlockCircleComponent.java` | ✅ 基类：`ENERGIZED` 属性 + `startEnergized`/`endEnergized` + `normalDir` |
-| `BlockSlate.java` | ✅ **关键**：石板执行自己的图案，空石板直通，失败即停 |
-| `BlockAbstractImpetus.java` | ✅ 98 行。`acceptControlFlow` 返回 `Stop`（环的终点） |
-| `BlockEntityAbstractImpetus.java` | ✅ 464 行。`tickExecution` 排下一次 tick + `startExecution` |
-| `CircleCastEnv.java` | ✅ 222 行。媒质从 Impetus 取、范围 = 包围盒 |
-| `ChunkScanning.kt` | ✅ 纯缓存，无范围限制 → **泰拉侧不需要** |
-| `OpImpetusPos/Dir/CircleBounds.kt` | ✅ 3 个环图案的语义 |
+| `ICircleComponent.java` | 全文读完。三个方法 + `ControlFlow`（sealed，`Continue`/`Stop` 二选一） |
+| `CircleExecutionState.java` | 337 行读完。`createNew`（闭包校验）+ `tick`（走图）+ `getTickSpeed` |
+| `BlockCircleComponent.java` | 基类：`ENERGIZED` 属性 + `startEnergized`/`endEnergized` + `normalDir` |
+| `BlockSlate.java` | **关键**：石板执行自己的图案，空石板直通，失败即停 |
+| `BlockAbstractImpetus.java` | 98 行。`acceptControlFlow` 返回 `Stop`（环的终点） |
+| `BlockEntityAbstractImpetus.java` | 464 行。`tickExecution` 排下一次 tick + `startExecution` |
+| `CircleCastEnv.java` | 222 行。媒质从 Impetus 取、范围 = 包围盒 |
+| `ChunkScanning.kt` | 纯缓存，无范围限制 → **泰拉侧不需要** |
+| `OpImpetusPos/Dir/CircleBounds.kt` | 3 个环图案的语义 |
 
-### ⚠️ 修正 1：图案在石板上，不在 Impetus 上
+### 注意：修正 1：图案在石板上，不在 Impetus 上
 
 我原先理解错了。环是**物理程序**：
 - **Impetus = CPU**（媒质池 + 执行状态 + 触发方式，**不含图案**）
@@ -31,7 +31,7 @@
 - 空石板 = 直通；任一图案失败 = 整环停止
 - 换石板 = 改程序
 
-### ⚠️ 修正 2：环的范围判定是「包围盒」
+### 注意：修正 2：环的范围判定是「包围盒」
 
 ```java
 isVecInRangeEnvironment(vec) { ... return this.execState.bounds.contains(vec); }
@@ -40,7 +40,7 @@ isVecInRangeEnvironment(vec) { ... return this.execState.bounds.contains(vec); }
 **不是**玩家那种 32 格半径，而是**环自身的 AABB**。
 所以 `entity_pos`、`akashic/*` 一类世界图案在环里的可用范围完全不同。
 
-### ⚠️ 修正 3：Impetus 媒质为负数 = 无限
+### 注意：修正 3：Impetus 媒质为负数 = 无限
 
 ```java
 if (mediaAvailable < 0) return 0;   // 负数 = 无限媒质
@@ -67,17 +67,17 @@ if (mediaAvailable < 0) return 0;   // 负数 = 无限媒质
 
 | 需要的 API | 状态 | 备注 |
 |---|---|---|
-| `ModTile` + `ModItem` | ✅ 已在用 | — |
-| `ModTileEntity` | ✅ 已在用（阿卡夏记录） | **无任何 Draw 钩子** → 靠宿主方块 `SpecialDraw` |
-| `TileObjectData` | ⚠️ **不用** | 它是给固定矩形用的，环是任意形状 |
-| `Main.tile[x,y]` | ✅ 直接数组访问 | 无需缓存层（对应 `ChunkScanning` 的位置） |
-| `ModifyLight` | ✅ 已在用 | `Main.tileLighted[Type] = true` 必须先开 |
-| `AnimateIndividualTile` | ✅ 已查签名 | 逐实例帧（充能动画要逐格不同相） |
-| `SpecialDraw` + `CustomNonSolid` | ✅ 已在用（记录方块） | 60fps 路径；`AddSpecialLegacyPoint` 只有 15fps |
-| `ModTile.RightClick` | ✅ 已查 | 右击触发 |
-| `HitWire` | ✅ **已验证**：`HitWire(int i, int j)` | ⚠️ 跑在**服务端**，而 `RightClick` 跑在**本地客户端** —— 两种触发的执行侧不同 |
-| `ModTileEntity.PostGlobalUpdate` | ✅ **新发现** | TileEntity 的**每 tick 钩子**，走环驱动就放这里（对应 MC 的 `scheduleTick`） |
-| `Main.tileFrameImportant` | ✅ 已用 | 环部件应为 `true` → **不支持斜坡/半砖**（可接受） |
+| `ModTile` + `ModItem` | 已在用 | — |
+| `ModTileEntity` | 已在用（阿卡夏记录） | **无任何 Draw 钩子** → 靠宿主方块 `SpecialDraw` |
+| `TileObjectData` | 注意：**不用** | 它是给固定矩形用的，环是任意形状 |
+| `Main.tile[x,y]` | 直接数组访问 | 无需缓存层（对应 `ChunkScanning` 的位置） |
+| `ModifyLight` | 已在用 | `Main.tileLighted[Type] = true` 必须先开 |
+| `AnimateIndividualTile` | 已查签名 | 逐实例帧（充能动画要逐格不同相） |
+| `SpecialDraw` + `CustomNonSolid` | 已在用（记录方块） | 60fps 路径；`AddSpecialLegacyPoint` 只有 15fps |
+| `ModTile.RightClick` | 已查 | 右击触发 |
+| `HitWire` | **已验证**：`HitWire(int i, int j)` | 注意：跑在**服务端**，而 `RightClick` 跑在**本地客户端** —— 两种触发的执行侧不同 |
+| `ModTileEntity.PostGlobalUpdate` | **新发现** | TileEntity 的**每 tick 钩子**，走环驱动就放这里（对应 MC 的 `scheduleTick`） |
+| `Main.tileFrameImportant` | 已用 | 环部件应为 `true` → **不支持斜坡/半砖**（可接受） |
 
 **待办**：实施前先编译验证 `HitWire` 的签名（本项目已两次被签名差异坑到：
 `RandomUpdate` 三参数、`ModifyWorldGenTasks` 无 `totalWeight`）。
@@ -88,14 +88,14 @@ if (mediaAvailable < 0) return 0;   // 负数 = 无限媒质
 
 | 已有 | 能否直接用于环 | 说明 |
 |---|---|---|
-| `CastingEnvironment`（抽象类） | ✅ 派生 | 环环境 = `CircleCastingEnvironment : CastingEnvironment` |
-| `World` / `ICastingWorld` | ✅ 直接复用 | 世界图案在环里也能用 |
-| `get_caster` 返回 `NullIota` 的分支 | ✅ **正好为环而设** | 环无实体施法者 |
-| `MishapNeedsParens` 等 18 种 mishap | ✅ 复用 | 需新增 `MishapNoSpellCircle` |
-| `PatternRenderer` / `HexPixel` | ✅ 复用 | 图案渲染 |
-| `ServerCastState`（服务端权威） | ✅ 复用思路 | 环的执行状态同样必须服务端权威 |
-| `SpellAction` 的「先扣媒质再施放」 | ✅ 复用 | 环里同样适用 |
-| `IotaSerializer` / `IotaWire` | ✅ 复用 | 石板存图案、状态同步 |
+| `CastingEnvironment`（抽象类） | 派生 | 环环境 = `CircleCastingEnvironment : CastingEnvironment` |
+| `World` / `ICastingWorld` | 直接复用 | 世界图案在环里也能用 |
+| `get_caster` 返回 `NullIota` 的分支 | **正好为环而设** | 环无实体施法者 |
+| `MishapNeedsParens` 等 18 种 mishap | 复用 | 需新增 `MishapNoSpellCircle` |
+| `PatternRenderer` / `HexPixel` | 复用 | 图案渲染 |
+| `ServerCastState`（服务端权威） | 复用思路 | 环的执行状态同样必须服务端权威 |
+| `SpellAction` 的「先扣媒质再施放」 | 复用 | 环里同样适用 |
+| `IotaSerializer` / `IotaWire` | 复用 | 石板存图案、状态同步 |
 
 ### 缺口清单（必须新增）
 
@@ -221,8 +221,8 @@ public required CircleDir ForbiddenEntry { get; init; }
 | **原动力** | **起始方向 `.Opposite()`**（与 Normal 无关） |
 
 并补了两条**对照用例**证明差异确实来自这一处规则：
-- 用正确规则：两块大的假环 **不**算闭合 ✓
-- 显式构造错误规则（按 normal 推）：同一个假环**会**被判成闭合 ✓
+- 用正确规则：两块大的假环 **不**算闭合（对）
+- 显式构造错误规则（按 normal 推）：同一个假环**会**被判成闭合（对）
 
 第二条是**反向验证** —— 它证明前一条不是因为别的原因通过的。
 

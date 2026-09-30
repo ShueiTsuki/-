@@ -14,7 +14,7 @@ namespace HexCastingTerraria.Core.Casting.Actions;
 ///
 /// 参数：`(生物, 位置)`。位置决定用哪条配方，生物决定配不配得上。
 ///
-/// ⚠️ **消耗来自配方，不是写死的**：源项目 `recipe.mediaCost`。
+/// 注意：**消耗来自配方，不是写死的**：源项目 `recipe.mediaCost`。
 /// 这是它与其他法术最不一样的地方 —— 加一条新配方就多一种价格，
 /// 所以这里的 `SpellResult.Cost` 必须从匹配到的配方里取。
 ///

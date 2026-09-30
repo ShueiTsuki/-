@@ -57,7 +57,7 @@ public abstract class ConstMediaAction : IAction
     /// <summary>
     /// 参数类型契约。见 <see cref="ActionTypes"/>。
     ///
-    /// ⚠️ 必须在这里声明成 virtual，而不能只靠 <see cref="IAction.Types"/> 的默认实现：
+    /// 注意：必须在这里声明成 virtual，而不能只靠 <see cref="IAction.Types"/> 的默认实现：
     /// **默认接口成员不会被派生类的同名成员重新绑定** ——
     /// 派生类没有在基类列表里再写一次 `IAction`，接口映射就沿用基类那份，
     /// 于是在子类里写 `public ActionTypes Types => ...` 看上去编译通过、实际永远走默认值

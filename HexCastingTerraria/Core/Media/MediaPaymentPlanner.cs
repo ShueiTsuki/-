@@ -72,7 +72,7 @@ public sealed class MediaPaymentPlan
 ///      媒质瓶扣 min(剩余, 存量)；
 ///   3. 还不够的部分交给过载。
 ///
-/// ⚠️ 这里曾经有一个「玩家媒质池」最先扣、整件多付的部分找零回池 —— 原版没有这个池子，已删除。
+/// 注意：这里曾经有一个「玩家媒质池」最先扣、整件多付的部分找零回池 —— 原版没有这个池子，已删除。
 /// </summary>
 public static class MediaPaymentPlanner
 {

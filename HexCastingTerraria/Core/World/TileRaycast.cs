@@ -51,7 +51,7 @@ public static class TileRaycast
         if (maxDist <= 0) return null;
 
         // 方向归一化。退化方向 → 无命中。
-        // ⚠️ 这里**不能**用 HexMathUtil.SafeNormalize（它兜底返回 (1,0)）：
+        // 注意：这里**不能**用 HexMathUtil.SafeNormalize（它兜底返回 (1,0)）：
         // 那会把「零向量」悄悄变成「向右打 32 格」，可能命中一个玩家根本没指着的方块。
         // 源项目此处等价于 miss，保持一致。
         double len = System.Math.Sqrt(dirX * dirX + dirY * dirY);

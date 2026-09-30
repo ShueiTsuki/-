@@ -4,7 +4,7 @@
 > 本文是读完 `ICircleComponent` / `CircleExecutionState` / `BlockSlate` /
 > `BlockCircleComponent` / `ChunkScanning` 之后的**修正版**理解。
 >
-> ⚠️ **修正了一处重要误解**：我原先以为图案存在 Impetus 上。**错了。**
+> 注意：**修正了一处重要误解**：我原先以为图案存在 Impetus 上。**错了。**
 
 ---
 

@@ -25,7 +25,7 @@ public readonly struct ParenthesizedIota
 /// 施法 VM 的完整状态。
 /// 移植自 at.petrak.hexcasting.api.casting.eval.vm.CastingImage（Kotlin data class）。
 ///
-/// ⚠️ 不可变语义（spec 7.3 第③条）：
+/// 注意：不可变语义（spec 7.3 第③条）：
 /// 所有「修改」都返回**新实例**，绝不就地改。主循环靠 CastResult.NewData 是否为 null
 /// 决定是否采纳状态；就地修改会让括号状态与 mishap 语义错乱。
 /// </summary>

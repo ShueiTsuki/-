@@ -3026,7 +3026,7 @@ static class Program
         {
             // summon_rain 比 dispel_rain 贵：CRYSTAL_UNIT vs SHARD_UNIT
             //
-            // ⚠️ 这两个图案**需要启蒙**（源项目把它们打在 REQUIRES_ENLIGHTENMENT 标签里）。
+            // 注意：这两个图案**需要启蒙**（源项目把它们打在 REQUIRES_ENLIGHTENMENT 标签里）。
             // 顺带把「没启蒙 -> 拒绝」也钉一条：这条曾经是漏的（清单里只有 teleport/great），
             // 修好之后再被改回去就会立刻红。
             var forbidden = new CastingImage(System.Array.Empty<Iota>());
@@ -3316,7 +3316,7 @@ static class Program
             var env = new TestEnv();
             var img = new CastingImage(new Iota[] { new DoubleIota(10), new DoubleIota(0) });
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:last_n_list") });
-            // ⚠️ 我的期望一开始写错了：n=0 时**不是**只剩一个空列表 ——
+            // 注意：我的期望一开始写错了：n=0 时**不是**只剩一个空列表 ——
             // 被弹出的只有「个数」那一项，下面的 10 仍在栈上。
             Check("last_n_list：n=0 -> 原栈不变，只多压一个空列表",
                 r.Image.Stack.Count == 2
@@ -3424,7 +3424,7 @@ static class Program
         }
         {
             // 强度落在 [0, 10] 闭区间（源项目 getPositiveDoubleUnderInclusive(1, 10.0)）
-            // ⚠️ 原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
+            // 注意：原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
             //    这条测试原来断言「0 / NaN 必须报错」，把移植版的错误行为当成了期望值。
             var world = new FakeWorld();
             var env = new TestEnv(world: world, media: 100_000_000);
@@ -3542,7 +3542,7 @@ static class Program
             var env = new TestEnv(world: world, media: 100_000_000);
             var npc = new EntityIota(EntityIota.EntityKind.Npc, 1);
 
-            // ⚠️ 原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
+            // 注意：原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
             //    这条测试原来断言「0 / NaN 必须报错」，把移植版的错误行为当成了期望值。
             string wrong = "";
             foreach (var (dur, ok) in new[] { (0.0, true), (double.NaN, true), (-1.0, false) })
@@ -3603,7 +3603,7 @@ static class Program
             var world = new FakeWorld();
             var env = new TestEnv(world: world, media: 1_000_000);
 
-            // ⚠️ 原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
+            // 注意：原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
             //    这条测试原来断言「0 / NaN 必须报错」，把移植版的错误行为当成了期望值。
             string wrong = "";
             foreach (var (radius, ok) in new[] { (0.0, true), (double.NaN, true), (double.PositiveInfinity, true), (-1.0, false) })
@@ -4777,7 +4777,7 @@ static class Program
             }
             {
                 // 源项目 OpFlight 用 getPositiveDouble：只有负数报错
-                // ⚠️ 原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
+                // 注意：原版「positive」含 0（getPositiveDouble 是 0 <= x）；NaN / 无穷在 DoubleIota 里被 fixNAN 成 0。
                 //    这条测试原来断言「0 / NaN 必须报错」，把移植版的错误行为当成了期望值。
                 string wrong = "";
                 foreach (var (d, ok) in new[] { (0.0, true), (double.NaN, true), (double.PositiveInfinity, true), (-1.0, false) })
@@ -5179,7 +5179,7 @@ static class Program
         Console.WriteLine("=== 特殊图案：数字字面量 与 掩码 ===");
         {
             // ── 数字字面量 ──
-            // ⚠️ 这一类**不在 188 条注册表里**，是「前缀 + 图案本身算参数」。
+            // 注意：这一类**不在 188 条注册表里**，是「前缀 + 图案本身算参数」。
             // 漏掉它的后果极其隐蔽：注册表全实现、用例全过，但玩家画不出任何数字。
             bool ok = SpecialPatterns.TryNumber("aqaaw", out var one) && one == 1
                    && SpecialPatterns.TryNumber("aqaaww", out var two) && two == 2

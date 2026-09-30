@@ -18,11 +18,11 @@
 | 包结构 | `at.petrak.hexcasting.{api,common,client,datagen,interop,mixin,xplat}` |
 | 需移植的核心包 | `api/**`（286 类）、`common/**`（327 类）、`client/**`（58 类） |
 | **不需要移植** | `mixin/**`（23）、`datagen/**`（20）、`interop/**`（43）、`xplat/**`（7）、`fabric/**`（74） |
-| **图案清单** | ✅ **已提取：188 条图案**（`HexActions.java` 中 188 处 `make()`，解析失败 0），产物 `PATTERN_CATALOG.json` / `.csv`，含 `Id` / `Angles` / `StartDir` / `Op类` |
+| **图案清单** | **已提取：188 条图案**（`HexActions.java` 中 188 处 `make()`，解析失败 0），产物 `PATTERN_CATALOG.json` / `.csv`，含 `Id` / `Angles` / `StartDir` / `Op类` |
 | 图案注册机制 | 代码内 `make("名字", new ActionRegistryEntry(HexPattern.fromAngles("角度串", HexDir.方向), Op类))`；签名匹配按 `entry.prototype().getAngles()` 做 O(1) 查表；另有 **SpecialHandler** 注册表处理动态图案（数字字面量等）与 per-world 图案 |
 | 内容量（mcmod 资料页） | 367 条 = 195 图案 + 143 物品/方块 + 3 多方块 + 10 设定 + 16 剧情（与代码实测 188 条图案接近，差额在 SpecialHandler 与附属） |
 | 协议 | MIT，允许移植与再分发，需保留版权声明 |
-| 目标环境 | **tModLoader 1.4.5（`1.4.5-dev`）net10.0 / C# 14**；原版 Terraria 1.4.5.8 ✅ 匹配；.NET SDK 10.0.401 ✅ 已装 |
+| 目标环境 | **tModLoader 1.4.5（`1.4.5-dev`）net10.0 / C# 14**；原版 Terraria 1.4.5.8 匹配；.NET SDK 10.0.401 已装 |
 
 **核心判断**：这不是"移植"，是**用 C# 重写**。Java 与 C#/tModLoader 之间没有一行可直接复用；
 MC 的 `ItemStack`/`BlockEntity`/`Level`/`Component`/`ResourceLocation` 在 Terraria 侧全部需要重新设计。
@@ -33,12 +33,12 @@ MC 的 `ItemStack`/`BlockEntity`/`Level`/`Component`/`ResourceLocation` 在 Terr
 
 | 编号 | 决策点 | 结论 | 需你确认 |
 |---|---|---|---|
-| **D1** | 目标版本 | ✅ **已定：tModLoader 1.4.5**（`1.4.5-dev` beta 分支，net10.0 / C# 14）。原版 Terraria 1.4.5.8 已匹配，**不需要切回 1.4.4** | ✅ 已确认 |
-| **D2** | 首个交付范围 | **垂直切片**：绘制 → 图案识别 → 栈虚拟机 → 媒质 → 阿卡夏记录 → 20 条核心图案 | ⬜ |
-| **D3** | 媒质（Media）实现 | 自定义玩家资源（照搬原作"媒质"），不复用 Terraria 法力 | ⬜ |
-| **D4** | 绘制交互 | 鼠标在六边形网格上按住拖拽画线，与原作一致；不改为 Terraria 式按钮菜单 | ⬜ |
-| **D5** | 是否保留反噬/疯狂机制 | 保留（这是原作气质的一部分），但数值可调 | ⬜ |
-| **D6** | 资源对应 | MC 紫水晶 ↔ Terraria 钻石/紫晶；MC 书 ↔ 书；具体由我在实现时逐条给出对应表 | ⬜ |
+| **D1** | 目标版本 | **已定：tModLoader 1.4.5**（`1.4.5-dev` beta 分支，net10.0 / C# 14）。原版 Terraria 1.4.5.8 已匹配，**不需要切回 1.4.4** | 已确认 |
+| **D2** | 首个交付范围 | **垂直切片**：绘制 → 图案识别 → 栈虚拟机 → 媒质 → 阿卡夏记录 → 20 条核心图案 | |
+| **D3** | 媒质（Media）实现 | 自定义玩家资源（照搬原作"媒质"），不复用 Terraria 法力 | |
+| **D4** | 绘制交互 | 鼠标在六边形网格上按住拖拽画线，与原作一致；不改为 Terraria 式按钮菜单 | |
+| **D5** | 是否保留反噬/疯狂机制 | 保留（这是原作气质的一部分），但数值可调 | |
+| **D6** | 资源对应 | MC 紫水晶 ↔ Terraria 钻石/紫晶；MC 书 ↔ 书；具体由我在实现时逐条给出对应表 | |
 
 ---
 
@@ -62,16 +62,16 @@ MC 的 `ItemStack`/`BlockEntity`/`Level`/`Component`/`ResourceLocation` 在 Terr
 ## 3. 分阶段计划（每阶段结束都要你确认）
 
 ### Phase 0 — 可跑骨架 `预计 1~3 个工作日`
-- ✅ 建 tModLoader 1.4.5 工程 `HexCastingTerraria`（net10.0 / C#14），编译通过并产出 `.tmod`
-- ✅ HexMath 六边形网格数学（`HexAngle`/`HexDir`/`HexCoord`/`HexPattern`）
-- ✅ 188 条图案数据提取 + 严格校验（188/188 通过、0 重复、往返无损）+ 注册表
-- ⬜ 法杖物品（右键打开画布）
-- ⬜ 六边形网格绘制 UI（鼠标拖拽画线 + 实时识别）
-- ⬜ 中英文本地化骨架
+- 建 tModLoader 1.4.5 工程 `HexCastingTerraria`（net10.0 / C#14），编译通过并产出 `.tmod`
+- HexMath 六边形网格数学（`HexAngle`/`HexDir`/`HexCoord`/`HexPattern`）
+- 188 条图案数据提取 + 严格校验（188/188 通过、0 重复、往返无损）+ 注册表
+- 法杖物品（右键打开画布）
+- 六边形网格绘制 UI（鼠标拖拽画线 + 实时识别）
+- 中英文本地化骨架
 
 **验收**：`dotnet build` 0 错误 → 进游戏能拿到法杖 → 右键弹出网格 → 画对"数字 0"图案被识别（效果先只打日志）。
 **进度**：数据与算法层已完成并离线验证；UI 层待做。详见 `PHASE0_REPORT.md`。
-**确认点 ①** ⬅ 当前所在位置（等待用户确认 D2~D6 后继续 UI 层）
+**确认点 ①** （当前所在位置）（等待用户确认 D2~D6 后继续 UI 层）
 
 ### Phase 1 — 施法闭环（核心） `预计 1~2 周`
 - `Iota` 类型体系（数、向量、布尔、实体、列表、图案、null）

@@ -76,7 +76,7 @@ public abstract class HexDirectrixBase : ModTile
     /// <summary>
     /// 红石触发。移植自源项目 `BlockRedstoneDirectrix` 的 `POWERED` 状态。
     ///
-    /// ⚠️ 与 `RightClick` 的关键区别：**`HitWire` 跑在服务端**，
+    /// 注意：与 `RightClick` 的关键区别：**`HitWire` 跑在服务端**，
     /// 而 `RightClick` 跑在本地客户端（所以那个要上报）。
     /// 这里直接落地即可，不需要网络层。
     ///

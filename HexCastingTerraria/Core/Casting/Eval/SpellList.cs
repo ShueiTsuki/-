@@ -7,7 +7,7 @@ namespace HexCastingTerraria.Core.Casting.Eval;
 /// <summary>
 /// 函数式（持久化）列表。移植自 at.petrak.hexcasting.api.casting.SpellList。
 ///
-/// ⚠️ 高危点（spec 7.3 第①条）：**必须保持持久化、不可变**。
+/// 注意：高危点（spec 7.3 第①条）：**必须保持持久化、不可变**。
 /// 用 List&lt;Iota&gt; 代替会导致 for_each / eval_breakable 迭代丢失或重复，
 /// 且极难定位。这里忠实实现 LPair + LList 两个不可变节点。
 /// </summary>

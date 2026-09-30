@@ -125,12 +125,12 @@ SPELLS = [
      ['hexcasting:const/double/pi', 'hexcasting:print']),
     ('② 看自己的坐标', '取施法者 → 换成它的眼位 → 打印。泰拉坐标 Y 向下，所以 py 是「下」',
      ['hexcasting:get_caster', 'hexcasting:entity_pos/eye', 'hexcasting:print']),
-    ('③ 向上跳高', '⚠️ 驱动要的是【实体本身】，别先换成坐标 —— 换成坐标后实体就没了',
+    ('③ 向上跳高', '注意：驱动要的是【实体本身】，别先换成坐标 —— 换成坐标后实体就没了',
      ['hexcasting:get_caster', 'hexcasting:const/vec/ny', 'hexcasting:add_motion']),
     ('④ 朝准星方向闪现 3 格', '数字 3 要现场画一个数字字面量，再喂给闪现',
      ['hexcasting:get_caster', NUMBER3['id'], 'hexcasting:blink']),
     ('⑤ 隔空挖掉准星指的方块',
-     '⚠️ 必须取【两次】施法者：一次换眼位、一次换视线。只取一次的话，'
+     '注意：必须取【两次】施法者：一次换眼位、一次换视线。只取一次的话，'
      '视线那步拿不到实体，后面会一路错下去，最后挖到你自己脚下那一格',
      ['hexcasting:get_caster', 'hexcasting:entity_pos/eye',
       'hexcasting:get_caster', 'hexcasting:get_entity_look',

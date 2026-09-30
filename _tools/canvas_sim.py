@@ -104,7 +104,7 @@ def main():
         print('===== 阈值 %.1f =====' % threshold)
         for sig, start, name in cases:
             got = simulate(sig, start, size, threshold)
-            ok = 'OK ' if got == sig else '✗✗✗'
+            ok = 'OK ' if got == sig else 'BAD'
             print('  %s %-24s 期望 %-8s 实得 %s' % (ok, name, sig, got or '(空)'))
         print()
 

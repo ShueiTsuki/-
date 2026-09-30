@@ -16,7 +16,7 @@ namespace HexCastingTerraria.Content.Items;
 ///   - 用「重新充能」（recharge）补到上限；
 ///   - 没有合成配方，也不能喝。
 ///
-/// ⚠️ 这里曾经是「可合成、可堆叠 99、右键喝掉把媒质倒进玩家媒质池」—— 原版没有玩家媒质池，已按原版改回。
+/// 注意：这里曾经是「可合成、可堆叠 99、右键喝掉把媒质倒进玩家媒质池」—— 原版没有玩家媒质池，已按原版改回。
 /// </summary>
 public class MediaFlask : ModItem
 {

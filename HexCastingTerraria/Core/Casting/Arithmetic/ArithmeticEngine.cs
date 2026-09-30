@@ -257,7 +257,7 @@ public sealed class BoolArithmetic : IArithmetic
 ///   - pow：向量 → 向量 = u 在 v 上的**投影**；混数字 → 逐分量乘方
 ///   - abs = 长度；floor / ceil = 逐分量
 /// 逐分量运算用数字算术，所以除以零照样是 MishapDivideByZero。
-/// ⚠️ 这里曾经是二维：叉积返回数字（「2D 只得标量，破坏性变更」）、没有 z。原版叉积得向量。
+/// 注意：这里曾经是二维：叉积返回数字（「2D 只得标量，破坏性变更」）、没有 z。原版叉积得向量。
 /// </summary>
 public sealed class Vec3Arithmetic : IArithmetic
 {
@@ -338,7 +338,7 @@ public sealed class Vec3Arithmetic : IArithmetic
 /// <summary>
 /// 数字的位运算。逐行对齐源项目 BitwiseSetArithmetic.kt：
 /// 与 / 或 / 异或 / 非 作用在**数字**上时，先 roundToLong（四舍五入）再按位运算。
-/// ⚠️ 这一类曾经整个缺失 —— 数字「与」直接报参数类型不对。
+/// 注意：这一类曾经整个缺失 —— 数字「与」直接报参数类型不对。
 /// </summary>
 public sealed class BitwiseSetArithmetic : IArithmetic
 {
@@ -379,7 +379,7 @@ public sealed class BitwiseSetArithmetic : IArithmetic
 /// 列表的集合运算。逐行对齐源项目 ListSetArithmetic.kt（相等用 Iota.tolerates）：
 ///   与 = 交集（保留左表顺序）；或 = 左表 + 右表里左表没有的；异或 = 对称差。
 /// 「唯一之纯化」在原版也属于这一类，移植版单独做成了 OpUnique。
-/// ⚠️ 这一类曾经整个缺失。
+/// 注意：这一类曾经整个缺失。
 /// </summary>
 public sealed class ListSetArithmetic : IArithmetic
 {

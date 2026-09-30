@@ -254,7 +254,7 @@ public sealed class DevPanel
 
     private void DrawSampleList(SpriteBatch sb, float x, float y, Vector2 mouse)
     {
-        Terraria.Utils.DrawBorderString(sb, "法术示例（★ = 大法术，要启蒙）", new Vector2(x, y), Text, 0.75f);
+        Terraria.Utils.DrawBorderString(sb, "法术示例（[大] = 大法术，要启蒙）", new Vector2(x, y), Text, 0.75f);
         y += 24;
         var all = SampleHexes.All;
         for (int i = 0; i < all.Count; i++)
@@ -266,7 +266,7 @@ public sealed class DevPanel
             {
                 Terraria.Utils.DrawInvBG(sb, r, (i == _selected ? new Color(90, 70, 150) : new Color(60, 50, 100)) * 0.9f);
             }
-            string label = (s.Great ? "★ " : "   ") + s.Name;
+            string label = (s.Great ? "[大] " : "     ") + s.Name;
             Terraria.Utils.DrawBorderString(sb, label, new Vector2(r.X + 8, r.Y + 3), s.Great ? Great : Text, 0.75f);
             int index = i;
             _hits.Add((r, () => _selected = index, s.Description));
@@ -279,7 +279,7 @@ public sealed class DevPanel
         _selected = Math.Clamp(_selected, 0, all.Count - 1);
         var s = all[_selected];
 
-        Terraria.Utils.DrawBorderString(sb, s.Name + (s.Great ? "  ★ 大法术" : ""), new Vector2(x, y), s.Great ? Great : Title, 0.9f);
+        Terraria.Utils.DrawBorderString(sb, s.Name + (s.Great ? "  [大法术]" : ""), new Vector2(x, y), s.Great ? Great : Title, 0.9f);
         Terraria.Utils.DrawBorderString(sb, s.Description, new Vector2(x, y + 26), Text, 0.75f);
         Terraria.Utils.DrawBorderString(sb, $"共 {s.Steps.Length} 步，按顺序画（每画一条就求值一次）：", new Vector2(x, y + 48), Dim, 0.7f);
 
@@ -385,7 +385,7 @@ public sealed class DevPanel
 
         var p = HexBook.CurrentProgress();
         var (unlocked, total) = HexBook.UnlockStats();
-        string Mark(bool b) => b ? "✓" : "✗";
+        string Mark(bool b) => b ? "是" : "否";
         Terraria.Utils.DrawBorderString(sb,
             $"背包媒质 {hp.InventoryMedia() / (double)Core.Media.MediaConstants.DustUnit:0.#} 粉   "
             + $"紫水晶 {Mark(p.Amethyst)}   盲目绘制 {Mark(p.FailedGreatSpell)}   睁开双眼 {Mark(p.Overcasted)}   启蒙 {Mark(p.Enlightened)}   "

@@ -17,7 +17,7 @@ namespace HexCastingTerraria.Content.Items;
 ///   - <see cref="CanWrite"/>  = canWrite(datum)：肯不肯收；datum = null 表示清除
 ///   - <see cref="WriteIota"/> = writeIota(datum, simulate)：先 canWrite，不是试算才真写
 ///
-/// ⚠️ **必须 maxStack = 1**：泰拉的堆叠物品共享一个 <see cref="Item"/> 实例，
+/// 注意：**必须 maxStack = 1**：泰拉的堆叠物品共享一个 <see cref="Item"/> 实例，
 /// 没法给同堆里的每一件存不同的 iota。
 /// </summary>
 public abstract class ItemIotaStorage : ModItem

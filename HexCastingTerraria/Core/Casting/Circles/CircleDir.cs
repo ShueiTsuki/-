@@ -3,7 +3,7 @@ namespace HexCastingTerraria.Core.Casting.Circles;
 /// <summary>
 /// 法术环控制流的**方向**。
 ///
-/// ⚠️ **不要复用 <see cref="Math.HexDir"/>**：那是六方向的（画图案用的六边形方向），
+/// 注意：**不要复用 <see cref="Math.HexDir"/>**：那是六方向的（画图案用的六边形方向），
 /// 而泰拉是方格世界，控制流只能走上下左右四个方向。
 /// 源项目用的是 MC 的 `Direction`（六向，因为有 Y 轴），
 /// 移植到 2D 后正好退化成四向 —— 这也是 2D 反而更简单的地方。

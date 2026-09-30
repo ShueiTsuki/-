@@ -155,7 +155,7 @@ cd D:\DeepSeekHarness\tmod;                    .\_tools\verify_server.ps1 # 专�
 
 ```
 get_caster → entity_pos/eye → const/vec/ny → add_motion
-深度： 1   →      1        →      2       →  需要 2 ✓ 不欠账
+深度： 1   →      1        →      2       →  需要 2（对） 不欠账
 但 add_motion 第 1 个参数要的是【实体】，此时已被换成【坐标】→ 运行时报「参数不是实体」
 ```
 

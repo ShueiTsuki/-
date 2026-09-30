@@ -8,7 +8,7 @@ namespace HexCastingTerraria.Core.Casting.Eval.Vm;
 /// Thoth（for_each / eval_breakable）求值帧。
 /// 移植自 at.petrak.hexcasting.api.casting.eval.vm.FrameForEach。
 ///
-/// ⚠️ 高危点（spec 7.3 第①条）：
+/// 注意：高危点（spec 7.3 第①条）：
 /// 本帧会**把同一份 code 反复重新执行**，且 data/acc 会被多帧共享。
 /// 因此：
 ///   - `Data` / `Code` 必须是持久化 SpellList（不可变），不能是可变 List

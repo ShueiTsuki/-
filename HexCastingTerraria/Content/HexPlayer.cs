@@ -758,7 +758,7 @@ public sealed class HexPlayer : ModPlayer
         }
         else if (Client.HexCanvasState.BlockedInput)
         {
-            // ⚠️ 兜底：两个界面都没开，就**绝不允许**还处于输入压制状态。
+            // 注意：兜底：两个界面都没开，就**绝不允许**还处于输入压制状态。
             //
             // 这段是「打开书后无法移动」那个 bug 的根治：之前解除压制只写在一条分支里，
             // 只要有任何一条路径忘了清（菜单、死亡、传送、界面被别的东西关掉…），

@@ -4,7 +4,7 @@
 # 手写 30 个类除了制造 30 处笔误机会没有任何价值。
 # 表在下面，改一行就多一个方块 —— 也方便以后和源项目的清单逐条对齐。
 #
-# ⚠️ 建材贴图**必须低饱和 / 接近灰阶**：泰拉的油漆是乘算染色，
+# 注意：建材贴图**必须低饱和 / 接近灰阶**：泰拉的油漆是乘算染色，
 # 彩色贴图染完会变成一坨脏色。这里所有色值都压了饱和度。
 Add-Type -AssemblyName System.Drawing
 
@@ -234,7 +234,7 @@ function New-BlockTexture {
         $brush.Dispose()
     }
     # 只接受一个「明暗偏移」参数。
-    # ⚠️ 之前这里是 Shade($base, $delta) 而调用写成 Shade $d 0 —— 参数错位，
+    # 注意：之前这里是 Shade($base, $delta) 而调用写成 Shade $d 0 —— 参数错位，
     # 结果所有像素都是基准色（贴图整片纯色、毫无纹样）。函数签名要跟调用对齐。
     function Shade([int]$delta) {
         return [System.Drawing.Color]::FromArgb(255, (Clamp255 ($R + $delta)), (Clamp255 ($G + $delta)), (Clamp255 ($B + $delta)))
@@ -462,5 +462,5 @@ foreach ($b in $blocks) {
 # 顺带把「有配方 / 无配方」点一遍，防止表里漏写角色
 $noRecipe = @()
 foreach ($b in $blocks) { if (-not $recipes.Contains($b[0])) { $noRecipe += $b[0] } }
-if ($noRecipe.Count -gt 0) { "⚠️ 无配方：$($noRecipe -join ', ')" }
+if ($noRecipe.Count -gt 0) { "注意：无配方：$($noRecipe -join ', ')" }
 "配方条目：$(($recipes.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum) 条，覆盖 $(($recipes.Keys).Count) 个物品"

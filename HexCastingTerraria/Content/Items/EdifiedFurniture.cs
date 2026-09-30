@@ -16,7 +16,7 @@ namespace HexCastingTerraria.Content.Items;
 ///
 /// 另外保留的「用启迪木板合成原版工作台 / 椅 / 桌 / 书架」是泰拉的惯例（每种木头都能做家具），原版没有。
 ///
-/// ⚠️ 注意这里用的是 `Recipe.Create(物品ID)` —— 产出**原版物品**的配方必须这么写。
+/// 注意这里用的是 `Recipe.Create(物品ID)` —— 产出**原版物品**的配方必须这么写。
 /// `ModItem.AddRecipes` 里的 `CreateRecipe()` 只能产出**它自己**，写在那里会静默失败。
 /// </summary>
 public sealed class EdifiedFurnitureRecipes : ModSystem

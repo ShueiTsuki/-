@@ -193,12 +193,12 @@ public static class CircleTraversal
     /// <summary>
     /// 某个部件在给定来向下，**能往哪些方向出去**。
     ///
-    /// ⚠️ 关键：出口集合要**减去来路的反方向** ——
+    /// 注意：关键：出口集合要**减去来路的反方向** ——
     /// 源项目 `exitDirsSet.remove(enterDir.getOpposite())`。
     /// 不减的话控制流会在两块之间原地打转，
     /// 而且因为「恰好 1 个出口」的检查，它会一直「合法」地循环下去，**不报错**。
     ///
-    /// ⚠️ 另一处**不要「修正」**的地方：源项目只移除 `normal` 本身，
+    /// 注意：另一处**不要「修正」**的地方：源项目只移除 `normal` 本身，
     /// `normal.getOpposite()` 那一行是被**注释掉**的
     /// （`// allDirs.remove(normal.getOpposite());`）——
     /// 也就是说**故意允许**沿 normal 的反方向穿过去。
@@ -244,7 +244,7 @@ public static class CircleTraversal
         => System.Math.Max(2, 10 - (reachedCount - 1) / 3);
 
     /// <summary>
-    /// 同上，换算成泰拉帧（× 3）。⚠️ 这里曾经把 MC 刻直接当泰拉帧用，法术环快了 3 倍。
+    /// 同上，换算成泰拉帧（× 3）。注意：这里曾经把 MC 刻直接当泰拉帧用，法术环快了 3 倍。
     /// </summary>
     public static int TickSpeedFrames(int reachedCount) => TickSpeed(reachedCount) * 3;
 }

@@ -23,7 +23,7 @@ namespace HexCastingTerraria.Content.Tiles;
 /// 把「读某图格的环部件」这件事从 Core 的逻辑里分离出来 ——
 /// Core 侧的闭包校验与走图因此可以离线测试。
 ///
-/// ⚠️ `ForbiddenEntry` 必须在这里正确给出：**促动石与普通部件的规则来源不同**。
+/// 注意：`ForbiddenEntry` 必须在这里正确给出：**促动石与普通部件的规则来源不同**。
 /// 普通部件用 `normal` 的反方向；促动石用**出口方向的反方向**。
 /// </summary>
 public sealed class TerrariaCircleWorld : ICircleWorld

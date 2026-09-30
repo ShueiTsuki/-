@@ -357,7 +357,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// </summary>
     public void ApplyMotion(EntityIota entity, double mx, double my)
     {
-        // ⚠️ 速度单位要换算，不能直接乘 16。
+        // 注意：速度单位要换算，不能直接乘 16。
         //
         // 源项目的 motion 单位是 **MC 的格/tick**：1 单位 = 1 格/tick = 20 格/秒。
         // 泰拉的 velocity 单位是 **像素/帧**：1 px/帧 = 60 px/秒 = 3.75 格/秒。
@@ -779,7 +779,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// 泰拉侧的对应物 = **掉在地上、本身就是载体的物品**（聚念核心、念珠、卷轴）。
     /// 源项目还能读物品展示框、盔甲架 —— 泰拉没有等价实体，见 ICastingWorld 的说明。
     ///
-    /// ⚠️ 载体的状态挂在 <see cref="ModItem"/> 实例上（`ModItem` 是 per-Item 的），
+    /// 注意：载体的状态挂在 <see cref="ModItem"/> 实例上（`ModItem` 是 per-Item 的），
     /// 所以必须从 `Main.item[i].ModItem` 取，不能自己 new 一个。
     /// </summary>
     private static Items.ItemIotaStorage? FindEntityStorage(EntityIota entity)
@@ -857,7 +857,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
 
     /// <summary>
     /// 点燃一个位置。
-    /// ⚠️ 泰拉没有 MC 那样的火焰方块，所以实现为「烧这一格附近的实体 + 撒火粒子」。
+    /// 注意：泰拉没有 MC 那样的火焰方块，所以实现为「烧这一格附近的实体 + 撒火粒子」。
     /// </summary>
     public void IgniteAt(double x, double y)
     {
@@ -1061,7 +1061,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     ///     帧 X 表示的是**草药种类**
     ///   - 草地（上方为空）→ 长出一株草（原版骨粉撒在草方块上会冒花草）
     ///
-    /// ⚠️ 旧实现把「任意非实心方块」的帧 X 减 36 当作「推进生长」：
+    /// 注意：旧实现把「任意非实心方块」的帧 X 减 36 当作「推进生长」：
     /// 对椅子、桌子、门、火把会把贴图帧改坏；对草药会把一种草药变成另一种。
     /// </summary>
     public void ApplyBonemeal(double x, double y)
@@ -1114,7 +1114,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>
     /// 泰拉侧的乐器表。索引 = `beep` 的乐器参数。
     ///
-    /// ⚠️ MC 有 16 种音符盒乐器，泰拉没有音符盒 —— 这里用的是**泰拉真实存在**的音效：
+    /// 注意：MC 有 16 种音符盒乐器，泰拉没有音符盒 —— 这里用的是**泰拉真实存在**的音效：
     /// 竖琴（`Item153`，原版里它跟随 `Main.musicPitch`）+ 6 个吉他和弦 + 7 件鼓组。
     /// 编号与 MC 的乐器列表**不对应**，这是无法消除的差异；
     /// 能保证的是「同一编号永远是同一种音色」。
@@ -1360,7 +1360,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// 按 <see cref="ApplyMotion"/> 里那条换算（1 格/tick = 16/3 px/帧）：
     /// 1.5 × 16/3 = 8 px/帧。
     ///
-    /// ⚠️ 之前这里写的是 12（凭手感），与 `add_motion` 的换算**不一致** ——
+    /// 注意：之前这里写的是 12（凭手感），与 `add_motion` 的换算**不一致** ——
     /// 于是「法术弹一下」和「Altiora 起飞」是两套尺度。现在统一走同一条换算。
     /// </summary>
     public void LaunchUp(EntityIota target)
@@ -1641,7 +1641,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>
     /// 挖掉该格的方块。
     ///
-    /// ⚠️ 走 `WorldGen.KillTile` 而不是 `tile.ClearTile()`：
+    /// 注意：走 `WorldGen.KillTile` 而不是 `tile.ClearTile()`：
     ///   · KillTile 会掉落物品、放挖掘特效、跑 ModTile.Kill / GlobalTile.Kill 钩子，
     ///     与源项目 `destroyBlock(pos, dropItems = true)` 的行为一致；
     ///   · ClearTile 是「无声抹掉」，不掉东西、不触发钩子。

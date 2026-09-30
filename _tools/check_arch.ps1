@@ -276,11 +276,11 @@ $snapValues = @()
 foreach ($f in (AllCs $mod)) {
     $hits = Select-String -LiteralPath $f.FullName -Pattern 'SnapThreshold\s*\{\s*get;\s*set;\s*\}\s*=\s*([0-9.]+)f'
     foreach ($h in $hits) {
-        # ⚠️ $Matches 由 -match 填充，Select-String 不会填 —— 必须自己再 match 一次
+        # 注意：$Matches 由 -match 填充，Select-String 不会填 —— 必须自己再 match 一次
         if ($h.Line -match '=\s*([0-9.]+)f') { $snapValues += $Matches[1] }
     }
 }
-# ⚠️ 必须显式包成数组：PowerShell 里 `$x = '0.5'` 时 `$x[0]` 取到的是**首个字符 '0'**，
+# 注意：必须显式包成数组：PowerShell 里 `$x = '0.5'` 时 `$x[0]` 取到的是**首个字符 '0'**，
 # 只匹配到一个值时这条断言就会莫名其妙地红，而且看起来像代码的问题。
 # 断言本身写错比没有断言更坏 —— 它把时间浪费在错误的方向上。
 $snapValues = @($snapValues | Select-Object -Unique)
@@ -462,6 +462,28 @@ Write-Host "`n⑩ 打包零警告：模组根目录不得存在 icon_small.png"
     else {
         Check 'icon.png 存在' $false '缺失'
     }
+}
+# ─────────────────────────────────────────────────────────────────────
+Write-Host "`n⑪ 不带 emoji（用户要求：仓库、发布说明、游戏内文字都不用；箭头这类排版符号不算）"
+# ─────────────────────────────────────────────────────────────────────
+& {
+    $repo = Split-Path -Parent $mod
+    # 用码位拼：直接写字符的话这一行自己就会被判成带 emoji
+    $c = { param($n) [string][char]$n }
+    $emoji = '[' + (& $c 0x2600) + '-' + (& $c 0x27BF) + (& $c 0x2B00) + '-' + (& $c 0x2BFF) + (& $c 0xFE0F) + ']|[' `
+           + (& $c 0xD83C) + '-' + (& $c 0xD83E) + '][' + (& $c 0xDC00) + '-' + (& $c 0xDFFF) + ']'
+    $hits = New-Object System.Collections.Generic.List[string]
+    foreach ($rel in (git -C $repo ls-files)) {
+        if ($rel -match '\.(png|raw|tmod|zip)$') { continue }
+        $full = Join-Path $repo $rel
+        if (-not (Test-Path $full)) { continue }
+        $n = 0
+        foreach ($line in [System.IO.File]::ReadAllLines($full, [System.Text.Encoding]::UTF8)) {
+            $n++
+            if ($line -match $emoji) { $hits.Add("${rel}:$n") }
+        }
+    }
+    Check '仓库文件里没有 emoji' ($hits.Count -eq 0) (($hits | Select-Object -First 10) -join ', ')
 }
 # ─────────────────────────────────────────────────────────────────────
 Write-Host ''

@@ -3,7 +3,7 @@ namespace HexCastingTerraria.Core.Casting.Eval.SideEffects;
 /// <summary>
 /// 一次粒子喷发。移植自源项目 `ParticleSpray`。
 ///
-/// ⚠️ 坐标用原始 float 而**不是** `Microsoft.Xna.Framework.Vector2`。
+/// 注意：坐标用原始 float 而**不是** `Microsoft.Xna.Framework.Vector2`。
 /// 原因：本文件位于 `Core/Casting/` 下，而离线测试工程会整目录拷贝 `Casting` ——
 /// 只要这里出现一个 XNA 类型，**全部 153 项离线测试立刻编译不过**。
 /// 表现层需要 Vector2 时在渲染处转换即可（两行代码）。

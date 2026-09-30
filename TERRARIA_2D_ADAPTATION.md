@@ -78,7 +78,7 @@ public sealed class VectorIota : Iota
 - **建议用 `Vector2`（float）**：与世界坐标零转换成本；精度足够（泰拉世界坐标量级 10^4~10^5，float 有 7 位有效数字，误差 < 0.01 像素）
 - 若坚持 double，则每次读写实体位置都要来回转换，且**容差比较**（`TOLERANCE=0.0001`）在 float 下需要放宽到约 `1e-4f`（否则浮点误差会让"相等"判断随机失败）
 
-**⚠️ 容差必须重新标定**：`DoubleIota.TOLERANCE = 0.0001` 是给 double 的。
+**注意：容差必须重新标定**：`DoubleIota.TOLERANCE = 0.0001` 是给 double 的。
 float 下建议 **`Tolerance = 0.001f`**（泰拉 1 像素 = 1 单位，0.001 像素远小于可视精度）。
 
 ### 1.3 序列化：已有一份现成的 2D 实现
@@ -146,14 +146,14 @@ public static final ActionRegistryEntry DECONSTRUCT_VEC = make("deconstruct_vec"
 
 | 图案（`OPS` 行 26-38） | 行号 | 3D 实现 | 2D 对应 | 影响 |
 |---|---|---|---|---|
-| `PACK`（construct_vec） | 54-56 | 3 个 double → `Vec3(x,y,z)` | **2 个 double → `Vector2(x,y)`** | ⚠️ **参数个数 3→2** |
-| `UNPACK`（deconstruct_vec） | 56-57 | `Vec3` → 3 个 double | **`Vector2` → 2 个 double** | ⚠️ **压栈个数 3→2** |
+| `PACK`（construct_vec） | 54-56 | 3 个 double → `Vec3(x,y,z)` | **2 个 double → `Vector2(x,y)`** | 注意：**参数个数 3→2** |
+| `UNPACK`（deconstruct_vec） | 56-57 | `Vec3` → 3 个 double | **`Vector2` → 2 个 double** | 注意：**压栈个数 3→2** |
 | `ADD` | 58-60 | 逐分量加（`make2Fallback`） | 逐分量加 | 无（分量数变） |
 | `SUB` | 60-62 | 逐分量减 | 逐分量减 | 无 |
-| `MUL`（**点积**） | 62-64 | `Vec3::dot` → **double** | `Vector2.Dot` → **double** | ✅ 语义不变 |
-| `DIV`（**叉积**） | 64-66 | `Vec3::cross` → **Vec3** | `u.X*v.Y - u.Y*v.X` → **double** | ⚠️⚠️ **返回值类型改变（破坏性）** |
-| `ABS`（长度） | 66-68 | `Vec3::length` → double | `Value.Length()` → double | ✅ |
-| `POW`（投影） | 68-70 | `v.normalize().scale(u.dot(v.normalize()))` | 同式，2D | ✅ |
+| `MUL`（**点积**） | 62-64 | `Vec3::dot` → **double** | `Vector2.Dot` → **double** | 语义不变 |
+| `DIV`（**叉积**） | 64-66 | `Vec3::cross` → **Vec3** | `u.X*v.Y - u.Y*v.X` → **double** | 注意：**返回值类型改变（破坏性）** |
+| `ABS`（长度） | 66-68 | `Vec3::length` → double | `Value.Length()` → double | |
+| `POW`（投影） | 68-70 | `v.normalize().scale(u.dot(v.normalize()))` | 同式，2D | |
 | `FLOOR` | 70-72 | 逐分量 `Math.floor` | 逐分量 `MathF.Floor` | 无 |
 | `CEIL` | 72-74 | 逐分量 `Math.ceil` | 逐分量 `MathF.Ceiling` | 无 |
 | `MOD` | 74-76 | 逐分量取模（fallback 到 double 版） | 逐分量取模 | 无 |
@@ -295,7 +295,7 @@ public static Vector2? RaycastTile(Vector2 origin, Vector2 look, float maxDist =
 - 行 38-51 `getEntityLookDirSpecial`：**`entity.getLookAngle()`** —— MC 里由持久 yaw/pitch 算出单位向量；另外对 `AbstractHurtingProjectile`/`ShulkerBullet`/`Projectile`/`Phantom` 做了**符号翻转的 bug 修正**
 - 行 62-71 `getEntityVelocitySpecial`：默认 `entity.getDeltaMovement()`，可注册特例
 
-### 4.2 ⚠️ 最关键的设计问题：「视线方向」在 2D 下没有天然定义
+### 4.2 注意：最关键的设计问题：「视线方向」在 2D 下没有天然定义
 
 MC 的每个实体都有**持久 yaw/pitch**，所以 `getLookAngle()` 永远有效。
 **泰拉实体没有持久视线**：`Entity` 只有 `int direction`（±1 左右朝向），没有俯仰角。
@@ -316,7 +316,7 @@ Terraria.Entity: Vector2 position(左上角) / velocity / Center / Hitbox / int 
 | **NPC** | `velocity.LengthSquared() > 阈值 ? velocity 归一化 : new Vector2(npc.direction, 0)` | 有速度用速度，静止用朝向 |
 | **掉落物 `Item`** | `velocity.SafeNormalize(new Vector2(0, 1))` | 掉落物受重力，默认朝下 |
 
-**⚠️ 多人游戏问题**：`Main.MouseWorld` 只在客户端有效，而原作明确"所有求值都在服务端"
+**注意：多人游戏问题**：`Main.MouseWorld` 只在客户端有效，而原作明确"所有求值都在服务端"
 （`castables/Action.kt` 行 22-28 的注释）。
 若要在服务器端拿到玩家瞄准方向，必须**自己同步**：
 ```
@@ -337,7 +337,7 @@ ModPlayer: 客户端每帧把 (鼠标世界坐标 - 玩家中心) 的归一化�
 | `entity_pos/eye` | `eyePosition` = 脚底 + `eyeHeight` | 无 eyeHeight；`Entity.Center` 是碰撞箱中心，`Entity.Top` 是顶边中心 | 建议 `e.Center`（近似眼睛高度）；或用 `e.Top` |
 | `get_entity_height` | `bbHeight`（double） | `Entity.height`（**int**） | 直接取 `(double)e.height` |
 
-**⚠️ 这是全局最容易出错的点**：所有写回位置的法术（blink/teleport/add_motion）
+**注意：这是全局最容易出错的点**：所有写回位置的法术（blink/teleport/add_motion）
 都必须遵守"MC 用脚底、泰拉用左上角"的差异，否则**整个身体的偏移量会差半个身位**。
 建议在 C# 侧封装一对 helper 并**全局只用它们**：
 ```csharp
@@ -462,7 +462,7 @@ static (int tx, int ty) VectorToTile(Vector2 v)
 | `edify` | 泰拉无"启迪木"，需自建方块 |
 | `explode` | 泰拉爆炸是 `Projectile`（如 `ProjectileID.Grenade`）或 `WorldGen.KillTile` 范围破坏；**注意泰拉无"爆炸保护"原生概念**，需自己判定 `Main.tile` 是否可破坏 |
 
-**⚠️ `explode` 的 `canEditBlockAt` 语义**：原作 `OpExplode.kt:53` 检查
+**注意：`explode` 的 `canEditBlockAt` 语义**：原作 `OpExplode.kt:53` 检查
 `env.canEditBlockAt(BlockPos.containing(pos))`（MC 的冒险模式保护）。
 泰拉对应：检查玩家是否有**修改世界权限**（`Main.playerInventory` 无关；
 多人下看 `Main.netMode`/`NPC.downedBoss` 等；单机恒为 true）。
@@ -502,7 +502,7 @@ static (int tx, int ty) VectorToTile(Vector2 v)
 
 ---
 
-## 7.5 ⚠️ 单位换算：所有"距离常量"都必须按 16 倍缩放
+## 7.5 注意：单位换算：所有"距离常量"都必须按 16 倍缩放
 
 这是**极易被忽略但影响全局**的一点。
 

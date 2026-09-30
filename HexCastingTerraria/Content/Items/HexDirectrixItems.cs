@@ -19,7 +19,7 @@ public abstract class HexDirectrixItemBase : ModItem
     /// <summary>
     /// 复用方块贴图。
     ///
-    /// ⚠️ 不写这一行会被 tModLoader 判为缺资源（它按**类名**找同名 PNG），
+    /// 注意：不写这一行会被 tModLoader 判为缺资源（它按**类名**找同名 PNG），
     /// 并**禁用整个模组**。而这个错误**专用服务器不会报** ——
     /// 贴图只在客户端加载，所以「服务端能加载」证明不了客户端能加载。
     /// 审计脚本：`_tools/check_assets.ps1`。
@@ -122,7 +122,7 @@ public sealed class HexDirectrixBooleanItem : HexDirectrixItemBase
 /// <summary>
 /// 红石导线：通电出 `Facing`，否则出反方向。
 ///
-/// ⚠️ 泰拉不像 MC 那样能直接查「这格当前是否通电」（电线信号是瞬时的），
+/// 注意：泰拉不像 MC 那样能直接查「这格当前是否通电」（电线信号是瞬时的），
 /// 所以用「收到 `HitWire` 后保持若干 tick」来近似 —— 足以让环在一次传导中看到稳定电平。
 /// </summary>
 public sealed class HexDirectrixRedstoneItem : HexDirectrixItemBase

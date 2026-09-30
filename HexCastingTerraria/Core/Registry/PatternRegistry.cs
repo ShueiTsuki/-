@@ -73,7 +73,7 @@ public static class PatternRegistry
     /// </summary>
     private static readonly System.Collections.Generic.HashSet<string> EnlightenmentRequired = new()
     {
-        // ⚠️ 这份清单**逐条抄自源项目** `datagen/tag/HexActionTagProvider.java` 里
+        // 注意：这份清单**逐条抄自源项目** `datagen/tag/HexActionTagProvider.java` 里
         // 打进 `REQUIRES_ENLIGHTENMENT` 标签的那 14 个图案，不是「看起来像大法术的」推测。
         //
         // 之前这里只有 teleport/great 一条 —— 那意味着 lightning、summon_rain、

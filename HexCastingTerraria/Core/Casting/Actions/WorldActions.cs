@@ -12,7 +12,7 @@ namespace HexCastingTerraria.Core.Casting.Actions;
 /// `get_caster`：把施法者自身压上栈。
 /// 移植自源项目 selectors/OpGetCaster.kt。
 ///
-/// ⚠️ 关键分支：**没有实体施法者时吐 NullIota，而不是报错**。
+/// 注意：关键分支：**没有实体施法者时吐 NullIota，而不是报错**。
 /// 源项目里 `env.castingEntity` 可为 null（法术环、法术书等无人施法场景），
 /// 此时 `get_caster` 合法地返回 null。把这里写成 mishap 会让那类法术直接失效。
 /// </summary>

@@ -36,7 +36,7 @@ public enum ZoneEntityFilter
 ///
 /// 参数是 (中心坐标, 半径)。返回一个**列表**，按距离**从近到远**排序。
 ///
-/// ⚠️ 源项目注释里专门写了一条：过滤条件必须包含「在施法范围内」，
+/// 注意：源项目注释里专门写了一条：过滤条件必须包含「在施法范围内」，
 /// 理由是修复 issue #792 ——
 /// *Ignore truename ambit to fix #792 so you can't slurp up all players in the whole world*
 /// （不加范围限制就能一次把全世界的玩家全选中）。

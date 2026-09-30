@@ -76,7 +76,7 @@ public sealed class JewelerHammer : ModItem
 /// 放在 `GlobalTile` 而不是逐个方块里：这条规则覆盖**所有**方块，
 /// 而它依赖的是「手上拿着什么」—— 那只有全局钩子看得到。
 ///
-/// ⚠️ 只在本机玩家身上判定。服务端上 `Main.LocalPlayer` 不是那个挖方块的人，
+/// 注意：只在本机玩家身上判定。服务端上 `Main.LocalPlayer` 不是那个挖方块的人，
 /// 但泰拉的挖掘本来就是**客户端发起**的（`CanKillTile` 在客户端拦下就不会发出破坏请求），
 /// 所以这条判定放在客户端是正确的位置。
 /// </summary>

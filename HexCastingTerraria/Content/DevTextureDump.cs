@@ -35,7 +35,7 @@ public sealed class DevTextureDump : ModSystem
     /// <summary>
     /// Terraria 的 Content 目录（用来**列出**真实存在的贴图名）。
     ///
-    /// ⚠️ 上一版我**手写了一张贴图名清单**，其中 `Images/UI/Inventory_Back` 在 1.4.5 里根本不存在 ——
+    /// 注意：上一版我**手写了一张贴图名清单**，其中 `Images/UI/Inventory_Back` 在 1.4.5 里根本不存在 ——
     /// 于是 `Request().Value` 抛异常，而它走的是 `LoadAssetWithPotentialAsync`，
     /// 异常在我 try/catch 够不到的地方浮出来，**直接把游戏崩了**（弹了致命错误框）。
     ///

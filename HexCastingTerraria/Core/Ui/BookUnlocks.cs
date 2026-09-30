@@ -37,7 +37,7 @@ public sealed class BookProgress
 /// | opened_eyes（1） | 过载且活下来 | 同 |
 /// | lore/*（8） | 读「故事残卷」（在箱子里找到），**随机**得到一篇没读过的 | 同（残卷放在泰拉的箱子里，见 Content/HexChestLoot.cs） |
 ///
-/// ⚠️ 这里曾经把传说篇章按 Boss 进度逐篇解锁（理由是「泰拉没有遗迹」）—— 泰拉有箱子，按原版改回残卷。
+/// 注意：这里曾经把传说篇章按 Boss 进度逐篇解锁（理由是「泰拉没有遗迹」）—— 泰拉有箱子，按原版改回残卷。
 /// </summary>
 public static class BookUnlocks
 {

@@ -168,7 +168,7 @@ foreach ($k in $names.Keys) {
 Write-Host "待补：物品 $($itemLines.Count) 条，方块 $($tileLines.Count) 条（已存在跳过 $($skipped.Count) 条）"
 
 function Insert-After([string]$text, [string]$anchor, [string]$block) {
-    # ⚠️ 行尾锚点必须把 `\r` 也算进去：文件是 CRLF，而 .NET 在多行模式下
+    # 注意：行尾锚点必须把 `\r` 也算进去：文件是 CRLF，而 .NET 在多行模式下
     # `$` 匹配的是 `\n` **之前**的位置 —— 于是 `[ \t]*$` 会因为残留的 `\r` 而匹配失败。
     $m = [regex]::Match($text, "(?m)^([ \t]*)$([regex]::Escape($anchor))[ \t]*\{[ \t\r]*$")
     if (-not $m.Success) { throw "找不到锚点：$anchor" }

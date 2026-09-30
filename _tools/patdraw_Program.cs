@@ -80,7 +80,7 @@ static (int X, int Y) Step(HexDir dir) => dir switch
 
 // 六边形网格画成字符图。
 //
-// ⚠️ 每个「格子行」占**两行字符**：斜向的边（六个方向里有四个是斜的）
+// 注意：每个「格子行」占**两行字符**：斜向的边（六个方向里有四个是斜的）
 // 才能画成真正的斜线。只占一行的话，斜边会被压成水平线，
 // 画出来的形状和游戏里完全不是一回事 —— 那还不如不画。
 static void Draw(string signature, HexDir startDir)
@@ -170,7 +170,7 @@ static (string Title, string[] Steps) Spells(string name) => name switch
     "jump" => ("自我推进（向上跳很高）", new[]
     {
         "hexcasting:get_caster",
-        // ⚠️ 泰拉的 +Y 是**向下**（与 MC 相反），所以「向上」要用 ny
+        // 注意：泰拉的 +Y 是**向下**（与 MC 相反），所以「向上」要用 ny
         "hexcasting:const/vec/ny",
         "hexcasting:add_motion",
     }),

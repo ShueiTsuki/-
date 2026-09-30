@@ -126,7 +126,7 @@ public sealed class OpWritableHeld : ConstMediaAction
 ///
 /// 消耗按**手持物品的堆叠数**算（源项目 `DUST_UNIT * handStack.getCount()`）。
 ///
-/// ⚠️ 这里只能**查**，不能清：之前在 Execute 里就调了清除，媒质不够、法术根本没放出来，东西也已经被清空了。
+/// 注意：这里只能**查**，不能清：之前在 Execute 里就调了清除，媒质不够、法术根本没放出来，东西也已经被清空了。
 /// </summary>
 public sealed class OpEraseHeld : SpellAction
 {
@@ -246,7 +246,7 @@ public sealed class OpPeekLocal : IAction
 /// `write/local`：把栈顶 iota 存进本次施法的 Ravenmind；栈顶是 `null` 则**清除**。
 /// 移植自源项目 `OpPushLocal`。
 ///
-/// ⚠️ 写的是 `image.userData`，不是玩家存档 ——
+/// 注意：写的是 `image.userData`，不是玩家存档 ——
 /// 所以它的生命周期是「一次施法」，而在**法术环**里是「环走完所有石板」。
 /// </summary>
 public sealed class OpPushLocal : IAction

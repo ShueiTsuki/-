@@ -14,7 +14,7 @@ namespace HexCastingTerraria.Core.Casting.Eval;
 /// 所以：**逻辑在 Core，取值靠本接口**。游戏侧实现见
 /// `Content/World/TerrariaCastingWorld.cs`，离线测试用假实现（见 vmtest）。
 ///
-/// ⚠️ 坐标系与单位（**两条都必须遵守，否则会静默出错**）：
+/// 注意：坐标系与单位（**两条都必须遵守，否则会静默出错**）：
 ///
 /// **① 坐标原点**：MC 的 `position()` 是**脚底中心**，而 Terraria 的
 /// `Entity.position` 是**左上角**（`Center` 才是中心）。

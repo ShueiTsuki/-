@@ -59,7 +59,7 @@ public sealed class OperationAction : IAction
 
 /// <summary>
 /// 向量之提整 / 向量之拆解（源项目 Vec3Arithmetic 的 PACK / UNPACK）：三个数字 ↔ 一个向量。
-/// ⚠️ 这里曾经是两个分量（「泰拉只有二维」）—— 原版是三个，向量现在也是三维的。
+/// 注意：这里曾经是两个分量（「泰拉只有二维」）—— 原版是三个，向量现在也是三维的。
 /// </summary>
 public sealed class OpConstructVec : ConstMediaAction
 {

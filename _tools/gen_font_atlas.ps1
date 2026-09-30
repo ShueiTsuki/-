@@ -10,12 +10,12 @@
 #   而 Windows PowerShell 5.1 自带 .NET Framework，能正常画字。烘成位图之后，
 #   C# 侧只查表贴图，不需要任何字体库。这与 gen_*.ps1 的既有做法一致。
 #
-# ⚠️ 这套字形**不是泰拉原版字体**。它定的是版面与配色；字号字距的最后一轮微调
+# 注意：这套字形**不是泰拉原版字体**。它定的是版面与配色；字号字距的最后一轮微调
 #    仍需在游戏里对着 FontAssets.MouseText 做一次。
 #
 # 用法：pwsh -File _tools\gen_font_atlas.ps1
 param(
-    # ⚠️ 必须是**比例**字体。上一版用 Consolas（等宽），前进宽度全是 7 ——
+    # 注意：必须是**比例**字体。上一版用 Consolas（等宽），前进宽度全是 7 ——
     # 那和占位方块是一回事，折行位置照样不会变，等于没做。
     # 泰拉的 FontAssets.MouseText 是比例字体，所以这里也要比例字体，版面才对得上。
     [string]$FontName = 'Segoe UI',
@@ -102,7 +102,7 @@ $ag.Dispose(); $font.Dispose()
 
 $png = Join-Path $OutDir 'book_font.png'
 $atlas.Save($png, [System.Drawing.Imaging.ImageFormat]::Png)
-# ⚠️ 这里**不能** Dispose：下面生成检查图还要用它。上一版在这里就释放了，
+# 注意：这里**不能** Dispose：下面生成检查图还要用它。上一版在这里就释放了，
 # 结果预览那步报 "Parameter is not valid." —— 看起来像画图参数错，其实是对象已释放。
 
 # 同时导出裸 RGBA：离屏工程（net10.0）**没有 PNG 解码器**
