@@ -94,6 +94,9 @@ public sealed class HexPlayer : ModPlayer
     /// <summary>拿到过媒质立方（原版进度 creative_unlocker「无尽能量！」）。</summary>
     public bool FoundMediaCube { get; set; }
 
+    /// <summary>开局的咒法学之书发过了没有（每个角色只发一次；放进箱子不会再补发）。</summary>
+    public bool StarterBookGiven { get; set; }
+
     /// <summary>读过的传说篇章（原版 lore/* 进度；读「故事残卷」随机获得一篇）。</summary>
     public System.Collections.Generic.HashSet<string> FoundLore { get; } = new();
 
@@ -548,6 +551,7 @@ public sealed class HexPlayer : ModPlayer
         tag["obtainedAmethyst"] = ObtainedAmethyst;
         tag["overcasted"] = Overcasted;
         tag["foundMediaCube"] = FoundMediaCube;
+        tag["starterBookGiven"] = StarterBookGiven;
         tag["foundLore"] = new System.Collections.Generic.List<string>(FoundLore);
         tag["ravenmindCount"] = RavenmindCount;
         tag["infiniteMedia"] = InfiniteMedia;
@@ -575,6 +579,7 @@ public sealed class HexPlayer : ModPlayer
         ObtainedAmethyst = tag.GetBool("obtainedAmethyst");
         Overcasted = tag.GetBool("overcasted");
         FoundMediaCube = tag.GetBool("foundMediaCube");
+        StarterBookGiven = tag.GetBool("starterBookGiven");
         FoundLore.Clear();
         foreach (var lore in tag.GetList<string>("foundLore")) { FoundLore.Add(lore); }
         if (tag.TryGet("ravenmindCount", out long count))
@@ -634,13 +639,17 @@ public sealed class HexPlayer : ModPlayer
             _legacyPoolMedia = 0;
         }
 
-        // 咒法学之书：**开局必带**（用户要求）。
-        // 它是唯一教人「图案怎么画」的东西，没有它新玩家会完全无从下手。
+        // 咒法学之书：**开局必带**（用户要求），每个角色只发一次。
+        // 以前是「背包里没有就发」—— 放进箱子再进世界又发一本（2026-10-01 玩家反馈）。
         // 丢了可以用配方补（10 木板 + 10 稻草）。
-        if (!Player.HasItem(ModContent.ItemType<Items.HexBookItem>()))
+        if (!StarterBookGiven)
         {
-            Player.QuickSpawnItem(Player.GetSource_Misc("HexBook"),
-                ModContent.ItemType<Items.HexBookItem>(), 1);
+            StarterBookGiven = true;
+            if (!Player.HasItem(ModContent.ItemType<Items.HexBookItem>()))
+            {
+                Player.QuickSpawnItem(Player.GetSource_Misc("HexBook"),
+                    ModContent.ItemType<Items.HexBookItem>(), 1);
+            }
         }
 
         // 开发者测试包（配置开关；默认关）
@@ -650,18 +659,7 @@ public sealed class HexPlayer : ModPlayer
             Main.NewText("已发放开发者测试包（可在 设置 → 模组配置 里关闭）", HexColors.Media);
         }
 
-        var staff = new Item(ModContent.ItemType<Items.DevStaff>());
-
-        // 已经有了就不再发，避免反复进出世界刷一堆
-        if (Player.HasItem(staff.type))
-        {
-            return;
-        }
-
-        // 注意：1.4.5 起 QuickSpawnItem 的签名变了（官方迁移指南标注 "changed since 1.4.4"）。
-        // 可用的重载是 (IEntitySource, Item) / (IEntitySource, Item, GetItemSettings)，
-        // 以及 (IEntitySource, int type, int stack)。
-        Player.QuickSpawnItem(Player.GetSource_Misc("HexCastingDevStaff"), staff);
+        // 不再自动发开发者法杖：原版开局什么都不给，法杖要自己合成（开发者法杖只在上面的测试包里）
     }
 
 

@@ -410,7 +410,7 @@ public sealed class HexClientSystem : ModSystem
         // ===== 媒质指示：背包里的媒质（配色对齐原作 MediaHelper.mediaBarColor）=====
         // 原版没有媒质条（媒质就在背包的物品里）；这只是个信息显示，可在设置里关掉。
         // 环 = 背包里媒质瓶的存量 / 上限；数字 = 背包里所有媒质来源的总量（与原版扣费时能用到的一致）。
-        bool holdingStaff = player.HeldItem != null && player.HeldItem.type == ModContent.ItemType<Content.Items.DevStaff>();
+        bool holdingStaff = player.HeldItem?.ModItem is Content.Items.HexStaff;
         long invMedia = hexPlayer.InventoryMedia();
         var (flaskStored, flaskMax) = hexPlayer.FlaskMedia();
         bool shouldShowMedia = HexClientConfig.Instance.ShowMediaRing

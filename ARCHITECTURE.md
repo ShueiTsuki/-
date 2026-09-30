@@ -223,7 +223,7 @@
 | `ScryingOverlay.cs` | 鎺㈢煡閫忛暅锛堝師鐗?ItemLens锛夌殑涓や釜鏁堟灉锛?/// |
 | `SentinelRenderer.cs` | 鐢昏嚜宸辩殑鍝ㄥ崼锛堝師鐗?HexAdditionalRenderers.renderSentinel锛夛細涓€涓唴鎺ヤ簬鍗曚綅鐞冪殑**姝ｄ簩鍗侀潰浣撶嚎妗?*锛?/// 缁曠珫杞磋嚜杞€佷笂涓嬫诞鍔紱澶у摠鍗紙鎵╁睍鏂芥硶鑼冨洿鐨勯偅绉嶏級鍐嶇粫姘村钩杞存參鎱㈢炕婊氥€?/// 鍙湁涓讳汉鐪嬪緱瑙侊紝闅旂潃澧欎篃鐪嬪緱瑙侊紙鍘熺増鍏充簡娣卞害娴嬭瘯锛夈€?/// |
 | `UI/DevPanel.cs` | 寮€鍙戣€呴潰鏉匡紙榛樿 F7锛夛細涓嶇煡閬撹鏀句粈涔堟硶鏈椂鐢ㄣ€?/// |
-| `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€?/// |
+| `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€? |
 | `UI/HexCanvas.cs` | 宸茬敾瀹岀殑涓€鏉″浘妗?+ 娉ㄥ唽琛ㄥ尮閰嶇粨鏋滐紙null = 鏈懡涓級+ 姹傚€肩粨鏋滐紙鍐冲畾棰滆壊锛夈€?/summary> |
 | `UI/PatternArt.cs` | 鎸夊師鐗堢敾娉曠敾闈欐€佸浘妗堬紙<see cref="StaticPatternArt"/>锛夌殑涓や釜鍏ュ彛锛?///   - <see cref="DrawUi"/>锛氱晫闈㈤噷锛堟彁绀烘銆佸紑鍙戣€呴潰鏉裤€丠UD锛夊綋鍦虹敾 |
 | `UI/PatternRenderer.cs` | 鍥炬妫€绱㈣緟鍔╋紙涓存懝鐩爣銆佹渶鎺ヨ繎鐨勫浘妗堬級銆?/// 鐢诲浘妗堬細鐢诲竷涓婄殑鍦?<see cref="Core.Canvas.PatternGeometry"/>锛堥€愯绉绘 RenderLib锛夛紝 |
