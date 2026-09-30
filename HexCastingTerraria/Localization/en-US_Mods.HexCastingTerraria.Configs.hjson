@@ -313,6 +313,26 @@ UnknownMode: {
 HexcessibleOptions: {
 	Tooltip: Hexcessible options (upstream HexcessibleConfig, same defaults)
 
+	Dimmed: {
+		Label: Dim UI
+		Tooltip: Dim the background of the spellcasting interface
+	}
+
+	PrefersReducedMotion: {
+		Label: Prefers Reduced Motion
+		Tooltip: Disable some moving animations in the spellcasting interface
+	}
+
+	ShowAllDots: {
+		Label: Show all dots
+		Tooltip: Show all dots in the spellcasting interface, instead of just the ones close to your cursor
+	}
+
+	TooltipRenderSigs: {
+		Label: Render Pattern
+		Tooltip: Render patterns in Hexcessible UIs, like Autocomplete or Idle Hover
+	}
+
 	KeyDocs: {
 		Label: N for Docs
 		Tooltip: Press the N key while casting to open the book

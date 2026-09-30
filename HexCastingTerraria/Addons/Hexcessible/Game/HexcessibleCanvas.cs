@@ -61,6 +61,8 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     public bool Update(CanvasFrame f)
     {
         _allowStart = CurrentAllowStart();
+        f.Canvas.Dimmed = S.Dimmed;
+        f.Canvas.ShowAllDots = S.ShowAllDots;
         Func<HexCoord, bool> used = f.IsUsed;
         bool mouseMoved = _lastMouse is { } last && last != f.Mouse;
         _lastMouse = f.Mouse;

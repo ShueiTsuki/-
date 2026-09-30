@@ -77,6 +77,11 @@ public static class PatternGeometry
         return found;
     }
 
+    /// <summary>
+    /// 附属的「减少动效」（Hexcessible prefersReducedMotion）：返回 true 时 <see cref="MakeZappy"/> 直接给原始折线，不抖、不流动。
+    /// </summary>
+    public static System.Func<bool>? ReducedMotion { get; set; }
+
     /// <summary>原版 makeZappy：把折线细分并加上随时间流动的电光抖动。</summary>
     public static List<Vec2f> MakeZappy(
         IReadOnlyList<Vec2f> barePoints, ISet<int>? dupIndices, int hops, float variance, float speed,
@@ -84,6 +89,11 @@ public static class PatternGeometry
     {
         var result = new List<Vec2f>();
         if (barePoints.Count == 0) return result;
+        if (ReducedMotion?.Invoke() == true)
+        {
+            result.AddRange(barePoints);
+            return result;
+        }
 
         List<Vec2f> Zappify(List<Vec2f> points, bool truncateLast)
         {

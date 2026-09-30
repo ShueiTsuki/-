@@ -83,6 +83,19 @@ public sealed class HexClientSystem : ModSystem
 
     private static bool _reopenCanvasPending;
 
+    private static void DrawDimBackground(Microsoft.Xna.Framework.Graphics.SpriteBatch sb)
+    {
+        var px = Terraria.GameContent.TextureAssets.MagicPixel.Value;
+        const int bands = 16;
+        int h = Main.screenHeight;
+        for (int i = 0; i < bands; i++)
+        {
+            int y0 = h * i / bands, y1 = h * (i + 1) / bands;
+            float a = MathHelper.Lerp(0xC0, 0xD0, (i + 0.5f) / bands) / 255f;
+            sb.Draw(px, new Rectangle(0, y0, Main.screenWidth, y1 - y0), new Color(16, 16, 16) * a);
+        }
+    }
+
     public override void PostUpdateInput()
     {
         if (Main.dedServ)
@@ -243,6 +256,8 @@ public sealed class HexClientSystem : ModSystem
 
         // 附属的画布扩展（Hexcessible 的键盘绘制等）先处理；它接管了这一帧，本体就不落笔、右键不关画布
         canvas.Overlays.Clear();
+        canvas.ShowAllDots = false;
+        canvas.Dimmed = false;
         var frame = new CanvasFrame(canvas, w, h, mouse, leftDown && !leftWasDown, rightDown && !rightWasDown);
         bool consumed = false;
         bool allowStart = true;
@@ -371,6 +386,8 @@ public sealed class HexClientSystem : ModSystem
             {
                 bool ctrl = Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl)
                             || Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightControl);
+                // 附属要求调暗时，先铺 MC Screen.renderBackground 的渐变暗底（0xC0101010 到 0xD0101010）
+                if (HexCanvasState.Canvas.IsOpen && HexCanvasState.Canvas.Dimmed) DrawDimBackground(Main.spriteBatch);
                 // 原版：按住 Ctrl 才显示笔顺渐变（ctrlTogglesOffStrokeOrder 默认 false）
                 HexCanvasState.Canvas.DrawContent(Main.screenWidth, Main.screenHeight, RawMouse(),
                     showStrokeOrder: ctrl, Matrix.Identity);

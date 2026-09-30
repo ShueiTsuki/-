@@ -156,6 +156,12 @@ public sealed class HexCanvas
     /// </summary>
     public List<CanvasOverlay> Overlays { get; } = new();
 
+    /// <summary>附属（Hexcessible showAllDots）：引导点画到很远（半径 50 格），远处的点保持一半大小与亮度。每帧重设。</summary>
+    public bool ShowAllDots { get; set; }
+
+    /// <summary>附属（Hexcessible dimmed）：画布底下铺一层 MC 界面的暗色背景。每帧重设。</summary>
+    public bool Dimmed { get; set; }
+
     /// <summary>求值结果回来了：给最后一条图案上色（原版 recvServerUpdate）。</summary>
     public void ApplyResolution(ResolvedPatternType type)
         => _drawer.ApplyResolution(type, p => PatternRegistry.Match(p)?.Id is "open_paren" or "read_into_parens");
@@ -182,13 +188,15 @@ public sealed class HexCanvas
 
         // ---- 引导点 ----
         var mouseCoord = HexGrid.PxToCoord(mouse, size, offset);
-        foreach (var dot in HexGrid.RangeAround(mouseCoord, GuideDotRadius))
+        // 原版半径 3；Hexcessible showAllDots 只把遍历范围放到 50（淡出仍按 3 算），并把最暗压在 0.5
+        float minScale = ShowAllDots ? 0.5f : 0f;
+        foreach (var dot in HexGrid.RangeAround(mouseCoord, ShowAllDots ? 50 : GuideDotRadius))
         {
             if (_drawer.IsUsed(dot)) continue;
             var px = HexGrid.CoordToPx(dot, size, offset);
             float delta = (px - mouse).Length;
             // 贴着光标 = 1，半径边缘 = 0，这样点不会突然出现/消失；减去一个格距让光标附近留一小块全亮区
-            float s = Math.Clamp(1f - (delta - size) / (GuideDotRadius * size), 0f, 1f);
+            float s = Math.Clamp(1f - (delta - size) / (GuideDotRadius * size), minScale, 1f);
             PatternGeometry.Spot(_verts, px, s * 2f * unit, PatternGeometry.Argb(
                 (int)(s * 255), (int)(MathHelper.Lerp(0.4f, 0.5f, s) * 255),
                 (int)(MathHelper.Lerp(0.8f, 1.0f, s) * 255), (int)(MathHelper.Lerp(0.7f, 0.9f, s) * 255)));

@@ -313,6 +313,26 @@ UnknownMode: {
 HexcessibleOptions: {
 	Tooltip: Hexcessible 的配置项（上游 HexcessibleConfig，默认值照搬）
 
+	Dimmed: {
+		Label: 调暗UI
+		Tooltip: 调暗咒术网格界面的背景
+	}
+
+	PrefersReducedMotion: {
+		Label: 减少动效
+		Tooltip: 禁用咒术网格界面中的部分动效
+	}
+
+	ShowAllDots: {
+		Label: 完整显示点阵
+		Tooltip: 完整显示咒术网格点阵，而非仅显示邻近鼠标的点
+	}
+
+	TooltipRenderSigs: {
+		Label: 渲染图案
+		Tooltip: 在Hexcessible的UI中渲染图案，适用于自动补全和空闲时悬停等
+	}
+
 	KeyDocs: {
 		Label: N键打开文档
 		Tooltip: 施法时按下N可打开咒术笔记

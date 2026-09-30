@@ -10,6 +10,18 @@ namespace HexCastingTerraria.Addons.Hexcessible.Game;
 /// </summary>
 public sealed class HexcessibleOptions
 {
+    [DefaultValue(false)]
+    public bool Dimmed { get; set; }
+
+    [DefaultValue(false)]
+    public bool PrefersReducedMotion { get; set; }
+
+    [DefaultValue(false)]
+    public bool ShowAllDots { get; set; }
+
+    [DefaultValue(true)]
+    public bool TooltipRenderSigs { get; set; } = true;
+
     [DefaultValue(HexcessibleSettings.KeyDocsMode.Idling)]
     public HexcessibleSettings.KeyDocsMode KeyDocs { get; set; } = HexcessibleSettings.KeyDocsMode.Idling;
 
@@ -53,6 +65,10 @@ public sealed class HexcessibleOptions
         HexcessibleSettings.Current = new HexcessibleSettings
         {
             KeyDocs = KeyDocs,
+            Dimmed = Dimmed,
+            PrefersReducedMotion = PrefersReducedMotion,
+            ShowAllDots = ShowAllDots,
+            TooltipRenderSigs = TooltipRenderSigs,
             IdleTooltip = IdleTooltip,
             MouseDrawTooltip = MouseDrawTooltip,
             KeyboardAllow = KeyboardAllow,
@@ -71,9 +87,12 @@ public sealed class HexcessibleOptions
         && o.KeyboardAllow == KeyboardAllow && o.KeyboardTooltip == KeyboardTooltip && o.KeyHint == KeyHint
         && o.Ghost == Ghost && o.ShortcutHints == ShortcutHints && o.UppercaseSig == UppercaseSig
         && o.AutoCompleteAllow == AutoCompleteAllow && o.AutoCompleteTooltip == AutoCompleteTooltip && o.AutoCompleteCount == AutoCompleteCount
-        && o.IdleTooltip == IdleTooltip && o.MouseDrawTooltip == MouseDrawTooltip && o.KeyDocs == KeyDocs;
+        && o.IdleTooltip == IdleTooltip && o.MouseDrawTooltip == MouseDrawTooltip && o.KeyDocs == KeyDocs
+        && o.Dimmed == Dimmed && o.PrefersReducedMotion == PrefersReducedMotion && o.ShowAllDots == ShowAllDots
+        && o.TooltipRenderSigs == TooltipRenderSigs;
 
     public override int GetHashCode() => System.HashCode.Combine(
         System.HashCode.Combine(KeyboardAllow, KeyboardTooltip, KeyHint, Ghost, ShortcutHints, UppercaseSig),
-        AutoCompleteAllow, AutoCompleteTooltip, AutoCompleteCount, IdleTooltip, MouseDrawTooltip, KeyDocs);
+        AutoCompleteAllow, AutoCompleteTooltip, AutoCompleteCount, IdleTooltip, MouseDrawTooltip, KeyDocs,
+        System.HashCode.Combine(Dimmed, PrefersReducedMotion, ShowAllDots, TooltipRenderSigs));
 }

@@ -117,7 +117,10 @@
     },
     {
       "name": "显示选项（变暗 / 全部格点 / 隐藏飘浮图案 / 大写签名 / 快捷键提示）",
-      "files": [],
+      "files": [
+        "Core/HexcessibleSettings.cs",
+        "Game/HexcessibleCanvas.cs"
+      ],
       "upstream": [
         "mixin/DimmedMixin.java",
         "mixin/ShowAllDotsMixin.java",

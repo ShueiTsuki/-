@@ -24,6 +24,18 @@ public sealed class HexcessibleSettings
 
     public static HexcessibleSettings Current { get; set; } = new();
 
+    /// <summary>dimmed：调暗施法界面的背景。</summary>
+    public bool Dimmed { get; set; }
+
+    /// <summary>prefersReducedMotion：图案不抖、不流动（所有画图案的地方）。</summary>
+    public bool PrefersReducedMotion { get; set; }
+
+    /// <summary>showAllDots：显示全部格点，而不只是光标附近的。</summary>
+    public bool ShowAllDots { get; set; }
+
+    /// <summary>tooltipRenderSigs：提示与补全里名字前面带 &lt;EAST,qaq&gt; 签名。</summary>
+    public bool TooltipRenderSigs { get; set; } = true;
+
     /// <summary>keyDocs：按 N 打开书，鼠标停在画好的图案上时直接翻到那一页。</summary>
     public KeyDocsMode KeyDocs { get; set; } = KeyDocsMode.Idling;
 

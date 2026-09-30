@@ -31,11 +31,15 @@ public sealed class HexcessibleAddon : HexAddon
         HexAddonsClientConfig.Instance?.HexcessibleOptions.Apply();
         _canvas = new HexcessibleCanvas();
         CanvasExtensions.All.Add(_canvas);
+        var canvas = _canvas;
+        global::HexCastingTerraria.Core.Canvas.PatternGeometry.ReducedMotion =
+            () => canvas.Enabled && Core.HexcessibleSettings.Current.PrefersReducedMotion;
     }
 
     public override void OnUnload()
     {
         if (_canvas is not null) CanvasExtensions.All.Remove(_canvas);
+        global::HexCastingTerraria.Core.Canvas.PatternGeometry.ReducedMotion = null;
         _canvas = null;
         HexcessibleIndex.Reset();
     }

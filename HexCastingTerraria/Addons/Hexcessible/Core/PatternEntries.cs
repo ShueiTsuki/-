@@ -51,7 +51,7 @@ public sealed class PatternEntries
             "<" + JavaDirName(Dir) + "," + new string(s.Select(KeyboardPlacement.LetterOf).ToArray()) + ">"));
 
         /// <summary>上游 toString（tooltipRenderSigs 默认开：签名 + 空格 + 名字）。</summary>
-        public override string ToString() => Signature + " " + Name;
+        public override string ToString() => HexcessibleSettings.Current.TooltipRenderSigs ? Signature + " " + Name : Name;
 
         /// <summary>上游 is(sig)：只有一条签名且角度完全相同。</summary>
         public bool Is(IReadOnlyList<HexAngle> sig) => Sigs is { Count: 1 } s && s[0].SequenceEqual(sig);

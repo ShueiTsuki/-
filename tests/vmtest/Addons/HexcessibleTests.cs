@@ -316,6 +316,19 @@ static class HexcessibleTests
 
         SmartSigTests(real);
 
+        // 显示选项：签名开关（tooltipRenderSigs）、减少动效（makeZappy 直接给原始折线）
+        var casterEntry = real.All.First(x => x.Id == "hexcasting:get_caster");
+        HexcessibleSettings.Current = new HexcessibleSettings { TooltipRenderSigs = false };
+        Check("关掉渲染图案：名字前不带签名", casterEntry.ToString() == casterEntry.Name);
+        HexcessibleSettings.Current = new HexcessibleSettings();
+        Check("默认带签名", casterEntry.ToString().StartsWith("<", StringComparison.Ordinal));
+        var bare = new List<HexCastingTerraria.Core.Casting.Math.Vec2f> { new(0, 0), new(30, 0), new(60, 10) };
+        var zappy = HexCastingTerraria.Core.Canvas.PatternGeometry.MakeZappy(bare, null, 10, 2.5f, 0.1f, 0.2f, 0.2f, 0.8f, 1, 5);
+        HexCastingTerraria.Core.Canvas.PatternGeometry.ReducedMotion = () => true;
+        var calm = HexCastingTerraria.Core.Canvas.PatternGeometry.MakeZappy(bare, null, 10, 2.5f, 0.1f, 0.2f, 0.2f, 0.8f, 1, 5);
+        HexCastingTerraria.Core.Canvas.PatternGeometry.ReducedMotion = null;
+        Check("减少动效：makeZappy 直接给原始折线", calm.SequenceEqual(bare) && zappy.Count > bare.Count);
+
         var docs = new AutoCompleteState(origin, real, _ => false);
         docs.SetQuery("get caster");   // id 里的 _ 在匹配前换成了空格，所以要用空格搜
         for (int n = 0; n < docs.Unlocked().Count && docs.ChosenEntry?.Id != "hexcasting:get_caster"; n++) docs.OffsetChosen(1);
