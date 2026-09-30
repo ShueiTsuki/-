@@ -333,6 +333,21 @@ HexcessibleOptions: {
 		Tooltip: Preview where you're trying to place it (even if it can't place there)
 	}
 
+	AutoCompleteAllow: {
+		Label: Magic Autocomplete
+		Tooltip: Ctrl+Space, or type while holding a dot: search patterns by name, Enter / Tab to pick
+	}
+
+	AutoCompleteTooltip: {
+		Label: Autocomplete: show description panel
+		Tooltip: ""
+	}
+
+	AutoCompleteCount: {
+		Label: Autocomplete: option count
+		Tooltip: Number of options to show on one page
+	}
+
 	ShortcutHints: {
 		Label: Hint at Shortcuts
 		Tooltip: Show shortcuts in the bottom left of the UI

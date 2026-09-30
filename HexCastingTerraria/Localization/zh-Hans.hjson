@@ -8,6 +8,9 @@ Mods: {
 
 		// Hexcessible 附属（上游 lang 文件的官方译文）
 		Hexcessible: {
+			StartTyping: 输入名称……
+			CountLocked: 还有{0}项已锁定
+			WorldSpecificAutocomplete: 此图案的笔顺会因世界不同而变化。副手持远古卷轴后开始绘制以习得绘制方法。
 			NoSpace: 无法放置在此处
 			CountQueued: 还有{0}个
 

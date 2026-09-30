@@ -241,12 +241,15 @@
 | `AddonContent.cs` | 附属的物品。</summary> |
 | `AddonRegistry.cs` | 所有附属的登记表 —— 唯一的总入口（ADDONS.md「目录」）。 |
 | `HexAddon.cs` | 附属跑在哪一侧：决定它的开关放在服务端还是客户端配置（ADDONS.md「开关的位置」）。</summary> |
+| `Hexcessible/Core/AutoCompleteState.cs` | 自动补全的状态（上游 drawstate/AutoCompleting.java 去掉渲染的部分）：查询串、候选、选中项、选中的书页。 |
+| `Hexcessible/Core/FluffySearch.cs` | 上游 Utils.fluffySearch：按顺序逐字命中（不必连续），连续命中加分，开头就对上再加分；有字没命中 = 0。</summary> |
 | `Hexcessible/Core/HexcessibleSettings.cs` | Hexcessible 的配置项（上游 HexcessibleConfig.java，默认值照搬）。纯数据：游戏侧从客户端附属配置抄进 <see cref="Current"/>。 |
 | `Hexcessible/Core/KeyboardDrawingState.cs` | 键盘绘制的状态（上游 drawstate/KeyboardDrawing.java 去掉渲染的部分）：当前签名、光标处的起点与起笔方向、 |
 | `Hexcessible/Core/KeyboardPlacement.cs` | 键盘绘制的纯逻辑（上游 accessor/CastRef.java 的 findClosestAvailable / fits / isValidPatternAddition + Utils.java 的角度字母表）。 |
-| `Hexcessible/Core/PatternEntries.cs` | 按签名查图案的说明（上游 entries/PatternEntries.java 的 getFromSig + Entry.toString， |
+| `Hexcessible/Core/PatternEntries.cs` | 图案索引（上游 entries/PatternEntries.java + entries/BookEntries.java）：每个图案的名字、签名、书里的图案页 |
 | `Hexcessible/Game/HexcessibleAddon.cs` | Hexcessible 附属的入口：施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu，JSON License）。 |
-| `Hexcessible/Game/HexcessibleCanvas.cs` | Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing， |
+| `Hexcessible/Game/HexcessibleCanvas.cs` | Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing + AutoCompleting， |
+| `Hexcessible/Game/HexcessibleIndex.cs` | 游戏侧的图案索引：本体 + 已开的附属图案 + 书（含附属书页），书条目锁不锁看当前玩家的解锁进度。 |
 | `Hexcessible/Game/HexcessibleOptions.cs` | Hexcessible 的配置项，挂在客户端「附属兼容」页的 Hexcessible 开关下面（上游 HexcessibleConfig，默认值照搬）。 |
 | `Hexcessible/Game/TooltipBox.cs` | 画 Minecraft 样式的提示框（上游用 DrawContext.drawTooltip：深紫底、紫色渐变边框，贴在给定点右上方，出屏就往回挪）。 |
 | `HexDebug/Game/HexDebugAddon.cs` | HexDebug 附属的入口：调试杖逐步执行咒术、剪接台编辑咒术（object-Object，MIT）。 |

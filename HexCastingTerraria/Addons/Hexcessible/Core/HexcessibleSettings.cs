@@ -28,6 +28,15 @@ public sealed class HexcessibleSettings
     /// <summary>keyboardDraw.ghost：在光标处画虚影（即使那里放不下）。</summary>
     public bool Ghost { get; set; } = true;
 
+    /// <summary>autoComplete.allow：Ctrl+空格 / 按住一个点时打字，按名字搜图案。</summary>
+    public bool AutoCompleteAllow { get; set; } = true;
+
+    /// <summary>autoComplete.tooltip：候选旁的说明框。</summary>
+    public TooltipMode AutoCompleteTooltip { get; set; } = TooltipMode.Descriptive;
+
+    /// <summary>autoComplete.count：一页显示几个候选（3..20）。</summary>
+    public int AutoCompleteCount { get; set; } = 7;
+
     /// <summary>shortcutHints：左下角列出当前能按的快捷键。</summary>
     public bool ShortcutHints { get; set; } = true;
 

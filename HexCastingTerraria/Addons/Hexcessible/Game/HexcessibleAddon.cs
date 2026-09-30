@@ -37,6 +37,6 @@ public sealed class HexcessibleAddon : HexAddon
     {
         if (_canvas is not null) CanvasExtensions.All.Remove(_canvas);
         _canvas = null;
-        Core.PatternEntries.Invalidate();
+        HexcessibleIndex.Reset();
     }
 }

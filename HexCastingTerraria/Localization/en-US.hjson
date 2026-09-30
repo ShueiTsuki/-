@@ -11,6 +11,9 @@ Mods: {
 
 		// Hexcessible 附属（上游 lang 文件的官方译文）
 		Hexcessible: {
+			StartTyping: Start typing...
+			CountLocked: "+{0} locked"
+			WorldSpecificAutocomplete: This pattern is world-specific. Start casting with an Ancient Scroll in your offhand to learn it.
 			NoSpace: Can't place this here
 			CountQueued: "{0} more to go"
 

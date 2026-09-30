@@ -137,6 +137,12 @@ public sealed class HexCanvas
     /// <summary>这个格点被已画的图案占了吗。</summary>
     public bool IsUsed(HexCoord c) => _drawer.IsUsed(c);
 
+    /// <summary>当前这一笔的起点（JUSTSTARTED 时就是按下的那个格点；附属的自动补全从这里开始）。</summary>
+    public HexCoord DrawStartCoord => _drawer.Start;
+
+    /// <summary>放弃正在开始 / 正在画的这一笔（附属开始打字时，上游 CastRef.stopDrawing）。</summary>
+    public void CancelDrawing() => _drawer.Cancel();
+
     /// <summary>把一整条图案直接放在某个格点上（附属的键盘绘制 / 自动补全）。放完照常送去求值，见 HexClientSystem.Submit。</summary>
     public ResolvedPattern PlacePattern(HexPattern pattern, HexCoord origin)
     {

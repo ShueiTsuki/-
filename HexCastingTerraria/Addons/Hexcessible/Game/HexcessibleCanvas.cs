@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HexCastingTerraria.Addons.Hexcessible.Core;
 using HexCastingTerraria.Client;
 using HexCastingTerraria.Client.UI;
@@ -8,15 +9,18 @@ using HexCastingTerraria.Core.Casting.Math;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Terraria;
 using Terraria.GameContent;
+using Terraria.GameInput;
 using Terraria.Localization;
 
 namespace HexCastingTerraria.Addons.Hexcessible.Game;
 
 /// <summary>
-/// Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing，
+/// Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing + AutoCompleting，
 /// 以及 mixin/DrawStateMixin 的接线与左下角快捷键提示）。
-/// 现在有：空闲 → 按 q w e a d 进入键盘绘制；手画时的提示。自动补全 / 别名 / 悬停说明随后续功能加。
+/// 状态：空闲 / 键盘绘制（<see cref="_kbd"/>）/ 自动补全（<see cref="_ac"/>）/ 手画（本体在画，Hexcessible 只给提示）。
+/// 别名、悬停说明随后续功能加。
 /// </summary>
 public sealed class HexcessibleCanvas : ICanvasExtension
 {
@@ -29,7 +33,9 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     private static readonly Color KeyHintColor = new(0xA8, 0xA8, 0xA8);
 
     private KeyboardDrawingState? _kbd;
+    private AutoCompleteState? _ac;
     private Vector2? _lastMouse;
+    private bool _allowStart = true;
 
     private static HexcessibleSettings S => HexcessibleSettings.Current;
 
@@ -37,36 +43,161 @@ public sealed class HexcessibleCanvas : ICanvasExtension
 
     public bool Enabled => HexAddonsClientConfig.Instance?.Hexcessible == true;
 
-    /// <summary>上游 allowStartDrawing：键盘绘制里签名非空时不让鼠标落笔。</summary>
-    public bool AllowStartDrawing => _kbd is null || _kbd.Sig.Count == 0;
+    /// <summary>上游 allowStartDrawing（按这一帧处理输入之前的状态算：上游是先分发点击、再由当前状态决定能不能落笔）。</summary>
+    public bool AllowStartDrawing => _allowStart;
+
+    private bool CurrentAllowStart()
+        => _kbd is not null ? _kbd.Sig.Count == 0
+         : _ac is not null ? _ac.NoDistract
+         : true;
 
     public bool Update(CanvasFrame f)
     {
+        _allowStart = CurrentAllowStart();
         Func<HexCoord, bool> used = f.IsUsed;
         bool mouseMoved = _lastMouse is { } last && last != f.Mouse;
         _lastMouse = f.Mouse;
 
-        // 上游 updateRequired：手画开始（JUSTSTARTED / DRAWING）就不再是键盘绘制
-        if (f.Canvas.State != DrawState.BetweenPatterns)
+        // 上游 updateRequired：本体在画（DRAWING）时只能是手画；刚按下一个点（JUSTSTARTED）时变成以那一点为起点的自动补全
+        switch (f.Canvas.State)
         {
-            _kbd = null;
+            case DrawState.Drawing:
+                _kbd = null;
+                _ac = null;
+                return false;
+            case DrawState.JustStarted:
+                _kbd = null;
+                if (_ac is null) StartAutoComplete(f.Canvas.DrawStartCoord);
+                break;
+        }
+
+        if (_ac is not null) return UpdateAutoComplete(f, mouseMoved);
+        if (_kbd is not null) return UpdateKeyboard(f, used, mouseMoved);
+
+        // 空闲（上游 Idling）
+        if (CanvasFrame.Ctrl)
+        {
+            // Ctrl+空格：在鼠标处开始自动补全
+            if (CanvasFrame.KeyPressed(Keys.Space) && S.AutoCompleteAllow)
+            {
+                StartAutoComplete(f.MouseCoord);
+                return true;
+            }
+            return false;
+        }
+        if (!S.KeyboardAllow) return false;
+        char? c = PressedLetter(drawOnly: true);
+        if (c is null) return false;
+        _kbd = new KeyboardDrawingState(new[] { KeyboardPlacement.AngleOf(c.Value)!.Value }, used);
+        AddOverlays(f);
+        return true;
+    }
+
+    // ==================== 自动补全 ====================
+
+    private void StartAutoComplete(HexCoord start)
+    {
+        _ac = new AutoCompleteState(start, HexcessibleIndex.Get(), HexcessibleIndex.IsLocked);
+        // 丢掉之前按过的字（泰拉把没人读的字符攒着，第一次读会一股脑吐出来）
+        Main.clrInput();
+    }
+
+    /// <summary>上游 AutoCompleting 的 onCharType / onKeyPress / onMouseMove / onMousePress。</summary>
+    private bool UpdateAutoComplete(CanvasFrame f, bool mouseMoved)
+    {
+        var ac = _ac!;
+
+        // 右键归本体（关画布）：上游 MC 施法界面右键什么都不做，这里保留本体的「右键关画布」
+        if (f.RightPressed)
+        {
+            ExitAutoComplete(f);
             return false;
         }
 
-        if (_kbd is null)
+        // 上游 onMouseMove：鼠标一动就算「用鼠标」；没打字时鼠标离开起点一段距离就退出
+        if (mouseMoved)
         {
-            // 上游 Idling.onCharType：q w e a d 开始键盘绘制
-            if (!S.KeyboardAllow) return false;
-            char? c = PressedLetter(drawOnly: true);
-            if (c is null) return false;
-            _kbd = new KeyboardDrawingState(new[] { KeyboardPlacement.AngleOf(c.Value)!.Value }, used);
-            mouseMoved = false;
+            ac.LastInteractWasMouse = true;
+            var anchor = f.CoordToPx(ac.Start);
+            float breakout = (float)Math.Pow(f.HexSize * 1.75, 2);
+            if (ac.NoDistract && f.Canvas.State == DrawState.BetweenPatterns
+                && Vector2.DistanceSquared(f.Mouse, anchor) > breakout)
+            {
+                ExitAutoComplete(f);
+                return false;
+            }
         }
-        else
+
+        // 上游 onMousePress：左键退出（没打字时这一下同时落笔，由 AllowStartDrawing 决定）
+        if (f.LeftPressed)
         {
-            if (mouseMoved) _kbd.SetOrigin(f.MouseCoord, used);
-            if (!HandleKeys(f, used)) return true;
+            ExitAutoComplete(f);
+            return false;
         }
+
+        // MC 里按一个键先走 keyPressed 再走 charTyped：keyPressed 在「没打字」时什么都不做，否则先记下「用键盘」
+        bool distractBefore = !ac.NoDistract;
+        if (distractBefore && AnyKeyPressed()) ac.LastInteractWasMouse = false;
+
+        // 打字（输入法也行）：上游 onCharType 先停掉正在开始的那一笔，再把字接到查询后面
+        PlayerInput.WritingText = true;
+        Main.instance.HandleIME();
+        string old = ac.Query;
+        bool ctrlBack = CanvasFrame.Ctrl && CanvasFrame.KeyPressed(Keys.Back);
+        string typed = Main.GetInputText(old);
+        if (ctrlBack)
+        {
+            // 上游 Ctrl+退格：删掉最后一个词（泰拉的输入框只删一个字）
+            if (distractBefore) ac.DeleteWord(S.AutoCompleteAllow);
+        }
+        else if (typed != old)
+        {
+            if (typed.Length > old.Length && typed.StartsWith(old, StringComparison.Ordinal))
+            {
+                f.Canvas.CancelDrawing();
+                ac.SetQuery(typed, S.AutoCompleteAllow);
+            }
+            else if (distractBefore)
+            {
+                // 退格（上游只在已经打过字 / 用过键盘时处理）
+                ac.SetQuery(typed, S.AutoCompleteAllow);
+            }
+        }
+
+        if (distractBefore)
+        {
+            if (CanvasFrame.KeyPressed(Keys.Enter) || CanvasFrame.KeyPressed(Keys.Tab))
+            {
+                // 上游：选中项有签名就交给键盘绘制，从起点、按图案自己的起笔方向开始（大法术没学会时没有签名，不动）
+                var chosen = ac.ChosenEntry;
+                if (chosen?.Sigs is { } sigs)
+                {
+                    _kbd = new KeyboardDrawingState(ac.Start, sigs, chosen.Dir, f.IsUsed);
+                    _ac = null;
+                    return true;
+                }
+            }
+            if (CanvasFrame.KeyPressed(Keys.Up)) ac.OffsetChosen(-1);
+            if (CanvasFrame.KeyPressed(Keys.Down)) ac.OffsetChosen(1);
+            if (CanvasFrame.KeyPressed(Keys.Left)) ac.OffsetChosenDoc(-1);
+            if (CanvasFrame.KeyPressed(Keys.Right)) ac.OffsetChosenDoc(1);
+        }
+        return true;
+    }
+
+    /// <summary>上游 AutoCompleting.requestExit：停掉正在开始的那一笔，回到空闲。</summary>
+    private void ExitAutoComplete(CanvasFrame f)
+    {
+        f.Canvas.CancelDrawing();
+        _ac = null;
+    }
+
+    // ==================== 键盘绘制 ====================
+
+    private bool UpdateKeyboard(CanvasFrame f, Func<HexCoord, bool> used, bool mouseMoved)
+    {
+        if (mouseMoved) _kbd!.SetOrigin(f.MouseCoord, used);
+        if (!HandleKeys(f, used)) return true;
 
         if (_kbd is not null && _kbd.Sig.Count == 0) RequestExit(used);
 
@@ -90,7 +221,7 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     private bool HandleKeys(CanvasFrame f, Func<HexCoord, bool> used)
     {
         var kbd = _kbd!;
-        char? c = PressedLetter(drawOnly: false);
+        char? c = CanvasFrame.Ctrl ? null : PressedLetter(drawOnly: false);
         if (c is { } ch)
         {
             if (char.ToLowerInvariant(ch) == 's') Undo(used);
@@ -168,37 +299,53 @@ public sealed class HexcessibleCanvas : ICanvasExtension
 
     public bool ConsumeScroll(int notches)
     {
-        // 上游 onMouseScroll：rotate(-delta)
+        // 上游 AutoCompleting.onMouseScroll：offsetChosen(-delta)
+        if (_ac is not null)
+        {
+            _ac.OffsetChosen(-notches);
+            return true;
+        }
+        // 上游 KeyboardDrawing.onMouseScroll：rotate(-delta)
         if (_kbd is null) return false;
         var canvas = HexCanvasState.Canvas;
-        var frame = new CanvasFrame(canvas, Terraria.Main.screenWidth, Terraria.Main.screenHeight, _lastMouse ?? Vector2.Zero, false, false);
+        var frame = new CanvasFrame(canvas, Main.screenWidth, Main.screenHeight, _lastMouse ?? Vector2.Zero, false, false);
         _kbd.Rotate(-notches, frame.IsUsed);
         return true;
-    }
-
-    public void Draw(SpriteBatch sb, CanvasFrame f)
-    {
-        if (_kbd is { } kbd)
-        {
-            if (S.KeyHint) DrawKeyHints(sb, f, kbd);
-            var anchor = f.CoordToPx(kbd.End ?? kbd.Origin);
-            DrawSigTooltip(sb, anchor.X + f.HexSize, anchor.Y, kbd.Sig, kbd.Start is null, S.KeyboardTooltip, kbd.QueuedCount);
-        }
-        if (S.ShortcutHints) DrawShortcutHints(sb, f);
     }
 
     public void OnClose()
     {
         _kbd = null;
+        _ac = null;
         _lastMouse = null;
+        _allowStart = true;
+        HexcessibleIndex.InvalidateCaches();
     }
 
-    /// <summary>上游 renderNextPointTooltips：下一笔能去的格点方向上，离终点一小段标出字母。</summary>
+    // ==================== 绘制 ====================
+
+    public void Draw(SpriteBatch sb, CanvasFrame f)
+    {
+        float u = TooltipBox.Unit;
+        if (_kbd is { } kbd)
+        {
+            if (S.KeyHint) DrawKeyHints(sb, f, kbd);
+            var anchor = f.CoordToPx(kbd.End ?? kbd.Origin);
+            DrawSigTooltip(sb, anchor.X + 20 * u, anchor.Y, kbd.Sig, kbd.Start is null, S.KeyboardTooltip, kbd.QueuedCount);
+        }
+        else if (_ac is { } ac)
+        {
+            DrawAutoComplete(sb, f, ac);
+        }
+        if (S.ShortcutHints) DrawShortcutHints(sb, f);
+    }
+
+    /// <summary>上游 renderNextPointTooltips：下一笔能去的格点方向上，离终点 20 个界面像素标出字母。</summary>
     private static void DrawKeyHints(SpriteBatch sb, CanvasFrame f, KeyboardDrawingState kbd)
     {
         if (kbd.End is not { } end) return;
         var endPx = f.CoordToPx(end);
-        float dist = f.HexSize;
+        float dist = 20 * TooltipBox.Unit;
         foreach (var (letter, pos) in kbd.NextPoints(f.IsUsed))
         {
             var d = f.CoordToPx(pos) - endPx;
@@ -222,7 +369,7 @@ public sealed class HexcessibleCanvas : ICanvasExtension
             return;
         }
 
-        var text = new string(System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(sig, KeyboardPlacement.LetterOf)));
+        var text = new string(sig.Select(KeyboardPlacement.LetterOf).ToArray());
         if (S.UppercaseSig) text = text.ToUpperInvariant();
         y += TooltipBox.Draw(sb, text, TooltipBox.White, x, y);
 
@@ -230,11 +377,81 @@ public sealed class HexcessibleCanvas : ICanvasExtension
         if (queued > 0) y += TooltipBox.Draw(sb, Language.GetTextValue("Mods.HexCastingTerraria.Hexcessible.CountQueued", queued), TooltipBox.Yellow, x, y);
 
         if (tooltip != HexcessibleSettings.TooltipMode.Descriptive) return;
-        var entry = PatternEntries.FromSig(sig, HexBook.Document);
+        var entry = HexcessibleIndex.Get().FromSig(sig);
         if (entry is null) return;
-        var lines = new List<(string, Color)> { (entry.ToString(), TooltipBox.Blue) };
-        foreach (var args in entry.Args) lines.Add((args, TooltipBox.DarkGray));
+        var lines = new List<TooltipBox.Line> { new(entry.ToString(), TooltipBox.Blue) };
+        foreach (var impl in entry.Impls) lines.Add(new TooltipBox.Line(impl.Args, TooltipBox.DarkGray));
         TooltipBox.Draw(sb, lines, x, y);
+    }
+
+    /// <summary>上游 AutoCompleting.onRender：查询框（或一行淡字「输入名称……」），打了字再弹候选与说明。</summary>
+    private static void DrawAutoComplete(SpriteBatch sb, CanvasFrame f, AutoCompleteState ac)
+    {
+        if (!S.AutoCompleteAllow) return;
+        float u = TooltipBox.Unit;
+        var a = f.CoordToPx(ac.Start);
+        float x = a.X, y = a.Y;
+        var unlocked = ac.Unlocked();
+
+        // renderQueryTooltip
+        var input = ac.Query.Length > 0
+            ? new TooltipBox.Line { (ac.Query, TooltipBox.White), (" " + unlocked.Count, TooltipBox.DarkGray) }
+            : new TooltipBox.Line(L("StartTyping"), TooltipBox.DarkGray);
+        if (!ac.NoDistract) TooltipBox.Draw(sb, input, x, y);
+        else TooltipBox.Text(sb, input, x + 12 * u, y - 12 * u);
+
+        if (unlocked.Count == 0 || ac.NoDistract) return;
+
+        // prepareOptions
+        var options = new List<TooltipBox.Line>();
+        var (from, to) = ac.Window(S.AutoCompleteCount);
+        for (int i = from; i < to; i++)
+        {
+            options.Add(new TooltipBox.Line(unlocked[i].ToString(), i == ac.Chosen ? TooltipBox.Blue : TooltipBox.Gray));
+        }
+        int lockedN = ac.LockedCount;
+        if (lockedN > 0) options.Add(new TooltipBox.Line(Language.GetTextValue("Mods.HexCastingTerraria.Hexcessible.CountLocked", lockedN), TooltipBox.DarkGray));
+
+        // prepareDescription（折行宽度 170 个界面像素）
+        var desc = new List<TooltipBox.Line>();
+        float wrap = 170 * u;
+        if (ac.Chosen < unlocked.Count)
+        {
+            var opt = unlocked[ac.Chosen];
+            if (opt.Sigs is null)
+            {
+                desc = TooltipBox.Wrap(L("WorldSpecificAutocomplete"), TooltipBox.Red, wrap);
+            }
+            else if (S.AutoCompleteTooltip == HexcessibleSettings.TooltipMode.Simple)
+            {
+                desc = TooltipBox.Wrap(string.Join("\n", opt.Impls.Select(i => i.Args)), TooltipBox.DarkGray, wrap);
+            }
+            else if (S.AutoCompleteTooltip == HexcessibleSettings.TooltipMode.Descriptive && ac.ChosenDoc < opt.Impls.Count)
+            {
+                var impl = opt.Impls[ac.ChosenDoc];
+                desc = TooltipBox.Wrap("[" + (ac.ChosenDoc + 1) + "/" + opt.Impls.Count + "] " + impl.Args, TooltipBox.Gray, wrap);
+                desc.AddRange(TooltipBox.Wrap(impl.CleanDesc, TooltipBox.DarkGray, wrap));
+            }
+        }
+
+        // drawTooltips：放不下就画到上面；说明框在右边放不下就放到左边
+        float fontH = TooltipBox.LineHeight;
+        float descH = desc.Count * fontH;
+        float descW = desc.Count == 0 ? 0 : desc.Max(TooltipBox.Width);
+        float optsH = options.Count * fontH;
+        float optsW = options.Max(TooltipBox.Width);
+        float sw = Main.screenWidth, sh = Main.screenHeight;
+        bool renderAbove = sh - y < Math.Max(descH, optsH) + 15 * u;
+        bool descLeft = sw - x - optsW < descW + 30 * u;
+
+        float optionsX = x + optsW + 20 * u > sw ? sw - optsW - 20 * u : x;
+        float optionsY = renderAbove ? y - options.Count * fontH - 9 * u : y + 17 * u;
+        TooltipBox.Draw(sb, options, optionsX, optionsY);
+
+        if (desc.Count == 0) return;
+        float descriptionY = renderAbove ? y - desc.Count * fontH - 9 * u : y + 17 * u;
+        float descriptionX = descLeft ? optionsX - descW - 9 * u : optionsX + optsW + 9 * u;
+        TooltipBox.Draw(sb, desc, descriptionX, descriptionY);
     }
 
     /// <summary>上游 DrawStateMixin.renderHints：左下角从下往上，一行「按键 说明」。</summary>
@@ -253,24 +470,32 @@ public sealed class HexcessibleCanvas : ICanvasExtension
             hints.Add(("drag/h/j/k/l/" + Arrows(), "Move"));
             hints.Add(("wheel/r/shift-r", "Rotate"));
         }
+        else if (_ac is not null)
+        {
+            hints.Add(("type", "Search"));
+            if (!_ac.NoDistract)
+            {
+                hints.Add(("tab/enter", "Cast"));
+                hints.Add(("wheel/up/down", "Scroll"));
+                hints.Add(("left/right", "ScrollDefinitions"));
+            }
+        }
         else if (f.Canvas.State == DrawState.BetweenPatterns)
         {
             hints.Add((S.KeyboardAllow ? "lmb/" + draw : "lmb", "DrawStart"));
+            if (S.AutoCompleteAllow) hints.Add(("ctrl-space", "AutoComplete"));
         }
         else
         {
             hints.Add(("lmb", "Cast"));
         }
 
-        float x = 6, y = f.Height - 16;
-        float lineH = TooltipBox.Measure("A").Y;
+        float u = TooltipBox.Unit;
+        float x = 6 * u, y = f.Height - 16 * u;
         foreach (var (keys, hint) in hints)
         {
-            var k = keys + " ";
-            var top = y - lineH;
-            Terraria.Utils.DrawBorderString(sb, k, new Vector2(x, top), TooltipBox.Gray, TooltipBox.TextScale);
-            Terraria.Utils.DrawBorderString(sb, L("Hint." + hint), new Vector2(x + TooltipBox.Measure(k).X, top), TooltipBox.DarkGray, TooltipBox.TextScale);
-            y -= lineH;
+            TooltipBox.Text(sb, new TooltipBox.Line { (keys + " ", TooltipBox.Gray), (L("Hint." + hint), TooltipBox.DarkGray) }, x, y);
+            y -= 10 * u;
         }
     }
 
@@ -295,6 +520,16 @@ public sealed class HexcessibleCanvas : ICanvasExtension
             if (CanvasFrame.KeyPressed(key)) return CanvasFrame.Shift ? char.ToUpperInvariant(ch) : ch;
         }
         return null;
+    }
+
+    /// <summary>这一帧有没有刚按下的键（上游 keyPressed 事件；修饰键单按也算）。</summary>
+    private static bool AnyKeyPressed()
+    {
+        foreach (var k in Main.keyState.GetPressedKeys())
+        {
+            if (Main.oldKeyState.IsKeyUp(k)) return true;
+        }
+        return false;
     }
 
     private static readonly (Keys, char)[] Letters =

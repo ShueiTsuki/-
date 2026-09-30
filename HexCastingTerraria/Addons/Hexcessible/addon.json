@@ -59,7 +59,11 @@
     },
     {
       "name": "自动补全",
-      "files": [],
+      "files": [
+        "Core/FluffySearch.cs",
+        "Core/AutoCompleteState.cs",
+        "Game/HexcessibleIndex.cs"
+      ],
       "upstream": [
         "drawstate/AutoCompleting.java",
         "entries/PatternEntries.java"

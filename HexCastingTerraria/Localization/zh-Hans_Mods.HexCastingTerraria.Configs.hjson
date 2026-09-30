@@ -333,6 +333,21 @@ HexcessibleOptions: {
 		Tooltip: 预览在该位置放置图案的效果（即便无法放置也进行预览）
 	}
 
+	AutoCompleteAllow: {
+		Label: 魔法自动补全
+		Tooltip: Ctrl+空格，或按住一个点不动时打字：按名字搜索图案，Enter / Tab 选中后放下
+	}
+
+	AutoCompleteTooltip: {
+		Label: 自动补全：显示描述框
+		Tooltip: ""
+	}
+
+	AutoCompleteCount: {
+		Label: 自动补全：选项数量
+		Tooltip: 单页中显示的选项数量
+	}
+
 	ShortcutHints: {
 		Label: 快捷键提示
 		Tooltip: 在UI左下角显示快捷键
