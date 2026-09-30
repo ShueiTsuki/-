@@ -423,9 +423,9 @@ public sealed class QuenchedAllayItem : HexDecoBlockItem
 
     public override void AddRecipes()
     {
-        // 源：脑叶切除（紫水晶块 + 悦灵）→ 淬灵块 1:1；泰拉由淬灵晶碎片还原
+        // 源：淬灵块只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片，精准采集才掉方块本身。泰拉没有精准采集：用 4 片（掉落上限）换一块代替，敲了再合不会多出碎片
         CreateRecipe()
-            .AddIngredient<QuenchedAllayShard>(1)
+            .AddIngredient<QuenchedAllayShard>(4)
             .AddTile(TileID.WorkBenches)
             .Register();
 

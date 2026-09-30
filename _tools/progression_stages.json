@@ -92,8 +92,7 @@
       "DevStaff": "开发者工具（泰拉自创，仅用于测试）"
     },
     "肉后": {
-      "QuenchedAllayShard": "源 brainsweep：紫水晶块 + 悦灵 → 淬灵块。泰拉对应物 = 神圣地妖精（只在肉后出现），门槛自然落在肉后",
-      "QuenchedAllayItem": "淬灵建材基底块：1 碎片 ↔ 1 块（源也是 1:1 的脑叶切除产物）",
+      "QuenchedAllayItem": "淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除妖精小动物，要启蒙）",
       "QuenchedAllayTilesItem": "源 433 stoneSet（这一族没有柱）",
       "QuenchedAllayBricksItem": "源 433 stoneSet",
       "QuenchedAllayBricksSmallItem": "源 433 stoneSet",

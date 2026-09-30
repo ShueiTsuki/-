@@ -8,7 +8,7 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **82** 个可合成物品。
+共 **81** 个可合成物品。
 
 ## 肉前（63 项）
 
@@ -94,14 +94,13 @@
 | `HexBookItem` | 1 | Wood×10 + Hay×10 | Bookcases | 源项目没有这本书：泰拉侧的引导书，让玩家能查到图案怎么画 |
 | `DevStaff` | 1 | Wood×20 | WorkBenches | 开发者工具（泰拉自创，仅用于测试） |
 
-## 肉后（10 项）
+## 肉后（9 项）
 
 淬灵系（泰拉对应物是神圣地妖精）、法术书（源项目要末地合唱果）、珍珠木法杖。
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
-| `QuenchedAllayShard` | 1 | ChargedAmethyst×3 + PixieDust×5 | MythrilAnvil | 源 brainsweep：紫水晶块 + 悦灵 → 淬灵块。泰拉对应物 = 神圣地妖精（只在肉后出现），门槛自然落在肉后 |
-| `QuenchedAllayItem` | 1 | QuenchedAllayShard×1 | WorkBenches | 淬灵建材基底块：1 碎片 ↔ 1 块（源也是 1:1 的脑叶切除产物） |
+| `QuenchedAllayItem` | 1 | QuenchedAllayShard×4 | WorkBenches | 淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除妖精小动物，要启蒙） |
 | `QuenchedAllayTilesItem` | 4 | QuenchedAllayBricksItem×4 | WorkBenches | 源 433 stoneSet（这一族没有柱） |
 | `QuenchedAllayTilesItem` | 1 | 〔HexRecipeGroups.QuenchedAllayBlocks〕×1 | HeavyWorkBench | 源 433 stoneSet（这一族没有柱） |
 | `QuenchedAllayBricksItem` | 4 | QuenchedAllayItem×4 | WorkBenches | 源 433 stoneSet |

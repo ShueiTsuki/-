@@ -123,6 +123,7 @@ namespace HexCastingTerraria
             int booleanDirectrix = ModContent.TileType<Content.Tiles.HexDirectrixBoolean>();
             int akashicRecord = ModContent.TileType<Content.Tiles.AkashicRecord>();
             int emptyImpetus = ModContent.TileType<Content.Tiles.HexImpetusEmpty>();
+            int quenchedAllay = ModContent.TileType<Content.Tiles.QuenchedAllay>();
 
             int AnyNpc = Core.Casting.Actions.BrainsweepRules.AnySpecies;
             int wizard = Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.Wizard);
@@ -153,10 +154,14 @@ namespace HexCastingTerraria
                 // 原版：阿卡夏系带 + 图书管理员 → 记录方块（泰拉没有「系带」，改用粉块）
                 new Core.Casting.Actions.BrainsweepRecipe(dustBlock, wizard, akashicRecord, none, crystal10),
 
-                // 原版：紫水晶块 + 悦灵 → 淬灵悦灵；泰拉的妖精 = 悦灵，产物是淬灵晶碎片物品
-                new Core.Casting.Actions.BrainsweepRecipe(dustBlock,
-                    Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.FairyCritterPink),
-                    none, ModContent.ItemType<Content.Items.QuenchedAllayShard>(), crystal1),
+                // 原版：紫水晶块 + 悦灵 → **淬灵块**（方块，敲掉掉 2~4 片碎片），1 晶体。
+                // 泰拉的悦灵 = 妖精（Fairy 小动物：友好、会飞、领人找宝藏，和悦灵一样是「帮你找东西」的精灵）——
+                // 肉前就能遇到（稀有小动物），粉 / 绿 / 蓝三种都算。
+                // 这里曾经写成 TownNpcSpecies(FairyCritterPink)：妖精是小动物不是城镇 NPC，种类编号是正的 netID，
+                // **这条配方永远匹配不上**；而且产物是碎片物品、不是方块。
+                new Core.Casting.Actions.BrainsweepRecipe(dustBlock, NPCID.FairyCritterPink, quenchedAllay, none, crystal1),
+                new Core.Casting.Actions.BrainsweepRecipe(dustBlock, NPCID.FairyCritterGreen, quenchedAllay, none, crystal1),
+                new Core.Casting.Actions.BrainsweepRecipe(dustBlock, NPCID.FairyCritterBlue, quenchedAllay, none, crystal1),
             });
 
             Logger.Info($"[HexCasting] 脑叶切除配方：{Core.Casting.Actions.BrainsweepRules.Recipes.Count} 条");

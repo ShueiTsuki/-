@@ -194,6 +194,7 @@
 | `Tiles/HexImpetus.cs` | 娉曟湳鐜娉版媺涓栫晫鐨勮闂疄鐜般€?/// |
 | `Tiles/HexSlate.cs` | 鐭虫澘銆傚搴旀簮椤圭洰 `hexcasting:slate` 鈥斺€?**娉曟湳鐜殑銆屾寚浠ゃ€?*銆?/// |
 | `Tiles/MiscDeco.cs` | 璐村湪澧欎笂鐨勮楗?鍏夋簮鏂瑰潡鐨勫叕鍏卞疄鐜般€?/// |
+| `Tiles/QuenchedAllayDrops.cs` | 娣伒鍧楃殑鎺夎惤锛堝師鐗?loot_tables/blocks/quenched_allay.json锛夛細 |
 | `Tiles/WallScroll.cs` | 澹佹寕鍗疯酱銆傚搴旀簮椤圭洰鐨?`EntityWallScroll`銆?/// |
 | `Worldgen/GeodeWorldGen.cs` | 绱按鏅舵櫠娲炵殑涓栫晫鐢熸垚銆?/// |
 

@@ -141,28 +141,17 @@ public sealed class ChargedAmethyst : MediaMaterial
 }
 
 /// <summary>
-/// 淬灵晶碎片：30 粉（300,000）。
-/// 对应源项目 `quenched_allay_shard`。
+/// 淬灵晶碎片：30 粉（300,000）。对应源项目 `quenched_allay_shard`。
 ///
-/// ## 获取途径（**不是**「暂无对应物」）
+/// 获取途径与原版一致，**没有合成配方**：
+/// 对站在紫水晶粉块上的**妖精**（悦灵的对应物，肉前就能遇到的稀有小动物）施「脑叶切除」（大法术，要启蒙）
+/// → 方块变成**淬灵块** → 敲掉掉 2~4 片碎片（见 Tiles/QuenchedAllayDrops）。
 ///
-/// 原版没有合成配方 —— 它是「脑叶切除一只**悦灵**（allay）」的产物。
-/// 泰拉侧的悦灵对应物是**神圣地的妖精**（`NPCID.FairyCritterPink`），
-/// 这条路径**已经实现**：见 `HexCastingTerraria.ConfigureBrainsweepRecipes` 里的
-/// 「紫水晶粉块 + 妖精 → 淬灵晶碎片」。
+/// 这里曾经：① 脑叶切除配方写成「城镇 NPC 编码的粉妖精」，永远匹配不上；
+/// ② 所以另加了一条原版没有的兜底合成（充能紫水晶 ×3 + 妖精尘 ×5 —— 妖精尘是肉后神圣地的敌怪「妖精」掉的，
+///    和小动物妖精不是一回事）。①修好后②删除。
 ///
-/// 之前这段注释写着"泰拉侧暂无对应物"，而那条脑叶切除配方一直都在代码里 ——
-/// 典型「注释比代码旧」：读注释的人会以为功能没做，然后去找别的路。
-///
-/// ## 为什么还留一条合成配方
-///
-/// 原版靠「启蒙」把这条途径锁在后期，而泰拉的启蒙是用图案门槛近似的，
-/// 玩家可能长期到不了；完全没有兜底的话整个淬灵系（碎片 / 淬灵晶法杖 /
-/// 剖念法杖）会变成死内容。所以保留一条**材料合成**兜底，
-/// 材料用**妖精尘**——同样出自神圣地的精灵，来源与原版一致。
-///
-/// ⚠️ 这里原来还有第二条配方：`1 碎片 + 夜魂×5 + 水晶碎块×10 → 1 碎片`，
-/// 是**净亏**（消耗一个碎片只换回一个）。已删除。
+/// 原版的三条**分解**配方补上：碎片 + 1 份低级媒质 → 等价数量的低级媒质（多给 1 份）。
 /// </summary>
 public sealed class QuenchedAllayShard : MediaMaterial
 {
@@ -180,10 +169,18 @@ public sealed class QuenchedAllayShard : MediaMaterial
 
     public override void AddRecipes()
     {
-        CreateRecipe()
-            .AddIngredient<ChargedAmethyst>(3)
-            .AddIngredient(ItemID.PixieDust, 5)      // 妖精尘：神圣地精灵掉落
-            .AddTile(TileID.MythrilAnvil)
+        // 源 HexplatRecipes decompose_quenched_shard/{dust,shard,charged}：shapeless，碎片 + 1 份 → (碎片 / 单位) + 1 份
+        Decompose<AmethystDust>(MediaConstants.DustUnit);
+        Decompose<AmethystShard>(MediaConstants.ShardUnit);
+        Decompose<ChargedAmethyst>(MediaConstants.CrystalUnit);
+    }
+
+    private void Decompose<T>(long unit) where T : ModItem
+    {
+        Recipe.Create(ModContent.ItemType<T>(), (int)(MediaConstants.QuenchedShardUnit / unit) + 1)
+            .AddIngredient(Type, 1)
+            .AddIngredient<T>(1)
+            .AddTile(TileID.WorkBenches)
             .Register();
     }
 }
