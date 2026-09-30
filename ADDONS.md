@@ -27,7 +27,14 @@
 | 纯客户端界面 | Hexcessible | 客户端配置 `HexAddonsClientConfig`，不用重载 | 画布恢复原版操作；只影响自己，联机别人装不装无所谓（上游就是纯客户端模组） |
 
 - 默认**全部关**（本体保持原版体验，「一切以原版为基准」）；每个附属还带自己的子开关（上游有几项配置就照搬几项），放在同一页里、按附属分组。
-- 关掉的附属留下的物品：tML 会把它们保存成「未加载物品」，重新打开开关就恢复，不会丢。
+
+### 开关的实际效果（已对照 tML 1.4.4.9 源码确认：ModNet.SyncClientMods、ConfigManager.HandleInGameChangeConfigPacket、WorldIO.LoadModData）
+
+- **建世界**：这三个附属都不改世界生成、不往箱子里加战利品 → 开不开附属建出来的世界一样。区别只在之后存进去的东西（放下的剪接台、HexParse 的大法术解锁表）。
+- **关掉以后再进旧世界 / 旧角色**：附属的物品变成 tML 的「未加载物品」、方块变成「未加载方块」、世界数据由 tML 的 UnloadedSystem 原样保管；重新打开开关全部恢复，不会丢。
+- **联机**：服务端开关由**开服的人**决定（「创建并游玩」= 房主自己的设置；专用服务器 = 服务器的配置文件）。别人进服时，tML 把服务器的开关发过来；和自己本地不一样就弹「需要重载」，点一下自动重载再进服，不用手动改，也不会改动他自己本地保存的设置。所有人用的是同一个 tmod，不用另外下载。
+- **游玩中改**：需要重载的开关，联机时服务器会直接拒绝（tML 提示「这些更改需要重载，无法保存」）→ 要改就停服、改配置、重开；单人可以在配置菜单里改，tML 会提示重载模组后生效。Hexcessible 这种客户端开关每个人随时自己改，立即生效，互不影响。
+- **本体物品里存着附属的 iota**（例如核心里存了 HexParse 的注释 iota，然后把 HexParse 关了）：原版 Hex Casting 遇到不认识的 iota 类型会变成垃圾，数据就丢了。本模组要求更严：P0 的 iota 扩展点必须把**不认识的 iota 原样保留**（显示成「未加载的 iota」，执行时当垃圾处理，存档时原样写回），重新打开附属就恢复。这条做进 IotaTag 的自检。附属的图案本身只是一串角度，关掉后画出来就是无效图案，和原版没装这个附属时一样。
 
 ## 目录（每个附属一模一样）
 
@@ -90,7 +97,8 @@ Config/HexAddonsClientConfig.cs        客户端开关 + 各附属的客户端�
 | **画布输入状态机**（空闲 / 鼠标绘制 / 键盘绘制 / 自动补全 / 改别名） | Hexcessible（HexDebug 的剪接台小画布也要） | 照 Hexcessible 的 `DrawState` 拆：现在画布的输入逻辑都堆在 HexClientSystem 里，先抽成状态机，本体行为不变 |
 | **文本输入框**（泰拉里打字：拦住按键不触发游戏操作、中文输入法） | Hexcessible 自动补全 / 改别名、HexDebug 剪接台 | 用泰拉自己的文本输入（`Main.GetInputText` + `PlayerInput.WritingText`） |
 | **剪贴板**（读 / 写系统剪贴板） | HexParse、HexDebug 剪接台 | `ReLogic.OS.Platform.Get<IClipboard>()`；联机时服务端向客户端要（HexParse 的 MsgPull/PushClipboard） |
-| 新 iota 类型的扩展点（序列化、联机编码、显示） | HexParse 注释 iota、HexDebug 认知危害 iota | `IotaSerializer` / `IotaWire` / `IotaTag` 目前是封闭的 switch，改成可登记 |
+| 新 iota 类型的扩展点（序列化、联机编码、显示） | HexParse 注释 iota、HexDebug 认知危害 iota | `IotaSerializer` / `IotaWire` / `IotaTag` 目前是封闭的 switch，改成可登记；**不认识的类型原样保留**（见「开关的实际效果」最后一条） |
+| 服务端附属开关只许房主改 | HexParse、HexDebug | `HexAddonsConfig.AcceptClientChanges`：只接受房主（`Main.countsAsHostForGameplay`）的修改；需要重载的项 tML 本来就拒绝 |
 | 多格方块 + 带界面的方块实体模板 | HexDebug 剪接台、核心框架 | 本体已有板岩 / 原动力的方块实体，照那个模式 |
 
 ---
