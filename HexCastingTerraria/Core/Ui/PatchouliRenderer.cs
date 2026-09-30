@@ -445,9 +445,27 @@ public sealed class PatchouliRenderer
     private void Separator(int pageX, int y)
         => Tex(BookTextures.Book, pageX + (PageWidth / 2) - 55, y, 110, 3, 140, 180, alpha: 0.8f);
 
-    /// <summary>GuiBook.drawPageFiller：128×128 的装饰，页内居中。</summary>
+    /// <summary>
+    /// 原版 patchi_filler.png 上那个图案的折线（贴图坐标，从原图逐列量出的线心）。
+    /// 原图是 128×128 的柔边线，书放大 4 倍后很糊，所以改成按屏幕分辨率重画同一个形状（用户要求，见 AUDIT_VS_ORIGINAL.md）。
+    /// </summary>
+    private static readonly Vec2f[] FillerStroke =
+    {
+        new(86.4f, 29.3f), new(105.6f, 62.8f), new(62.6f, 62.8f), new(43.6f, 29.8f),
+        new(24.2f, 62.8f), new(44.6f, 98.6f), new(86.3f, 98.6f),
+    };
+
+    /// <summary>原图的线：黑色 ~33% 不透明、约 2 像素宽。画成压在纸色 (254,250,237) 上的实色，接头处才不会叠深。</summary>
+    private const int FillerInk = 0xAAA89F;
+
+    /// <summary>GuiBook.drawPageFiller：128×128 的装饰，页内居中（位置照原版，内容改成矢量重画）。</summary>
     private void Filler(int pageX, int pageY)
-        => Tex(BookTextures.Filler, pageX + (PageWidth / 2) - 64, pageY + (PageHeight / 2) - 74, 128, 128, 0, 0, texW: 128, texH: 128);
+    {
+        float ox = pageX + (PageWidth / 2) - 64, oy = pageY + (PageHeight / 2) - 74;
+        var pts = new List<Vec2f>(FillerStroke.Length);
+        foreach (var p in FillerStroke) { pts.Add(new Vec2f(X(ox + p.X), Y(oy + p.Y))); }
+        Polyline(pts, 2f * Unit, Color32.Rgb(FillerInk));
+    }
 
     /// <summary>GuiButtonBook：悬停时取贴图右边那一格（u + 宽）。</summary>
     private void Button(int x, int y, int u, int v, int w, int h, BookActionKind kind, string tooltip)

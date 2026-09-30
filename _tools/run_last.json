@@ -1,5 +1,5 @@
 {
-    "at":  "2026-09-30 18:20:56",
+    "at":  "2026-09-30 18:25:58",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
@@ -17,18 +17,11 @@
                    "needTexture":  99,
                    "missing":  0
                },
-    "package":  {
-                    "ok":  true,
-                    "bytes":  615594
-                },
-    "server":  {
-                   "ok":  true
-               },
     "tml":  {
                 "commit":  "7ab6cd1c3978bccb1bdddee101c30a5b883a78f7",
                 "dllBuilt":  "2026-09-30 17:05"
             },
     "skipped":  [
-
+                    "专用服务器加载 + 进入世界"
                 ]
 }
