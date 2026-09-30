@@ -9,7 +9,7 @@
 其他文档要引用这些事实，请**链接到本文件**，不要复述数字 ——
 复述就会产生第二份"当前状态"，两份迟早对不上（这已经真实发生过一次）。
 
-生成时间（UTC）：2026-09-30T10:26:11Z
+生成时间（UTC）：2026-09-30T10:29:34Z
 
 ## 图案
 
@@ -46,10 +46,10 @@
 | 拖拽 + 几何（画布/坐标） | 126 通过 / 0 失败 | `tests\drawtest` |
 | 贴图存在性 | 99 个类需要贴图，缺失 0 | `_tools\check_assets.ps1` |
 | 架构约束 | 见 `_tools\check_arch.ps1` | `_tools\check_arch.ps1` |
-| 打包 | 未运行（run_all.ps1 -Package） | `build.ps1` |
-| 专用服务器加载 | 未运行（run_all.ps1 -Package） | `_tools\verify_server.ps1` |
+| 打包 | 615935 字节 | `build.ps1` |
+| 专用服务器加载 | 通过（加载 + 进入世界，无未登记异常） | `_tools\verify_server.ps1` |
 
-以上来自 `_tools\run_all.ps1` 于 2026-09-30 18:25:58 的一次运行（`_tools\run_last.json`）；VM 测试时间 2026-09-30 18:26:07。
+以上来自 `_tools\run_all.ps1` 于 2026-09-30 18:29:25 的一次运行（`_tools\run_last.json`）；VM 测试时间 2026-09-30 18:29:32。
 验证时的 tModLoader：commit `7ab6cd1c39`，dll 构建于 2026-09-30 17:05。1.4.5-dev 随上游每次提交自动更新，API 会变 —— tML 更新后请重跑。
 
 ## 验证**没有**覆盖什么
