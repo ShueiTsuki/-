@@ -81,6 +81,8 @@ public sealed class HexClientSystem : ModSystem
         _pixel = null;
     }
 
+    private static bool _reopenCanvasPending;
+
     public override void PostUpdateInput()
     {
         if (Main.dedServ)
@@ -122,6 +124,22 @@ public sealed class HexClientSystem : ModSystem
             Main.blockInput = true;
             Main.playerInventory = false;
             HexCanvasState.BlockedInput = true;
+        }
+
+        // 从画布里打开的书关了：回到画布（图案还在，关画布不清图案）。
+        // 晚一帧再开 —— 关书的那一下若是 Esc，本帧末尾「Esc 关画布」会把刚开的画布又关掉。
+        if (HexCanvasState.ReturnToCanvasSlot is int returnSlot && !HexCanvasState.Book.IsOpen)
+        {
+            if (_reopenCanvasPending)
+            {
+                _reopenCanvasPending = false;
+                HexCanvasState.ReturnToCanvasSlot = null;
+                if (!canvas.IsOpen && Main.LocalPlayer.selectedItem == returnSlot) Content.Items.HexStaff.OpenCanvas();
+            }
+            else
+            {
+                _reopenCanvasPending = true;
+            }
         }
 
         // 动画时钟：驱动 zappy 抖动随时间流动。单位是 MC 游戏刻（20/秒），泰拉每秒更新 60 次

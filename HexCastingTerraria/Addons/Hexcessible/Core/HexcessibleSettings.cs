@@ -14,7 +14,18 @@ public sealed class HexcessibleSettings
         Descriptive,
     }
 
+    /// <summary>上游 KeyDocs：按 N 查书 —— 不行 / 只在空闲时 / 空闲、手画、键盘绘制时都行。</summary>
+    public enum KeyDocsMode
+    {
+        Off,
+        Idling,
+        Always,
+    }
+
     public static HexcessibleSettings Current { get; set; } = new();
+
+    /// <summary>keyDocs：按 N 打开书，鼠标停在画好的图案上时直接翻到那一页。</summary>
+    public KeyDocsMode KeyDocs { get; set; } = KeyDocsMode.Idling;
 
     /// <summary>idle.tooltip：鼠标停在画好的图案上半秒，显示签名与说明。</summary>
     public TooltipMode IdleTooltip { get; set; } = TooltipMode.Descriptive;

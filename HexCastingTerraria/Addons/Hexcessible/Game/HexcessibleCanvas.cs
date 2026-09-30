@@ -65,6 +65,13 @@ public sealed class HexcessibleCanvas : ICanvasExtension
         bool mouseMoved = _lastMouse is { } last && last != f.Mouse;
         _lastMouse = f.Mouse;
 
+        // 上游 KeyDocsScreenMixin：按 N 查书（先于状态切换：手画中按也算）
+        if (CanvasFrame.KeyPressed(Keys.N) && KeyDocsAllowed(f))
+        {
+            OpenDocs(f);
+            return true;
+        }
+
         // 上游 updateRequired：本体在画（DRAWING）时只能是手画；刚按下一个点（JUSTSTARTED）时变成以那一点为起点的自动补全
         switch (f.Canvas.State)
         {
@@ -219,6 +226,46 @@ public sealed class HexcessibleCanvas : ICanvasExtension
         _ac = null;
     }
 
+    // ==================== 按 N 查书 ====================
+
+    /// <summary>上游：IDLING 只在空闲时；ALWAYS 空闲、手画、键盘绘制都行（补全和改别名时 N 是在打字）。</summary>
+    private bool KeyDocsAllowed(CanvasFrame f)
+    {
+        if (_ac is not null || _alias is not null) return false;
+        bool idle = _kbd is null && f.Canvas.State == DrawState.BetweenPatterns;
+        return S.KeyDocs switch
+        {
+            HexcessibleSettings.KeyDocsMode.Idling => idle,
+            HexcessibleSettings.KeyDocsMode.Always => idle || _kbd is not null || f.Canvas.State == DrawState.Drawing,
+            _ => false,
+        };
+    }
+
+    /// <summary>
+    /// 鼠标停在画好的图案上：翻到书里讲它的那一页；否则打开书首页。书关了回到画布（图案还在）。
+    /// 上游按「第几个图案页」翻页（遇到前面有文字页就会翻错），这里按图案页的锚点翻到那一页。
+    /// </summary>
+    private void OpenDocs(CanvasFrame f)
+    {
+        var impl = PatternAt(f) is { } rp ? HexcessibleIndex.Get().FromSig(rp.Pattern.Angles)?.Impls.FirstOrDefault() : null;
+        int slot = Main.LocalPlayer.selectedItem;
+        HexCanvasState.CloseCanvas();
+        if (impl is not null && impl.EntryId.Length > 0) HexCanvasState.Book.OpenAt(impl.EntryId, impl.Anchor.Length > 0 ? impl.Anchor : null);
+        else HexCanvasState.Book.Open();
+        HexCanvasState.ReturnToCanvasSlot = slot;
+    }
+
+    /// <summary>上游 getPatternAt：鼠标所在格点是哪条画好的图案的起点或经过的点。</summary>
+    private static ResolvedPattern? PatternAt(CanvasFrame f)
+    {
+        var coord = f.MouseCoord;
+        foreach (var rp in f.Canvas.Patterns)
+        {
+            if (rp.Origin.Equals(coord) || rp.Pattern.Positions(rp.Origin).Contains(coord)) return rp;
+        }
+        return null;
+    }
+
     // ==================== 改别名 ====================
 
     private void StartAlias(PatternEntries.Entry entry)
@@ -254,16 +301,7 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     /// <summary>上游 Idling.onRender 前半 + getPatternAt：鼠标所在格点是哪条画好的图案的起点或经过的点。</summary>
     private void UpdateHover(CanvasFrame f)
     {
-        var coord = f.MouseCoord;
-        ResolvedPattern? hit = null;
-        foreach (var rp in f.Canvas.Patterns)
-        {
-            if (rp.Origin.Equals(coord) || rp.Pattern.Positions(rp.Origin).Contains(coord))
-            {
-                hit = rp;
-                break;
-            }
-        }
+        var hit = PatternAt(f);
         if (hit is null)
         {
             ClearHover();

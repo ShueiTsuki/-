@@ -96,7 +96,10 @@
     },
     {
       "name": "悬停说明与绘制提示",
-      "files": [],
+      "files": [
+        "Game/HexcessibleCanvas.cs",
+        "Game/TooltipBox.cs"
+      ],
       "upstream": [
         "drawstate/Idling.java",
         "drawstate/MouseDrawing.java"
@@ -104,7 +107,9 @@
     },
     {
       "name": "按 N 查书",
-      "files": [],
+      "files": [
+        "Game/HexcessibleCanvas.cs"
+      ],
       "upstream": [
         "mixin/KeyDocsScreenMixin.java",
         "entries/BookEntries.java"

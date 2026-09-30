@@ -10,6 +10,9 @@ namespace HexCastingTerraria.Addons.Hexcessible.Game;
 /// </summary>
 public sealed class HexcessibleOptions
 {
+    [DefaultValue(HexcessibleSettings.KeyDocsMode.Idling)]
+    public HexcessibleSettings.KeyDocsMode KeyDocs { get; set; } = HexcessibleSettings.KeyDocsMode.Idling;
+
     [DefaultValue(HexcessibleSettings.TooltipMode.Descriptive)]
     public HexcessibleSettings.TooltipMode IdleTooltip { get; set; } = HexcessibleSettings.TooltipMode.Descriptive;
 
@@ -49,6 +52,7 @@ public sealed class HexcessibleOptions
     {
         HexcessibleSettings.Current = new HexcessibleSettings
         {
+            KeyDocs = KeyDocs,
             IdleTooltip = IdleTooltip,
             MouseDrawTooltip = MouseDrawTooltip,
             KeyboardAllow = KeyboardAllow,
@@ -67,9 +71,9 @@ public sealed class HexcessibleOptions
         && o.KeyboardAllow == KeyboardAllow && o.KeyboardTooltip == KeyboardTooltip && o.KeyHint == KeyHint
         && o.Ghost == Ghost && o.ShortcutHints == ShortcutHints && o.UppercaseSig == UppercaseSig
         && o.AutoCompleteAllow == AutoCompleteAllow && o.AutoCompleteTooltip == AutoCompleteTooltip && o.AutoCompleteCount == AutoCompleteCount
-        && o.IdleTooltip == IdleTooltip && o.MouseDrawTooltip == MouseDrawTooltip;
+        && o.IdleTooltip == IdleTooltip && o.MouseDrawTooltip == MouseDrawTooltip && o.KeyDocs == KeyDocs;
 
     public override int GetHashCode() => System.HashCode.Combine(
         System.HashCode.Combine(KeyboardAllow, KeyboardTooltip, KeyHint, Ghost, ShortcutHints, UppercaseSig),
-        AutoCompleteAllow, AutoCompleteTooltip, AutoCompleteCount, IdleTooltip, MouseDrawTooltip);
+        AutoCompleteAllow, AutoCompleteTooltip, AutoCompleteCount, IdleTooltip, MouseDrawTooltip, KeyDocs);
 }

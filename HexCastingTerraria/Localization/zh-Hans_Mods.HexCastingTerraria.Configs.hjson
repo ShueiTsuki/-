@@ -313,6 +313,11 @@ UnknownMode: {
 HexcessibleOptions: {
 	Tooltip: Hexcessible 的配置项（上游 HexcessibleConfig，默认值照搬）
 
+	KeyDocs: {
+		Label: N键打开文档
+		Tooltip: 施法时按下N可打开咒术笔记
+	}
+
 	IdleTooltip: {
 		Label: 咒术网格界面空闲状态：显示悬停提示文本
 		Tooltip: 鼠标停在画好的图案上半秒后显示
@@ -388,4 +393,23 @@ TooltipMode: {
 		Tooltip: ""
 	}
 
+}
+
+KeyDocsMode: {
+	Tooltip: N键打开文档
+
+	Off: {
+		Label: 禁用
+		Tooltip: ""
+	}
+
+	Idling: {
+		Label: 仅空闲时
+		Tooltip: ""
+	}
+
+	Always: {
+		Label: 一直可以
+		Tooltip: ""
+	}
 }

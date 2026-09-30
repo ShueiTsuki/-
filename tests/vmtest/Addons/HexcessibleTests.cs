@@ -215,7 +215,7 @@ static class HexcessibleTests
         // PatternEntries：签名 → 名字 / 参数行（真实图案表 + 假书）
         var book = new BookDocument();
         var entry = new BookEntry { Id = "test:entry", Advancement = "test:adv" };
-        entry.Pages.Add(new BookPage { Kind = BookPageKind.Pattern, PatternId = "hexcasting:get_caster", Input = "", Output = "entity | null", Text = "$(l:a#b)$(action)甲/$乙 x _y" });
+        entry.Pages.Add(new BookPage { Kind = BookPageKind.Pattern, PatternId = "hexcasting:get_caster", Input = "", Output = "entity | null", Text = "$(l:a#b)$(action)甲/$乙 x _y", Anchor = "hexcasting:get_caster" });
         entry.Pages.Add(new BookPage { Kind = BookPageKind.Pattern, PatternId = "hexcasting:get_caster", Input = "", Output = "" });
         entry.Pages.Add(new BookPage { Kind = BookPageKind.Text, PatternId = "" });
         book.EntryById[entry.Id] = entry;
@@ -225,6 +225,7 @@ static class HexcessibleTests
         Check("按签名认出图案", e is { } en && en.Id == caster.Id && en.Impls.Count == 2);
         Check("参数行 = (in + \" -> \" + out).strip()，每页一行", e is { } a1 && a1.Impls.Select(i => i.Args).SequenceEqual(new[] { "-> entity | null", "->" }),
             e is null ? null : string.Join(" | ", e.Impls.Select(i => i.Args)));
+        Check("书页记下所在条目与锚点（按 N 翻到那一页用）", e is { } a3 && a3.Impls[0].EntryId == "test:entry" && a3.Impls[0].Anchor == "hexcasting:get_caster");
         Check("说明去掉 $(...) 与 /$，空白后的 _ 变空格", e is { } a2 && a2.Impls[0].CleanDesc == "甲乙 x y", e?.Impls[0].CleanDesc);
         Check("签名写法 <EAST,qaq>", e is { } en2 && en2.Signature == "<" + PatternEntries.JavaDirName(caster.StartDir) + "," + caster.Angles + ">"
             && en2.ToString() == en2.Signature + " " + en2.Name);

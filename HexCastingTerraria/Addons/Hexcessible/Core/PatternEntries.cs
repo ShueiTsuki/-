@@ -15,7 +15,7 @@ namespace HexCastingTerraria.Addons.Hexcessible.Core;
 public sealed class PatternEntries
 {
     /// <summary>书里的一页图案页（上游 BookEntries.Entry）。</summary>
-    public sealed record Impl(string Id, string EntryId, string Desc, string In, string Out, int Page)
+    public sealed record Impl(string Id, string EntryId, string Desc, string In, string Out, int Page, string Anchor = "")
     {
         /// <summary>上游 getArgs：<c>(in + " -> " + out).strip()</c>。</summary>
         public string Args => (In + " -> " + Out).Trim();
@@ -80,7 +80,7 @@ public sealed class PatternEntries
                     // 上游：同一个图案出现在好几个条目里时，锁不锁看第一个
                     if (!_advancementOf.ContainsKey(p.PatternId)) _advancementOf[p.PatternId] = entry.Advancement;
                     if (!impls.TryGetValue(p.PatternId, out var list)) impls[p.PatternId] = list = new List<Impl>();
-                    list.Add(new Impl(p.PatternId, entry.Id, p.Text, p.Input, p.Output, page++));
+                    list.Add(new Impl(p.PatternId, entry.Id, p.Text, p.Input, p.Output, page++, p.Anchor));
                 }
             }
         }

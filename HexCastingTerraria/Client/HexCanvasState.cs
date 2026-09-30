@@ -71,6 +71,12 @@ public static class HexCanvasState
         foreach (var ext in CanvasExtensions.All) ext.OnClose();
     }
 
+    /// <summary>
+    /// 从画布里打开了书（Hexcessible 按 N 查书）：记下当时手上是第几格，书关了就回到画布
+    /// （上游 KeyDocsScreenMixin.returnToStaff：关书时换回原来的施法界面）。null = 没有要回去的画布。
+    /// </summary>
+    public static int? ReturnToCanvasSlot { get; set; }
+
     /// <summary>每帧递减保护计数。</summary>
     public static void TickGuard()
     {

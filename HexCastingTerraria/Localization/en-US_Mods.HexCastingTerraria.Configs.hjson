@@ -313,6 +313,11 @@ UnknownMode: {
 HexcessibleOptions: {
 	Tooltip: Hexcessible options (upstream HexcessibleConfig, same defaults)
 
+	KeyDocs: {
+		Label: N for Docs
+		Tooltip: Press the N key while casting to open the book
+	}
+
 	IdleTooltip: {
 		Label: Idling in Spellcasting Interface: show hover tooltip
 		Tooltip: Shown after hovering a drawn pattern for half a second
@@ -388,4 +393,23 @@ TooltipMode: {
 		Tooltip: ""
 	}
 
+}
+
+KeyDocsMode: {
+	Tooltip: N for Docs
+
+	Off: {
+		Label: No
+		Tooltip: ""
+	}
+
+	Idling: {
+		Label: When Idle
+		Tooltip: ""
+	}
+
+	Always: {
+		Label: Always
+		Tooltip: ""
+	}
 }

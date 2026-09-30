@@ -44,6 +44,13 @@ public sealed class HexBook
         SoundEngine.PlaySound(SoundID.MenuClose);
     }
 
+    /// <summary>打开书并翻到某个条目（<paramref name="anchor"/> 所在的那一页）；条目不存在或没解锁就停在首页。</summary>
+    public void OpenAt(string entryId, string? anchor)
+    {
+        Open();
+        _view!.OpenEntry(entryId, anchor);
+    }
+
     public void Toggle()
     {
         if (IsOpen) { Close(); }
