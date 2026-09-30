@@ -168,6 +168,29 @@ Mods: {
 					Tooltip: 原版这些指令要管理员权限；泰拉没有权限系统，联机时默认只有房主（创建并游玩的那个人）和服务器控制台能用。打开后所有玩家都能用。单人游戏不受限制。
 				}
 			}
+
+			HexAddonsConfig: {
+				DisplayName: 咒法学 · 附属兼容（服务端）
+
+				HexParse: {
+					Label: HexParse
+					Tooltip: 代码文本与 iota 列表互转、/hexParse 指令（YukkuriC）。关着 = 没装。联机由开服的人决定，改了要重载模组。
+				}
+
+				HexDebug: {
+					Label: HexDebug
+					Tooltip: 调试杖逐步执行咒术、剪接台编辑咒术（object-Object）。关着 = 没装。联机由开服的人决定，改了要重载模组。
+				}
+			}
+
+			HexAddonsClientConfig: {
+				DisplayName: 咒法学 · 附属兼容（客户端）
+
+				Hexcessible: {
+					Label: Hexcessible
+					Tooltip: 施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu）。只影响自己，随时改。
+				}
+			}
 		}
 	}
 }

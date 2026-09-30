@@ -1,0 +1,221 @@
+{
+  "id": "hexparse",
+  "name": "HexParse",
+  "side": "both",
+  "upstream": {
+    "repo": "https://github.com/YukkuriC/HexParseMod",
+    "version": "1.20.1-1.11.2",
+    "commit": "272b689",
+    "license": "MIT",
+    "authors": [
+      "YukkuriC"
+    ],
+    "jar": "D:/DeepSeekHarness/mod/hexParse-fabric-1.20.1-1.11.2.jar",
+    "src": "D:/DeepSeekHarness/addons_src/hexparse",
+    "src_root": "common/src/main/java/io/yukkuric/hexparse/"
+  },
+  "namespace": "hexparse",
+  "patterns": {
+    "file": "common/src/main/java/io/yukkuric/hexparse/actions/HexParsePatterns.java"
+  },
+  "requires": [],
+  "features": [
+    {
+      "name": "入口与开关",
+      "files": [
+        "Game/HexParseAddon.cs"
+      ],
+      "upstream": [
+        "HexParse.java",
+        "config/HexParseConfig.java"
+      ]
+    },
+    {
+      "name": "分词（逗号 / 空格 / 换行、注释、字符串）",
+      "files": [],
+      "upstream": [
+        "parsers/CodeCutter.kt",
+        "misc/StringEscaper.kt",
+        "misc/StringProcessors.java"
+      ]
+    },
+    {
+      "name": "解析主循环（嵌套、未知符号、括号恢复、媒质消耗）",
+      "files": [],
+      "upstream": [
+        "parsers/ParserMain.java",
+        "parsers/CostTracker.kt",
+        "parsers/IotaFactory.java",
+        "parsers/meta/IMetaCollector.java",
+        "parsers/meta/MetaHolder.java",
+        "parsers/interfaces/ConfigNums.java",
+        "parsers/interfaces/IConfigNumReceiver.java"
+      ]
+    },
+    {
+      "name": "token：图案名、元符号、大法术占位",
+      "files": [],
+      "upstream": [
+        "parsers/str2nbt/ToPattern.java",
+        "hooks/PatternMapper.java",
+        "parsers/str2nbt/IStr2Nbt.java"
+      ]
+    },
+    {
+      "name": "token：常量（num_ / mask_ / _角度 / 数字 / 向量 / 布尔 / null / garbage / self）",
+      "files": [],
+      "upstream": [
+        "parsers/str2nbt/ConstParsers.java",
+        "parsers/str2nbt/BaseConstParser.java",
+        "parsers/str2nbt/ToMiscConst.kt",
+        "misc/NumEvaluatorBrute.java"
+      ]
+    },
+    {
+      "name": "token：实体（泰拉偏差：玩家名 / NPC 编号）",
+      "files": [],
+      "upstream": [
+        "parsers/str2nbt/ToEntity.java",
+        "parsers/IPlayerBinder.java"
+      ]
+    },
+    {
+      "name": "别名与宏",
+      "files": [],
+      "upstream": [
+        "parsers/str2nbt/ToDialect.java",
+        "macro/MacroClient.java",
+        "macro/MacroClientHandler.java",
+        "macro/MacroManager.java",
+        "macro/MacroProcessor.java",
+        "network/macro/MsgPushMacro.java",
+        "network/macro/MsgUpdateClientMacro.java"
+      ]
+    },
+    {
+      "name": "反向：iota 到文本",
+      "files": [],
+      "upstream": [
+        "parsers/nbt2str/INbt2Str.java",
+        "parsers/nbt2str/BoolParser.java",
+        "parsers/nbt2str/CommentParser.java",
+        "parsers/nbt2str/EntityParser.java",
+        "parsers/nbt2str/GarbageParser.java",
+        "parsers/nbt2str/NullParser.java",
+        "parsers/nbt2str/NumParser.java",
+        "parsers/nbt2str/PatternParser.java",
+        "parsers/nbt2str/VecParser.java",
+        "parsers/FallbackBinaryParser.kt",
+        "misc/CodeHelpers.java",
+        "misc/CodeHelpersKt.kt"
+      ]
+    },
+    {
+      "name": "注释 iota",
+      "files": [],
+      "upstream": [
+        "hooks/CommentIota.java",
+        "hooks/CommentIotaType.java"
+      ]
+    },
+    {
+      "name": "大法术解锁表",
+      "files": [],
+      "upstream": [
+        "hooks/GreatPatternUnlocker.java"
+      ]
+    },
+    {
+      "name": "图案 x8",
+      "files": [],
+      "upstream": [
+        "actions/HexParsePatterns.java",
+        "actions/ActionCode2Focus.kt",
+        "actions/ActionFocus2Code.kt",
+        "actions/ActionRemoveComments.kt",
+        "actions/ActionLearnGreatPatterns.kt",
+        "actions/ActionCreateLineBreak.kt",
+        "actions/ActionDonate.kt",
+        "actions/ActionCompile.kt",
+        "actions/ActionCommentSwitcher.kt"
+      ]
+    },
+    {
+      "name": "指令 /hexParse",
+      "files": [],
+      "upstream": [
+        "hooks/HexParseCommands.java",
+        "commands/CommandWrite.java",
+        "commands/CommandRead.java",
+        "commands/CommandClipboard.java",
+        "commands/CommandMindStackIO.kt",
+        "commands/CommandMacro.java",
+        "commands/CommandConflictResolver.kt",
+        "commands/CommandLehmerHelper.java",
+        "commands/CommandDonate.kt",
+        "commands/CommandLearnGreat.kt",
+        "commands/CommandGreatPatternUnlock.java",
+        "commands/CommandPropertyIO.java",
+        "misc/IOMethod.kt"
+      ]
+    },
+    {
+      "name": "剪贴板与显示同步（联机）",
+      "files": [],
+      "upstream": [
+        "network/MsgPullClipboard.java",
+        "network/MsgPushClipboard.java",
+        "network/ClipboardMsgMode.java",
+        "network/MsgSyncDisplayMap.java",
+        "network/MsgHandlers.java",
+        "network/MsgHelpers.java",
+        "network/ISenderClient.java",
+        "network/ISenderServer.java"
+      ]
+    },
+    {
+      "name": ".hexpattern 格式",
+      "files": [],
+      "upstream": [
+        "parsers/hexpattern/DotHexPatternMapper.kt",
+        "parsers/hexpattern/TriePrefixMap.kt"
+      ]
+    },
+    {
+      "name": "嵌套列表 / 括号彩色显示",
+      "files": [],
+      "upstream": [
+        "mixin/iota/MixinListIotaDisplay.java",
+        "mixin/iota/MixinPatternIota.java",
+        "mixin_interface/NestedCounter.java"
+      ]
+    },
+    {
+      "name": "书：HexParse 指令分类 + 图案条目",
+      "files": [],
+      "upstream": [
+        "assets/hexcasting/patchouli_books/thehexbook",
+        "assets/hexparse/lang/zh_cn.json"
+      ]
+    },
+    {
+      "name": "与 HexDebug 联动：剪接台里画注释 iota（HexDebug 做完后）",
+      "files": [],
+      "upstream": [
+        "compat/hexdebug/CommentRenderer.kt",
+        "compat/hexdebug/CommentRendererButIgnoresOverride.java"
+      ]
+    },
+    {
+      "name": "其他附属的插件解析（那些附属移植后再接，现在不做）",
+      "files": [],
+      "upstream": [
+        "parsers/str2nbt/plugins/PluginConstParsers.java",
+        "parsers/nbt2str/plugins/",
+        "parsers/PluginIotaFactory.java",
+        "parsers/str2nbt/unsafe/hexal/",
+        "parsers/nbt2str/unsafe/hexal/"
+      ]
+    }
+  ]
+}

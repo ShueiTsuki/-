@@ -54,6 +54,16 @@
 **保留的移植版自绘贴图**（原版对应的是 MC 原生物品 / 方块，Mojang 的贴图不能用；或者是移植版自创的东西）：
 紫水晶碎片、母岩、紫水晶芽 / 簇、构筑的方块 / 光源、紫晶烛台、挂轴框。
 
+### 附属（集成在本模组里，每个都有单独的开关，默认关；见 ADDONS.md）
+
+| 附属 | 作者 | 许可 | 许可全文 | 本模组用到 |
+|---|---|---|---|---|
+| [HexParse](https://github.com/YukkuriC/HexParseMod) 1.20.1-1.11.2 | YukkuriC | MIT（`Copyright (c) 2024 YukkuriC`） | `LICENSE-HexParse.txt` | 代码解析 / 反向输出、指令、图案、书页与官方中文（移植中） |
+| [Hexcessible](https://github.com/tizu69/hexcessible) 0.3.1 | Ruby（tizu）、ElNico56 | The JSON License（`Copyright (c) 2025 Ruby`，MIT 加「用于善、不用于恶」条款） | `LICENSE-Hexcessible.txt` | 施法界面的无障碍操作与官方中文（移植中） |
+| [HexDebug](https://github.com/object-Object/HexDebug) 0.9.0+1.20.1 | object-Object | MIT（`Copyright (c) 2024 [object Object]`） | `LICENSE-HexDebug.txt` | 调试杖、剪接台、核心框架、图案、贴图、书页与官方中文（移植中） |
+
+三者的许可都允许并入本模组（整体 CC BY-NC-SA 3.0），条件是保留上面的版权行与许可全文。附属的代码在 `HexCastingTerraria/Addons/<附属名>/`，逐项来源见各自的 `addon.json`。
+
 ### 泰拉瑞亚 / tModLoader
 
 - Terraria 与 tModLoader 的**美术与代码资源不在本仓库内、也不随本模组分发**。

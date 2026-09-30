@@ -102,6 +102,12 @@ internal static class IotaWire
     private const byte KindPattern = 6;
     private const byte KindList = 7;
 
+    /// <summary>
+    /// 其它一切（附属的 iota、关掉的附属留下的 UnknownIota）：整个信封按存档格式（IotaTag）过网。
+    /// 以前这里一律写成垃圾位 —— 客户端把物品同步回服务端时数据就丢了。
+    /// </summary>
+    private const byte KindEnvelope = 8;
+
     public static void Write(BinaryWriter w, Iota iota)
     {
         switch (iota)
@@ -161,6 +167,12 @@ internal static class IotaWire
                 w.Write(KindGarbage);
                 break;
 
+            case UnknownIota:
+            case { Kind: IotaKind.Addon }:
+                w.Write(KindEnvelope);
+                Terraria.ModLoader.IO.TagIO.Write(IotaTag.ToTag(iota), w);
+                break;
+
             default:
                 w.Write(KindGarbage);
                 break;
@@ -218,6 +230,9 @@ internal static class IotaWire
                 }
                 return new ListIota(items);
             }
+
+            case KindEnvelope:
+                return IotaTag.TryFromTag(Terraria.ModLoader.IO.TagIO.Read(r), out var enveloped) ? enveloped : GarbageIota.Instance;
 
             default:
                 // 未知种类：一律当垃圾位，不抛异常（避免版本不一致时直接断连）

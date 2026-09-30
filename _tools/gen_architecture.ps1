@@ -18,7 +18,8 @@ $enc   = New-Object System.Text.UTF8Encoding($false)
 #   优先取 XML 文档注释 `<summary>` 之后的第一行非空 `///`；
 #   没有就取第一个 `//` 注释行；都没有就标记出来（这也是文档覆盖率指标）。
 function Get-Responsibility($path) {
-    $lines = Get-Content -LiteralPath $path -TotalCount 60
+    # 必须显式 UTF-8：源文件大多没有 BOM，PowerShell 5.1 默认按 ANSI（GBK）读，中文说明整片乱码（2026-10-01 前的文档一直是乱的）
+    $lines = Get-Content -LiteralPath $path -TotalCount 60 -Encoding UTF8
     $inSummary = $false
     foreach ($l in $lines) {
         $t = $l.Trim()
@@ -50,6 +51,7 @@ $layers = [ordered]@{
     'Core'    = '纯逻辑：栈机 / 图案 / 几何 / 世界接口 / UI 布局数学。**不得引用 XNA 与 tModLoader**'
     'Content' = '泰拉侧实现：物品、方块、玩家、世界适配'
     'Client'  = '客户端表现：画布、书、HUD、调试叠加层'
+    'Addons'  = '附属（HexParse / Hexcessible / HexDebug…）：每个附属一个目录，内部再分 Core / Game / Client，规矩见 ADDONS.md，功能 -> 文件见 ADDONS.generated.md'
 }
 
 $sb = New-Object System.Text.StringBuilder

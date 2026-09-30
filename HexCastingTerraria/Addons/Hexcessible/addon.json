@@ -1,0 +1,135 @@
+{
+  "id": "hexcessible",
+  "name": "Hexcessible",
+  "side": "client",
+  "upstream": {
+    "repo": "https://github.com/tizu69/hexcessible",
+    "version": "0.3.1",
+    "commit": "v0.3.1",
+    "license": "The JSON License",
+    "authors": [
+      "Ruby (tizu)",
+      "ElNico56"
+    ],
+    "jar": "D:/DeepSeekHarness/mod/hexcessible-0.3.1.jar",
+    "src": "D:/DeepSeekHarness/addons_src/hexcessible",
+    "src_root": "src/main/java/dev/tizu/hexcessible/"
+  },
+  "namespace": "hexcessible",
+  "requires": [],
+  "features": [
+    {
+      "name": "入口与开关",
+      "files": [
+        "Game/HexcessibleAddon.cs"
+      ],
+      "upstream": [
+        "Hexcessible.java",
+        "HexcessibleConfig.java"
+      ]
+    },
+    {
+      "name": "画布状态机（空闲 / 鼠标 / 键盘 / 自动补全 / 改别名）",
+      "files": [],
+      "upstream": [
+        "drawstate/DrawState.java",
+        "mixin/DrawStateMixin.java",
+        "mixin/DrawStateParentElemMixin.java",
+        "mixin/DrawStateScreenMixin.java",
+        "accessor/CastRef.java",
+        "accessor/CastingInterfaceAccessor.java"
+      ]
+    },
+    {
+      "name": "键盘绘制",
+      "files": [],
+      "upstream": [
+        "drawstate/KeyboardDrawing.java",
+        "Utils.java"
+      ]
+    },
+    {
+      "name": "自动补全",
+      "files": [],
+      "upstream": [
+        "drawstate/AutoCompleting.java",
+        "entries/PatternEntries.java"
+      ]
+    },
+    {
+      "name": "别名",
+      "files": [],
+      "upstream": [
+        "drawstate/AliasChanging.java"
+      ]
+    },
+    {
+      "name": "智能签名：数字 / 簿记员 / 转义",
+      "files": [],
+      "upstream": [
+        "smartsig/SmartSig.java",
+        "smartsig/Number.java",
+        "smartsig/Bookkeeper.java",
+        "smartsig/Escape.java",
+        "numbers.txt"
+      ]
+    },
+    {
+      "name": "悬停说明与绘制提示",
+      "files": [],
+      "upstream": [
+        "drawstate/Idling.java",
+        "drawstate/MouseDrawing.java"
+      ]
+    },
+    {
+      "name": "按 N 查书",
+      "files": [],
+      "upstream": [
+        "mixin/KeyDocsScreenMixin.java",
+        "entries/BookEntries.java"
+      ]
+    },
+    {
+      "name": "显示选项（变暗 / 全部格点 / 隐藏飘浮图案 / 大写签名 / 快捷键提示）",
+      "files": [],
+      "upstream": [
+        "mixin/DimmedMixin.java",
+        "mixin/ShowAllDotsMixin.java",
+        "mixin/FloatiesMixin.java",
+        "mixin/RenderLibMixin.java"
+      ]
+    },
+    {
+      "name": "每世界大法术：手持远古卷轴才补全",
+      "files": [],
+      "upstream": [
+        "mixin/PerWorldLearnMixin.java"
+      ]
+    },
+    {
+      "name": "与 HexDebug 联动：剪接台小画布（HexDebug 做完后）",
+      "files": [],
+      "upstream": [
+        "mixin/DrawStateHexdbgInteropMixin.java",
+        "mixin/DrawStateHexdbgInteropParentElemMixin.java"
+      ]
+    },
+    {
+      "name": "其他附属的智能签名 / Hexical 相关（那些附属移植后再接，现在不做）",
+      "files": [],
+      "upstream": [
+        "smartsig/ComplexhexLong.java",
+        "smartsig/HexicalMacro.java",
+        "smartsig/HexThingsIntrojection.java",
+        "smartsig/HexThingsPatience.java",
+        "smartsig/OverevalGeb.java",
+        "smartsig/OverevalNephthys.java",
+        "smartsig/OverevalNut.java",
+        "smartsig/OverevalSekhmet.java",
+        "mixin/NoHexicalEvokeMixin.java",
+        "mixin/NoHexicalWalkMixin.java"
+      ]
+    }
+  ]
+}

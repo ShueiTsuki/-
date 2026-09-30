@@ -16,6 +16,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\HexCastingTerraria\Core\**\*.cs" LinkBase="Core" />
+    <!-- 附属的纯逻辑同一条规矩：Addons/*/Core 零 Terraria 引用，全部进测试网（ADDONS.md） -->
+    <Compile Include="..\..\HexCastingTerraria\Addons\*\Core\**\*.cs" LinkBase="Addons" />
     <Compile Include="..\Shared\*.cs" LinkBase="Shared" />
   </ItemGroup>
 </Project>

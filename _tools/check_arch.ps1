@@ -486,6 +486,65 @@ Write-Host "`n⑪ 不带 emoji（用户要求：仓库、发布说明、游戏�
     Check '仓库文件里没有 emoji' ($hits.Count -eq 0) (($hits | Select-Object -First 10) -join ', ')
 }
 # ─────────────────────────────────────────────────────────────────────
+Write-Host "`n⑫ 附属：每个功能都能找到文件、开关放对地方、关着就不加载（ADDONS.md「断言」）"
+# ─────────────────────────────────────────────────────────────────────
+& {
+    $addonsDir = Join-Path $mod 'Addons'
+    $registry = Get-Content (Join-Path $addonsDir 'AddonRegistry.cs') -Raw -Encoding UTF8
+    $credits = Get-Content (Join-Path (Split-Path -Parent $mod) 'CREDITS.md') -Raw -Encoding UTF8
+    $dirs = @(Get-ChildItem $addonsDir -Directory)
+    Check "附属目录 $($dirs.Count) 个" ($dirs.Count -gt 0) ''
+
+    foreach ($d in $dirs) {
+        $n = $d.Name
+        $manifestPath = Join-Path $d.FullName 'addon.json'
+        $hasManifest = Test-Path $manifestPath
+        Check "[$n] 有 addon.json 和 README.md" ($hasManifest -and (Test-Path (Join-Path $d.FullName 'README.md'))) ''
+        if (-not $hasManifest) { continue }
+        $m = Get-Content $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+
+        # 1. 登记 + 入口类与清单一致 + 开关放在对的配置里
+        $entryPath = Join-Path $d.FullName "Game\${n}Addon.cs"
+        $entry = if (Test-Path $entryPath) { Get-Content $entryPath -Raw -Encoding UTF8 } else { '' }
+        $wantSide = if ($m.side -eq 'client') { 'Client' } else { 'Both' }
+        $wantCfg = if ($m.side -eq 'client') { 'HexAddonsClientConfig' } else { 'HexAddonsConfig' }
+        Check "[$n] 在 AddonRegistry 登记" ($registry -match "new $n\.Game\.${n}Addon\(\)") ''
+        Check "[$n] 入口的 Id / Side / 开关与清单一致（id=$($m.id)，side=$($m.side) -> $wantCfg）" `
+            ($entry -match "Id => `"$($m.id)`"" -and $entry -match "AddonSide\.$wantSide" -and $entry -match "IsEnabled => $wantCfg\.Instance\.") $entryPath
+
+        # 2. 没有孤儿文件：文件夹里每个 .cs 都出现在某个 feature 的 files 里，列出的都存在
+        $listed = @($m.features | ForEach-Object { $_.files } | Where-Object { $_ })
+        $orphans = @(AllCs $d.FullName | ForEach-Object { (Rel $_.FullName $d.FullName).Replace('\', '/') } |
+                     Where-Object { $listed -notcontains $_ })
+        $missing = @($listed | Where-Object { -not (Test-Path (Join-Path $d.FullName $_)) })
+        Check "[$n] 每个 .cs 都在功能表里（孤儿 $($orphans.Count)）" ($orphans.Count -eq 0) ($orphans -join ', ')
+        Check "[$n] 功能表列出的文件都存在（缺 $($missing.Count)）" ($missing.Count -eq 0) ($missing -join ', ')
+
+        # 3. Core 纯逻辑（测试工程也编译 Addons/*/Core，引用了泰拉会直接编译失败，这里给出更清楚的位置）
+        $bad = New-Object System.Collections.Generic.List[string]
+        foreach ($f in (AllCs (Join-Path $d.FullName 'Core'))) {
+            foreach ($h in (Select-String -LiteralPath $f.FullName -Pattern '^\s*using\s+(Terraria|Microsoft\.Xna|ReLogic)')) {
+                $bad.Add((Rel $f.FullName $mod) + ':' + $h.LineNumber)
+            }
+        }
+        Check "[$n] Core 不引用 Terraria / XNA" ($bad.Count -eq 0) ($bad -join ', ')
+
+        # 5. 许可全文 + CREDITS 署名
+        Check "[$n] 许可全文 LICENSE-$n.txt 存在且 CREDITS.md 有署名" `
+            ((Test-Path (Join-Path $mod "LICENSE-$n.txt")) -and $credits.Contains("LICENSE-$n.txt")) ''
+
+        # 6. 关着就不加载：不许直接继承 tML 的内容基类，必须走 Addons/AddonContent.cs 的 Addon* 基类
+        $direct = New-Object System.Collections.Generic.List[string]
+        foreach ($f in (AllCs $d.FullName)) {
+            foreach ($h in (Select-String -LiteralPath $f.FullName -Pattern ':\s*(Mod(Item|Tile|TileEntity|Command|System|Player|Projectile|NPC|Buff|Wall|Dust)|Global(Item|NPC|Tile|Projectile))\b')) {
+                $direct.Add((Rel $f.FullName $mod) + ':' + $h.LineNumber)
+            }
+        }
+        Check "[$n] 游戏内容都继承 Addon* 基类（关着不加载）" ($direct.Count -eq 0) ($direct -join ', ')
+    }
+    # 4. 图案形状对拍上游：check_patterns_vs_original.py 读每个清单的 patterns.file（第一个带图案的附属落地时接上）
+}
+# ─────────────────────────────────────────────────────────────────────
 Write-Host ''
 Write-Host "================ 架构断言：通过 $script:passed / 失败 $script:failed ================" `
      -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })

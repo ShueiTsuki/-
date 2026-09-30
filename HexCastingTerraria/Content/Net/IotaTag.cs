@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using HexCastingTerraria.Core.Casting.Iotas;
 using HexCastingTerraria.Core.Casting.Math;
 using Terraria.ModLoader.IO;
@@ -95,6 +94,8 @@ public static class IotaTag
             NullIota.Instance, GarbageIota.Instance, BooleanIota.Of(true), BooleanIota.Of(false),
             new DoubleIota(-1.25), new VectorIota(1.5, -2, 3), new EntityIota(EntityIota.EntityKind.Npc, 7),
             new PatternIota(pattern!), new ListIota(new List<Iota>()),
+            // 关掉的附属留下的 iota：原样保管、原样写回（ADDONS.md「开关的实际效果」）
+            new UnknownIota("hexparse:comment", new List<object?> { "// 注释", 2.0, null }),
         };
         samples.Add(new ListIota(new List<Iota>(samples) { new ListIota(new List<Iota> { new DoubleIota(2), NullIota.Instance }) }));
 
@@ -107,7 +108,7 @@ public static class IotaTag
                 TagIO.ToStream(new TagCompound { ["iota"] = ToTag(iota) }, ms);
                 ms.Position = 0;
                 var back = TagIO.FromStream(ms);
-                if (!TryFromTag(back.Get<TagCompound>("iota"), out var read) || !SameTree(iota.Serialize(), read.Serialize()))
+                if (!TryFromTag(back.Get<TagCompound>("iota"), out var read) || !IotaSerializer.SameTree(iota.Serialize(), read.Serialize()))
                 {
                     failures.Add($"{iota.Display()} 读回不一致");
                 }
@@ -119,13 +120,4 @@ public static class IotaTag
         }
         return (samples.Count, failures);
     }
-
-    private static bool SameTree(object? a, object? b) => (a, b) switch
-    {
-        (null, null) => true,
-        (List<object?> x, List<object?> y) => x.Count == y.Count && Enumerable.Range(0, x.Count).All(i => SameTree(x[i], y[i])),
-        (Dictionary<string, object?> x, Dictionary<string, object?> y)
-            => x.Count == y.Count && x.All(kv => y.TryGetValue(kv.Key, out var v) && SameTree(kv.Value, v)),
-        _ => Equals(a, b),
-    };
 }

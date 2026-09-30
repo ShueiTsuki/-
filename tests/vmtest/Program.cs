@@ -2642,14 +2642,59 @@ static class Program
             if (IotaSerializer.TryDeserialize("随便一个字符串", out _)) bad++;            // 不是信封
             if (IotaSerializer.TryDeserialize(42.0, out _)) bad++;                       // 不是信封
             if (IotaSerializer.TryDeserialize(
-                    IotaSerializer.Envelope("未来版本才有的种类", 1.0), out _)) bad++;   // 未知种类
-            if (IotaSerializer.TryDeserialize(
                     IotaSerializer.Envelope(IotaSerializer.KindDouble, "不是数字"), out _)) bad++;
             if (IotaSerializer.TryDeserialize(
                     IotaSerializer.Envelope(IotaSerializer.KindVec, new List<object?> { 1.0 }), out _)) bad++;  // 少一个分量
             if (IotaSerializer.TryDeserialize(
                     IotaSerializer.Envelope(IotaSerializer.KindEntity, new List<object?> { 99.0, 1.0 }), out _)) bad++;  // 种类越界
-            Check("序列化：7 种畸形输入全部被拒绝（不静默降级）", bad == 0, $"漏过 {bad} 个");
+            Check("序列化：6 种畸形输入全部被拒绝（不静默降级）", bad == 0, $"漏过 {bad} 个");
+        }
+        {
+            // 不认识的种类（关掉的附属留下的）不是「畸形」：原样保管、原样写回，不能丢（ADDONS.md「开关的实际效果」）
+            var env = IotaSerializer.Envelope("hexparse:comment", new List<object?> { "// 注释", 2.0 });
+            bool ok = IotaSerializer.TryDeserialize(env, out var unknown);
+            Check("附属：不认识的种类原样保管（UnknownIota），再序列化一模一样",
+                ok && unknown is UnknownIota { KindTag: "hexparse:comment" } && IotaSerializer.SameTree(unknown.Serialize(), env),
+                unknown.ToString());
+            var inList = IotaSerializer.Envelope(IotaSerializer.KindList, new List<object?> { env, IotaSerializer.Envelope(IotaSerializer.KindDouble, 1.0) });
+            Check("附属：列表里夹着不认识的 iota，整个列表照样读得出来",
+                IotaSerializer.TryDeserialize(inList, out var list) && list is ListIota { Count: 2 } l && l.Items[0] is UnknownIota,
+                list.ToString());
+
+            // 附属打开（登记了种类）：读成附属自己的 iota；载荷畸形照样拒绝
+            IotaSerializer.RegisterKind("test:boxed", v => v is double d ? new DoubleIota(d) : null);
+            bool reg = IotaSerializer.TryDeserialize(IotaSerializer.Envelope("test:boxed", 3.0), out var boxed) && boxed is DoubleIota { Value: 3.0 };
+            bool regBad = !IotaSerializer.TryDeserialize(IotaSerializer.Envelope("test:boxed", "坏"), out _);
+            IotaSerializer.UnregisterKind("test:boxed");
+            bool back = IotaSerializer.TryDeserialize(IotaSerializer.Envelope("test:boxed", 3.0), out var again) && again is UnknownIota;
+            Check("附属：登记的种类用附属的读法，畸形拒绝；取消登记后变回原样保管", reg && regBad && back);
+        }
+        {
+            // 附属图案：声明了但没开 = 不参与识别；开了才认；本体 188 条的统计不受影响；
+            // 每世界大法术笔顺要避开**所有声明过的**附属图案（开没开都算）
+            int baseCount = PatternRegistry.Count;
+            HexPattern.TryFromAngles("qwqwqwqwqa", HexDir.East, out var probe, out _);
+            bool free = PatternRegistry.Match(probe!) == null;
+            PatternRegistry.DeclareAddonPatterns("test", new[] { new PatternData("test:probe", "qwqwqwqwqa", HexDir.East, "OpProbe") });
+            bool offMiss = PatternRegistry.Match(probe!) == null;
+            PatternRegistry.SetAddonEnabled("test", true);
+            bool onHit = PatternRegistry.Match(probe!)?.Id == "test:probe" && PatternRegistry.FindById("test:probe") != null;
+            // 和本体撞签名的附属图案：本体优先，并记下冲突
+            PatternRegistry.DeclareAddonPatterns("test", new[] { new PatternData("test:clash", "qaq", HexDir.East, "OpProbe") });
+            bool clash = PatternRegistry.Match("qaq")?.Id == "hexcasting:get_caster" && PatternRegistry.AddonConflicts.Count == 1;
+            PatternRegistry.ClearAddons();
+            bool cleared = PatternRegistry.Match(probe!) == null && PatternRegistry.Count == baseCount;
+            Check("附属图案：关着不认、开了才认、撞本体时本体优先、不改本体 188 条", free && offMiss && onHit && clash && cleared,
+                $"free={free} off={offMiss} on={onHit} clash={clash} cleared={cleared}");
+
+            // 找一条某个世界种子下真会生成的大法术笔顺，把它声明成（关着的）附属图案，再生成一次：必须换一条
+            var gen = PatternRegistry.GeneratePerWorld(12345);
+            var (someId, somePat) = gen.First();
+            PatternRegistry.DeclareAddonPatterns("test", new[] { new PatternData("test:squat", somePat.AnglesSignature(), somePat.StartDir, "OpProbe") });
+            var gen2 = PatternRegistry.GeneratePerWorld(12345);
+            PatternRegistry.ClearAddons();
+            Check("附属图案：关着的附属图案也不许和本世界大法术笔顺撞车",
+                gen2[someId].AnglesSignature() != somePat.AnglesSignature(), $"{someId}: {somePat.AnglesSignature()}");
         }
         {
             // 列表里有一项坏掉 -> **整个列表**失败。

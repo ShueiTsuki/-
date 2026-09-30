@@ -92,10 +92,14 @@ namespace HexCastingTerraria
             // 目前只接「常数 + 栈操作」这一批，其余按批增量补齐。
             Core.Casting.Actions.HexActions.RegisterAll();
             Logger.Info($"[HexCasting] 已实现行为的图案：{PatternRegistry.RegisteredActionCount} 条");
+
+            // 附属（ADDONS.md）：开关此时已由 tML 读好；声明全部附属图案，只启用开着的
+            Addons.AddonRegistry.Load(this);
         }
 
         public override void Unload()
         {
+            Addons.AddonRegistry.Unload();
             Content.Net.ServerCastState.ClearAll();
             PatternLoad = null;
             ToggleInfiniteMediaKey = null;

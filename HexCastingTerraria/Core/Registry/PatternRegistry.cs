@@ -192,6 +192,7 @@ public static class PatternRegistry
 
         LoadResult = result;
         _initialized = true;
+        RebuildAddonLookup();   // 本体表重建后，附属与本体撞车的判断要重算
         ResetPerWorldToCanonical();
         return result;
     }
@@ -239,10 +240,90 @@ public static class PatternRegistry
         {
             if (def.Id == id) { return def; }
         }
+        foreach (var defs in AddonDeclared.Values)
+        {
+            foreach (var def in defs)
+            {
+                if (def.Id == id) { return def; }
+            }
+        }
         return null;
     }
 
     public static PatternDef? Match(HexPattern pattern) => Match(pattern.MatchKey());
+
+    // ── 附属的图案 ─────────────────────────────────────────────────
+    //
+    // 附属图案不进 AllList（本体「188 条」的统计、收口用例、书都不受影响），单独登记：
+    //   - 声明（DeclareAddonPatterns）：不管附属开没开都声明 —— 每个世界的大法术笔顺要避开**全部**附属图案，
+    //     否则附属关着时建的世界可能生成一条和附属图案撞车的笔顺（ADDONS.md「开关的实际效果」）。
+    //   - 启用（SetAddonEnabled）：只有开着的附属参与识别；关着 = 画出来是无效图案，和原版没装这个附属一样。
+    // 查表顺序同源项目：普通图案（本体在前、附属在后）→ 本世界的大法术 → 特殊图案（调用方处理）。
+
+    private static readonly Dictionary<string, List<PatternDef>> AddonDeclared = new();
+    private static readonly HashSet<string> AddonEnabled = new();
+    private static readonly Dictionary<string, PatternDef> AddonLookup = new();
+
+    /// <summary>声明一个附属的全部图案（重复声明会覆盖）。签名必须能画出来，否则抛异常 —— 这是编译期数据，错了就该立刻暴露。</summary>
+    public static void DeclareAddonPatterns(string addonId, IEnumerable<PatternData> patterns)
+    {
+        var defs = new List<PatternDef>();
+        foreach (var data in patterns)
+        {
+            if (!HexPattern.TryFromAnglesUnchecked(data.Angles, data.StartDir, out var proto, out var err) || proto is null)
+            {
+                throw new System.ArgumentException($"附属 {addonId} 的图案 {data.Id} 画不出来：{err}");
+            }
+            defs.Add(new PatternDef { Id = data.Id, Angles = data.Angles, StartDir = data.StartDir, Op = data.Op, Prototype = proto });
+        }
+        AddonDeclared[addonId] = defs;
+        RebuildAddonLookup();
+    }
+
+    /// <summary>打开 / 关掉一个附属的图案识别。</summary>
+    public static void SetAddonEnabled(string addonId, bool enabled)
+    {
+        if (enabled) AddonEnabled.Add(addonId); else AddonEnabled.Remove(addonId);
+        RebuildAddonLookup();
+    }
+
+    /// <summary>清掉全部附属登记（模组卸载 / 离线测试用）。</summary>
+    public static void ClearAddons()
+    {
+        AddonDeclared.Clear();
+        AddonEnabled.Clear();
+        AddonLookup.Clear();
+    }
+
+    /// <summary>某个附属声明的图案（没声明返回空表）。</summary>
+    public static IReadOnlyList<PatternDef> AddonPatterns(string addonId)
+        => AddonDeclared.TryGetValue(addonId, out var defs) ? defs : System.Array.Empty<PatternDef>();
+
+    public static bool IsAddonEnabled(string addonId) => AddonEnabled.Contains(addonId);
+
+    /// <summary>附属图案和本体 / 别的附属撞了签名的记录（启用时发现），供加载日志排查。</summary>
+    public static IReadOnlyList<string> AddonConflicts => _addonConflicts;
+    private static readonly List<string> _addonConflicts = new();
+
+    private static void RebuildAddonLookup()
+    {
+        AddonLookup.Clear();
+        _addonConflicts.Clear();
+        foreach (var (addonId, defs) in AddonDeclared)
+        {
+            if (!AddonEnabled.Contains(addonId)) continue;
+            foreach (var def in defs)
+            {
+                string key = def.MatchKey;
+                if (Lookup.TryGetValue(key, out var baseDef) || AddonLookup.TryGetValue(key, out baseDef))
+                {
+                    _addonConflicts.Add($"{def.Id} 与 {baseDef.Id} 签名相同（{key}），保留 {baseDef.Id}");
+                    continue;
+                }
+                AddonLookup[key] = def;
+            }
+        }
+    }
 
     // ── 每个世界的笔顺 ─────────────────────────────────────────────
 
@@ -282,6 +363,11 @@ public static class PatternRegistry
         EnsureLoaded();
         var table = new Dictionary<string, HexPattern>();
         var taken = new HashSet<string>();
+        // 全部附属图案（开没开都算）也当作已占用，见上面「附属的图案」
+        foreach (var defs in AddonDeclared.Values)
+        {
+            foreach (var def in defs) taken.Add(def.MatchKey);
+        }
         foreach (var def in AllList)
         {
             if (!IsPerWorld(def)) continue;
@@ -314,6 +400,7 @@ public static class PatternRegistry
         EnsureLoaded();
         // 源项目 matchPattern：先普通图案，再本世界的大法术（特殊图案在更后面，由调用方处理）
         if (Lookup.TryGetValue(angles, out var def)) return def;
+        if (AddonLookup.TryGetValue(angles, out var addonDef)) return addonDef;
         return PerWorldLookup.TryGetValue(angles, out var pw) ? pw : null;
     }
 

@@ -197,6 +197,12 @@ foreach ($g in @(
     }
 }
 
+Step '生成 ADDONS.generated.md' {
+    $out = & python (Join-Path $tools 'gen_addons_index.py') 2>&1 | Out-String
+    ($out -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) | ForEach-Object { Write-Host "  $($_.Trim())" }
+    return ($LASTEXITCODE -eq 0)
+}
+
 # ── 7. 架构断言 ─────────────────────────────────────────────────────
 Step '架构约束断言' {
     $r = Invoke-Ps1 (Join-Path $tools 'check_arch.ps1')

@@ -54,9 +54,34 @@ public static class IotaSerializer
     public static Dictionary<string, object?> Envelope(string kind, object? value)
         => new() { [KindKey] = kind, [ValueKey] = value };
 
+    // ── 附属的 iota 种类 ─────────────────────────────────────────────
+    //
+    // 附属（HexParse、HexDebug…）打开时登记自己的种类（键用带命名空间的标签，如 "hexparse:comment"）。
+    // 没登记的种类（附属关着）读出来是 UnknownIota，原样保管，不会丢（ADDONS.md「开关的实际效果」）。
+
+    private static readonly Dictionary<string, System.Func<object?, Iota?>> AddonKinds = new();
+
+    /// <summary>登记一个附属的 iota 种类。<paramref name="read"/> 收载荷，载荷畸形就返回 null。</summary>
+    public static void RegisterKind(string kind, System.Func<object?, Iota?> read) => AddonKinds[kind] = read;
+
+    /// <summary>取消登记（模组卸载 / 离线测试用）。</summary>
+    public static void UnregisterKind(string kind) => AddonKinds.Remove(kind);
+
+    /// <summary>两棵信封树是否完全一样（null / bool / double / string / 列表 / 字典）。</summary>
+    public static bool SameTree(object? a, object? b) => (a, b) switch
+    {
+        (null, null) => true,
+        (List<object?> x, List<object?> y) => x.Count == y.Count && System.Linq.Enumerable.All(
+            System.Linq.Enumerable.Range(0, x.Count), i => SameTree(x[i], y[i])),
+        (Dictionary<string, object?> x, Dictionary<string, object?> y) => x.Count == y.Count && System.Linq.Enumerable.All(
+            x, kv => y.TryGetValue(kv.Key, out var v) && SameTree(kv.Value, v)),
+        _ => Equals(a, b),
+    };
+
     /// <summary>
     /// 反序列化。
     ///
+    /// 不认识的种类不算「无法解析」：返回一个原样保管信封的 <see cref="UnknownIota"/>。
     /// 返回 false 表示数据无法解析 —— 调用方应当**丢弃这个 iota**
     /// （例如把物品变成空的），而不是把它当成某个默认值。
     /// 静默降级成默认值会让「存档里的东西悄悄变了」这种问题极难发现。
@@ -167,7 +192,17 @@ public static class IotaSerializer
                 return false;
 
             default:
-                return false;
+                if (AddonKinds.TryGetValue(kind, out var read))
+                {
+                    // 登记过的附属种类：载荷畸形照样拒绝（和内置种类一个标准）
+                    var addonIota = read(value);
+                    if (addonIota is null) return false;
+                    iota = addonIota;
+                    return true;
+                }
+                // 不认识的种类：原样保管（以前是拒绝 = 数据丢失；原版是变垃圾 = 也丢）
+                iota = new UnknownIota(kind, value);
+                return true;
         }
     }
 }

@@ -24,6 +24,12 @@ public enum IotaKind
     Pattern = 6,
     Garbage = 7,
     Continuation = 8,
+
+    /// <summary>附属登记的 iota 种类（HexParse 注释、HexDebug 认知危害…），见 IotaSerializer.RegisterKind。</summary>
+    Addon = 9,
+
+    /// <summary>不认识的种类（多半来自关掉的附属），原样保管，见 UnknownIota。</summary>
+    Unknown = 10,
 }
 
 /// <summary>

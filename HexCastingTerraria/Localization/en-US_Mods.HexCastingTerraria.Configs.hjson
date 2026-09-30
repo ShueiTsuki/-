@@ -168,6 +168,29 @@ Mods: {
 					Tooltip: Upstream requires operator permission; Terraria has none, so in multiplayer only the host (Host & Play) and the server console may use these commands by default. Turn on to allow everyone. Singleplayer is unrestricted.
 				}
 			}
+
+			HexAddonsConfig: {
+				DisplayName: Hex Casting · Addons (server)
+
+				HexParse: {
+					Label: HexParse
+					Tooltip: Convert code text to and from iota lists, /hexParse command (YukkuriC). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
+				}
+
+				HexDebug: {
+					Label: HexDebug
+					Tooltip: Debugger items that step through hexes, Splicing Table for editing hexes (object-Object). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
+				}
+			}
+
+			HexAddonsClientConfig: {
+				DisplayName: Hex Casting · Addons (client)
+
+				Hexcessible: {
+					Label: Hexcessible
+					Tooltip: Accessibility for the casting screen: keyboard drawing, search patterns by name, aliases, hover info (Ruby / tizu). Only affects you; change any time.
+				}
+			}
 		}
 	}
 }

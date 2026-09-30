@@ -1,12 +1,12 @@
 {
-    "at":  "2026-10-01 03:59:10",
+    "at":  "2026-10-01 04:27:53",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
                     "warnings":  0
                 },
     "vmtest":  {
-                   "passed":  548,
+                   "passed":  553,
                    "failed":  0
                },
     "drawtest":  {
@@ -17,18 +17,11 @@
                    "needTexture":  110,
                    "missing":  0
                },
-    "package":  {
-                    "ok":  true,
-                    "bytes":  793339
-                },
-    "server":  {
-                   "ok":  true
-               },
     "tml":  {
                 "commit":  "666f69962d3bdffde54fc14025f02634965b4e7c",
                 "dllBuilt":  "2026-10-01 01:48"
             },
     "skipped":  [
-
+                    "打包 + 专用服务器加载"
                 ]
 }

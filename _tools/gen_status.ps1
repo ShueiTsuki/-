@@ -29,7 +29,7 @@ if ($null -eq $measured) { throw "缺少 _tools\measured.json —— 先跑 draw
 
 # ---- 代码规模 ----
 $layers = [ordered]@{}
-foreach ($name in @('Core', 'Content', 'Client', 'Config')) {
+foreach ($name in @('Core', 'Content', 'Client', 'Config', 'Addons')) {
     $dir = Join-Path $mod $name
     if (-not (Test-Path $dir)) { $layers[$name] = @{ Files = 0; Lines = 0 }; continue }
     $files = Get-ChildItem $dir -Recurse -File -Filter *.cs |

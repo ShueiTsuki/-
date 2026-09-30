@@ -98,7 +98,15 @@ public sealed class HexBook
     private static BookDocument? _document;
 
     /// <summary>全书内容（生成一次就缓存：500 多页，别每帧重建）。</summary>
-    public static BookDocument Document => _document ??= BookContent.Create();
+    public static BookDocument Document => _document ??= CreateDocument();
+
+    /// <summary>本体的书 + 开着的附属加的分类 / 条目（关着的附属在书里不存在）。</summary>
+    private static BookDocument CreateDocument()
+    {
+        var doc = BookContent.Create();
+        Addons.AddonRegistry.AddBookContent(doc);
+        return doc;
+    }
 
     /// <summary>当前玩家的解锁进度（书、开发者面板共用）。</summary>
     public static BookProgress CurrentProgress()

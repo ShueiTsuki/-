@@ -1,0 +1,171 @@
+{
+  "id": "hexdebug",
+  "name": "HexDebug",
+  "side": "both",
+  "upstream": {
+    "repo": "https://github.com/object-Object/HexDebug",
+    "version": "0.9.0+1.20.1",
+    "commit": "v0.9.0+1.20.1",
+    "license": "MIT",
+    "authors": [
+      "object-Object"
+    ],
+    "jar": "D:/DeepSeekHarness/mod/hexdebug-fabric-0.9.0+1.20.1.jar",
+    "src": "D:/DeepSeekHarness/addons_src/hexdebug",
+    "src_root": "Common/src/main/kotlin/gay/object/hexdebug/"
+  },
+  "namespace": "hexdebug",
+  "patterns": {
+    "file": "Common/src/main/kotlin/gay/object/hexdebug/registry/HexDebugActions.kt"
+  },
+  "requires": [],
+  "features": [
+    {
+      "name": "入口与开关",
+      "files": [
+        "Game/HexDebugAddon.cs"
+      ],
+      "upstream": [
+        "HexDebug.kt",
+        "config/HexDebugServerConfig.kt",
+        "config/HexDebugClientConfig.kt"
+      ]
+    },
+    {
+      "name": "步进核心（单步进入 / 跳过 / 跳出、继续、重启、停止、调用栈）",
+      "files": [],
+      "upstream": [
+        "debugger/HexDebugger.kt",
+        "debugger/DebugStepResult.kt",
+        "debugger/Enums.kt",
+        "debugger/IotaMetadata.kt",
+        "debugger/SharedDebugState.kt",
+        "debugger/allocators/Allocator.kt",
+        "debugger/allocators/SourceAllocator.kt",
+        "debugger/allocators/VariablesAllocator.kt"
+      ]
+    },
+    {
+      "name": "调试杖 / 淬灵调试杖",
+      "files": [],
+      "upstream": [
+        "items/DebuggerItem.kt",
+        "items/base/ShiftScrollable.kt",
+        "items/base/ItemPredicateProvider.kt",
+        "casting/eval/DebuggerCastEnv.kt"
+      ]
+    },
+    {
+      "name": "运行杖 / 淬灵运行杖",
+      "files": [],
+      "upstream": [
+        "items/EvaluatorItem.kt",
+        "casting/eval/FakeCastEnv.kt"
+      ]
+    },
+    {
+      "name": "断点",
+      "files": [],
+      "upstream": [
+        "casting/actions/OpBreakpoint.kt",
+        "casting/eval/FrameBreakpoint.kt",
+        "registry/HexDebugContinuationTypes.kt"
+      ]
+    },
+    {
+      "name": "游戏内调试面板（偏差：上游在外部编辑器里看）",
+      "files": [],
+      "upstream": [
+        "adapter/DebugAdapter.kt"
+      ]
+    },
+    {
+      "name": "图案 x22",
+      "files": [],
+      "upstream": [
+        "registry/HexDebugActions.kt",
+        "casting/actions/OpIsDebugging.kt",
+        "casting/actions/splicing/"
+      ]
+    },
+    {
+      "name": "认知危害 iota",
+      "files": [],
+      "upstream": [
+        "casting/iotas/CognitohazardIota.kt",
+        "registry/HexDebugIotaTypes.kt"
+      ]
+    },
+    {
+      "name": "剪接台 / 制念台",
+      "files": [],
+      "upstream": [
+        "blocks/splicing/",
+        "gui/splicing/",
+        "splicing/",
+        "casting/eval/SplicingTableCastEnv.kt",
+        "networking/msg/MsgSplicingTable*",
+        "resources/splicing/SplicingTableIotasResourceReloadListener.kt",
+        "api/client/splicing/",
+        "api/splicing/"
+      ]
+    },
+    {
+      "name": "核心框架",
+      "files": [],
+      "upstream": [
+        "blocks/focusholder/",
+        "items/FocusHolderBlockItem.kt",
+        "recipes/FocusHolderFillingShapedRecipe.kt"
+      ]
+    },
+    {
+      "name": "调试法术环",
+      "files": [],
+      "upstream": [
+        "debugger/circles/",
+        "mixin/MixinBlockEntityAbstractImpetus.java",
+        "mixin/MixinCircleExecutionState.java"
+      ]
+    },
+    {
+      "name": "联机消息（调试状态、运行杖）",
+      "files": [],
+      "upstream": [
+        "networking/HexDebugNetworking.kt",
+        "networking/handler/",
+        "networking/msg/MsgDebuggerStateS2C.kt",
+        "networking/msg/MsgEvaluatorClientInfoS2C.kt",
+        "networking/msg/MsgEvaluatorStateS2C.kt",
+        "networking/msg/MsgPrintDebuggerStatusS2C.kt"
+      ]
+    },
+    {
+      "name": "配方",
+      "files": [],
+      "upstream": [
+        "datagen/recipes/",
+        "recipes/FlyswatterQuenchingShapedRecipe.kt"
+      ]
+    },
+    {
+      "name": "书：调试 / 剪接台 / 核心框架条目",
+      "files": [],
+      "upstream": [
+        "assets/hexcasting/patchouli_books/thehexbook",
+        "assets/hexdebug/lang/zh_cn.flatten.json5"
+      ]
+    },
+    {
+      "name": "外部调试 DAP 服务器（最后做，默认关）",
+      "files": [],
+      "upstream": [
+        "adapter/DebugAdapterManager.kt",
+        "adapter/IHexDebugLauncher.kt",
+        "adapter/LaunchArgs.kt",
+        "adapter/proxy/",
+        "networking/msg/MsgDebugAdapterProxy.kt"
+      ]
+    }
+  ]
+}
