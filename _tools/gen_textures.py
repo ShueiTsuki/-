@@ -227,4 +227,109 @@ for name, path in [('ScrollTooltip', 'gui/scroll'), ('ScrollTooltipAncient', 'gu
     im = Image.open(os.path.join(JAR, path + '.png')).convert('RGBA')
     save(x2(im), 'Items', 'States', name + '.png')
 
+# ── 启迪木家具（Content/Tiles/EdifiedFurnitureTiles.cs）─────────────────
+# 门：原版上下两块（16×32）→ 泰拉门 1×3（16×48）：上半整块 + 下半的门板部分拉长 + 下半整块
+up, lo = src('block/edified_door_upper'), src('block/edified_door_lower')
+door = Image.new('RGBA', (16, 48), (0, 0, 0, 0))
+door.paste(up, (0, 0))
+for y in range(16):                       # 中段：下半块去掉底框的那几行，逐行拉满 16 行
+    door.paste(lo.crop((0, min(y * 12 // 16, 11), 16, min(y * 12 // 16, 11) + 1)), (0, 16 + y))
+door.paste(lo, (0, 32))
+closed = Image.new('RGBA', (54, 54), (0, 0, 0, 0))   # 泰拉关着的门：3 个随机样式（横排）× 3 格高，间隔 18
+for c in range(3):
+    for r in range(3):
+        closed.paste(door.crop((0, r * 16, 16, r * 16 + 16)), (c * 18, r * 18))
+save(closed, 'Tiles', 'EdifiedDoorClosed.png')
+# 开着的门 2×3：往右开 = [门轴那格只剩门板的侧边, 门板翻到隔壁]；往左开是镜像
+edge = Image.new('RGBA', (16, 48), (0, 0, 0, 0))
+edge.paste(door.crop((0, 0, 3, 48)), (0, 0))
+panel = door.transpose(Image.FLIP_LEFT_RIGHT)
+opened = Image.new('RGBA', (72, 54), (0, 0, 0, 0))
+for r in range(3):
+    box = (0, r * 16, 16, r * 16 + 16)
+    opened.paste(edge.crop(box), (0, r * 18))
+    opened.paste(panel.crop(box), (18, r * 18))
+    opened.paste(door.crop(box), (36, r * 18))
+    opened.paste(edge.transpose(Image.FLIP_LEFT_RIGHT).crop(box), (54, r * 18))
+save(opened, 'Tiles', 'EdifiedDoorOpen.png')
+save(x2(src('item/edified_door')), 'Items', 'EdifiedDoorItem.png')
+
+planks = src('block/edified_planks')
+dark = (37, 24, 64, 255)
+
+
+def fence_pixel(u, v):
+    """栅栏图案（世界对齐、16 周期）：中间一根立柱 + 上下两道横杆，木纹取启迪木板；外轮廓一圈深色。"""
+    def solid(a, b):
+        a, b = a % 16, b % 16
+        return 6 <= a <= 9 or 3 <= b <= 5 or 10 <= b <= 12
+    a, b = u % 16, v % 16
+    if solid(a, b):
+        return planks.getpixel((a, b))
+    if any(solid(a + dx, b + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+        return dark
+    return (0, 0, 0, 0)
+
+
+# 栅栏墙：泰拉墙图集 36×36 一格（32×32 画面，向四周各伸 8 像素压到邻格上）。
+# 帧的选法见 Terraria.Framing.WallFrame：邻格有墙的方向（上 1 / 左 2 / 右 4 / 下 8）才往那边伸；
+# (列, 行) 表照它的 wallFrameLookup 的前三个随机样式。
+WALL_LOOKUP = {0: [(9, 3), (10, 3), (11, 3)], 1: [(6, 3), (7, 3), (8, 3)], 2: [(12, 0), (12, 1), (12, 2)],
+               3: [(1, 4), (3, 4), (5, 4)], 4: [(9, 0), (9, 1), (9, 2)], 5: [(0, 4), (2, 4), (4, 4)],
+               6: [(6, 4), (7, 4), (8, 4)], 7: [(1, 2), (2, 2), (3, 2)], 8: [(6, 0), (7, 0), (8, 0)],
+               9: [(5, 0), (5, 1), (5, 2)], 10: [(1, 3), (3, 3), (5, 3)], 11: [(4, 0), (4, 1), (4, 2)],
+               12: [(0, 3), (2, 3), (4, 3)], 13: [(0, 0), (0, 1), (0, 2)], 14: [(1, 0), (2, 0), (3, 0)],
+               15: [(1, 1), (2, 1), (3, 1)], 16: [(6, 1), (7, 1), (8, 1)], 17: [(6, 2), (7, 2), (8, 2)],
+               18: [(10, 0), (10, 1), (10, 2)], 19: [(11, 0), (11, 1), (11, 2)]}
+wall = Image.new('RGBA', (13 * 36, 7 * 36), (0, 0, 0, 0))
+for style, cells in WALL_LOOKUP.items():
+    mask = min(style, 15)
+    up_, left_, right_, down_ = mask & 1, mask & 2, mask & 4, mask & 8
+    frame = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
+    for py in range(32):
+        for px in range(32):
+            u, v = px - 8, py - 8
+            if (u < 0 and not left_) or (u > 15 and not right_) or (v < 0 and not up_) or (v > 15 and not down_):
+                continue
+            frame.putpixel((px, py), fence_pixel(u, v))
+    for col, row in cells:
+        wall.paste(frame, (col * 36, row * 36))
+save(wall, 'Tiles', 'EdifiedFence.png')
+icon = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+for y in range(16):
+    for x in range(16):
+        post = 2 <= x <= 4 or 11 <= x <= 13
+        rail = (5 <= y <= 6 or 10 <= y <= 11) and 4 < x < 11
+        if (post and 1 <= y <= 15) or rail:
+            icon.putpixel((x, y), planks.getpixel((x, y)))
+save(x2(icon), 'Items', 'EdifiedFenceItem.png')
+
+
+def plank_rect(img, x0, y0, w, h):
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            edge_ = x in (x0, x0 + w - 1) or y in (y0, y0 + h - 1)
+            img.putpixel((x, y), dark if edge_ else planks.getpixel((x % 16, y % 16)))
+
+
+# 按钮：泰拉开关的 4 种贴法（列）= 地上 / 贴左边方块 / 贴右边方块 / 贴背景墙；两行（泰拉开关的开 / 关，按钮都一样）
+button = Image.new('RGBA', (72, 36), (0, 0, 0, 0))
+for row in range(2):
+    plank_rect(button, 0 * 18 + 5, row * 18 + 12, 6, 4)     # 地上：按钮朝上
+    plank_rect(button, 1 * 18 + 0, row * 18 + 5, 3, 6)      # 贴左边方块
+    plank_rect(button, 2 * 18 + 13, row * 18 + 5, 3, 6)     # 贴右边方块
+    plank_rect(button, 3 * 18 + 5, row * 18 + 6, 6, 4)      # 贴墙：正面
+save(button, 'Tiles', 'EdifiedButton.png')
+bi = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+plank_rect(bi, 4, 5, 8, 6)
+save(x2(bi), 'Items', 'EdifiedButtonItem.png')
+
+# 压力板：泰拉压力板 16×18 一格（往下画 2 像素，压住地面）；原版 14 像素宽的薄板
+plate = Image.new('RGBA', (16, 18), (0, 0, 0, 0))
+plank_rect(plate, 1, 12, 14, 3)
+save(plate, 'Tiles', 'EdifiedPressurePlate.png')
+pi = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+plank_rect(pi, 1, 10, 14, 3)
+save(x2(pi), 'Items', 'EdifiedPressurePlateItem.png')
+
 print(f'写出 {len(written)} 张')

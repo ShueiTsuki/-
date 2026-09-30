@@ -8,6 +8,21 @@ Mods: {
 		}
 
 		Items: {
+			EdifiedDoorItem: {
+				DisplayName: 启迪木门
+			}
+			EdifiedFenceItem: {
+				DisplayName: 启迪木栅栏
+				Tooltip: 泰拉的栅栏是墙：一格一格铺在背景上
+			}
+			EdifiedButtonItem: {
+				DisplayName: 启迪木按钮
+				Tooltip: 右键按一下，给连着的电线一个信号
+			}
+			EdifiedPressurePlateItem: {
+				DisplayName: 启迪木压力板
+				Tooltip: 玩家或生物踩上去时给电线一个信号
+			}
 			PigmentDyeWhite: {
 				DisplayName: 白色染色剂
 				Tooltip: 拿在手上施放「内化染色剂」，你的法术火花与哨卫就会换成它的颜色
@@ -542,6 +557,18 @@ Mods: {
 					'''
 			}
 			Tiles: {
+			EdifiedDoorClosed: {
+				MapEntry: 启迪木门
+			}
+			EdifiedDoorOpen: {
+				MapEntry: 启迪木门
+			}
+			EdifiedButton: {
+				MapEntry: 启迪木按钮
+			}
+			EdifiedPressurePlate: {
+				MapEntry: 启迪木压力板
+			}
 			AmethystSconce: {
 				MapEntry: 紫晶烛台
 			}

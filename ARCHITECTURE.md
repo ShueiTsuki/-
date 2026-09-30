@@ -86,7 +86,7 @@
 | `Casting/Circles/CircleDir.cs` | 娉曟湳鐜帶鍒舵祦鐨?*鏂瑰悜**銆?/// |
 | `Casting/Circles/CircleMessages.cs` | 法术环的消息出口。 |
 | `Casting/Circles/CircleTraversal.cs` | 娉曟湳鐜涓栫晫鐨勮闂€?/// |
-| `Casting/Eval/CastingEnvironment.cs` | 鎵撳寘娉曟湳鐨勭绫汇€傚搴旀簮椤圭洰鐨勪笁涓墿鍝侊細cypher锛堢绾革紝涓€娆℃€э級銆?/// trinket锛堥グ鍝侊紝鍙噸澶嶇敤锛夈€乤rtifact锛堟硶鍣紝瀹归噺鏇村ぇ锛夈€?/// |
+| `Casting/Eval/CastingEnvironment.cs` | 鎵撳寘娉曟湳鐨勭绫汇€傚搴旀簮椤圭洰鐨勪笁涓墿鍝侊細cypher锛堢绾革紝涓€娆℃€э級銆? |
 | `Casting/Eval/CastResult.cs` | 瀵规柦娉?VM 鍋氫竴娆℃搷浣滅殑缁撴灉銆?/// 绉绘鑷?at.petrak.hexcasting.api.casting.eval.CastResult銆?/// |
 | `Casting/Eval/ICastingWorld.cs` | 鏂芥硶鐜瀵广€屼笘鐣屻€嶇殑**鍙**璁块棶鎶借薄銆?/// |
 | `Casting/Eval/Mishaps/CommonMishaps.cs` | 鏍堜笂鐨勫弬鏁颁笉澶熴€傛儵缃氾細鎶婄己鐨勯偅鍑犱釜琛ユ垚鍨冨溇鍊硷紙婧愰」鐩悓锛夈€?/summary> |
@@ -157,7 +157,7 @@
 | `Items/CreativeUnlocker.cs` | 濯掕川绔嬫柟锛堝師鐗?ItemCreativeUnlocker锛屽垱閫犳ā寮忕墿鍝侊紝娌℃湁閰嶆柟锛夈€?/// |
 | `Items/DevKit.cs` | 寮€鍙戣€呮祴璇曞寘锛氫竴娆℃妸姣忎釜瀛愮郴缁熺殑浠ｈ〃鎬х墿鍝佸悇鍙戜竴浠姐€?/// |
 | `Items/DevStaff.cs` | 寮€鍙戣€呮硶鏉栵紙Dev Staff锛夈€?/// |
-| `Items/EdifiedFurniture.cs` | 鍚开鏈ㄧ殑銆屽鍏峰瑁呫€嶏細鐢ㄥ惎杩湪鏉垮幓鍚堟垚**鍘熺増瀹跺叿**銆?/// |
+| `Items/EdifiedFurniture.cs` | 鍚开鏈ㄧ殑瀹跺叿銆傚師鐗?HexBlocks 閲屾湁 8 绉嶏細妤兼銆佸彴闃躲€佹爡鏍忋€佹爡鏍忛棬銆侀棬銆佹椿鏉块棬銆佹寜閽€佸帇鍔涙澘銆?/// |
 | `Items/HexBookItem.cs` | 鍜掓硶瀛︿箣涔︺€傚搴旀簮椤圭洰鐨?`hexcasting:thehexbook`锛圥atchouli 鍐欑殑閭ｆ湰寮曞涔︼級銆?/// |
 | `Items/HexConditions.cs` | 本模组的配方条件。</summary> |
 | `Items/HexDecoBlockItem.cs` | 寤烘潗鏂瑰潡鐗╁搧鐨勫叕鍏卞疄鐜帮紙閰嶅悎 <see cref="HexDecoBlock"/>锛夈€?/// |
@@ -196,6 +196,7 @@
 | `Tiles/CircleCursor.cs` | 娉曟湳鐜殑銆屾墽琛屾父鏍囥€嶏細褰撳墠姝ｅ湪鎵ц鍝竴鏍笺€?/// |
 | `Tiles/ConjuredBlock.cs` | 琚彫鍞ゅ嚭鏉ョ殑鏂瑰潡/鍏夋簮鐨勫瓨娲荤鐞嗐€?/// |
 | `Tiles/DecoBlocks.Generated.cs` | 寤烘潗鏂瑰潡鐨勫叕鍏卞疄鐜帮紙P2-6 瑁呴グ鏂瑰潡瀹舵棌锛夈€?/// |
+| `Tiles/EdifiedFurnitureTiles.cs` | 鍚开鏈ㄩ棬锛堝叧锛夈€傚師鐗?edified_door锛圔lockHexDoor锛屾湪闂細鎵嬪氨鑳藉紑锛夈€?/summary> |
 | `Tiles/FletcherGaze.cs` | 鍒剁甯堜績鍔ㄧ煶鐨勩€岃鐩潃銆嶈鏁帮紙鍘熺増 BlockEntityLookingImpetus.serverTick锛夛細 |
 | `Tiles/HexDirectrix.cs` | 瀵肩嚎鐨勫叕鍏卞熀绫汇€傚搴旀簮椤圭洰 `BlockEmptyDirectrix` / `BlockBooleanDirectrix` / |
 | `Tiles/HexImpetus.cs` | 娉曟湳鐜娉版媺涓栫晫鐨勮闂疄鐜般€?/// |
@@ -220,7 +221,7 @@
 | `ScryingOverlay.cs` | 鎺㈢煡閫忛暅锛堝師鐗?ItemLens锛夌殑涓や釜鏁堟灉锛?/// |
 | `SentinelRenderer.cs` | 鐢昏嚜宸辩殑鍝ㄥ崼锛堝師鐗?HexAdditionalRenderers.renderSentinel锛夛細涓€涓唴鎺ヤ簬鍗曚綅鐞冪殑**姝ｄ簩鍗侀潰浣撶嚎妗?*锛?/// 缁曠珫杞磋嚜杞€佷笂涓嬫诞鍔紱澶у摠鍗紙鎵╁睍鏂芥硶鑼冨洿鐨勯偅绉嶏級鍐嶇粫姘村钩杞存參鎱㈢炕婊氥€?/// 鍙湁涓讳汉鐪嬪緱瑙侊紝闅旂潃澧欎篃鐪嬪緱瑙侊紙鍘熺増鍏充簡娣卞害娴嬭瘯锛夈€?/// |
 | `UI/DevPanel.cs` | 寮€鍙戣€呴潰鏉匡紙榛樿 F7锛夛細涓嶇煡閬撹鏀句粈涔堟硶鏈椂鐢ㄣ€?/// |
-| `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€?/// |
+| `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€? |
 | `UI/HexCanvas.cs` | 宸茬敾瀹岀殑涓€鏉″浘妗?+ 娉ㄥ唽琛ㄥ尮閰嶇粨鏋滐紙null = 鏈懡涓級+ 姹傚€肩粨鏋滐紙鍐冲畾棰滆壊锛夈€?/summary> |
 | `UI/PatternArt.cs` | 鎸夊師鐗堢敾娉曠敾闈欐€佸浘妗堬紙<see cref="StaticPatternArt"/>锛夌殑涓や釜鍏ュ彛锛?///   - <see cref="DrawUi"/>锛氱晫闈㈤噷锛堟彁绀烘銆佸紑鍙戣€呴潰鏉裤€丠UD锛夊綋鍦虹敾 |
 | `UI/PatternRenderer.cs` | 鍥炬妫€绱㈣緟鍔╋紙涓存懝鐩爣銆佹渶鎺ヨ繎鐨勫浘妗堬級銆?/// 鐢诲浘妗堬細鐢诲竷涓婄殑鍦?<see cref="Core.Canvas.PatternGeometry"/>锛堥€愯绉绘 RenderLib锛夛紝 |

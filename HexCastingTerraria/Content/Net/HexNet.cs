@@ -74,6 +74,12 @@ internal enum HexMessage : byte
 
     /// <summary>客户端 → 服务端：促动石操作（定出口、塞媒质、启动、牧师绑定 / 解绑）。见 HexImpetusEntity.Handle。</summary>
     ImpetusAction = 19,
+
+    /// <summary>
+    /// 双向：启迪木按钮 / 压力板给某格电线一个信号。泰拉的 Wiring.HitSwitch 只认原版开关，
+    /// 所以自己转发：谁触发谁先本地 TripWire，服务端再执行并转给其他客户端（同原版开关的 HitSwitch 消息）。
+    /// </summary>
+    TripWire = 20,
 }
 
 /// <summary>

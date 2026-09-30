@@ -301,6 +301,10 @@ namespace HexCastingTerraria
                     Content.Tiles.HexImpetusEntity.Handle(reader, whoAmI);
                     break;
 
+                case Content.Net.HexMessage.TripWire:
+                    Content.Tiles.EdifiedWiring.Receive(reader, whoAmI);
+                    break;
+
                 case Content.Net.HexMessage.PlayerState:
                     Content.HexPlayer.HandleState(reader, whoAmI);
                     break;

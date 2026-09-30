@@ -8,9 +8,9 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **118** 个可合成物品。
+共 **122** 个可合成物品。
 
-## 肉前（100 项）
+## 肉前（104 项）
 
 紫水晶 → 媒质 → 石板 → 法杖 → 工具与存储。源项目在这一段没有任何进度门槛。
 
@@ -130,6 +130,10 @@
 | `PigmentAncient` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 铜锭 |
 | `PigmentSoulglimmer` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×8 + 紫水晶碎片 |
 | `SubSandwich` | 1 | — | WorkBenches | 源 165-174 潜艇三明治：has_item(紫水晶碎片)，无门槛 → 肉前；熟牛肉 → 烤松鼠、面包 → 干草 |
+| `EdifiedDoorItem` | 3 | EdifiedPlanksItem×6 | WorkBenches | 源 edified_door：启迪木板 ×6 → 3（木门配方，无门槛）→ 肉前 |
+| `EdifiedFenceItem` | 4 | — | WorkBenches | 源 edified_fence：启迪木板 → 泰拉栅栏墙（1 → 4，泰拉木栅栏的比例） |
+| `EdifiedButtonItem` | 1 | — | WorkBenches | 源 edified_button：启迪木板 ×1 → 1 |
+| `EdifiedPressurePlateItem` | 1 | EdifiedPlanksItem×2 | WorkBenches | 源 edified_pressure_plate：启迪木板 ×2 → 1 |
 
 ## 肉后（9 项）
 

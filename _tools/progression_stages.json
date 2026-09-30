@@ -126,7 +126,11 @@
       "PigmentDefault": "同 PigmentItem：紫水晶粉 ×4 + 紫水晶碎片",
       "PigmentAncient": "同 PigmentItem：紫水晶粉 ×4 + 铜锭",
       "PigmentSoulglimmer": "同 PigmentItem：紫水晶粉 ×8 + 紫水晶碎片",
-      "SubSandwich": "源 165-174 潜艇三明治：has_item(紫水晶碎片)，无门槛 → 肉前；熟牛肉 → 烤松鼠、面包 → 干草"
+      "SubSandwich": "源 165-174 潜艇三明治：has_item(紫水晶碎片)，无门槛 → 肉前；熟牛肉 → 烤松鼠、面包 → 干草",
+      "EdifiedDoorItem": "源 edified_door：启迪木板 ×6 → 3（木门配方，无门槛）→ 肉前",
+      "EdifiedFenceItem": "源 edified_fence：启迪木板 → 泰拉栅栏墙（1 → 4，泰拉木栅栏的比例）",
+      "EdifiedButtonItem": "源 edified_button：启迪木板 ×1 → 1",
+      "EdifiedPressurePlateItem": "源 edified_pressure_plate：启迪木板 ×2 → 1"
     },
     "肉后": {
       "QuenchedAllayItem": "淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除小精灵 Pixie —— 神圣地肉后敌怪，用户定的进度 —— 要启蒙）",

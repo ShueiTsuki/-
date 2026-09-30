@@ -11,6 +11,21 @@ Mods: {
 		}
 
 		Items: {
+			EdifiedDoorItem: {
+				DisplayName: Edified Door
+			}
+			EdifiedFenceItem: {
+				DisplayName: Edified Fence
+				Tooltip: Terraria fences are walls: place it on the background
+			}
+			EdifiedButtonItem: {
+				DisplayName: Edified Button
+				Tooltip: Right click to send a signal down the connected wire
+			}
+			EdifiedPressurePlateItem: {
+				DisplayName: Edified Pressure Plate
+				Tooltip: Sends a signal when a player or creature steps on it
+			}
 			PigmentDyeWhite: {
 				DisplayName: White Pigment
 				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
@@ -554,6 +569,18 @@ Mods: {
 					'''
 			}
 		Tiles: {
+			EdifiedDoorClosed: {
+				MapEntry: Edified Door
+			}
+			EdifiedDoorOpen: {
+				MapEntry: Edified Door
+			}
+			EdifiedButton: {
+				MapEntry: Edified Button
+			}
+			EdifiedPressurePlate: {
+				MapEntry: Edified Pressure Plate
+			}
 
 			AkashicRecord: {
 				MapEntry: "Akashic Record"

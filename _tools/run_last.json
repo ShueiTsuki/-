@@ -1,5 +1,5 @@
 {
-    "at":  "2026-09-30 23:25:02",
+    "at":  "2026-09-30 23:37:44",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
@@ -14,12 +14,12 @@
                      "failed":  0
                  },
     "assets":  {
-                   "needTexture":  101,
+                   "needTexture":  110,
                    "missing":  0
                },
     "package":  {
                     "ok":  true,
-                    "bytes":  774853
+                    "bytes":  785099
                 },
     "server":  {
                    "ok":  true
