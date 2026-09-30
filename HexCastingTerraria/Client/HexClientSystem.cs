@@ -363,8 +363,8 @@ public sealed class HexClientSystem : ModSystem
                 var mouse = new Vector2(Main.mouseX, Main.mouseY);
 
                 var canvas = HexCanvasState.Canvas;
-                DrawHud(Main.spriteBatch, w, h, mouse);
-                DrawVmStack(Main.spriteBatch, w, h);
+                float hudBottom = DrawHud(Main.spriteBatch, w, h, mouse);
+                DrawVmStack(Main.spriteBatch, HudLeft, hudBottom);
 
                 // 探知透镜：鼠标指着的方块的信息（促动石的媒质 / 消息 / 绑定）
                 if (!HexCanvasState.Canvas.IsOpen)
@@ -386,18 +386,26 @@ public sealed class HexClientSystem : ModSystem
             InterfaceScaleType.UI));
     }
 
-    private void DrawHud(SpriteBatch sb, float w, float h, Vector2 mouse)
+    /// <summary>
+    /// HUD 这一列的左边。泰拉左上角是快捷栏（打开背包时往右还有钱币 / 弹药两列，到 x≈570 为止），
+    /// 右上角是生命 / 魔力 —— 两边之间的顶部是空的，媒质、提示、VM 栈都放这一列。
+    /// （之前放在 x=18 压着快捷栏、VM 栈放在右上角压着血条，2026-09-30 用户截图指出。）
+    /// </summary>
+    private const float HudLeft = 600f;
+
+    /// <returns>这一列已经画到的最下沿（VM 栈接着往下画）。</returns>
+    private float DrawHud(SpriteBatch sb, float w, float h, Vector2 mouse)
     {
         var canvas = HexCanvasState.Canvas;
         var player = Main.LocalPlayer;
+        float x = HudLeft;
+        float y = 18f;
         if (player == null || !player.active)
         {
-            return;
+            return y;
         }
 
         var hexPlayer = HexPlayer.Get(player);
-        float x = 18f;
-        float y = 18f;
 
         // ===== 媒质指示：背包里的媒质（配色对齐原作 MediaHelper.mediaBarColor）=====
         // 原版没有媒质条（媒质就在背包的物品里）；这只是个信息显示，可在设置里关掉。
@@ -446,7 +454,7 @@ public sealed class HexClientSystem : ModSystem
                 new Vector2(x + ringRadius * 2 + 12, y + 26), new Color(190, 184, 210), 0.7f);
         }
 
-        float msgY = y + 62;
+        float msgY = shouldShowMedia ? y + 62 : y;
 
         // ===== 正在画的这一笔（实时） =====
         //
@@ -512,6 +520,8 @@ public sealed class HexClientSystem : ModSystem
         {
             DrawDebugPanel(sb, canvas, w, h, mouse);
         }
+
+        return msgY;
     }
 
     /// <summary>当前临摹目标在「已实现图案」列表里的下标；-1 表示不显示引导。</summary>
@@ -687,13 +697,11 @@ public sealed class HexClientSystem : ModSystem
     /// <summary>
     /// 显示 VM 栈内容 —— 这是「画图案 → 求值」闭环的可见证据。
     /// </summary>
-    private void DrawVmStack(SpriteBatch sb, float w, float h)
+    private void DrawVmStack(SpriteBatch sb, float x, float y)
     {
         var stack = HexVmState.Stack;
         bool hasAny = stack.Count > 0 || HexVmState.ParenCount > 0 || HexVmState.EscapeNext;
-
-        float x = w - 250f;
-        float y = 18f;
+        y += 6f;
 
         if (!hasAny && HexVmState.LastResolution == ResolvedPatternType.Unresolved)
         {
