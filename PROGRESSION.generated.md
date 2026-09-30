@@ -121,7 +121,7 @@
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
-| `HexImpetusItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + CrystalShard×2 + IronFence×2 | MythrilAnvil + 已启蒙 | 源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书） |
+| `HexImpetusEmptyItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + CrystalShard×2 + IronFence×2 | MythrilAnvil + 已启蒙 | 源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书） |
 | `HexDirectrixEmptyItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + Wire×20 | MythrilAnvil + 已启蒙 | 源 400-408：同样挂 enlightenment → 秘银砧 + 已启蒙；比较器/观察者 → 电线（泰拉红石本体） |
 | `HexDirectrixItemBase` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一 |
 | `HexDirectrixBooleanItem` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 同 HexDirectrixItemBase（配方继承自基类的 RegisterRecipe） |

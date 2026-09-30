@@ -39,17 +39,15 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     }
 
     /// <summary>
-    /// 法术环专用的世界访问：**没有施法者**，范围 = 环的包围盒。
-    ///
-    /// `Caster` 返回 null 正是 `get_caster` 吐 `NullIota` 的场景 ——
-    /// 那个分支早先按源码注释保留，现在有真实用途了。
+    /// 法术环专用的世界访问：范围 = 环的包围盒（再加施法者身边与他的大哨卫，见 InRange）。
+    /// 施法者 = 启动它的玩家 / 牧师促动石绑定的玩家；没有就是 null，`get_caster` 吐 `NullIota`。
     /// </summary>
-    public static TerrariaCastingWorld ForCircle(int minX, int minY, int maxX, int maxY)
-        => new(null, (minX, minY, maxX, maxY));
+    public static TerrariaCastingWorld ForCircle(int minX, int minY, int maxX, int maxY, Player? caster = null)
+        => new(caster, (minX, minY, maxX, maxY));
 
     /// <summary>
     /// 施法者。玩家不存活时返回 null —— 对应源项目 `castingEntity` 可为 null 的语义，
-    /// `get_caster` 会因此吐 NullIota。法术环环境下**恒为 null**。
+    /// `get_caster` 会因此吐 NullIota。
     /// </summary>
     public EntityIota? Caster
         => _caster is { active: true } && !_caster.dead
@@ -184,9 +182,25 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>三维距离：施法者、哨卫都在世界平面上（z = 0），点的 z 算进距离。法术环的包围盒 z 范围是 [0, 1)。</summary>
     private bool InRange(double tileX, double tileY, double z)
     {
-        // 法术环：范围 = 环的包围盒（源项目 CircleCastEnv 的语义）
+        // 法术环（源项目 CircleCastEnv.isVecInRangeEnvironment）：
+        //   ① 施法者身边：到脚底的距离 ≤ 身高
+        //   ② 施法者的大哨卫：半径 SENTINEL_RADIUS
+        //   ③ 环的包围盒
         if (_circleBounds is { } b)
         {
+            if (_caster is { active: true, dead: false })
+            {
+                var (fx, fy) = CasterFeetTiles();
+                double h = _caster.height / HexUnits.PixelsPerTile;
+                double cdx = tileX - fx, cdy = tileY - fy;
+                if (cdx * cdx + cdy * cdy + z * z <= h * h) return true;
+                if (HexPlayer.Get(_caster).Sentinel is { Great: true } cs)
+                {
+                    double sdx = tileX - cs.X, sdy = tileY - HexSpaceWorld.TileY(cs.Y);
+                    const double csr = CastingEnvironment.SentinelRadiusTiles;
+                    if (sdx * sdx + sdy * sdy + z * z <= csr * csr + 1e-10) return true;
+                }
+            }
             // 源项目 bounds.contains(vec)：[min, max + 1)，不多放半格（这里曾经四周各放宽半格）
             return tileX >= b.MinX && tileX < b.MaxX + 1
                 && tileY >= b.MinY && tileY < b.MaxY + 1

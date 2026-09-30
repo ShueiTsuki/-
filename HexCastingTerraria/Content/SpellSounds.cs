@@ -61,6 +61,10 @@ internal static class SpellSounds
         // 每走一格：很轻，长环会响几十次
         ("spellcircle.find_block", SoundID.MenuTick, 0.22f, -0.50f),
         ("spellcircle.fail", SoundID.MenuClose, 0.60f, -0.30f),
+        // 制箭师促动石被盯着时的咔哒（原版音高 0.5 → 1.2 随进度上升，这里取中间值）
+        ("impetus.fletcher.tick", SoundID.MenuTick, 0.35f, 0.10f),
+        ("impetus.redstone.register", SoundID.Item4, 0.50f, 0.40f),
+        ("impetus.redstone.clear", SoundID.MenuClose, 0.50f, 0.00f),
 
         // ── 飞行 ──
         ("flight.start", SoundID.Item4, 0.50f, 0.35f),
@@ -131,6 +135,13 @@ internal static class SpellSounds
     /// 客户端听不到（`Main.dedServ` 为真时它什么都不做）。
     /// 与粒子（`SpellParticles`）同一条思路。
     /// </summary>
+    /// <summary>服务端广播给附近的人，单机 / 客户端直接播。</summary>
+    public static void PlayOrBroadcast(string name, Vector2 at)
+    {
+        if (Main.netMode == NetmodeID.Server) Broadcast(name, at.X, at.Y);
+        else Play(name, at);
+    }
+
     public static void Broadcast(string name, float x, float y)
     {
         if (Main.netMode != NetmodeID.Server) return;

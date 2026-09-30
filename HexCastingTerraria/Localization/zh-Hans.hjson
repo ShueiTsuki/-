@@ -332,39 +332,62 @@ Mods: {
 					'''
 			}
 			HexImpetusItem: {
-				DisplayName: 咒术原动力
+				DisplayName: 工具匠促动石
 				Tooltip:
 					'''
-					法术环的「原动力」
-					它本身不含图案 —— 图案写在石板上
-					右击启动环；启动前会校验环是否闭合
+					法术环的起点：不潜行右键启动
+					拿着媒质物品右键：把媒质塞进去
+					放置时出口朝向鼠标方向（潜行反过来）
+					'''
+			}
+			HexImpetusEmptyItem: {
+				DisplayName: 空白促动石
+				Tooltip:
+					'''
+					媒质只从箭头方向流出
+					对站在上面的哥布林工匠 / 军火商 / 护士施「脑叶切除」，变成三种促动石
+					'''
+			}
+			HexImpetusRedstoneItem: {
+				DisplayName: 牧师促动石
+				Tooltip:
+					'''
+					法术环的起点：收到电线信号时启动
+					拿着存有玩家的核心右键：绑定该玩家（空手潜行右键解绑）
+					拿着媒质物品右键：把媒质塞进去
+					'''
+			}
+			HexImpetusLookItem: {
+				DisplayName: 制箭师促动石
+				Tooltip:
+					'''
+					法术环的起点：盯着它看 1.5 秒启动
+					拿着媒质物品右键：把媒质塞进去
+					放置时出口朝向鼠标方向（潜行反过来）
 					'''
 			}
 			HexDirectrixEmptyItem: {
-				DisplayName: 空导线
+				DisplayName: 空白导向石
 				Tooltip:
 					'''
-					法术环的分流器
-					随机出轴的一端 —— 用来做概率分支
-					空手右键转轴向
+					媒质沿轴随机从一端流出
+					放置时轴向朝向鼠标方向（潜行反过来）
 					'''
 			}
 			HexDirectrixBooleanItem: {
-				DisplayName: 布尔导线
+				DisplayName: 牧羊人导向石
 				Tooltip:
 					'''
-					法术环的分流器，也是唯一的分支结构
-					弹出栈顶布尔值：真出轴向一端、假出另一端
-					空手右键转轴向
+					弹出栈顶布尔值：真从箭头反方向流出、假从箭头方向流出
+					放置时轴向朝向鼠标方向（潜行反过来）
 					'''
 			}
 			HexDirectrixRedstoneItem: {
-				DisplayName: 红石导线
+				DisplayName: 石匠导向石
 				Tooltip:
 					'''
-					法术环的分流器
-					通电时出轴向一端，否则出另一端
-					空手右键转轴向
+					通电时从箭头方向流出，否则从反方向
+					放置时轴向朝向鼠标方向（潜行反过来）
 					'''
 			}
 			Tiles: {
@@ -513,7 +536,16 @@ Mods: {
 				MapEntry: 红石导线
 			}
 			HexImpetus: {
-				MapEntry: 咒术原动力
+				MapEntry: 工具匠促动石
+			}
+			HexImpetusLook: {
+				MapEntry: 制箭师促动石
+			}
+			HexImpetusRedstone: {
+				MapEntry: 牧师促动石
+			}
+			HexImpetusEmpty: {
+				MapEntry: 空白促动石
 			}
 			HexSlate: {
 				MapEntry: 咒术石板

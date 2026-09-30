@@ -113,6 +113,18 @@ public readonly struct CircleComponent
     };
 
     /// <summary>
+    /// 空白促动石（原版 BlockEmptyImpetus）：进入规则同促动石（不能从出口的反方向进），
+    /// 但它**继续传导**，唯一出口 = 箭头方向（acceptControlFlow → Continue(facing)）。
+    /// </summary>
+    public static CircleComponent EmptyImpetus(CircleDir facing) => new()
+    {
+        Kind = CircleComponentKind.EmptyImpetus,
+        AllowedEntries = CircleDirMask.All.Without(facing.Opposite()),
+        ExitMask = CircleDirMaskUtil.Of(facing),
+        Facing = facing,
+    };
+
+    /// <summary>
     /// 导线：只能沿**一个轴**传导。轴的两端都能出去、也都不能进入；
     /// 只能从垂直于轴的方向进入。
     /// 对应源项目三根导线的 `possibleExitDirections` 与 `canEnterFromDirection`。

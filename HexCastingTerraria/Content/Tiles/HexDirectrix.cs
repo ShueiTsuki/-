@@ -87,25 +87,25 @@ public abstract class HexDirectrixBase : ModTile
         entity.Sync();
     }
 
-    public override bool RightClick(int i, int j)
+    /// <summary>
+    /// 原版 placeStateDirAndSneak：朝向 = 放置时视线最接近的方向，潜行反过来；之后不能再改
+    ///（这里曾经是「右键转 90°」，原版没有）。
+    /// </summary>
+    public override void PlaceInWorld(int i, int j, Item item)
     {
-        var entity = HexDirectrixEntity.FindAt(i, j);
-        if (entity == null) return true;
-
-        entity.RotateFacing();
-
+        var facing = CircleFacing.FromPlacement(Main.LocalPlayer);
         if (Main.netMode == NetmodeID.MultiplayerClient)
         {
-            Content.Net.HexNetSync.RequestDirectrixFacing(i, j, (byte)entity.Facing);
+            Content.Net.HexNetSync.RequestDirectrixFacing(i, j, (byte)facing);
         }
-        else
+        else if (HexDirectrixEntity.FindAt(i, j) is { } entity)
         {
-            entity.Sync();
+            entity.SetFacing(facing);
         }
-
-        Main.NewText($"导线轴向：{entity.Facing} ↔ {entity.Facing.Opposite()}");
-        return true;
     }
+
+    public override void PostDraw(int i, int j, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
+        => CircleFacing.DrawArrow(spriteBatch, i, j, HexDirectrixEntity.FindAt(i, j)?.Facing ?? CircleDir.Right);
 }
 
 /// <summary>空导线：随机出轴的一端。</summary>

@@ -122,6 +122,7 @@ namespace HexCastingTerraria
             int redstoneDirectrix = ModContent.TileType<Content.Tiles.HexDirectrixRedstone>();
             int booleanDirectrix = ModContent.TileType<Content.Tiles.HexDirectrixBoolean>();
             int akashicRecord = ModContent.TileType<Content.Tiles.AkashicRecord>();
+            int emptyImpetus = ModContent.TileType<Content.Tiles.HexImpetusEmpty>();
 
             int AnyNpc = Core.Casting.Actions.BrainsweepRules.AnySpecies;
             int wizard = Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.Wizard);
@@ -136,6 +137,18 @@ namespace HexCastingTerraria
                 // 原版：空导线 + 石匠/牧羊人 → 红石导线 / 布尔导线（职业已映射到泰拉的城镇 NPC）
                 new Core.Casting.Actions.BrainsweepRecipe(emptyDirectrix, demolitionist, redstoneDirectrix, none, crystal10),
                 new Core.Casting.Actions.BrainsweepRecipe(emptyDirectrix, dyeTrader, booleanDirectrix, none, crystal10),
+
+                // 原版：空白促动石 + 工具匠 / 制箭师 / 牧师 → 三种促动石（2 级村民，1000000 媒质）
+                // 泰拉：工具匠 → 哥布林工匠（修改工具的人）、制箭师 → 军火商（远程武器与弹药）、牧师 → 护士（治疗者）
+                new Core.Casting.Actions.BrainsweepRecipe(emptyImpetus,
+                    Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.GoblinTinkerer),
+                    ModContent.TileType<Content.Tiles.HexImpetus>(), none, crystal10),
+                new Core.Casting.Actions.BrainsweepRecipe(emptyImpetus,
+                    Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.ArmsDealer),
+                    ModContent.TileType<Content.Tiles.HexImpetusLook>(), none, crystal10),
+                new Core.Casting.Actions.BrainsweepRecipe(emptyImpetus,
+                    Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.Nurse),
+                    ModContent.TileType<Content.Tiles.HexImpetusRedstone>(), none, crystal10),
 
                 // 原版：阿卡夏系带 + 图书管理员 → 记录方块（泰拉没有「系带」，改用粉块）
                 new Core.Casting.Actions.BrainsweepRecipe(dustBlock, wizard, akashicRecord, none, crystal10),
@@ -279,6 +292,11 @@ namespace HexCastingTerraria
                         return;
                     }
                     Content.PlayerEffects.Handle(reader);
+                    break;
+
+                case Content.Net.HexMessage.ImpetusAction:
+                    if (Main.netMode != NetmodeID.Server) return;
+                    Content.Tiles.HexImpetusEntity.Handle(reader, whoAmI);
                     break;
 
                 case Content.Net.HexMessage.PlayerState:

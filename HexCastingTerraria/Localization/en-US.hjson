@@ -343,39 +343,62 @@ Mods: {
 					'''
 			}
 			HexImpetusItem: {
-				DisplayName: Hex Impetus
+				DisplayName: Toolsmith Impetus
 				Tooltip:
 					'''
-					The heart of a spell circle
-					It holds no patterns itself -- patterns live on slates
-					Right click to start; closure is validated first
+					Starts a spell circle when right-clicked (not sneaking)
+					Right-click holding a media item to insert its media
+					Faces the mouse direction when placed (sneak to invert)
+					'''
+			}
+			HexImpetusEmptyItem: {
+				DisplayName: Empty Impetus
+				Tooltip:
+					'''
+					Media flows out only in the direction of the arrow
+					Brainsweep a Goblin Tinkerer / Arms Dealer / Nurse standing on it to make an impetus
+					'''
+			}
+			HexImpetusRedstoneItem: {
+				DisplayName: Cleric Impetus
+				Tooltip:
+					'''
+					Starts a spell circle on a wire signal
+					Right-click with a focus holding a player to bind them (sneak empty-handed to clear)
+					Right-click holding a media item to insert its media
+					'''
+			}
+			HexImpetusLookItem: {
+				DisplayName: Fletcher Impetus
+				Tooltip:
+					'''
+					Starts a spell circle after being looked at for 1.5 seconds
+					Right-click holding a media item to insert its media
+					Faces the mouse direction when placed (sneak to invert)
 					'''
 			}
 			HexDirectrixEmptyItem: {
 				DisplayName: Empty Directrix
 				Tooltip:
 					'''
-					A spell circle splitter
-					Randomly picks one end of its axis -- use it for chance branches
-					Right click empty-handed to rotate the axis
+					Media leaves from a random end of its axis
+					Faces the mouse direction when placed (sneak to invert)
 					'''
 			}
 			HexDirectrixBooleanItem: {
-				DisplayName: Boolean Directrix
+				DisplayName: Shepherd Directrix
 				Tooltip:
 					'''
-					A spell circle splitter, and the only branch structure
-					Pops a boolean: true exits one way, false the other
-					Right click empty-handed to rotate the axis
+					Pops a boolean: true exits against the arrow, false along it
+					Faces the mouse direction when placed (sneak to invert)
 					'''
 			}
 			HexDirectrixRedstoneItem: {
-				DisplayName: Redstone Directrix
+				DisplayName: Mason Directrix
 				Tooltip:
 					'''
-					A spell circle splitter
-					Powered exits one way, unpowered the other
-					Right click empty-handed to rotate the axis
+					Powered: exits along the arrow; otherwise against it
+					Faces the mouse direction when placed (sneak to invert)
 					'''
 			}
 		Tiles: {
@@ -512,7 +535,16 @@ Mods: {
 				MapEntry: "Empty Directrix"
 			}
 			HexImpetus: {
-				MapEntry: "Impetus"
+				MapEntry: Toolsmith Impetus
+			}
+			HexImpetusLook: {
+				MapEntry: Fletcher Impetus
+			}
+			HexImpetusRedstone: {
+				MapEntry: Cleric Impetus
+			}
+			HexImpetusEmpty: {
+				MapEntry: Empty Impetus
 			}
 			HexSlate: {
 				MapEntry: "Slate"

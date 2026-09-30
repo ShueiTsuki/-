@@ -36,32 +36,42 @@ public sealed class CircleState
 /// <summary>
 /// 法术环的施法环境。移植自源项目 `CircleCastEnv`。
 ///
-/// 与玩家环境的**三处本质区别**（逐条核对过 `CircleCastEnv.java`）：
+/// 与玩家环境的区别（逐条核对过 `CircleCastEnv.java`）：
 ///
 /// | | 玩家环境 | 法术环 |
 /// |---|---|---|
 /// | 媒质来源 | 背包里的媒质物品 | **原动力的媒质池**（负数 = 无限） |
-/// | 范围判定 | 以玩家为中心 32 格半径 | **环自身的包围盒** |
-/// | 施法者 | 玩家实体 | **null**（无人施法） |
+/// | 范围判定 | 以玩家为中心 32 格半径 | 环的包围盒；**再加上施法者身边和他的大哨卫**（世界侧实现） |
+/// | 施法者 | 玩家实体 | **启动它的玩家**（工具匠 / 制箭师）或牧师促动石绑定的玩家；可以没有 |
+/// | 启蒙 | 看玩家 | 看施法者；**没人绑定的环算启蒙** |
+/// | 手持物品 | 玩家的两只手 | 施法者的两只手（原版 getPrimaryStacksForPlayer(OFF_HAND, caster)） |
+/// | 消息 / mishap | 发给玩家 | **显示在原动力上**（原版 postPrint / postMishap，探知透镜里看） |
 ///
-/// 最后一行正好用上 `get_caster` 早先特意保留的分支：
-/// 无实体施法者时返回 `NullIota` 而**不是**报错。
+/// 没有施法者时 `get_caster` 吐 `NullIota` 而**不是**报错。
 /// </summary>
 public sealed class CircleCastingEnvironment : CastingEnvironment
 {
     private readonly ICastingWorld _world;
     private readonly CircleState _state;
     private readonly System.Func<long, bool, long> _extractMedia;
+    private readonly CastingEnvironment? _caster;
+    private readonly System.Action<string, bool> _display;
 
-    /// <param name="world">世界访问（泰拉侧由 TerrariaCastingWorld 提供）。</param>
+    /// <param name="world">世界访问（泰拉侧由 TerrariaCastingWorld 提供，施法者 / 范围都在里面）。</param>
     /// <param name="state">环的状态。</param>
     /// <param name="extractMedia">媒质支取：(消耗, 是否试算) -> 还未付清的量。</param>
+    /// <param name="caster">施法者的环境（手持物品、启蒙、哨卫、配色都转给它）；null = 没有施法者。</param>
+    /// <param name="display">原动力上的显示：(文字, 是不是 mishap)。</param>
     public CircleCastingEnvironment(ICastingWorld world, CircleState state,
-                                    System.Func<long, bool, long> extractMedia)
+                                    System.Func<long, bool, long> extractMedia,
+                                    CastingEnvironment? caster = null,
+                                    System.Action<string, bool>? display = null)
     {
         _world = world;
         _state = state;
         _extractMedia = extractMedia;
+        _caster = caster;
+        _display = display ?? ((msg, _) => CircleMessages.Post(msg));
     }
 
     /// <summary>环的状态。三个 `circle/*` 图案通过它取值。</summary>
@@ -72,15 +82,51 @@ public sealed class CircleCastingEnvironment : CastingEnvironment
     protected override long ExtractMediaEnvironment(long cost, bool simulate)
         => _extractMedia(cost, simulate);
 
-    /// <summary>环里没有实体施法者 —— 这正是 `get_caster` 会吐 NullIota 的场景。</summary>
-    public override bool IsEnlightened() => true;
+    /// <summary>原版：`if (getCastingEntity() == null) return true; return super.isEnlightened();`</summary>
+    public override bool IsEnlightened() => _caster?.IsEnlightened() ?? true;
 
-    public override void PrintMessage(string message)
+    /// <summary>原版 printMessage → impetus.postPrint。</summary>
+    public override void PrintMessage(string message) => _display(message, false);
+
+    /// <summary>原版 postExecution：本次结果里的 mishap 显示到原动力上（postMishap）。</summary>
+    public override void PostExecution(CastResult result)
     {
-        // 环没有施法者，没有地方「发消息给玩家」。
-        // 源项目是显示在原动力的上方（postDisplay），泰拉侧先走注入的消息出口。
-        CircleMessages.Post(message);
+        base.PostExecution(result);
+        foreach (var effect in result.SideEffects)
+        {
+            if (effect is DoMishapSideEffect doMishap
+                && doMishap.Mishap.ErrorMessageWithName(this, doMishap.ErrorCtx) is { Length: > 0 } msg)
+            {
+                _display(msg, true);
+            }
+        }
     }
+
+    // ── 施法者的「手」与身上的东西（没有施法者就全是默认值：原版 getPrimaryStacks 返回空）──
+
+    public override Iota? ReadHeldIota() => _caster?.ReadHeldIota();
+    public override bool HasHeldStorage() => _caster?.HasHeldStorage() ?? false;
+    public override bool IsHeldWritable() => _caster?.IsHeldWritable() ?? false;
+    public override bool CanWriteHeld(Iota? datum) => _caster?.CanWriteHeld(datum) ?? false;
+    public override bool WriteHeldIota(Iota value) => _caster?.WriteHeldIota(value) ?? false;
+    public override int HeldEraseableCount() => _caster?.HeldEraseableCount() ?? 0;
+    public override void EraseHeld() => _caster?.EraseHeld();
+    public override PackagedSpellKind? HeldEmptyPackagedSpell => _caster?.HeldEmptyPackagedSpell;
+    public override int HeldPhialCount() => _caster?.HeldPhialCount() ?? 0;
+    public override bool FillHeldPackagedSpell(IReadOnlyList<Iota> patterns, long media)
+        => _caster?.FillHeldPackagedSpell(patterns, media) ?? false;
+    public override bool CraftBatteryHeld(long media) => _caster?.CraftBatteryHeld(media) ?? false;
+    public override long HeldRechargeSpace() => _caster?.HeldRechargeSpace() ?? -1;
+    public override void ChargeHeld(long media) => _caster?.ChargeHeld(media);
+    public override bool HeldHasVariants() => _caster?.HeldHasVariants() ?? false;
+    public override bool CycleHeldVariant() => _caster?.CycleHeldVariant() ?? false;
+    public override int FindPigmentItem() => _caster?.FindPigmentItem() ?? 0;
+    public override void ApplyPigment(int itemType) => _caster?.ApplyPigment(itemType);
+
+    /// <summary>哨卫挂在施法者身上（原版 setSentinel(castingEntity)）；没有施法者时图案先报 MishapBadCaster。</summary>
+    public override SentinelState? Sentinel => _caster?.Sentinel;
+    public override void SetSentinel(double x, double y, bool great) => _caster?.SetSentinel(x, y, great);
+    public override void ClearSentinel() => _caster?.ClearSentinel();
 }
 
 /// <summary>`circle/*` 三个图案的注册与实现。</summary>

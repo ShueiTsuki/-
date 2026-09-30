@@ -1,5 +1,5 @@
 {
-    "at":  "2026-09-30 02:26:25",
+    "at":  "2026-09-30 17:25:43",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
@@ -14,12 +14,12 @@
                      "failed":  0
                  },
     "assets":  {
-                   "needTexture":  91,
+                   "needTexture":  98,
                    "missing":  0
                },
     "tml":  {
-                "commit":  "50cec4c63867ad185fc8ec7d609c2e46abb50a30",
-                "dllBuilt":  "2026-09-29 08:22"
+                "commit":  "7ab6cd1c3978bccb1bdddee101c30a5b883a78f7",
+                "dllBuilt":  "2026-09-30 17:05"
             },
     "skipped":  [
                     "打包 + 专用服务器加载"

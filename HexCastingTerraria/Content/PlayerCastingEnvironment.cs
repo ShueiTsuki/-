@@ -37,11 +37,19 @@ public class PlayerCastingEnvironment : CastingEnvironment
     // 把核心 / 法术书 / 空瓶 / 染料放在它右边就等于拿在另一只手里。
     // 施法物品不在快捷栏（鼠标上拿着）时只有手上这一格。所有「手持物品」类图案都按这个顺序找。
 
-    /// <summary>[另一只手, 施法的手] 对应的背包格子。</summary>
+    /// <summary>
+    /// 法术环借用施法者的手：原版 CircleCastEnv 用 getPrimaryStacksForPlayer(OFF_HAND, caster)，
+    /// 「施法的手」当成副手，于是顺序反过来 = [手上, 右边那格]。
+    /// </summary>
+    public bool CircleHands { get; init; }
+
+    /// <summary>[另一只手, 施法的手] 对应的背包格子（法术环里反过来，见 <see cref="CircleHands"/>）。</summary>
     public int[] PrimarySlots()
     {
         int main = _player.selectedItem;
-        return main is >= 0 and < 10 ? new[] { (main + 1) % 10, main } : new[] { main };
+        if (main is not (>= 0 and < 10)) return new[] { main };
+        int off = (main + 1) % 10;
+        return CircleHands ? new[] { main, off } : new[] { off, main };
     }
 
     /// <summary>原版 getHeldItemToOperateOn(谓词)：第一个满足谓词的格子，没有 → -1。</summary>

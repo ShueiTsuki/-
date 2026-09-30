@@ -71,6 +71,9 @@ internal enum HexMessage : byte
     /// 服务端施法改了之后发给所有人。见 HexPlayer.HandleState。
     /// </summary>
     PlayerState = 18,
+
+    /// <summary>客户端 → 服务端：促动石操作（定出口、塞媒质、启动、牧师绑定 / 解绑）。见 HexImpetusEntity.Handle。</summary>
+    ImpetusAction = 19,
 }
 
 /// <summary>

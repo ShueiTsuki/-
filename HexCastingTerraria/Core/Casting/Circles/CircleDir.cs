@@ -43,6 +43,12 @@ public enum CircleComponentKind
 
     /// <summary>红石导线：按红石信号分流。</summary>
     DirectrixRedstone = 5,
+
+    /// <summary>
+    /// 空白促动石（原版 BlockEmptyImpetus，「其实不是促动石」）：媒质只从箭头方向流出，
+    /// 不能从箭头反方向进。本身是脑叶切除做成三种促动石的原料。
+    /// </summary>
+    EmptyImpetus = 6,
 }
 
 /// <summary>环方向工具。</summary>

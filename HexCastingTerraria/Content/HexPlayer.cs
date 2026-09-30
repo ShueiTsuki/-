@@ -677,6 +677,7 @@ public sealed class HexPlayer : ModPlayer
         }
 
         ResolveLook();
+        Tiles.FletcherGaze.Update(Player);
 
         if (!ObtainedAmethyst
             && (Player.HasItem(Terraria.ID.ItemID.Amethyst)

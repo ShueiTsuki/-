@@ -374,10 +374,10 @@ public sealed class HexClientSystem : ModSystem
                 DrawHud(Main.spriteBatch, w, h, mouse);
                 DrawVmStack(Main.spriteBatch, w, h);
 
-                // 探术透镜：戴着时把附近玩家的施法瞄准点标出来
-                if (Content.HexPlayer.Get(Main.LocalPlayer).ScryingLensEquipped)
+                // 探知透镜：鼠标指着的方块的信息（促动石的媒质 / 消息 / 绑定）
+                if (!HexCanvasState.Canvas.IsOpen)
                 {
-                    DrawScryingMarks(Main.spriteBatch);
+                    ScryingOverlay.Draw(Main.spriteBatch);
                 }
 
                 // 开发者调试叠加层（默认关闭，见 设置 → 模组配置）
@@ -902,40 +902,6 @@ public sealed class HexClientSystem : ModSystem
 
             sb.Draw(pixel, p0, null, color, MathF.Atan2(delta.Y, delta.X),
                 new Vector2(0f, pixel.Height * 0.5f), new Vector2(len, thickness), SpriteEffects.None, 0f);
-        }
-    }
-
-    /// <summary>
-    /// 探术透镜：在附近**其他玩家**身上标出他们的施法瞄准点。
-    ///
-    /// 数据来源是联机时已经在广播的 `<see cref="ReceiveSpellVisual"/>` ——
-    /// 单人时没有别的玩家，自然什么都不画（原版单人也没得看）。
-    ///
-    /// 与瞄准标记同一套画法：在鼠标方向上打一条射线，打到墙就标在墙上。
-    /// </summary>
-    private static void DrawScryingMarks(SpriteBatch sb)
-    {
-        if (Main.dedServ) return;
-
-        for (int i = 0; i < Main.maxPlayers; i++)
-        {
-            var other = Main.player[i];
-            if (other is not { active: true }) continue;
-            if (i == Main.myPlayer) continue;
-
-            // 距离太远的没必要画（也画不出有用信息）
-            if (Vector2.DistanceSquared(other.Center, Main.LocalPlayer.Center) > 120f * 16f * (120f * 16f))
-            {
-                continue;
-            }
-
-            // 对方身上一个光点：告诉玩家"这个人在施法范围内"
-            var center = other.Center - Main.screenPosition;
-            HexPixel.DrawDot(sb, center, 4f, new Color(206, 178, 255, 180));
-
-            Terraria.Utils.DrawBorderString(sb, other.name,
-                center + new Vector2(-other.name.Length * 3f, -34f),
-                new Color(226, 210, 255, 200), 0.65f);
         }
     }
 

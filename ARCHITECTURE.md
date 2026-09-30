@@ -159,7 +159,7 @@
 | `Items/HexConditions.cs` | 本模组的配方条件。</summary> |
 | `Items/HexDecoBlockItem.cs` | 寤烘潗鏂瑰潡鐗╁搧鐨勫叕鍏卞疄鐜帮紙閰嶅悎 <see cref="HexDecoBlock"/>锛夈€?/// |
 | `Items/HexDirectrixItems.cs` | 瀵肩嚎鐨勫叕鍏辩墿鍝佸熀绫汇€傚搴旀簮椤圭洰涓夋牴 `*Directrix` 鐨勭墿鍝佸舰鎬併€?/// |
-| `Items/HexImpetusItem.cs` | 鍘熷姩鍔涳紙鐗╁搧褰㈡€侊級銆傚搴旀簮椤圭洰 `hexcasting:impetus/*`銆?/// |
+| `Items/HexImpetusItem.cs` | 淇冨姩鐭筹紙鐗╁搧褰㈡€侊級鐨勫叕鍏遍儴鍒嗐€傚搴旀簮椤圭洰 `hexcasting:impetus/*`銆?/// |
 | `Items/HexRecipeGroups.cs` | 寤烘潗鏃忕殑**閰嶆柟缁?*銆?/// |
 | `Items/HexSlateItem.cs` | 鐭虫澘锛堢墿鍝佸舰鎬侊級銆傚搴旀簮椤圭洰 `hexcasting:slate`銆?/// |
 | `Items/HexStaff.cs` | 娉曟潠鍩虹被銆傜Щ妞嶈嚜婧愰」鐩?`common/items/ItemStaff.java`銆?/// |
@@ -171,7 +171,7 @@
 | `Items/MediaMaterials.cs` | 濯掕川鏉愭枡鐗╁搧鐨勫熀绫伙紙婧愰」鐩?CCMediaHolder.Static锛夈€?/// |
 | `Items/MiscDecoItems.cs` | 鍗疯酱绾革紙鐗╁搧锛夈€?/summary> |
 | `Items/PackagedSpellCast.cs` | 鎵撳寘娉曟湳涓撶敤鐜锛氬獟璐?*浠庣墿鍝佽嚜宸辩殑姹犲瓙閲屾墸**锛屼笉鏄粠鐜╁韬笂銆?/// 绉绘鑷簮椤圭洰 `ItemPackagedHex` 閲岀殑 `PackagedHexCastEnv`銆?/// |
-| `Items/ScryingLens.cs` | 鎺㈡湳閫忛暅銆傚搴旀簮椤圭洰 `hexcasting:lens`锛坄ItemLens`锛岃澶囧湪**澶撮儴**瑁呭浣嶏級銆?/// |
+| `Items/ScryingLens.cs` | 鎺㈢煡閫忛暅銆傚搴旀簮椤圭洰 `hexcasting:lens`锛圛temLens锛夈€?/// |
 | `Items/Spellbook.cs` | 娉曟湳涔︺€傚搴旀簮椤圭洰 `hexcasting:spellbook`锛圛temSpellbook锛?*涓嶆槸**閭ｆ湰寮曞涔︼級銆?/// |
 | `Items/WallScrollFrames.cs` | 鍗疯酱鎸傛澘鐨勫熀绫汇€傚搴旀簮椤圭洰閲屻€屾妸鍗疯酱鎸傚埌澧欎笂銆嶉偅涓€姝ユ墍闇€鐨勮浇浣撱€?/// |
 | `Net/HexNet.cs` | 缃戠粶娑堟伅绫诲瀷銆?/// </summary> |
@@ -189,6 +189,7 @@
 | `Tiles/CircleCursor.cs` | 娉曟湳鐜殑銆屾墽琛屾父鏍囥€嶏細褰撳墠姝ｅ湪鎵ц鍝竴鏍笺€?/// |
 | `Tiles/ConjuredBlock.cs` | 琚彫鍞ゅ嚭鏉ョ殑鏂瑰潡/鍏夋簮鐨勫瓨娲荤鐞嗐€?/// |
 | `Tiles/DecoBlocks.Generated.cs` | 寤烘潗鏂瑰潡鐨勫叕鍏卞疄鐜帮紙P2-6 瑁呴グ鏂瑰潡瀹舵棌锛夈€? |
+| `Tiles/FletcherGaze.cs` | 鍒剁甯堜績鍔ㄧ煶鐨勩€岃鐩潃銆嶈鏁帮紙鍘熺増 BlockEntityLookingImpetus.serverTick锛夛細 |
 | `Tiles/HexDirectrix.cs` | 瀵肩嚎鐨勫叕鍏卞熀绫汇€傚搴旀簮椤圭洰 `BlockEmptyDirectrix` / `BlockBooleanDirectrix` / |
 | `Tiles/HexImpetus.cs` | 娉曟湳鐜娉版媺涓栫晫鐨勮闂疄鐜般€?/// |
 | `Tiles/HexSlate.cs` | 鐭虫澘銆傚搴旀簮椤圭洰 `hexcasting:slate` 鈥斺€?**娉曟湳鐜殑銆屾寚浠ゃ€?*銆?/// |
@@ -208,6 +209,7 @@
 | `HexPixel.cs` | 鍏变韩鐨?1脳1 鐧借壊璐村浘锛岀敤浜庣敾绾挎涓庢柟鍧楃偣銆?/// |
 | `HexVec.cs` | `Core` 鐨?<see cref="Vec2f"/> 鈫?XNA 鐨?<see cref="Vector2"/> 浜掕浆銆?/// |
 | `HexVmState.cs` | 瀹㈡埛绔晶鐨?VM 鐘舵€併€?/// |
+| `ScryingOverlay.cs` | 鎺㈢煡閫忛暅锛堝師鐗?ItemLens锛夌殑涓や釜鏁堟灉锛?/// |
 | `SentinelRenderer.cs` | 鐢昏嚜宸辩殑鍝ㄥ崼锛堝師鐗?HexAdditionalRenderers.renderSentinel锛夛細涓€涓唴鎺ヤ簬鍗曚綅鐞冪殑**姝ｄ簩鍗侀潰浣撶嚎妗?*锛?/// 缁曠珫杞磋嚜杞€佷笂涓嬫诞鍔紱澶у摠鍗紙鎵╁睍鏂芥硶鑼冨洿鐨勯偅绉嶏級鍐嶇粫姘村钩杞存參鎱㈢炕婊氥€?/// 鍙湁涓讳汉鐪嬪緱瑙侊紝闅旂潃澧欎篃鐪嬪緱瑙侊紙鍘熺増鍏充簡娣卞害娴嬭瘯锛夈€?/// |
 | `UI/DevPanel.cs` | 寮€鍙戣€呴潰鏉匡紙榛樿 F7锛夛細涓嶇煡閬撹鏀句粈涔堟硶鏈椂鐢ㄣ€?/// |
 | `UI/HexBook.cs` | 鍜掓硶瀛︿箣涔︼紙甯曠鑾夋墜鍐岋級鐨勫紑鍏炽€佽緭鍏ヤ笌缁樺埗銆傚唴瀹逛笌鎺掔増鍦?Core锛圔ookContent / PatchouliRenderer锛夈€? |

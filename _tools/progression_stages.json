@@ -104,7 +104,7 @@
       "PearlwoodStaff": "源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带"
     },
     "肉后 · 启蒙": {
-      "HexImpetusItem": "源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书）",
+      "HexImpetusEmptyItem": "源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书）",
       "HexDirectrixEmptyItem": "源 400-408：同样挂 enlightenment → 秘银砧 + 已启蒙；比较器/观察者 → 电线（泰拉红石本体）",
       "HexDirectrixItemBase": "布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一",
       "HexDirectrixBooleanItem": "同 HexDirectrixItemBase（配方继承自基类的 RegisterRecipe）",
