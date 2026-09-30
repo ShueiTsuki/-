@@ -41,6 +41,15 @@ public sealed class BookTextSegment
 
     /// <summary>下划线（<c>$(n)</c>）。</summary>
     public bool Underline { get; set; }
+
+    /// <summary>
+    /// 同一个 <c>$(l:…)</c> 的编号（0 = 不是链接）。换行、按字切词后同一链接会散成多段，
+    /// 原版 Word.linkCluster：悬停其中任一段，整条链接一起变色。
+    /// </summary>
+    public int LinkId { get; set; }
+
+    /// <summary>悬停提示（原版 SpanState.tooltip：<c>$(k:…)</c>、<c>$(t:…)</c> 设置，<c>$()</c>/<c>$(/l)</c>/<c>$(/t)</c> 清空）。</summary>
+    public string Tooltip { get; set; } = string.Empty;
 }
 
 /// <summary>排好的一行。</summary>
@@ -79,6 +88,7 @@ public sealed class BookTextPage
 ///   $(bold)      以下加粗          $(italic)   以下斜体
 ///   $(0)…$(9)    切换颜色代号
 ///   $(l:目标)    以下是链接        $(/l)       链接结束
+///   $(k:名字)    插入快捷键的按键  $(t:文字)   以下带悬停提示（$(/t) 结束）
 ///   $()          清空所有样式
 /// </code>
 /// </summary>
@@ -117,6 +127,32 @@ public static class BookTextLayout
         0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF,
     };
 
+    /// <summary>
+    /// <c>$(k:名字)</c>：快捷键名 → 当前绑定的按键文字（原版 BookTextParser 的 "k" 函数，
+    /// 返回 <c>getTranslatedKeyMessage()</c>）。返回 null = 没有这个快捷键（原版显示 N/A）。
+    /// 游戏内由 Client 换成读泰拉当前按键设置的版本；这里的默认值给离线测试用。
+    /// </summary>
+    public static System.Func<string, string?> KeyName { get; set; } = DefaultKeyName;
+
+    public static string? DefaultKeyName(string key) => key switch
+    {
+        "use" => "鼠标左键",
+        "sneak" => "Shift",
+        "sprint" => "Ctrl",
+        "jump" => "空格",
+        _ => null,
+    };
+
+    /// <summary>快捷键的动作名（原版提示框「快捷键：%s」里的 %s，取 MC 的 key.* 中文名）。</summary>
+    private static string KeyAction(string key) => key switch
+    {
+        "use" => "使用物品",
+        "sneak" => "潜行",
+        "sprint" => "疾跑",
+        "jump" => "跳跃",
+        _ => key,
+    };
+
     public static string ExpandMacros(string markup)
     {
         foreach (var (from, to) in BookMacros) { markup = markup.Replace(from, to); }
@@ -137,8 +173,8 @@ public static class BookTextLayout
         markup = ExpandMacros(markup);
 
         bool bold = false, italic = false, underline = false;
-        int color = 0, rgb = -1;
-        string link = string.Empty;
+        int color = 0, rgb = -1, linkId = 0, links = 0;
+        string link = string.Empty, tooltip = string.Empty;
         var pending = new System.Text.StringBuilder();
 
         void Flush()
@@ -147,7 +183,7 @@ public static class BookTextLayout
             result.Add(new BookTextSegment
             {
                 Text = pending.ToString(), Bold = bold, Italic = italic, Underline = underline,
-                ColorCode = color, Rgb = rgb, LinkTarget = link,
+                ColorCode = color, Rgb = rgb, LinkTarget = link, LinkId = linkId, Tooltip = tooltip,
             });
             pending.Clear();
         }
@@ -183,6 +219,23 @@ public static class BookTextLayout
             {
                 Flush();
                 link = token.Substring(2);
+                linkId = ++links;
+                tooltip = string.Empty;
+            }
+            else if (token.StartsWith("k:", System.StringComparison.Ordinal))
+            {
+                // 原版：插入按键名，提示「快捷键：动作名」；提示和原版一样一直带到下一次 $() / $(/l) / $(/t)
+                Flush();
+                string key = token.Substring(2);
+                string? name = KeyName(key);
+                tooltip = name is null ? $"找不到该快捷键：{key}" : $"快捷键：{KeyAction(key)}";
+                pending.Append(name ?? "N/A");
+            }
+            else if (token.StartsWith("t:", System.StringComparison.Ordinal)
+                     || token.StartsWith("tooltip:", System.StringComparison.Ordinal))
+            {
+                Flush();
+                tooltip = token.Substring(token.IndexOf(':') + 1);
             }
             else if (token.Length > 1 && token[0] == '#' && TryHex(token.Substring(1), out int hex))
             {
@@ -196,13 +249,16 @@ public static class BookTextLayout
                     case "br": Break(); break;
                     case "br2": Break(); Break(); break;
                     case "li": case "li2": case "li3": Break(); pending.Append("• "); break;
-                    case "/l": Flush(); link = string.Empty; break;
+                    case "/l": Flush(); link = string.Empty; linkId = 0; tooltip = string.Empty; break;
+                    case "/t": Flush(); tooltip = string.Empty; break;
                     case "": case "r":
                         Flush();
                         bold = italic = underline = false;
                         color = 0;
                         rgb = -1;
                         link = string.Empty;
+                        linkId = 0;
+                        tooltip = string.Empty;
                         break;
                     case "l": Flush(); bold = true; break;
                     case "o": Flush(); italic = true; break;
@@ -394,6 +450,8 @@ public static class BookTextLayout
         ColorCode = src.ColorCode,
         Rgb = src.Rgb,
         LinkTarget = src.LinkTarget,
+        LinkId = src.LinkId,
+        Tooltip = src.Tooltip,
     };
 
     private static bool IsCjk(char c)

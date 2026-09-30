@@ -115,6 +115,25 @@ static class BookTests
             return doc.FindEntry(id) is null && doc.FindCategory(id) is null;
         }).ToList();
         Check(check, $"正文里的 {links.Count} 个站内链接都指向存在的条目/分类", dead.Count == 0, string.Join(",", dead.Take(8)));
+
+        // 原版 $(k:…)：换成按键名 + 提示「快捷键：…」，正文里不能漏出 $(…) 原文
+        var raw = entries.SelectMany(e => e.Pages).SelectMany(p => BookTextLayout.Parse(p.Text))
+            .Where(s => s.Text.Contains("$(")).Select(s => s.Text).Distinct().ToList();
+        Check(check, "正文里没有漏出未解析的 $(…) 标记", raw.Count == 0, string.Join(" | ", raw.Take(5)));
+        var k = BookTextLayout.Parse("按下$(k:use)来施放$()。$(k:nope)");
+        Check(check, "$(k:use) → 按键名，悬停提示「快捷键：使用物品」；未知快捷键 → N/A",
+            k.Any(s => s.Text.StartsWith("鼠标左键") && s.Tooltip == "快捷键：使用物品")
+            && k.Any(s => s.Text == "N/A" && s.Tooltip.StartsWith("找不到"))
+            && k.First(s => s.Text == "。").Tooltip.Length == 0);
+
+        // 原版 Word.linkCluster：一条链接折成多段后仍是同一个编号（悬停整条变色），不同链接编号不同
+        var wrapped = BookTextLayout.Wrap(BookTextLayout.Parse("$(l:a)论坛链接$(/l)和$(l:b)别的$(/l)"), 3, t => t.Length);
+        var segs = wrapped.SelectMany(l => l.Segments).ToList();
+        var a = segs.Where(s => s.LinkTarget == "a").ToList();
+        Check(check, "同一链接折行成多段仍共享 LinkId；不同链接不同；普通字为 0",
+            a.Count > 1 && a.All(s => s.LinkId == a[0].LinkId && s.LinkId != 0)
+            && segs.First(s => s.LinkTarget == "b").LinkId != a[0].LinkId
+            && segs.Where(s => s.LinkTarget.Length == 0).All(s => s.LinkId == 0));
     }
 
     static void Navigation(BookDocument doc, CheckFn check)

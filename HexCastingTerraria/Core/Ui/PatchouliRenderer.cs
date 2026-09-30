@@ -604,8 +604,10 @@ public sealed class PatchouliRenderer
             if (lines.Count * lineH <= avail + 0.5f) { break; }
         }
 
-        float ly = Y(y);
+        // 先排出每段的位置，找出鼠标下的那一段：原版 Word.isClusterHovered —— 悬停链接的任一段，整条链接一起变色
         float nudge = -((_c.LineHeight * scale) - lineH) / 2f;
+        var placed = new List<(BookTextSegment Seg, RectF Rect)>();
+        float ly = Y(y);
         foreach (var line in lines)
         {
             if (ly + lineH > Y(bottom) + 0.5f)
@@ -617,29 +619,51 @@ public sealed class PatchouliRenderer
             foreach (var seg in line.Segments)
             {
                 if (seg.Text.Length == 0) { continue; }
-                bool isLink = seg.LinkTarget.Length > 0;
                 float w = _c.MeasureText(seg.Text, scale, seg.Bold);
-                var rect = new RectF(lx, ly, w, lineH);
-                bool hover = isLink && rect.Contains(_mx, _my);
-                int rgb = isLink ? (hover ? LinkHoverColor : LinkColor) : (seg.Rgb >= 0 ? seg.Rgb : TextColor);
-                _c.DrawText(seg.Text, lx, ly + nudge, Color32.Rgb(rgb), scale, seg.Bold);
-                if (seg.Underline || isLink)
-                {
-                    _c.FillRect(new RectF(lx, ly + lineH - System.MathF.Max(1f, Unit * 0.5f), w, System.MathF.Max(1f, Unit * 0.5f)),
-                        Color32.Rgb(rgb, isLink ? (byte)0x90 : (byte)0xFF));
-                }
-                if (isLink && LinkUnlocked(seg.LinkTarget))
-                {
-                    _frame.Hits.Add(new BookHit(rect, BookActionKind.Link, seg.LinkTarget));
-                    if (hover && seg.LinkTarget.StartsWith("http", System.StringComparison.Ordinal))
-                    {
-                        _frame.Tooltip = seg.LinkTarget;
-                    }
-                }
+                placed.Add((seg, new RectF(lx, ly, w, lineH)));
                 lx += w;
             }
             ly += lineH;
         }
+        BookTextSegment? under = null;
+        foreach (var (seg, rect) in placed)
+        {
+            if (rect.Contains(_mx, _my)) { under = seg; }
+        }
+        int hoverLink = under?.LinkId ?? 0;
+
+        foreach (var (seg, rect) in placed)
+        {
+            bool isLink = seg.LinkTarget.Length > 0;
+            bool hover = isLink && hoverLink != 0 && seg.LinkId == hoverLink;
+            int rgb = isLink ? (hover ? LinkHoverColor : LinkColor) : (seg.Rgb >= 0 ? seg.Rgb : TextColor);
+            _c.DrawText(seg.Text, rect.X, rect.Y + nudge, Color32.Rgb(rgb), scale, seg.Bold);
+            // 原版链接只变色、不加下划线；下划线只有 $(n)
+            if (seg.Underline)
+            {
+                float t = System.MathF.Max(1f, Unit * 0.5f);
+                _c.FillRect(new RectF(rect.X, rect.Y + lineH - t, rect.W, t), Color32.Rgb(rgb));
+            }
+            if (isLink && LinkUnlocked(seg.LinkTarget))
+            {
+                _frame.Hits.Add(new BookHit(rect, BookActionKind.Link, seg.LinkTarget));
+            }
+        }
+        if (under is not null)
+        {
+            string tip = under.LinkTarget.Length > 0 ? LinkTooltip(under.LinkTarget) : under.Tooltip;
+            if (tip.Length > 0) { _frame.Tooltip = tip; }
+        }
+    }
+
+    /// <summary>原版 "l" 函数给链接设的提示：条目名 / 分类名 /「（已锁定）」/「（外部链接）」。</summary>
+    private string LinkTooltip(string target)
+    {
+        if (target.StartsWith("http", System.StringComparison.Ordinal)) { return "（外部链接）"; }
+        string id = target.Split('#')[0];
+        var e = _view.Document.FindEntry(id);
+        if (e is not null) { return IsUnlocked(e) ? e.DisplayName : "（已锁定）"; }
+        return _view.Document.FindCategory(id)?.DisplayName ?? string.Empty;
     }
 
     private bool LinkUnlocked(string target)

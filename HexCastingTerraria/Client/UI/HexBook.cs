@@ -56,6 +56,33 @@ public sealed class HexBook
         _view = new BookView(Document);
         _renderer = new PatchouliRenderer(new GameBookData(_canvas));
         _view.EntryUnlocked = _renderer.IsUnlocked;
+        BookTextLayout.KeyName = KeyName;
+    }
+
+    /// <summary>
+    /// <c>$(k:…)</c> 在泰拉里显示的按键。原版读 MC 当前的按键绑定；这里读泰拉当前的按键设置：
+    /// 「使用物品」= 泰拉的 MouseLeft 触发器（法杖、杂件就是用它施放）、跳跃 = Jump。
+    /// 潜行 / 疾跑在本模组里固定是 Shift / Ctrl（泰拉没有这两个动作）。
+    /// </summary>
+    private static string? KeyName(string key)
+    {
+        string? trigger = key switch { "use" => "MouseLeft", "jump" => "Jump", _ => null };
+        if (trigger is null) { return BookTextLayout.DefaultKeyName(key); }
+        if (!PlayerInput.CurrentProfile.InputModes.TryGetValue(InputMode.Keyboard, out var mode)
+            || !mode.KeyStatus.TryGetValue(trigger, out var keys) || keys.Count == 0)
+        {
+            return BookTextLayout.DefaultKeyName(key);
+        }
+        return string.Join(" / ", keys.ConvertAll(k => k switch
+        {
+            "Mouse1" => "鼠标左键",
+            "Mouse2" => "鼠标右键",
+            "Mouse3" => "鼠标中键",
+            "Mouse4" => "鼠标侧键 4",
+            "Mouse5" => "鼠标侧键 5",
+            "Space" => "空格",
+            _ => k,
+        }));
     }
 
     /// <summary>书画在**真实屏幕像素**里（不套界面缩放）：整数倍放大才是真的整数倍，像素和文字才清楚。</summary>
