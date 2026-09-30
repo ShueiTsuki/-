@@ -243,6 +243,16 @@
 | `HexAddon.cs` | 附属跑在哪一侧：决定它的开关放在服务端还是客户端配置（ADDONS.md「开关的位置」）。</summary> |
 | `Hexcessible/Game/HexcessibleAddon.cs` | Hexcessible 附属的入口：施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu，JSON License）。 |
 | `HexDebug/Game/HexDebugAddon.cs` | HexDebug 附属的入口：调试杖逐步执行咒术、剪接台编辑咒术（object-Object，MIT）。 |
+| `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |
+| `HexParse/Core/CodeParser.cs` | 代码 -> iota 列表（上游 parsers/ParserMain.java 的 ParseCode + str2nbt/* 全部符号解析器 + macro/MacroProcessor.java）。 |
+| `HexParse/Core/CommentIota.cs` | 注释 iota（上游 hooks/CommentIota.java + CommentIotaType.java）。 |
+| `HexParse/Core/FallbackBinary.cs` | <c>nbt_…</c>：没有文本写法的 iota 整个编码进代码（上游 parsers/FallbackBinaryParser.kt）。 |
+| `HexParse/Core/HexParseSettings.cs` | HexParse 的配置项（上游 config/HexParseConfig.java + fabric/HexParseConfigFabric.java 的默认值）。 |
+| `HexParse/Core/IHexParseHost.cs` | 消息的样式（上游用聊天颜色区分）。</summary> |
+| `HexParse/Core/IotaWriter.cs` | iota -> 代码（上游 ParserMain.ParseIotaNbt + nbt2str/* + misc/StringProcessors.java + parsers/meta/MetaHolder.java）。 |
+| `HexParse/Core/NumEvaluator.cs` | 数字 -> 数字之精思的笔画（上游 misc/NumEvaluatorBrute.java，逐行照搬），以及数字的最短文本写法。 |
+| `HexParse/Core/PatternNames.cs` | 图案名 -> 图案（上游 hooks/PatternMapper.java）。 |
+| `HexParse/Core/StringEscaper.cs` | 注释字符串的转义 / 反转义（上游 misc/StringEscaper.kt，逐行照搬）。</summary> |
 | `HexParse/Game/HexParseAddon.cs` | HexParse 附属的入口：代码文本与 iota 列表互转、/hexParse 指令（YukkuriC，MIT）。 |
 
 ### （模组根目录）

@@ -6,7 +6,7 @@
 | 附属 | 上游版本 | 许可 | 开关 | 功能已做 |
 |---|---|---|---|---|
 | [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 1 / 15 |
-| [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 1 / 18 |
+| [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 7 / 18 |
 | [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 1 / 12 |
 
 <a id="hexdebug"></a>
@@ -42,14 +42,14 @@
 | 功能 | 本模组文件 | 上游文件（相对 `common/src/main/java/io/yukkuric/hexparse/`） |
 |---|---|---|
 | 入口与开关 | `Game/HexParseAddon.cs` | `HexParse.java`<br>`config/HexParseConfig.java` |
-| 分词（逗号 / 空格 / 换行、注释、字符串） | （待做） | `parsers/CodeCutter.kt`<br>`misc/StringEscaper.kt`<br>`misc/StringProcessors.java` |
-| 解析主循环（嵌套、未知符号、括号恢复、媒质消耗） | （待做） | `parsers/ParserMain.java`<br>`parsers/CostTracker.kt`<br>`parsers/IotaFactory.java`<br>`parsers/meta/IMetaCollector.java`<br>`parsers/meta/MetaHolder.java`<br>`parsers/interfaces/ConfigNums.java`<br>`parsers/interfaces/IConfigNumReceiver.java` |
-| token：图案名、元符号、大法术占位 | （待做） | `parsers/str2nbt/ToPattern.java`<br>`hooks/PatternMapper.java`<br>`parsers/str2nbt/IStr2Nbt.java` |
-| token：常量（num_ / mask_ / _角度 / 数字 / 向量 / 布尔 / null / garbage / self） | （待做） | `parsers/str2nbt/ConstParsers.java`<br>`parsers/str2nbt/BaseConstParser.java`<br>`parsers/str2nbt/ToMiscConst.kt`<br>`misc/NumEvaluatorBrute.java` |
+| 分词（逗号 / 空格 / 换行、注释、字符串） | `Core/CodeCutter.cs`<br>`Core/StringEscaper.cs` | `parsers/CodeCutter.kt`<br>`misc/StringEscaper.kt`<br>`misc/StringProcessors.java` |
+| 解析主循环（嵌套、未知符号、括号恢复、媒质消耗） | `Core/CodeParser.cs`<br>`Core/HexParseSettings.cs`<br>`Core/IHexParseHost.cs` | `parsers/ParserMain.java`<br>`parsers/CostTracker.kt`<br>`parsers/IotaFactory.java`<br>`parsers/meta/IMetaCollector.java`<br>`parsers/meta/MetaHolder.java`<br>`parsers/interfaces/ConfigNums.java`<br>`parsers/interfaces/IConfigNumReceiver.java` |
+| token：图案名、元符号、大法术占位 | `Core/PatternNames.cs` | `parsers/str2nbt/ToPattern.java`<br>`hooks/PatternMapper.java`<br>`parsers/str2nbt/IStr2Nbt.java` |
+| token：常量（num_ / mask_ / _角度 / 数字 / 向量 / 布尔 / null / garbage / self） | `Core/NumEvaluator.cs` | `parsers/str2nbt/ConstParsers.java`<br>`parsers/str2nbt/BaseConstParser.java`<br>`parsers/str2nbt/ToMiscConst.kt`<br>`misc/NumEvaluatorBrute.java` |
 | token：实体（泰拉偏差：玩家名 / NPC 编号） | （待做） | `parsers/str2nbt/ToEntity.java`<br>`parsers/IPlayerBinder.java` |
 | 别名与宏 | （待做） | `parsers/str2nbt/ToDialect.java`<br>`macro/MacroClient.java`<br>`macro/MacroClientHandler.java`<br>`macro/MacroManager.java`<br>`macro/MacroProcessor.java`<br>`network/macro/MsgPushMacro.java`<br>`network/macro/MsgUpdateClientMacro.java` |
-| 反向：iota 到文本 | （待做） | `parsers/nbt2str/INbt2Str.java`<br>`parsers/nbt2str/BoolParser.java`<br>`parsers/nbt2str/CommentParser.java`<br>`parsers/nbt2str/EntityParser.java`<br>`parsers/nbt2str/GarbageParser.java`<br>`parsers/nbt2str/NullParser.java`<br>`parsers/nbt2str/NumParser.java`<br>`parsers/nbt2str/PatternParser.java`<br>`parsers/nbt2str/VecParser.java`<br>`parsers/FallbackBinaryParser.kt`<br>`misc/CodeHelpers.java`<br>`misc/CodeHelpersKt.kt` |
-| 注释 iota | （待做） | `hooks/CommentIota.java`<br>`hooks/CommentIotaType.java` |
+| 反向：iota 到文本 | `Core/IotaWriter.cs`<br>`Core/FallbackBinary.cs` | `parsers/nbt2str/INbt2Str.java`<br>`parsers/nbt2str/BoolParser.java`<br>`parsers/nbt2str/CommentParser.java`<br>`parsers/nbt2str/EntityParser.java`<br>`parsers/nbt2str/GarbageParser.java`<br>`parsers/nbt2str/NullParser.java`<br>`parsers/nbt2str/NumParser.java`<br>`parsers/nbt2str/PatternParser.java`<br>`parsers/nbt2str/VecParser.java`<br>`parsers/FallbackBinaryParser.kt`<br>`misc/CodeHelpers.java`<br>`misc/CodeHelpersKt.kt` |
+| 注释 iota | `Core/CommentIota.cs` | `hooks/CommentIota.java`<br>`hooks/CommentIotaType.java` |
 | 大法术解锁表 | （待做） | `hooks/GreatPatternUnlocker.java` |
 | 图案 x8 | （待做） | `actions/HexParsePatterns.java`<br>`actions/ActionCode2Focus.kt`<br>`actions/ActionFocus2Code.kt`<br>`actions/ActionRemoveComments.kt`<br>`actions/ActionLearnGreatPatterns.kt`<br>`actions/ActionCreateLineBreak.kt`<br>`actions/ActionDonate.kt`<br>`actions/ActionCompile.kt`<br>`actions/ActionCommentSwitcher.kt` |
 | 指令 /hexParse | （待做） | `hooks/HexParseCommands.java`<br>`commands/CommandWrite.java`<br>`commands/CommandRead.java`<br>`commands/CommandClipboard.java`<br>`commands/CommandMindStackIO.kt`<br>`commands/CommandMacro.java`<br>`commands/CommandConflictResolver.kt`<br>`commands/CommandLehmerHelper.java`<br>`commands/CommandDonate.kt`<br>`commands/CommandLearnGreat.kt`<br>`commands/CommandGreatPatternUnlock.java`<br>`commands/CommandPropertyIO.java`<br>`misc/IOMethod.kt` |

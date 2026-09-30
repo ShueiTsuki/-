@@ -301,6 +301,16 @@ public static class PatternRegistry
 
     public static bool IsAddonEnabled(string addonId) => AddonEnabled.Contains(addonId);
 
+    /// <summary>开着的附属的全部图案（按声明顺序）。HexParse 这类要列出「所有能用的图案名」的地方用。</summary>
+    public static IEnumerable<PatternDef> EnabledAddonPatterns()
+    {
+        foreach (var (addonId, defs) in AddonDeclared)
+        {
+            if (!AddonEnabled.Contains(addonId)) continue;
+            foreach (var def in defs) yield return def;
+        }
+    }
+
     /// <summary>附属图案和本体 / 别的附属撞了签名的记录（启用时发现），供加载日志排查。</summary>
     public static IReadOnlyList<string> AddonConflicts => _addonConflicts;
     private static readonly List<string> _addonConflicts = new();

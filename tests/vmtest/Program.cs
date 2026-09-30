@@ -713,7 +713,7 @@ static class Program
 {
     static int _pass, _fail;
 
-    static void Check(string name, bool ok, string? detail = null)
+    internal static void Check(string name, bool ok, string? detail = null)
     {
         if (ok) { _pass++; Console.WriteLine($"  PASS  {name}"); }
         else { _fail++; Console.WriteLine($"  FAIL  {name}{(detail != null ? "  -> " + detail : "")}"); }
@@ -5698,6 +5698,9 @@ static class Program
                 Check($"法术示例「{sample.Name}」逐步求值成功且栈清空", fail.Length == 0, fail);
             }
         }
+
+        // 附属的离线用例（tests/vmtest/Addons/*Tests.cs）
+        Addons.HexParseTests.Run();
 
         Console.WriteLine($"================ 通过 {_pass} / 失败 {_fail} ================");
         Environment.Exit(_fail == 0 ? 0 : 1);

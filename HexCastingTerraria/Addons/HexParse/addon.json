@@ -32,7 +32,10 @@
     },
     {
       "name": "分词（逗号 / 空格 / 换行、注释、字符串）",
-      "files": [],
+      "files": [
+        "Core/CodeCutter.cs",
+        "Core/StringEscaper.cs"
+      ],
       "upstream": [
         "parsers/CodeCutter.kt",
         "misc/StringEscaper.kt",
@@ -41,7 +44,11 @@
     },
     {
       "name": "解析主循环（嵌套、未知符号、括号恢复、媒质消耗）",
-      "files": [],
+      "files": [
+        "Core/CodeParser.cs",
+        "Core/HexParseSettings.cs",
+        "Core/IHexParseHost.cs"
+      ],
       "upstream": [
         "parsers/ParserMain.java",
         "parsers/CostTracker.kt",
@@ -54,7 +61,9 @@
     },
     {
       "name": "token：图案名、元符号、大法术占位",
-      "files": [],
+      "files": [
+        "Core/PatternNames.cs"
+      ],
       "upstream": [
         "parsers/str2nbt/ToPattern.java",
         "hooks/PatternMapper.java",
@@ -63,7 +72,9 @@
     },
     {
       "name": "token：常量（num_ / mask_ / _角度 / 数字 / 向量 / 布尔 / null / garbage / self）",
-      "files": [],
+      "files": [
+        "Core/NumEvaluator.cs"
+      ],
       "upstream": [
         "parsers/str2nbt/ConstParsers.java",
         "parsers/str2nbt/BaseConstParser.java",
@@ -94,7 +105,10 @@
     },
     {
       "name": "反向：iota 到文本",
-      "files": [],
+      "files": [
+        "Core/IotaWriter.cs",
+        "Core/FallbackBinary.cs"
+      ],
       "upstream": [
         "parsers/nbt2str/INbt2Str.java",
         "parsers/nbt2str/BoolParser.java",
@@ -112,7 +126,9 @@
     },
     {
       "name": "注释 iota",
-      "files": [],
+      "files": [
+        "Core/CommentIota.cs"
+      ],
       "upstream": [
         "hooks/CommentIota.java",
         "hooks/CommentIotaType.java"
