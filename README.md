@@ -1,51 +1,60 @@
-# tModLoader 模组开发环境（本机已配置完成）
+# 咒法学 · 泰拉瑞亚移植（HexCastingTerraria）
 
-本目录是你（MSI-PC）的泰拉瑞亚 tModLoader 模组开发工作区。环境已经装好并**实测编译通过**。
+把 Minecraft 模组 [Hex Casting（咒法学）](https://github.com/FallingColors/HexMod) 移植到泰拉瑞亚（tModLoader 1.4.5-dev）。
+玩家在六边形网格上画图案，每个图案是一条栈机指令，串起来就是一段咒术。
 
-## 目录结构
+**原则：一切以原版为基准。** 只有泰拉真的没有对应概念（3D → 2D、没有村民、没有末地……）时才偏离，
+每一处偏离都记在 [AUDIT_VS_ORIGINAL.md](AUDIT_VS_ORIGINAL.md)。
+
+## 目录
 
 ```
-D:\DeepSeekHarness\tmod\
-├── .vscode\                  VS Code 工作区配置（对下面所有子工程生效）
-│   ├── settings.json         C# 扩展 / 编辑器设置
-│   ├── tasks.json            Ctrl+Shift+B 可用的任务：同步、编译、看日志
-│   ├── launch.json           F5 附加调试 tModLoader 进程
-│   └── extensions.json       推荐扩展
-├── MyFirstMod\               一个完整可编译的示例模组工程（可复制多份做新模组）
-│   ├── MyFirstMod.csproj     工程文件，文件名必须与文件夹名一致
-│   ├── Content\Items\        内容代码
-│   ├── sync-to-modSources.ps1 一键同步进游戏 ModSources
-│   └── README.md             详细环境说明、验证结果与踩坑记录
-└── .gitignore
+tmod/
+├── HexCastingTerraria/      模组本体
+│   ├── Core/                纯逻辑，不引用 Terraria（可离线测试）
+│   │   ├── Casting/         栈机、图案行为、Iota、法术环
+│   │   ├── Canvas/          画布、图案几何与渲染数据
+│   │   ├── Media/ World/    媒质、世界接口（由 Content 实现）
+│   │   ├── Registry/        图案注册表
+│   │   └── Ui/              咒术笔记（Patchouli 手册）的内容、排版与渲染
+│   ├── Content/             游戏侧：物品、方块、玩家、联机同步、世界生成
+│   ├── Client/              客户端绘制：画布、书、HUD、哨卫、探知透镜
+│   ├── Config/              模组设置
+│   └── Localization/        本地化（官方简体中文）
+├── tests/
+│   ├── vmtest/              离线栈机测试（对照原版语义）
+│   └── drawtest/            离线画布 / 几何 / 书排版 / 图案渲染测试
+└── _tools/                  验证、生成器（贴图、书内容、状态表）
 ```
 
-## 新模组怎么建
+分层规则：Core 不碰 Terraria；游戏相关的都在 Content / Client，通过接口接进 Core。
+这条由 `_tools/check_arch.ps1` 检查。
 
-1. 复制 `MyFirstMod\` 整个文件夹，改名成你的模组名（例如 `SuperSword\`）
-2. 把里面的 `MyFirstMod.csproj` 改名为 `SuperSword.csproj`，并改这两个属性：
+## 构建与验证
 
-```xml
-<AssemblyName>SuperSword</AssemblyName>
-<RootNamespace>SuperSword</RootNamespace>
-```
-
-3. 跑同步脚本（或在 VS Code 里执行任务「同步到 ModSources」）：
+一条命令跑完全部验证（在 PowerShell 里跑）：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\SuperSword\sync-to-modSources.ps1
+powershell -ExecutionPolicy Bypass -File _tools\run_all.ps1
 ```
 
-4. 编译（VS Code `Ctrl+Shift+B`，或命令行）：
+依次是：编译（要求 0 错 0 警）→ 离线栈机测试 → 画布 / 几何测试 → 贴图检查 → 生成状态表 → 架构断言。
+加 `-Package` 会另外打包 `.tmod`，并在专用服务器里真实加载一次（**需要先关游戏**）。
+包输出到 `Documents\My Games\Terraria\tModLoader-dev\Mods\`。
 
-```powershell
-dotnet build "$env:USERPROFILE\Documents\My Games\Terraria\tModLoader\ModSources\SuperSword\SuperSword.csproj"
-```
+提交前跑一次 `python _tools/fix_eol.py` 统一换行。
 
-5. 产物 `SuperSword.tmod` 会自动落到 `Documents\My Games\Terraria\tModLoader\Mods\`，
-   启动 tModLoader 后在「模组」列表里勾选启用即可。
+## 文档
 
-## 关键注意
+- [STATUS.generated.md](STATUS.generated.md)：当前状态（图案数、测试数、代码规模），自动生成，唯一权威
+- [AUDIT_VS_ORIGINAL.md](AUDIT_VS_ORIGINAL.md)：与原版的逐项对照和所有偏差
+- [PROGRESSION.generated.md](PROGRESSION.generated.md)：每个物品在哪个进度阶段出现、怎么合成
+- [ARCHITECTURE.md](ARCHITECTURE.md)：每个源文件是干什么的
+- [TERRARIA_RENDERING_NOTES.md](TERRARIA_RENDERING_NOTES.md)：泰拉渲染的坑
 
-- **文件夹名 = 模组内部名**。tModLoader 用工程文件夹名判定模组名，光改 csproj 名字不够。
-- 编译必须在 `ModSources\<模组名>\` 里进行（同步脚本会保证这点），在别处编译会产出名字错误的 `.tmod`。
-- 详细环境说明、命令行用法、踩坑清单见 `MyFirstMod\README.md`。
+`MyFirstMod/` 是最早搭环境时的示例模组，与本项目无关。
+
+## 许可
+
+原项目 HexMod 为 MIT License，Copyright (c) 2021-2024 Petrak, Falkory220, wiresegal and contributors。
+书的排版移植自 Patchouli（CC BY-NC-SA 3.0）。详见 [CREDITS.md](CREDITS.md)。
