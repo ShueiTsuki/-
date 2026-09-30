@@ -192,6 +192,25 @@ static class HexcessibleTests
         win.OffsetChosen(-5);
         Check("取窗：在开头时从 0 开始", win.Window(7) == (0, 7));
 
+        // 别名（上游 AliasChanging + Entry.name / isAliased）
+        var aliases = new Dictionary<string, string>();
+        var ai = new PatternEntries(defs, null, _ => false) { AliasOf = id => aliases.TryGetValue(id, out var v) ? v : null };
+        var ae = ai.All[0];
+        var edit = new AliasEditState(ae);
+        Check("别名：没起过时输入框是空的、名字是原名", edit.IsBlank && ae.Name == "test:alpha_beta" && !ae.IsAliased);
+        edit.Alias = "  first second  ";
+        Check("别名：存的时候去掉首尾空白", edit.ValueToStore == "first second");
+        aliases[ae.Id] = edit.ValueToStore;
+        ai.InvalidateCaches();
+        Check("别名：起过就用别名显示、搜得到", ae.Name == "first second" && ae.IsAliased && ai.Search("second").Any(x => x.Id == ae.Id)
+            && ae.ToString().EndsWith(" first second", StringComparison.Ordinal));
+        var again = new AliasEditState(ae);
+        Check("别名：再改时输入框里是现在的别名", again.Alias == "first second" && again.Original == "test:alpha_beta");
+        again.DeleteWord();
+        Check("别名：Ctrl+退格删一个词", again.Alias == "first");
+        again.Alias = "   ";
+        Check("别名：清空后存回原名（上游写法，等于去掉别名）", again.IsBlank && again.ValueToStore == "test:alpha_beta");
+
         var docs = new AutoCompleteState(origin, real, _ => false);
         docs.SetQuery("get caster");   // id 里的 _ 在匹配前换成了空格，所以要用空格搜
         for (int n = 0; n < docs.Unlocked().Count && docs.ChosenEntry?.Id != "hexcasting:get_caster"; n++) docs.OffsetChosen(1);

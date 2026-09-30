@@ -241,6 +241,7 @@
 | `AddonContent.cs` | 附属的物品。</summary> |
 | `AddonRegistry.cs` | 所有附属的登记表 —— 唯一的总入口（ADDONS.md「目录」）。 |
 | `HexAddon.cs` | 附属跑在哪一侧：决定它的开关放在服务端还是客户端配置（ADDONS.md「开关的位置」）。</summary> |
+| `Hexcessible/Core/AliasEditState.cs` | 改别名（上游 drawstate/AliasChanging.java 去掉渲染的部分）：输入框里的字、原名、签名、确认时存什么。 |
 | `Hexcessible/Core/AutoCompleteState.cs` | 自动补全的状态（上游 drawstate/AutoCompleting.java 去掉渲染的部分）：查询串、候选、选中项、选中的书页。 |
 | `Hexcessible/Core/FluffySearch.cs` | 上游 Utils.fluffySearch：按顺序逐字命中（不必连续），连续命中加分，开头就对上再加分；有字没命中 = 0。</summary> |
 | `Hexcessible/Core/HexcessibleSettings.cs` | Hexcessible 的配置项（上游 HexcessibleConfig.java，默认值照搬）。纯数据：游戏侧从客户端附属配置抄进 <see cref="Current"/>。 |
@@ -251,6 +252,7 @@
 | `Hexcessible/Game/HexcessibleCanvas.cs` | Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing + AutoCompleting， |
 | `Hexcessible/Game/HexcessibleIndex.cs` | 游戏侧的图案索引：本体 + 已开的附属图案 + 书（含附属书页），书条目锁不锁看当前玩家的解锁进度。 |
 | `Hexcessible/Game/HexcessibleOptions.cs` | Hexcessible 的配置项，挂在客户端「附属兼容」页的 Hexcessible 开关下面（上游 HexcessibleConfig，默认值照搬）。 |
+| `Hexcessible/Game/HexcessibleStore.cs` | Hexcessible 自己记的东西（上游放在配置文件里、界面上不显示的 patternAliases）：图案别名，id → 别名。 |
 | `Hexcessible/Game/TooltipBox.cs` | 画 Minecraft 样式的提示框（上游用 DrawContext.drawTooltip：深紫底、紫色渐变边框，贴在给定点右上方，出屏就往回挪）。 |
 | `HexDebug/Game/HexDebugAddon.cs` | HexDebug 附属的入口：调试杖逐步执行咒术、剪接台编辑咒术（object-Object，MIT）。 |
 | `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |

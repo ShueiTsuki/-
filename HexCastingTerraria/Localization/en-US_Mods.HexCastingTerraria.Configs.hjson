@@ -313,6 +313,16 @@ UnknownMode: {
 HexcessibleOptions: {
 	Tooltip: Hexcessible options (upstream HexcessibleConfig, same defaults)
 
+	IdleTooltip: {
+		Label: Idling in Spellcasting Interface: show hover tooltip
+		Tooltip: Shown after hovering a drawn pattern for half a second
+	}
+
+	MouseDrawTooltip: {
+		Label: Spellcasting with Mouse: show tooltip
+		Tooltip: ""
+	}
+
 	KeyboardAllow: {
 		Label: Spellcasting with Keyboard
 		Tooltip: Draw with q w e a d; Enter / Tab / Space to cast; s or Backspace to undo; arrows / hjkl to move; r to rotate

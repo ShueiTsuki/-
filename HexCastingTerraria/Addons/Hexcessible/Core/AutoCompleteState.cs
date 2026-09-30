@@ -108,7 +108,7 @@ public sealed class AutoCompleteState
     public int LockedCount => _suggestions.Count - Unlocked().Count;
 
     /// <summary>Java String.split(" ")：去掉末尾的空串；整串为空时是一个空串。</summary>
-    private static List<string> JavaSplitSpace(string s)
+    internal static List<string> JavaSplitSpace(string s)
     {
         var parts = s.Split(' ').ToList();
         while (parts.Count > 1 && parts[^1].Length == 0) parts.RemoveAt(parts.Count - 1);

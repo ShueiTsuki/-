@@ -16,6 +16,12 @@ public sealed class HexcessibleSettings
 
     public static HexcessibleSettings Current { get; set; } = new();
 
+    /// <summary>idle.tooltip：鼠标停在画好的图案上半秒，显示签名与说明。</summary>
+    public TooltipMode IdleTooltip { get; set; } = TooltipMode.Descriptive;
+
+    /// <summary>mouseDraw.tooltip：手画时在鼠标旁显示签名与说明。</summary>
+    public TooltipMode MouseDrawTooltip { get; set; } = TooltipMode.Descriptive;
+
     /// <summary>keyboardDraw.allow：允许用键盘画图。</summary>
     public bool KeyboardAllow { get; set; } = true;
 

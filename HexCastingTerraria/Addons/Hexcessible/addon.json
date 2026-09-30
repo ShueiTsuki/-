@@ -71,7 +71,10 @@
     },
     {
       "name": "别名",
-      "files": [],
+      "files": [
+        "Core/AliasEditState.cs",
+        "Game/HexcessibleStore.cs"
+      ],
       "upstream": [
         "drawstate/AliasChanging.java"
       ]

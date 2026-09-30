@@ -27,7 +27,7 @@ public static class HexcessibleIndex
             var seen = new HashSet<string>();
             var defs = PatternRegistry.All.Concat(PatternRegistry.EnabledAddonPatterns()).Where(d => seen.Add(d.Id)).ToList();
             // 大法术：学会本世界画法（上游 PerWorldLearnMixin）那项还没做，先一律当没学会
-            _index = new PatternEntries(defs, book, PatternRegistry.IsPerWorld);
+            _index = new PatternEntries(defs, book, PatternRegistry.IsPerWorld) { AliasOf = HexcessibleStore.AliasOf };
             _book = book;
         }
         return _index;

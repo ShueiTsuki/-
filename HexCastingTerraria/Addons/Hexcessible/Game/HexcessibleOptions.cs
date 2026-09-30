@@ -10,6 +10,12 @@ namespace HexCastingTerraria.Addons.Hexcessible.Game;
 /// </summary>
 public sealed class HexcessibleOptions
 {
+    [DefaultValue(HexcessibleSettings.TooltipMode.Descriptive)]
+    public HexcessibleSettings.TooltipMode IdleTooltip { get; set; } = HexcessibleSettings.TooltipMode.Descriptive;
+
+    [DefaultValue(HexcessibleSettings.TooltipMode.Descriptive)]
+    public HexcessibleSettings.TooltipMode MouseDrawTooltip { get; set; } = HexcessibleSettings.TooltipMode.Descriptive;
+
     [DefaultValue(true)]
     public bool KeyboardAllow { get; set; } = true;
 
@@ -43,6 +49,8 @@ public sealed class HexcessibleOptions
     {
         HexcessibleSettings.Current = new HexcessibleSettings
         {
+            IdleTooltip = IdleTooltip,
+            MouseDrawTooltip = MouseDrawTooltip,
             KeyboardAllow = KeyboardAllow,
             KeyboardTooltip = KeyboardTooltip,
             KeyHint = KeyHint,
@@ -58,9 +66,10 @@ public sealed class HexcessibleOptions
     public override bool Equals(object? obj) => obj is HexcessibleOptions o
         && o.KeyboardAllow == KeyboardAllow && o.KeyboardTooltip == KeyboardTooltip && o.KeyHint == KeyHint
         && o.Ghost == Ghost && o.ShortcutHints == ShortcutHints && o.UppercaseSig == UppercaseSig
-        && o.AutoCompleteAllow == AutoCompleteAllow && o.AutoCompleteTooltip == AutoCompleteTooltip && o.AutoCompleteCount == AutoCompleteCount;
+        && o.AutoCompleteAllow == AutoCompleteAllow && o.AutoCompleteTooltip == AutoCompleteTooltip && o.AutoCompleteCount == AutoCompleteCount
+        && o.IdleTooltip == IdleTooltip && o.MouseDrawTooltip == MouseDrawTooltip;
 
     public override int GetHashCode() => System.HashCode.Combine(
         System.HashCode.Combine(KeyboardAllow, KeyboardTooltip, KeyHint, Ghost, ShortcutHints, UppercaseSig),
-        AutoCompleteAllow, AutoCompleteTooltip, AutoCompleteCount);
+        AutoCompleteAllow, AutoCompleteTooltip, AutoCompleteCount, IdleTooltip, MouseDrawTooltip);
 }

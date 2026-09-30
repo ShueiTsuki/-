@@ -19,8 +19,8 @@ namespace HexCastingTerraria.Addons.Hexcessible.Game;
 /// <summary>
 /// Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing + AutoCompleting，
 /// 以及 mixin/DrawStateMixin 的接线与左下角快捷键提示）。
-/// 状态：空闲 / 键盘绘制（<see cref="_kbd"/>）/ 自动补全（<see cref="_ac"/>）/ 手画（本体在画，Hexcessible 只给提示）。
-/// 别名、悬停说明随后续功能加。
+/// 状态：空闲（悬停说明）/ 键盘绘制（<see cref="_kbd"/>）/ 自动补全（<see cref="_ac"/>）/ 改别名（<see cref="_alias"/>）/
+/// 手画（本体在画，Hexcessible 只给提示）。
 /// </summary>
 public sealed class HexcessibleCanvas : ICanvasExtension
 {
@@ -34,7 +34,13 @@ public sealed class HexcessibleCanvas : ICanvasExtension
 
     private KeyboardDrawingState? _kbd;
     private AutoCompleteState? _ac;
+    private AliasEditState? _alias;
     private Vector2? _lastMouse;
+
+    // 上游 Idling：鼠标停在哪条画好的图案上、从什么时候开始
+    private ResolvedPattern? _hovered;
+    private PatternEntries.Entry? _hoveredEntry;
+    private long _hoverStart;
     private bool _allowStart = true;
 
     private static HexcessibleSettings S => HexcessibleSettings.Current;
@@ -47,7 +53,8 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     public bool AllowStartDrawing => _allowStart;
 
     private bool CurrentAllowStart()
-        => _kbd is not null ? _kbd.Sig.Count == 0
+        => _alias is not null ? true
+         : _kbd is not null ? _kbd.Sig.Count == 0
          : _ac is not null ? _ac.NoDistract
          : true;
 
@@ -64,23 +71,34 @@ public sealed class HexcessibleCanvas : ICanvasExtension
             case DrawState.Drawing:
                 _kbd = null;
                 _ac = null;
+                _alias = null;
+                ClearHover();
                 return false;
             case DrawState.JustStarted:
                 _kbd = null;
-                if (_ac is null) StartAutoComplete(f.Canvas.DrawStartCoord);
+                ClearHover();
+                if (_ac is null && _alias is null) StartAutoComplete(f.Canvas.DrawStartCoord);
                 break;
         }
 
+        if (_alias is not null) return UpdateAlias(f);
         if (_ac is not null) return UpdateAutoComplete(f, mouseMoved);
         if (_kbd is not null) return UpdateKeyboard(f, used, mouseMoved);
 
         // 空闲（上游 Idling）
+        UpdateHover(f);
         if (CanvasFrame.Ctrl)
         {
             // Ctrl+空格：在鼠标处开始自动补全
             if (CanvasFrame.KeyPressed(Keys.Space) && S.AutoCompleteAllow)
             {
                 StartAutoComplete(f.MouseCoord);
+                return true;
+            }
+            // Ctrl+E：给鼠标停着的那条图案起别名
+            if (CanvasFrame.KeyPressed(Keys.E) && _hoveredEntry is not null)
+            {
+                StartAlias(_hoveredEntry);
                 return true;
             }
             return false;
@@ -177,6 +195,15 @@ public sealed class HexcessibleCanvas : ICanvasExtension
                     return true;
                 }
             }
+            // 上游 Ctrl+E / F2：给选中项起别名
+            if ((CanvasFrame.Ctrl && CanvasFrame.KeyPressed(Keys.E)) || CanvasFrame.KeyPressed(Keys.F2))
+            {
+                if (ac.ChosenEntry is { } picked)
+                {
+                    StartAlias(picked);
+                    return true;
+                }
+            }
             if (CanvasFrame.KeyPressed(Keys.Up)) ac.OffsetChosen(-1);
             if (CanvasFrame.KeyPressed(Keys.Down)) ac.OffsetChosen(1);
             if (CanvasFrame.KeyPressed(Keys.Left)) ac.OffsetChosenDoc(-1);
@@ -190,6 +217,69 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     {
         f.Canvas.CancelDrawing();
         _ac = null;
+    }
+
+    // ==================== 改别名 ====================
+
+    private void StartAlias(PatternEntries.Entry entry)
+    {
+        _alias = new AliasEditState(entry);
+        _ac = null;
+        ClearHover();
+        Main.clrInput();
+    }
+
+    /// <summary>上游 AliasChanging：打字改名，Ctrl+退格删词，Enter / Tab 存下（空着 = 存回原名）并回到空闲。鼠标照常归本体。</summary>
+    private bool UpdateAlias(CanvasFrame f)
+    {
+        var alias = _alias!;
+        PlayerInput.WritingText = true;
+        Main.instance.HandleIME();
+        bool ctrlBack = CanvasFrame.Ctrl && CanvasFrame.KeyPressed(Keys.Back);
+        string typed = Main.GetInputText(alias.Alias);
+        if (ctrlBack) alias.DeleteWord();
+        else alias.Alias = typed;
+
+        if (CanvasFrame.KeyPressed(Keys.Enter) || CanvasFrame.KeyPressed(Keys.Tab))
+        {
+            HexcessibleStore.SetAlias(alias.Id, alias.ValueToStore);
+            HexcessibleIndex.InvalidateCaches();
+            _alias = null;
+        }
+        return false;
+    }
+
+    // ==================== 空闲：悬停 ====================
+
+    /// <summary>上游 Idling.onRender 前半 + getPatternAt：鼠标所在格点是哪条画好的图案的起点或经过的点。</summary>
+    private void UpdateHover(CanvasFrame f)
+    {
+        var coord = f.MouseCoord;
+        ResolvedPattern? hit = null;
+        foreach (var rp in f.Canvas.Patterns)
+        {
+            if (rp.Origin.Equals(coord) || rp.Pattern.Positions(rp.Origin).Contains(coord))
+            {
+                hit = rp;
+                break;
+            }
+        }
+        if (hit is null)
+        {
+            ClearHover();
+        }
+        else if (!ReferenceEquals(hit, _hovered))
+        {
+            _hoverStart = Environment.TickCount64;
+            _hovered = hit;
+            _hoveredEntry = HexcessibleIndex.Get().FromSig(hit.Pattern.Angles);
+        }
+    }
+
+    private void ClearHover()
+    {
+        _hovered = null;
+        _hoveredEntry = null;
     }
 
     // ==================== 键盘绘制 ====================
@@ -317,6 +407,8 @@ public sealed class HexcessibleCanvas : ICanvasExtension
     {
         _kbd = null;
         _ac = null;
+        _alias = null;
+        ClearHover();
         _lastMouse = null;
         _allowStart = true;
         HexcessibleIndex.InvalidateCaches();
@@ -336,6 +428,20 @@ public sealed class HexcessibleCanvas : ICanvasExtension
         else if (_ac is { } ac)
         {
             DrawAutoComplete(sb, f, ac);
+        }
+        else if (_alias is { } alias)
+        {
+            DrawAlias(sb, alias);
+        }
+        else if (f.Canvas.State == DrawState.Drawing && f.Canvas.WipPattern is { } wip)
+        {
+            // 上游 MouseDrawing.onRender：手画时鼠标右边两个格距处
+            DrawSigTooltip(sb, f.Mouse.X + f.HexSize * 2, f.Mouse.Y, wip.Angles, false, S.MouseDrawTooltip, 0);
+        }
+        else if (_hovered is { } hovered && Environment.TickCount64 - _hoverStart > 500)
+        {
+            // 上游 Idling：停够半秒
+            DrawSigTooltip(sb, f.Mouse.X, f.Mouse.Y, hovered.Pattern.Angles, false, S.IdleTooltip, 0);
         }
         if (S.ShortcutHints) DrawShortcutHints(sb, f);
     }
@@ -454,6 +560,16 @@ public sealed class HexcessibleCanvas : ICanvasExtension
         TooltipBox.Draw(sb, desc, descriptionX, descriptionY);
     }
 
+    /// <summary>上游 AliasChanging.onRender：屏幕三分之一宽、一半高处，上面原名（有别名时变灰），下面输入框。</summary>
+    private static void DrawAlias(SpriteBatch sb, AliasEditState alias)
+    {
+        float u = TooltipBox.Unit;
+        float x = Main.screenWidth / 3f, y = Main.screenHeight / 2f;
+        TooltipBox.Draw(sb, alias.Signature + " " + alias.Original, alias.IsBlank ? TooltipBox.Blue : TooltipBox.Gray, x, y - 1 * u);
+        if (alias.IsBlank) TooltipBox.Draw(sb, L("StartTypingAlias"), TooltipBox.DarkGray, x, y + 16 * u);
+        else TooltipBox.Draw(sb, alias.Alias, TooltipBox.Blue, x, y + 16 * u);
+    }
+
     /// <summary>上游 DrawStateMixin.renderHints：左下角从下往上，一行「按键 说明」。</summary>
     private void DrawShortcutHints(SpriteBatch sb, CanvasFrame f)
     {
@@ -478,12 +594,18 @@ public sealed class HexcessibleCanvas : ICanvasExtension
                 hints.Add(("tab/enter", "Cast"));
                 hints.Add(("wheel/up/down", "Scroll"));
                 hints.Add(("left/right", "ScrollDefinitions"));
+                hints.Add(("ctrl-e", "Alias"));
             }
+        }
+        else if (_alias is not null)
+        {
+            hints.Add(("tab/enter", _alias.IsBlank ? "AliasOff" : "Alias"));
         }
         else if (f.Canvas.State == DrawState.BetweenPatterns)
         {
             hints.Add((S.KeyboardAllow ? "lmb/" + draw : "lmb", "DrawStart"));
             if (S.AutoCompleteAllow) hints.Add(("ctrl-space", "AutoComplete"));
+            if (_hoveredEntry is not null) hints.Add(("ctrl-e", "Alias"));
         }
         else
         {

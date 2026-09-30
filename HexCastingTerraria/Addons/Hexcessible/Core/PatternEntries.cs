@@ -34,8 +34,14 @@ public sealed class PatternEntries
     public sealed record Entry(string Id, string RawName, HexDir Dir, IReadOnlyList<IReadOnlyList<HexAngle>>? Sigs,
         IReadOnlyList<IReadOnlyList<HexAngle>> RawSigs, IReadOnlyList<Impl> Impls, int Z = 0)
     {
-        /// <summary>显示名（别名功能接上后在这里换成别名）。</summary>
-        public string Name => RawName;
+        /// <summary>建出这一条的索引（别名从它那里查）；智能签名等临时条目没有。</summary>
+        public PatternEntries? Owner { get; init; }
+
+        /// <summary>上游 name()：起过别名就用别名。</summary>
+        public string Name => Owner?.AliasOf?.Invoke(Id) ?? RawName;
+
+        /// <summary>上游 isAliased。</summary>
+        public bool IsAliased => Owner?.AliasOf?.Invoke(Id) is not null;
 
         /// <summary>
         /// 上游 toSignature：每条签名一段 <c>&lt;EAST,qaq&gt;</c>。用的是记录里的原始签名（大法术就是注册时的标准画法），
@@ -94,13 +100,16 @@ public sealed class PatternEntries
                 sigs = raw;
             }
             var e = new Entry(def.Id, def.DisplayName(), dir, sigs, raw,
-                impls.TryGetValue(def.Id, out var li) ? li : (IReadOnlyList<Impl>)Array.Empty<Impl>());
+                impls.TryGetValue(def.Id, out var li) ? li : (IReadOnlyList<Impl>)Array.Empty<Impl>()) { Owner = this };
             _entries.Add(e);
             if (sigs is { Count: 1 }) _bySig.TryAdd(Key(sigs[0]), e);
         }
     }
 
     public IReadOnlyList<Entry> All => _entries;
+
+    /// <summary>别名表（上游 config.patternAliases，id → 别名）；没起过别名返回 null。改了别名要 <see cref="InvalidateCaches"/>。</summary>
+    public Func<string, string?>? AliasOf { get; set; }
 
     /// <summary>上游 getFromSig（智能签名单独一块，调用方先查）：第一个签名完全相同的图案。</summary>
     public Entry? FromSig(IReadOnlyList<HexAngle> sig) => _bySig.TryGetValue(Key(sig), out var e) ? e : null;
