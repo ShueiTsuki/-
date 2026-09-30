@@ -5084,7 +5084,7 @@ static class Program
         Console.WriteLine("=== 法术配色（colorize） ===");
         {
             {
-                var env = new TestEnv { PigmentItem = 1033 };   // 随便一个染料物品类型
+                var env = new TestEnv { PigmentItem = 1033 };   // 随便一个颜料物品类型
                 var img = new CastingImage();
                 var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:colorize") });
                 Check("colorize：找到颜料 -> 应用它，消耗 1 万（1 粉尘单位）",
@@ -5579,7 +5579,7 @@ static class Program
                 var world = new FakeWorld { Caster = caster, LookDir = (1.0, 0.0) };
                 world.Solid.Add((14, 19));       // 视线正前方 4 格有一块实心方块
                 world.Replaceable.Add((13, 19));  // 它朝向玩家的那一面是空气
-                var env = new TestEnv(world: world);
+                var env = new TestEnv(world: world) { PigmentItem = 1 };   // 「换法术颜色」要手上有染色剂
                 var img = new CastingImage(System.Array.Empty<Iota>());
                 string fail = "";
                 for (int i = 0; i < sample.Steps.Length && fail.Length == 0; i++)
