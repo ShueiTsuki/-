@@ -2,6 +2,7 @@ using HexCastingTerraria.Core.Casting.Actions;
 using HexCastingTerraria.Core.Casting.Castables;
 using HexCastingTerraria.Core.Casting.Eval;
 using HexCastingTerraria.Core.Casting.Eval.Vm;
+using HexCastingTerraria.Core.Casting.Eval.Mishaps;
 using HexCastingTerraria.Core.Casting.Iotas;
 using HexCastingTerraria.Core.Casting.Actions;
 using HexCastingTerraria.Core.Casting.Circles;
@@ -5103,6 +5104,42 @@ static class Program
                     && env.AppliedPigments.Count == 0,
                     Sig(r.Image));
             }
+        }
+
+        Console.WriteLine("=== 栈操作与「外科医师之提整」对拍原版（参数：栈里深的在前、栈顶在后）===");
+        {
+            // 原版 HexActions 的 OpTwiddling(参数个数, lookup)：结果 = lookup.map(args::get)
+            string After(string id, params double[] start)
+            {
+                var img = new CastingImage(start.Select(v => (Iota)new DoubleIota(v)).ToArray());
+                var r = new CastingVM(img, new TestEnv()).QueueExecute(img, new Iota[] { P(id) });
+                return Sig(r.Image);
+            }
+            Check("交换 swap：[1, 2] → [2, 1]", After("hexcasting:swap", 1, 2) == "[2, 1]", After("hexcasting:swap", 1, 2));
+            Check("轮换 rotate：[1, 2, 3] → [2, 3, 1]（最深的转到栈顶）", After("hexcasting:rotate", 1, 2, 3) == "[2, 3, 1]", After("hexcasting:rotate", 1, 2, 3));
+            Check("反向轮换 rotate_reverse：[1, 2, 3] → [3, 1, 2]（栈顶转到最深）", After("hexcasting:rotate_reverse", 1, 2, 3) == "[3, 1, 2]", After("hexcasting:rotate_reverse", 1, 2, 3));
+            Check("越过 over：[1, 2] → [1, 2, 1]", After("hexcasting:over", 1, 2) == "[1, 2, 1]", After("hexcasting:over", 1, 2));
+            Check("塞入 tuck：[1, 2] → [2, 1, 2]", After("hexcasting:tuck", 1, 2) == "[2, 1, 2]", After("hexcasting:tuck", 1, 2));
+            Check("双重复制 2dup：[1, 2] → [1, 2, 1, 2]", After("hexcasting:2dup", 1, 2) == "[1, 2, 1, 2]", After("hexcasting:2dup", 1, 2));
+
+            // 原版 OperatorReplace：(list, num, any) —— 列表最深、下标其次、新值在栈顶
+            var list = new ListIota(new List<Iota> { new DoubleIota(10), new DoubleIota(20), new DoubleIota(30) });
+            var ok = new CastingImage(new Iota[] { list, new DoubleIota(1), new DoubleIota(99) });
+            var r1 = new CastingVM(ok, new TestEnv()).QueueExecute(ok, new Iota[] { P("hexcasting:replace") });
+            Check("外科医师之提整：[列表(10,20,30), 1, 99] → 列表(10,99,30)",
+                r1.ResolutionType == ResolvedPatternType.Evaluated && r1.Image.Stack.Count == 1
+                && r1.Image.Stack[0] is ListIota l1 && l1.Count == 3 && ((DoubleIota)l1.Items[1]).Value == 99,
+                Sig(r1.Image));
+
+            // 顺序错了（数、列表、数）：原版 MishapInvalidOperatorArgs —— 三个参数换成垃圾，消息列出**值**
+            var wrong = new CastingImage(new Iota[] { new DoubleIota(2), list, new DoubleIota(3) });
+            var r2 = new CastingVM(wrong, new TestEnv()).QueueExecute(wrong, new Iota[] { P("hexcasting:replace") });
+            var mishap = new MishapInvalidOperatorArgs("replace", new Iota[] { new DoubleIota(2), list, new DoubleIota(3) });
+            string? msg = mishap.ErrorMessageWithName(new TestEnv(), new MishapContext(null, null));
+            Check("参数顺序错 → 出错并把 3 个参数换成垃圾；消息照原版「在栈下标为0到2处获取到3个意外iota：…」",
+                r2.ResolutionType == ResolvedPatternType.Errored && Sig(r2.Image) == "[garbage, garbage, garbage]"
+                && msg is not null && msg.StartsWith("在栈下标为0到2处获取到3个意外iota：") && msg.Contains("3"),
+                Sig(r2.Image) + " " + msg);
         }
 
         Console.WriteLine("=== 未识别图案的「最接近」建议 ===");

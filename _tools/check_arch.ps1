@@ -114,6 +114,12 @@ foreach ($f in (AllCs (Join-Path $mod 'Core'))) {
 }
 Check "Core/ 不引用 Content/Client/Config（注释里的 cref 不算）" ($coreToOuter.Count -eq 0) ($coreToOuter -join ', ')
 
+# ── 图案形状对拍原版（形状错了图案就执行成别的操作，而离线测试取的是同一张表，照样全绿）──
+$env:PYTHONUTF8 = '1'
+$patOut = & python (Join-Path $PSScriptRoot 'check_patterns_vs_original.py') 2>&1
+Check "188 个图案的角度串与起笔方向与原版源码逐条一致" ($LASTEXITCODE -eq 0) (($patOut | Select-Object -First 4) -join ' | ')
+
+
 # ─────────────────────────────────────────────────────────────────────
 Write-Host "`n② 离线测试不许有排除项（排除 = 那段代码从没被测过）"
 # ─────────────────────────────────────────────────────────────────────

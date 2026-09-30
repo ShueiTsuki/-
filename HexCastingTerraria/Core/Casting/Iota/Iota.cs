@@ -65,6 +65,9 @@ public abstract class Iota
 
     protected abstract string DescribeValue();
 
+    /// <summary>给玩家看的值（原版 Iota.display()，用在事故消息里）。</summary>
+    public string Display() => DescribeValue();
+
     // ---- 求值相关（移植自源项目 Iota.java 的 execute / executeInParens）----
 
     /// <summary>

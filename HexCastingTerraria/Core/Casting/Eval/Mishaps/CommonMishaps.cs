@@ -209,11 +209,17 @@ public sealed class MishapDivideByZero : Mishap
         => $"除以零（{Role}：{B:0.####}）";
 }
 
-/// <summary>运算符的操作数类型不受支持。</summary>
+/// <summary>
+/// 运算符的操作数类型不受支持。源项目 MishapInvalidOperatorArgs(perpetrators)：
+/// perpetrators = 参与运算的参数，**栈里深的在前、栈顶在后**（ArithmeticEngine 弹栈后 reverse）。
+/// </summary>
 public sealed class MishapInvalidOperatorArgs : Mishap
 {
     public string Op { get; }
     public string ArgTypes { get; }
+
+    /// <summary>参与运算的参数（深 → 栈顶）；内部错误（没有算术实现）时为空。</summary>
+    public IReadOnlyList<Iota> Perpetrators { get; }
 
     /// <summary>参与运算的参数个数（惩罚时从栈顶换掉这么多个）。</summary>
     public int ArgCount { get; }
@@ -223,6 +229,17 @@ public sealed class MishapInvalidOperatorArgs : Mishap
         Op = op;
         ArgTypes = argTypes;
         ArgCount = argCount;
+        Perpetrators = System.Array.Empty<Iota>();
+    }
+
+    public MishapInvalidOperatorArgs(string op, IReadOnlyList<Iota> perpetrators) : base("invalid_operator_args")
+    {
+        Op = op;
+        Perpetrators = perpetrators;
+        ArgCount = perpetrators.Count;
+        var types = new string[perpetrators.Count];
+        for (int i = 0; i < types.Length; i++) { types[i] = perpetrators[i].TypeName; }
+        ArgTypes = string.Join(", ", types);
     }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
@@ -234,8 +251,19 @@ public sealed class MishapInvalidOperatorArgs : Mishap
         }
     }
 
+    /// <summary>
+    /// 原版官方中文：one「在栈下标为%d处获取到意外iota：%s」，many「在栈下标为%2$d到%3$d处获取到%1$s个意外iota：%4$s」
+    /// （下标 0 到 n-1，列出的是参数的**值**，按深 → 栈顶）。之前只列类型名，而且没说顺序，读起来像是「这个图案要这几个参数」。
+    /// </summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"运算符「{Op}」不支持这些操作数类型：{ArgTypes}";
+    {
+        if (Perpetrators.Count == 0) { return $"运算符「{Op}」不支持这些操作数类型：{ArgTypes}"; }
+        var values = new string[Perpetrators.Count];
+        for (int i = 0; i < values.Length; i++) { values[i] = Perpetrators[i].Display(); }
+        return Perpetrators.Count == 1
+            ? $"在栈下标为0处获取到意外iota：{values[0]}"
+            : $"在栈下标为0到{Perpetrators.Count - 1}处获取到{Perpetrators.Count}个意外iota：{string.Join(", ", values)}";
+    }
 }
 
 /// <summary>

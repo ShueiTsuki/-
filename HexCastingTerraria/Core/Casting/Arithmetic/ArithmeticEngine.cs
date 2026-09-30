@@ -57,14 +57,7 @@ public static class ArithmeticEngine
             if (r != null) return r;
         }
 
-        throw new MishapInvalidOperatorArgs(op, DescribeArgs(args), args.Count);
-    }
-
-    private static string DescribeArgs(IReadOnlyList<Iota> args)
-    {
-        var parts = new string[args.Count];
-        for (int i = 0; i < args.Count; i++) parts[i] = args[i].TypeName;
-        return string.Join(", ", parts);
+        throw new MishapInvalidOperatorArgs(op, args);
     }
 }
 

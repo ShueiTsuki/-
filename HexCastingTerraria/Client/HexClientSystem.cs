@@ -708,13 +708,15 @@ public sealed class HexClientSystem : ModSystem
             return;
         }
 
-        Terraria.Utils.DrawBorderString(sb, $"── VM 栈 ({stack.Count}) ──",
+        Terraria.Utils.DrawBorderString(sb, $"── VM 栈 ({stack.Count}) · 栈顶在上 ──",
             new Vector2(x, y), DebugColor, 0.75f);
         y += 20f;
 
-        // 只显示栈顶若干项（栈可能很长）
+        // 原版 GuiSpellcasting：stackDescs = 栈.asReversed() —— **栈顶画在最上面**，往下越来越深。
+        // 这里曾经反过来（栈底在上），照原版的习惯用交换 / 轮换排栈就会排反（2026-10-01 用户排「外科医师之提整」时踩到）。
+        // 栈可能很长：只画栈顶往下若干项。
         int show = System.Math.Min(stack.Count, 8);
-        for (int i = stack.Count - show; i < stack.Count; i++)
+        for (int i = stack.Count - 1; i >= stack.Count - show; i--)
         {
             Terraria.Utils.DrawBorderString(sb, HexVmState.Describe(stack[i]),
                 new Vector2(x, y), TextColor, 0.7f);
@@ -722,7 +724,7 @@ public sealed class HexClientSystem : ModSystem
         }
         if (stack.Count > show)
         {
-            Terraria.Utils.DrawBorderString(sb, $"… 其余 {stack.Count - show} 项",
+            Terraria.Utils.DrawBorderString(sb, $"… 更深处还有 {stack.Count - show} 项",
                 new Vector2(x, y), new Color(170, 165, 190), 0.65f);
             y += 17f;
         }
