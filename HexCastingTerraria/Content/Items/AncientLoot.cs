@@ -91,7 +91,6 @@ public sealed class AncientScroll : ItemScroll
 /// </summary>
 public sealed class AncientCypher : ItemPackagedSpell
 {
-    public override string Texture => "HexCastingTerraria/Content/Items/Cypher";
 
     public override Core.Casting.Eval.PackagedSpellKind Kind => Core.Casting.Eval.PackagedSpellKind.Cypher;
 

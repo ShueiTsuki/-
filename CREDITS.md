@@ -46,10 +46,13 @@
 | `Client/UI/BookAtlas/patchi_book.png`、`patchi_filler.png` | FallingColors/HexMod v0.11.4：`textures/gui/` | MIT |
 | `Client/UI/BookAtlas/crafting.png` | VazkiiMods/Patchouli：`textures/gui/crafting.png` | CC BY-NC-SA 3.0 |
 | `Core/Ui/PatchouliRenderer.cs` 的布局常量 | VazkiiMods/Patchouli：`GuiBook*` / `GuiButton*` / `Page*` | CC BY-NC-SA 3.0 |
-| `Content/Items/LoreFragment.png`、`ScrollLargeAncient.png` | FallingColors/HexMod：`textures/item/lore_fragment.png`、`scroll_ancient_large.png`（取自本地的原版 jar，最近邻放大 2 倍） | MIT |
+| `Content/Items/*.png`、`Content/Items/Blocks/*.png`、`Content/Items/States/*.png`、`Content/Tiles/*.png`（除下面列出的保留贴图） | FallingColors/HexMod v0.11.4：`textures/item`、`textures/block`（取自本地的原版 jar，由 `_tools/gen_textures.py` 生成：物品最近邻 ×2，方块排成泰拉图集） | MIT |
 | `Content/Items/AncientLoot.cs` 的远古杂件预设咒术 | FallingColors/HexMod：`AddHexToAncientCypherFunc.LOOT_HEXES` | MIT |
 
 生成器：`_tools/gen_book_content.py`（原始文件放在仓库外的 `D:\DeepSeekHarness\hexsrc_assets`）。
+
+**保留的移植版自绘贴图**（原版对应的是 MC 原生物品 / 方块，Mojang 的贴图不能用；或者是移植版自创的东西）：
+紫水晶碎片、母岩、紫水晶芽 / 簇、构筑的方块 / 光源、紫晶烛台、挂轴框。
 
 ### 泰拉瑞亚 / tModLoader
 

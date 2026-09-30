@@ -22,10 +22,13 @@ public abstract class HexDecoBlockItem : ModItem
     /// <summary>物品稀有度。</summary>
     protected virtual int ItemRarity => ItemRarityID.White;
 
-    /// <summary>复用方块贴图。</summary>
+    /// <summary>
+    /// 物品图标单独一张（`Content/Items/Blocks/方块名.png`，原版贴图 ×2）。
+    /// 不能复用方块贴图：自动选帧的方块贴图是 288×270 的整张图集，拿来当图标会被整张缩进背包格子。
+    /// </summary>
     public override string Texture => (Mod as HexCastingTerraria) is null
         ? base.Texture
-        : $"HexCastingTerraria/Content/Tiles/{GetType().Name.Replace("Item", string.Empty)}";
+        : $"HexCastingTerraria/Content/Items/Blocks/{GetType().Name.Replace("Item", string.Empty)}";
 
     public override void SetDefaults()
     {

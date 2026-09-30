@@ -67,6 +67,12 @@ public abstract class HexDirectrixBase : ModTile
         ModContent.GetInstance<HexDirectrixEntity>().Kill(i, j);
     }
 
+    /// <summary>贴图第 2 帧（x = 18）是亮着的样子（原版 *_lit），环走到它时切过去。</summary>
+    public override void AnimateIndividualTile(int type, int i, int j, ref int frameXOffset, ref int frameYOffset)
+    {
+        if (HexDirectrixEntity.FindAt(i, j) is { IsRunning: true }) frameXOffset = 18;
+    }
+
     /// <summary>
     /// 红石触发。移植自源项目 `BlockRedstoneDirectrix` 的 `POWERED` 状态。
     ///

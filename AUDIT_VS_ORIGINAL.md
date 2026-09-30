@@ -154,6 +154,8 @@ HUD 的媒质环保留为信息显示（原版没有媒质条）：数字 = 背�
 
 ## 待审
 
+- **美术 —— 已做（2026-09-30）**：`_tools/gen_textures.py` 从原版 jar 生成 151 张（物品、方块图集、状态图集），
+  有状态的物品由 `Content/Items/ItemStateArt.cs` 按实例画；建材方块缺图集（看不见）的 bug 一并修掉。原计划如下：
 - **美术（用户 2026-09-30 提出，排进计划）**：模组里 98 张贴图大多是 DeepSeek 自己画的。改成**以原版贴图为底、适配泰拉**的版本：
   - 来源：本地原版 jar（`hexwork/jar/assets/hexcasting/textures/`：item、block、block/circle、staff、phial、colorizer …，MIT，记进 CREDITS）
   - 适配规则：最近邻放大 ×2（泰拉物品 / 图格的像素密度约是 MC 的两倍，已有 LoreFragment、ScrollLargeAncient 是这么做的）；图格按泰拉的 16 + 2 帧格式排；多面方块（促动石、导向石、石板）取能代表它的那一面（促动石用正面的「脸」，出口方向另画箭头）

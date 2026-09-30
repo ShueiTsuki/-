@@ -39,6 +39,18 @@
 - **图格**：一格固定 16 像素，原版方块贴图也是 16 像素 → **只能 1:1**，看起来比泰拉原生方块细一倍。
   这是唯一合理的取舍（放大就要一个方块占 2×2 格，缩小会丢细节），记为已知差异
 
+## 网上资料核对（2026-09-30）
+
+- tModLoader 官方 Wiki「Basic Tile」：框架方块每帧 16×16、右边和下边各留 2 像素（18×18 一格）；泰拉默认在 **3 种随机样式**之间选（`Tile.TileFrameNumber`）；
+  只有贴图里画了混泥土的那些帧才能开 `tileMergeDirt`；缺间隔会出「奇怪的伪影」
+  → 原版里有随机样式的方块（石板紫晶砖 3 种、淬灵块 4 种）正好对上这 3 种随机样式
+- 社区的方块模板尺寸就是 288×270（DeviantArt「Terraria Tile Template」）
+- 按实例换贴图：官方文档 `PreDrawInInventory` / `PreDrawInWorld` 返回 false 后自己画（与反编译的结论一致）
+
+来源：[tModLoader Wiki: Basic Tile](https://github.com/tModLoader/tModLoader/wiki/Basic-Tile)、
+[ModItem 文档](https://docs.tmodloader.net/docs/stable/class_mod_item.html)、
+[Terraria Tile Template (288×270)](https://www.deviantart.com/redballbomb/art/Terraria-Tile-Template-801374446)
+
 ## 检查清单（做新贴图时）
 
 1. 物品 ≤ 32×32；是原版物品就用原版 16 像素 ×2

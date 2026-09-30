@@ -54,7 +54,7 @@ public sealed class AmethystDustBlockItem : ModItem
     }
 
     /// <summary>复用方块贴图（理由见 HexSlateItem.Texture）。</summary>
-    public override string Texture => "HexCastingTerraria/Content/Tiles/AmethystDustBlock";
+    public override string Texture => "HexCastingTerraria/Content/Items/Blocks/AmethystDustBlock";
 
     public override void AddRecipes()
     {

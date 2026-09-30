@@ -26,7 +26,7 @@ public abstract class HexDirectrixItemBase : ModItem
     ///
     /// 贴图路径由子类的方块类型决定，所以这里用虚属性，子类各给一条。
     /// </summary>
-    public override string Texture => $"HexCastingTerraria/Content/Tiles/{TextureName}";
+    public override string Texture => $"HexCastingTerraria/Content/Items/Blocks/{TextureName}";
 
     /// <summary>方块贴图的文件名（不含扩展名）。子类覆写。</summary>
     protected abstract string TextureName { get; }

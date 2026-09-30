@@ -33,17 +33,8 @@ public sealed class HexSlateItem : ModItem
     }
 
 
-    /// <summary>
-    /// 复用方块贴图。
-    ///
-    /// 为什么必须写这一行：tModLoader 默认按**类名**去找同名 PNG
-    /// （`Content/Items/HexSlateItem.png`），找不到就抛 `MissingResourceException`
-    /// 并**禁用整个模组**。而方块类的贴图在 `Content/Tiles/` 下。
-    ///
-    /// ⚠️ 这个错误**专用服务器不会报**（贴图只在客户端加载），
-    /// 所以「服务端能加载」不能证明客户端能加载 —— 必须跑 `_tools/check_assets.ps1`。
-    /// </summary>
-    public override string Texture => "HexCastingTerraria/Content/Tiles/HexSlate";
+    // 贴图：Content/Items/HexSlateItem.png（原版 item/slate_blank ×2，由 _tools/gen_textures.py 生成）。
+    // 注意 tModLoader 找不到类名同名 PNG 会禁用整个模组，而且专用服务器不报（贴图只在客户端加载）。
 
     public override void AddRecipes()
     {

@@ -166,6 +166,7 @@
 | `Items/ItemIotaStorage.cs` | 銆屾暟鎹浇浣撱€嶇墿鍝佺殑鍩虹被锛氳兘瀛樹竴涓?iota銆?/// 绉绘鑷簮椤圭洰 `api/item/IotaHolderItem`锛堟牳蹇?/ 缁撳康缁?/ 鍗疯酱 / 娉曟湳涔?/ 绠楃洏锛夈€?/// |
 | `Items/ItemPackagedSpell.cs` | 鎵撳寘娉曟湳鐗╁搧鐨勫熀绫伙細鎶婁竴涓插浘妗堜笌涓€浠藉獟璐ㄥ皝鍦ㄩ噷闈紝鍙抽敭鍗冲彲鏂芥斁銆?/// 绉绘鑷簮椤圭洰 `common/items/magic/ItemPackagedHex.java`銆?/// |
 | `Items/ItemScroll.cs` | 鍗疯酱銆傜Щ妞嶈嚜婧愰」鐩?`common/items/storage/ItemScroll.java`銆?/// |
+| `Items/ItemStateArt.cs` | 鎸夌墿鍝?*瀹炰緥**鐨勭姸鎬佹崲璐村浘锛堝師鐗堢殑 item model overrides + 鍙犲眰鐫€鑹诧級銆?/// |
 | `Items/JewelerHammer.cs` | 鐝犲疂鍖犻敜銆傚搴旀簮椤圭洰 `hexcasting:jeweler_hammer`銆?/// |
 | `Items/MediaFlask.cs` | 濯掕川鐡讹紙婧愰」鐩?ItemMediaBattery锛屻€屽獟璐ㄤ箣鐡?/ phial of media銆嶏級銆?/// |
 | `Items/MediaMaterials.cs` | 濯掕川鏉愭枡鐗╁搧鐨勫熀绫伙紙婧愰」鐩?CCMediaHolder.Static锛夈€?/// |
@@ -188,7 +189,7 @@
 | `Tiles/AmethystGeode.cs` | 鏅舵礊姣嶅博銆傚搴?MC 鐨?`budding_amethyst`銆?/// |
 | `Tiles/CircleCursor.cs` | 娉曟湳鐜殑銆屾墽琛屾父鏍囥€嶏細褰撳墠姝ｅ湪鎵ц鍝竴鏍笺€?/// |
 | `Tiles/ConjuredBlock.cs` | 琚彫鍞ゅ嚭鏉ョ殑鏂瑰潡/鍏夋簮鐨勫瓨娲荤鐞嗐€?/// |
-| `Tiles/DecoBlocks.Generated.cs` | 寤烘潗鏂瑰潡鐨勫叕鍏卞疄鐜帮紙P2-6 瑁呴グ鏂瑰潡瀹舵棌锛夈€? |
+| `Tiles/DecoBlocks.Generated.cs` | 寤烘潗鏂瑰潡鐨勫叕鍏卞疄鐜帮紙P2-6 瑁呴グ鏂瑰潡瀹舵棌锛夈€?/// |
 | `Tiles/FletcherGaze.cs` | 鍒剁甯堜績鍔ㄧ煶鐨勩€岃鐩潃銆嶈鏁帮紙鍘熺増 BlockEntityLookingImpetus.serverTick锛夛細 |
 | `Tiles/HexDirectrix.cs` | 瀵肩嚎鐨勫叕鍏卞熀绫汇€傚搴旀簮椤圭洰 `BlockEmptyDirectrix` / `BlockBooleanDirectrix` / |
 | `Tiles/HexImpetus.cs` | 娉曟湳鐜娉版媺涓栫晫鐨勮闂疄鐜般€?/// |
