@@ -7,7 +7,7 @@
 |---|---|---|---|---|
 | [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 1 / 15 |
 | [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 18 |
-| [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 5 / 12 |
+| [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 6 / 12 |
 
 <a id="hexdebug"></a>
 ## HexDebug
@@ -73,7 +73,7 @@
 | 键盘绘制 | `Core/KeyboardPlacement.cs`<br>`Core/KeyboardDrawingState.cs`<br>`Core/PatternEntries.cs` | `drawstate/KeyboardDrawing.java`<br>`Utils.java` |
 | 自动补全 | `Core/FluffySearch.cs`<br>`Core/AutoCompleteState.cs`<br>`Game/HexcessibleIndex.cs` | `drawstate/AutoCompleting.java`<br>`entries/PatternEntries.java` |
 | 别名 | `Core/AliasEditState.cs`<br>`Game/HexcessibleStore.cs` | `drawstate/AliasChanging.java` |
-| 智能签名：数字 / 簿记员 / 转义 | （待做） | `smartsig/SmartSig.java`<br>`smartsig/Number.java`<br>`smartsig/Bookkeeper.java`<br>`smartsig/Escape.java`<br>`numbers.txt` |
+| 智能签名：数字 / 簿记员 / 转义 | `Core/SmartSigs.cs`<br>`Core/JavaNum.cs`<br>`Core/NumberTable.Generated.cs` | `smartsig/SmartSig.java`<br>`smartsig/Number.java`<br>`smartsig/Bookkeeper.java`<br>`smartsig/Escape.java`<br>`numbers.txt` |
 | 悬停说明与绘制提示 | （待做） | `drawstate/Idling.java`<br>`drawstate/MouseDrawing.java` |
 | 按 N 查书 | （待做） | `mixin/KeyDocsScreenMixin.java`<br>`entries/BookEntries.java` |
 | 显示选项（变暗 / 全部格点 / 隐藏飘浮图案 / 大写签名 / 快捷键提示） | （待做） | `mixin/DimmedMixin.java`<br>`mixin/ShowAllDotsMixin.java`<br>`mixin/FloatiesMixin.java`<br>`mixin/RenderLibMixin.java` |

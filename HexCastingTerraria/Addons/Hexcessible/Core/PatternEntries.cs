@@ -99,7 +99,7 @@ public sealed class PatternEntries
             {
                 sigs = raw;
             }
-            var e = new Entry(def.Id, def.DisplayName(), dir, sigs, raw,
+            var e = new Entry(def.Id, def.DisplayName() + (EscapeSuffix.TryGetValue(def.Id, out var suf) ? suf : ""), dir, sigs, raw,
                 impls.TryGetValue(def.Id, out var li) ? li : (IReadOnlyList<Impl>)Array.Empty<Impl>()) { Owner = this };
             _entries.Add(e);
             if (sigs is { Count: 1 }) _bySig.TryAdd(Key(sigs[0]), e);
@@ -108,11 +108,15 @@ public sealed class PatternEntries
 
     public IReadOnlyList<Entry> All => _entries;
 
+    /// <summary>智能签名（数字 / 簿记员）：查询与按签名查时先问它（上游 getFromSig 先查 SmartSigRegistry）。</summary>
+    public SmartSigs? Smart { get; set; }
+
     /// <summary>别名表（上游 config.patternAliases，id → 别名）；没起过别名返回 null。改了别名要 <see cref="InvalidateCaches"/>。</summary>
     public Func<string, string?>? AliasOf { get; set; }
 
-    /// <summary>上游 getFromSig（智能签名单独一块，调用方先查）：第一个签名完全相同的图案。</summary>
-    public Entry? FromSig(IReadOnlyList<HexAngle> sig) => _bySig.TryGetValue(Key(sig), out var e) ? e : null;
+    /// <summary>上游 getFromSig：先问智能签名，再找第一个签名完全相同的图案。</summary>
+    public Entry? FromSig(IReadOnlyList<HexAngle> sig)
+        => Smart?.FromSig(sig) ?? (_bySig.TryGetValue(Key(sig), out var e) ? e : null);
 
     /// <summary>上游 BookEntries.isLocked：图案所在的（第一个）书条目还没解锁。书里没有这个图案 = 不锁。</summary>
     public bool IsLocked(string id, Func<string, bool> isAdvancementUnlocked)
@@ -126,7 +130,9 @@ public sealed class PatternEntries
     {
         if (string.IsNullOrEmpty(query)) return _entries;
         if (extra is null && _searchCache.TryGetValue(query, out var cached)) return cached;
+        bool cacheable = extra is null;
 
+        extra ??= Smart?.FromQuery(query);
         var pool = extra is null ? _entries : _entries.Concat(extra);
         var result = pool
             .Select(e => (Entry: e, Score: e.Z * 10_000 + FluffySearch.Score(query, e.Name) * 3
@@ -135,7 +141,7 @@ public sealed class PatternEntries
             .OrderByDescending(x => x.Score)
             .Select(x => x.Entry)
             .ToList();
-        if (extra is null) _searchCache[query] = result;
+        if (cacheable) _searchCache[query] = result;
         return result;
     }
 
@@ -143,6 +149,18 @@ public sealed class PatternEntries
     public void InvalidateCaches() => _searchCache.Clear();
 
     private static readonly Regex IdWords = new("[:_/]", RegexOptions.Compiled);
+
+    /// <summary>
+    /// 上游 smartsig/Escape.java 给这四个特殊图案的名字后面加了符号，方便按符号搜（打 ( 找内省）。
+    /// 上游要单独做成智能签名，是因为原版里它们不在动作注册表；移植版里它们就是普通图案，所以只加名字后缀。
+    /// </summary>
+    private static readonly Dictionary<string, string> EscapeSuffix = new()
+    {
+        ["hexcasting:escape"] = " \\",
+        ["hexcasting:open_paren"] = " ({",
+        ["hexcasting:close_paren"] = " )}",
+        ["hexcasting:undo"] = " /",
+    };
 
     private static string Key(IReadOnlyList<HexAngle> sig) => new(sig.Select(KeyboardPlacement.LetterOf).ToArray());
 

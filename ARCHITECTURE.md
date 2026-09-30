@@ -245,9 +245,12 @@
 | `Hexcessible/Core/AutoCompleteState.cs` | 自动补全的状态（上游 drawstate/AutoCompleting.java 去掉渲染的部分）：查询串、候选、选中项、选中的书页。 |
 | `Hexcessible/Core/FluffySearch.cs` | 上游 Utils.fluffySearch：按顺序逐字命中（不必连续），连续命中加分，开头就对上再加分；有字没命中 = 0。</summary> |
 | `Hexcessible/Core/HexcessibleSettings.cs` | Hexcessible 的配置项（上游 HexcessibleConfig.java，默认值照搬）。纯数据：游戏侧从客户端附属配置抄进 <see cref="Current"/>。 |
+| `Hexcessible/Core/JavaNum.cs` | 上游 Java 的几个数字细节（智能签名的结果取决于它们）：Float.parseFloat、Float.toString、Math.round(float)、(int) 强转。 |
 | `Hexcessible/Core/KeyboardDrawingState.cs` | 键盘绘制的状态（上游 drawstate/KeyboardDrawing.java 去掉渲染的部分）：当前签名、光标处的起点与起笔方向、 |
 | `Hexcessible/Core/KeyboardPlacement.cs` | 键盘绘制的纯逻辑（上游 accessor/CastRef.java 的 findClosestAvailable / fits / isValidPatternAddition + Utils.java 的角度字母表）。 |
+| `Hexcessible/Core/NumberTable.Generated.cs` | 上游 numbers.txt：第 i 项是数字 i + 1 在「数字之精思」前缀（aqaa / dedd）后面的最短笔顺，共 2000 项。</summary> |
 | `Hexcessible/Core/PatternEntries.cs` | 图案索引（上游 entries/PatternEntries.java + entries/BookEntries.java）：每个图案的名字、签名、书里的图案页 |
+| `Hexcessible/Core/SmartSigs.cs` | 智能签名用到的文字（格式串里的 {0} 对应上游的 %s）。</summary> |
 | `Hexcessible/Game/HexcessibleAddon.cs` | Hexcessible 附属的入口：施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu，JSON License）。 |
 | `Hexcessible/Game/HexcessibleCanvas.cs` | Hexcessible 在画布上的状态机（上游 drawstate/DrawState + Idling + MouseDrawing + KeyboardDrawing + AutoCompleting， |
 | `Hexcessible/Game/HexcessibleIndex.cs` | 游戏侧的图案索引：本体 + 已开的附属图案 + 书（含附属书页），书条目锁不锁看当前玩家的解锁进度。 |

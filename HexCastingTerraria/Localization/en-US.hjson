@@ -18,6 +18,16 @@ Mods: {
 			NoSpace: Can't place this here
 			CountQueued: "{0} more to go"
 
+			SmartSig: {
+				Prefix: "Based on your current stack, this will "
+				Drop: drop {0} iotas
+				Drop1: drop one iota
+				Keep: keep {0} iotas
+				Keep1: keep one iota
+				Join: ", then "
+				Suffix: "."
+			}
+
 			Hint: {
 				DrawStart: draw
 				AutoComplete: autocomplete

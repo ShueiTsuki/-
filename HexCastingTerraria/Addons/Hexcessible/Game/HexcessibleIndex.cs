@@ -27,7 +27,11 @@ public static class HexcessibleIndex
             var seen = new HashSet<string>();
             var defs = PatternRegistry.All.Concat(PatternRegistry.EnabledAddonPatterns()).Where(d => seen.Add(d.Id)).ToList();
             // 大法术：学会本世界画法（上游 PerWorldLearnMixin）那项还没做，先一律当没学会
-            _index = new PatternEntries(defs, book, PatternRegistry.IsPerWorld) { AliasOf = HexcessibleStore.AliasOf };
+            _index = new PatternEntries(defs, book, PatternRegistry.IsPerWorld)
+            {
+                AliasOf = HexcessibleStore.AliasOf,
+                Smart = new SmartSigs(SmartText()),
+            };
             _book = book;
         }
         return _index;
@@ -46,6 +50,17 @@ public static class HexcessibleIndex
     }
 
     public static void InvalidateCaches() => _index?.InvalidateCaches();
+
+    /// <summary>
+    /// 智能签名的文字。「数字之精思：%s」「簿记员之策略：%s」和其它图案名一样用官方中文名（移植版的图案名只有中文）；
+    /// 簿记员的说明是 Hexcessible 自己的文字，跟随游戏语言。
+    /// </summary>
+    private static SmartSigText SmartText()
+    {
+        static string T(string key) => Terraria.Localization.Language.GetTextValue("Mods.HexCastingTerraria.Hexcessible.SmartSig." + key);
+        return new SmartSigText("数字之精思：{0}", "簿记员之策略：{0}",
+            T("Prefix"), T("Drop"), T("Drop1"), T("Keep"), T("Keep1"), T("Join"), T("Suffix"));
+    }
 
     public static void Reset()
     {

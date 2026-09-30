@@ -30,6 +30,108 @@ static class HexcessibleTests
         Prototype = KeyboardPlacement.Pattern(HexDir.East, Sig(angles)),
     };
 
+    static readonly SmartSigText TestText = new("NUM {0}", "MASK {0}", "P:", "drop{0}", "drop1", "keep{0}", "keep1", "+", ".");
+
+    /// <summary>用本体自己的数字之精思 / 算术图案把一串图案算出来（栈机，只认数字与 加 乘 除 幂）。</summary>
+    static double? EvalNumberPatterns(IReadOnlyList<IReadOnlyList<HexAngle>> sigs, out string why)
+    {
+        why = "";
+        var stack = new Stack<double>();
+        foreach (var sig in sigs)
+        {
+            var key = new string(sig.Select(KeyboardPlacement.LetterOf).ToArray());
+            if (SpecialPatterns.TryNumber(key, out var v)) { stack.Push(v); continue; }
+            var id = PatternRegistry.Match(key)?.Id;
+            if (stack.Count < 2) { why = "栈不够：" + key; return null; }
+            double b = stack.Pop(), a = stack.Pop();
+            switch (id)
+            {
+                case "hexcasting:add": stack.Push(a + b); break;
+                case "hexcasting:mul": stack.Push(a * b); break;
+                case "hexcasting:div": stack.Push(a / b); break;
+                case "hexcasting:pow": stack.Push(Math.Pow(a, b)); break;
+                default: why = "不认识的图案：" + key + " -> " + id; return null;
+            }
+        }
+        if (stack.Count != 1) { why = "最后栈里有 " + stack.Count + " 项"; return null; }
+        return stack.Pop();
+    }
+
+    static void SmartSigTests(PatternEntries real)
+    {
+        // Java 数字细节
+        bool P(string q, float want) => JavaNum.TryParseFloat(q, out var v) && (float.IsNaN(want) ? float.IsNaN(v) : v == want);
+        Check("Float.parseFloat：空白、结尾 f、.5、指数、NaN", P("5", 5) && P(" 2.5f ", 2.5f) && P(".5", 0.5f) && P("1e3", 1000) && P("5.", 5)
+            && P("NaN", float.NaN) && P("-Infinity", float.NegativeInfinity));
+        Check("Float.parseFloat：不是数字的不认", !JavaNum.TryParseFloat("abc", out _) && !JavaNum.TryParseFloat("+-1", out _)
+            && !JavaNum.TryParseFloat("-", out _) && !JavaNum.TryParseFloat("1,000", out _) && !JavaNum.TryParseFloat("", out _));
+        var fs = new[] { (5f, "5.0"), (0.5f, "0.5"), (1e7f, "1.0E7"), (12345678f, "1.2345678E7"), (0.001f, "0.001"), (0.0001f, "1.0E-4"),
+            (-3.25f, "-3.25"), (1234567f, "1234567.0"), (100f, "100.0"), (0f, "0.0"), (0.1f, "0.1"), (-0.25f, "-0.25") };
+        var badFs = fs.Where(x => JavaNum.FloatToString(x.Item1) != x.Item2).Select(x => x.Item2 + "=>" + JavaNum.FloatToString(x.Item1)).ToList();
+        Check("Float.toString：小数 / 科学计数的分界与写法", badFs.Count == 0, string.Join(" ", badFs));
+        Check("Math.round(float)：floor(x + 0.5)", JavaNum.Round(2.5f) == 3 && JavaNum.Round(-2.5f) == -2 && JavaNum.Round(float.NaN) == 0
+            && JavaNum.Round(3e9f) == int.MaxValue);
+
+        // 数字：生成的笔顺交给本体去算，结果必须等于要的数
+        var targets = new[] { 0f, 1f, 5f, 37f, 2000f, -1f, -7f, -2000f, 2001f, 4096f, 12345f, -12345f, 1000000f, 99999999f, 2147483000f,
+            0.5f, 2.25f, -3.5f, 1f / 3f, 0.1f, 123.75f };
+        var bad = new List<string>();
+        foreach (var t in targets)
+        {
+            var sigs = SmartSigs.NumberSigs(t);
+            if (sigs is null) { bad.Add(t + ": null"); continue; }
+            var got = EvalNumberPatterns(sigs, out var why);
+            if (got is null) { bad.Add(t + ": " + why); continue; }
+            double tol = t == MathF.Round(t) ? 1e-9 * Math.Max(1, Math.Abs(t)) : 1e-3;
+            if (Math.Abs(got.Value - t) > tol) bad.Add(t + " 算出 " + got);
+        }
+        Check("数字：生成的笔顺用本体的数字之精思与算术图案算出来正好是这个数（" + targets.Length + " 个）", bad.Count == 0, string.Join("; ", bad));
+        Check("数字：2000 以内一条就够（查表）", SmartSigs.NumberSigs(1999f)!.Count == 1 && SmartSigs.NumberSigs(-37f)!.Count == 1
+            && new string(SmartSigs.NumberSigs(-37f)![0].Select(KeyboardPlacement.LetterOf).ToArray()).StartsWith("dedd", StringComparison.Ordinal));
+
+        var smart = new SmartSigs(TestText);
+        var n3 = smart.NumberFromSig(Sig("aqaaedwd"));
+        Check("按签名认数字：名字用 Float.toString、参数行 -> 3.0、排在前面（z = 1）", n3 is { } e3 && e3.Name == "NUM 3.0" && e3.Id == "hexcessible:number/3"
+            && e3.Z == 1 && e3.Impls[0].Args == "-> 3.0" && e3.Dir == HexDir.SouthEast, n3?.Name);
+        Check("dedd 开头是负数", smart.NumberFromSig(Sig("ddeddedwd"))?.Name is null && smart.NumberFromSig(Sig("deddedwd"))?.Name == "NUM -3.0");
+        Check("按查询给数字；超出 int 范围不给", smart.NumberFromQuery("5")?.Sigs is { Count: 1 } && smart.NumberFromQuery("1e10") is null
+            && smart.NumberFromQuery("abc") is null);
+
+        // 簿记员之策略：生成的笔顺交给本体的 TryMask，丢 / 留必须一一对上（本体 true = 留下）
+        var badMask = new List<string>();
+        foreach (var q in new[] { "v", "-", "v-", "-v", "vv", "--v-vv-", "v-v-v", "vvv---" })
+        {
+            var entry = smart.BookkeeperFromQuery(q);
+            if (entry is null) { badMask.Add(q + ": null"); continue; }
+            var pat = KeyboardPlacement.Pattern(HexDir.East, entry.Sigs![0]);
+            if (!SpecialPatterns.TryMask(pat, out var mask)) { badMask.Add(q + ": 本体认不出 " + pat.AnglesSignature()); continue; }
+            var want = q.Select(c => c == '-').ToArray();
+            if (!mask.SequenceEqual(want)) badMask.Add(q + ": 本体读成 " + new string(mask.Select(m => m ? '-' : 'v').ToArray()));
+            if (q.Length > 1 || q == "v")
+            {
+                var back = smart.BookkeeperFromSig(entry.Sigs[0]);
+                if (back?.Id != entry.Id) badMask.Add(q + ": 按签名反查得到 " + back?.Id);
+            }
+        }
+        Check("簿记员：生成的笔顺本体读出来丢 / 留一致，按签名能反查回来", badMask.Count == 0, string.Join("; ", badMask));
+        var bk = smart.BookkeeperFromQuery("-v-")!;
+        Check("簿记员：参数行与名字", bk.Impls[0].Args == "1, _, 3 -> 1, 3" && bk.Name == "MASK -v-", bk.Impls[0].Args);
+        Check("簿记员：说明按连续段计数", smart.BookkeeperFromQuery("--v")!.Impls[0].Desc == "P:keep2+drop1." && smart.BookkeeperFromQuery("vvv-")!.Impls[0].Desc == "P:drop3+keep1.",
+            smart.BookkeeperFromQuery("--v")!.Impls[0].Desc);
+        Check("簿记员：查询里有别的字就不是", smart.BookkeeperFromQuery("v-x") is null && smart.BookkeeperFromQuery("") is null);
+        Check("簿记员：画不成簿记员的签名认不出", smart.BookkeeperFromSig(Sig("qaq")) is null);
+
+        // 接进索引：按签名先问智能签名，搜数字时数字排第一
+        real.Smart = smart;
+        real.InvalidateCaches();
+        Check("索引：数字之精思的签名认成数字", real.FromSig(Sig("aqaaq"))?.Name == "NUM 5.0");
+        Check("索引：搜 12 第一项是数字", real.Search("12").FirstOrDefault()?.Id == "hexcessible:number/12");
+        Check("转义四个图案的名字后面带符号，按符号搜得到", real.All.First(x => x.Id == "hexcasting:open_paren").Name.EndsWith(" ({", StringComparison.Ordinal)
+            && real.Search("(").Any(x => x.Id == "hexcasting:open_paren") && real.All.First(x => x.Id == "hexcasting:escape").Name.EndsWith(" " + (char)92, StringComparison.Ordinal));
+        real.Smart = null;
+        real.InvalidateCaches();
+    }
+
     public static void Run()
     {
         Console.WriteLine("=== 附属 Hexcessible：键盘绘制 ===");
@@ -210,6 +312,8 @@ static class HexcessibleTests
         Check("别名：Ctrl+退格删一个词", again.Alias == "first");
         again.Alias = "   ";
         Check("别名：清空后存回原名（上游写法，等于去掉别名）", again.IsBlank && again.ValueToStore == "test:alpha_beta");
+
+        SmartSigTests(real);
 
         var docs = new AutoCompleteState(origin, real, _ => false);
         docs.SetQuery("get caster");   // id 里的 _ 在匹配前换成了空格，所以要用空格搜

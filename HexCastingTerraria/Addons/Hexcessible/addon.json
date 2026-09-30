@@ -81,7 +81,11 @@
     },
     {
       "name": "智能签名：数字 / 簿记员 / 转义",
-      "files": [],
+      "files": [
+        "Core/SmartSigs.cs",
+        "Core/JavaNum.cs",
+        "Core/NumberTable.Generated.cs"
+      ],
       "upstream": [
         "smartsig/SmartSig.java",
         "smartsig/Number.java",

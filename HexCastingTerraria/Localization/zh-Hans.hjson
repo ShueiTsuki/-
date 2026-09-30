@@ -15,6 +15,16 @@ Mods: {
 			NoSpace: 无法放置在此处
 			CountQueued: 还有{0}个
 
+			SmartSig: {
+				Prefix: 从当前的栈出发，此图案会
+				Drop: 删除{0}个iota
+				Drop1: 删除1个iota
+				Keep: 保留{0}个iota
+				Keep1: 保留1个iota
+				Join: ，然后
+				Suffix: 。
+			}
+
 			Hint: {
 				DrawStart: 绘制
 				AutoComplete: 自动补全
