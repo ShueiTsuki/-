@@ -27,9 +27,6 @@
   },
   "entries": {
     "肉前": {
-      "AmethystDust": "源 ItemJewelerHammer：珠宝匠锤敲碎紫水晶（无手工配方）→ 泰拉：紫晶研磨",
-      "AmethystShard": "源 MC 原生水晶碎片（晶洞掉落）→ 泰拉：由粉压制（保底，等晶洞世界生成补齐）",
-      "ChargedAmethyst": "源：晶洞里的紫水晶簇小概率掉落 → 泰拉：粉 ×10 或 紫晶 + 坠落之星",
       "HexSlateItem": "源 238-243 \"A\"/\"SSS\"：粉1 + 深板岩3 → 6；泰拉深板岩对应物 = 石块",
       "SlateBlockItem": "源 281 ringAll(深板岩, 粉)：8 深板岩 + 1 粉 → 8 板岩块",
       "SlateTilesItem": "源 605-643 stoneSet：瓦 ← 砖 4:4（另加切石机 1:1 走重型工作台）",
@@ -137,6 +134,7 @@
       "FocusHolderItem": "附属 HexDebug：上游 recipes/focus_holder.json，金粒 ×4 + 板岩方块 ×4（泰拉：金锭 ×1）；另有「框架 + 核心材料」装进新核心的配方"
     },
     "肉后": {
+      "ChargedAmethyst": "源：只能从晶洞里的紫水晶簇掉落，咒法师自己捏不出 → 泰拉另加一条：水晶球（肉后巫师卖）旁 10 粉换 1 个（用户定）；晶洞里照样能挖到",
       "QuenchedAllayItem": "淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除小精灵 Pixie —— 神圣地肉后敌怪，用户定的进度 —— 要启蒙）",
       "QuenchedAllayTilesItem": "源 433 stoneSet（这一族没有柱）",
       "QuenchedAllayBricksItem": "源 433 stoneSet",
@@ -146,11 +144,11 @@
       "CherryStaff": "源 87 staffRecipe(樱花木)。泰拉没有樱花木，用珍珠木代替 —— 而珍珠木只长在肉后的神圣地，所以实际门槛是肉后",
       "SpookyStaff": "源 86 staffRecipe(红树)。泰拉用**阴森木**代替 —— 阴森木只在肉后的南瓜月掉落，门槛自带",
       "PearlwoodStaff": "源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带",
-      "AmethystPlanterItem": "移植版新增（用户定，原版没有）：原版紫水晶只靠母岩再生、母岩要脑叶切除；这里用肉后的光明 / 暗影之魂代替被切除的心智，门槛由魂自带",
       "QuenchedDebugger": "附属 HexDebug：上游 flyswatter_quenching，调试杖 + 淬灵晶碎片 ×4（碎片肉后）",
       "QuenchedEvaluator": "附属 HexDebug：同上，运行杖 + 淬灵晶碎片 ×4"
     },
     "肉后 · 启蒙": {
+      "AmethystPlanterItem": "移植版新增（用户定，原版没有）：原版紫水晶只靠母岩再生、母岩要脑叶切除（启蒙大法术）；这里用肉后的光明 / 暗影之魂代替被切除的心智，同样要求启蒙 → 秘银砧 + 已启蒙",
       "HexImpetusEmptyItem": "源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书）",
       "HexDirectrixEmptyItem": "源 400-408：同样挂 enlightenment → 秘银砧 + 已启蒙；比较器/观察者 → 电线（泰拉红石本体）",
       "HexDirectrixItemBase": "布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一",

@@ -45,6 +45,12 @@ public static class AmethystLoot
     /// </summary>
     public const double ShardMultiplier = 0.5;
 
+    /// <summary>MC 原版 amethyst_cluster 掉落表：用合格工具挖掉 4 个碎片（再叠 ore_drops 时运），否则 2 个。</summary>
+    public const int VanillaShardsProperTool = 4;
+
+    /// <summary>同上，工具不合格时的 2 个（explosion_decay，泰拉没有爆炸衰减这一说）。</summary>
+    public const int VanillaShardsOtherwise = 2;
+
     /// <summary>
     /// 时运等级对应的充能紫水晶掉率。
     /// 逐条抄自 `inject/amethyst_cluster.json` 的 `table_bonus` 数组。
@@ -211,15 +217,11 @@ public static class AmethystLoot
     /// <param name="fortuneLevel">时运等级 0~4（泰拉侧由镐力分级映射）。</param>
     /// <param name="nextInt">返回 [0, n) 均匀整数。</param>
     /// <param name="chance">概率判定：给定概率返回是否命中。</param>
-    /// <param name="vanillaShardBase">
-    /// MC 原生紫水晶碎片的基础掉落数（时运加成前）。泰拉侧对应「紫水晶碎片」物品。
-    /// </param>
     public static LootResult RollCluster(
         bool properTool,
         int fortuneLevel,
         Func<int, int> nextInt,
-        Func<double, bool> chance,
-        int vanillaShardBase = 1)
+        Func<double, bool> chance)
     {
         if (nextInt == null) throw new ArgumentNullException(nameof(nextInt));
         if (chance == null) throw new ArgumentNullException(nameof(chance));
@@ -245,8 +247,10 @@ public static class AmethystLoot
             if (chance(ChargedChanceWithoutProperTool)) charged = 1;
         }
 
-        // MC 原生碎片，经源项目 AmethystReducerFunc 减半
-        int shards = (int)(ApplyOreDrops(vanillaShardBase, fortuneLevel, nextInt) * ShardMultiplier);
+        // MC 原生碎片（合格 4 个叠时运、否则 2 个），经源项目 AmethystReducerFunc 减半、向下取整：用镐 2 个，不用镐 1 个。
+        // 这里曾经把基数写成 1，减半后是 0 —— 镐力 100 以下的镐子挖晶簇一个碎片都不掉。
+        int vanilla = properTool ? ApplyOreDrops(VanillaShardsProperTool, fortuneLevel, nextInt) : VanillaShardsOtherwise;
+        int shards = (int)(vanilla * ShardMultiplier);
 
         return new LootResult(dust, charged, shards);
     }

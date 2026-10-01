@@ -55,31 +55,22 @@ public abstract class MediaMaterial : ModItem
 /// 紫水晶粉：媒质的基本单位（10,000）。
 /// 对应源项目 `hexcasting:amethyst_dust`。
 ///
-/// 泰拉侧由**紫晶（Amethyst 宝石）**研磨而来 —— 泰拉地下天然产出紫晶，
-/// 语义上就是原版「晶洞里的紫水晶」的对应物（见 <see cref="MediaConstants.ResourceMapping"/>）。
+/// 照原版没有合成配方：挖紫水晶簇掉（见 AmethystLoot），粉块拆回 4 粉，淬灵碎片拆分。
+/// 这里曾经有「1 紫晶 → 10 粉」，2026-10-01 照原版去掉。
 /// </summary>
 public sealed class AmethystDust : MediaMaterial
 {
     public override int Priority => MediaPriority.AmethystDust;
 
     public override long MediaValue => MediaConstants.DustUnit;
-
-    public override void AddRecipes()
-    {
-        // 1 紫晶 → 10 粉（= CrystalUnit，与 ResourceMapping.PerAmethystItem 自洽）
-        CreateRecipe(10)
-            .AddIngredient(ItemID.Amethyst, 1)
-            .AddTile(TileID.WorkBenches)
-            .Register();
-    }
 }
 
 /// <summary>
 /// 紫水晶碎片：5 粉（50,000）。
 /// 对应源项目 `amethyst_shard`（MC 原生物品，Hex 只把它当媒质容器用）。
 ///
-/// 泰拉没有对应物，由粉压制而成 —— 与原版「碎片是更原始形态」的方向相反，
-/// 但数值关系一致；等 M-2/M-3 的晶洞做出来后会改成从晶簇掉落。
+/// 泰拉没有对应物，移植版自己做了这个物品。照原版只能挖紫水晶簇掉（用镐 2 个、不用镐 1 个，见 AmethystLoot），
+/// 另有淬灵碎片拆分；没有合成配方。这里曾经有「5 粉 ↔ 1 碎片」，2026-10-01 照原版去掉。
 /// </summary>
 public sealed class AmethystShard : MediaMaterial
 {
@@ -92,29 +83,15 @@ public sealed class AmethystShard : MediaMaterial
         base.SetDefaults();
         Item.rare = ItemRarityID.Green;
     }
-
-    public override void AddRecipes()
-    {
-        CreateRecipe()
-            .AddIngredient<AmethystDust>(5)
-            .AddTile(TileID.WorkBenches)
-            .Register();
-
-        // 反向解包：碎片拆回粉（不亏不赚，方便小额使用）
-        CreateRecipe(5)
-            .AddIngredient<AmethystShard>(1)
-            .AddTile(TileID.WorkBenches)
-            .Register();
-    }
 }
 
 /// <summary>
 /// 充能紫水晶：10 粉（100,000）。
 /// 对应源项目 `charged_amethyst`。
 ///
-/// 原版只能从晶洞里的**紫水晶簇**小概率掉落（工具合格 + 时运时 25%~100%）。
-/// 在世界生成（M-2/M-3）做出来之前，先给一条合成路径，
-/// 否则模组在没有晶洞的世界里无法推进。M-3 完成后会**保留**这条配方作为保底。
+/// 原版只能从晶洞里的**紫水晶簇**掉落（用镐 25%~100% 看时运，不用镐 12.5%），另有淬灵碎片拆分；
+/// 咒法师自己捏不出充能紫水晶。移植版只多一条：**水晶球**旁 10 粉换 1 个（肉后，巫师卖的水晶球；用户 2026-10-01 定）。
+/// 这里曾经有工作台上的「10 粉 → 1」和「紫晶 + 坠落之星 → 1」，都去掉了。没有晶洞的旧世界不补（用户：玩家自己的事）。
 /// </summary>
 public sealed class ChargedAmethyst : MediaMaterial
 {
@@ -128,14 +105,7 @@ public sealed class ChargedAmethyst : MediaMaterial
     {
         CreateRecipe()
             .AddIngredient<AmethystDust>(10)
-            .AddTile(TileID.WorkBenches)
-            .Register();
-
-        // 直接用紫晶合成：与 ResourceMapping.PerAmethystItem = CrystalUnit 自洽
-        CreateRecipe()
-            .AddIngredient(ItemID.Amethyst, 1)
-            .AddIngredient(ItemID.FallenStar, 1)
-            .AddTile(TileID.WorkBenches)
+            .AddTile(TileID.CrystalBall)
             .Register();
     }
 }

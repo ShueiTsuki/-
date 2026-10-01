@@ -286,8 +286,7 @@ public abstract class AmethystGrowth : ModTile
         var loot = AmethystLoot.RollCluster(
             properTool, fortune,
             n => Main.rand.Next(n),
-            p => Main.rand.NextDouble() < p,
-            vanillaShardBase: 1);
+            p => Main.rand.NextDouble() < p);
 
         noItem = true;   // 关掉默认掉落，全部自己生成
 

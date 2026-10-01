@@ -8,19 +8,14 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **128** 个可合成物品。
+共 **126** 个可合成物品。
 
-## 肉前（108 项）
+## 肉前（105 项）
 
 紫水晶 → 媒质 → 石板 → 法杖 → 工具与存储。源项目在这一段没有任何进度门槛。
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
-| `AmethystDust` | 10 | Amethyst×1 | WorkBenches | 源 ItemJewelerHammer：珠宝匠锤敲碎紫水晶（无手工配方）→ 泰拉：紫晶研磨 |
-| `AmethystShard` | 1 | AmethystDust×5 | WorkBenches | 源 MC 原生水晶碎片（晶洞掉落）→ 泰拉：由粉压制（保底，等晶洞世界生成补齐） |
-| `AmethystShard` | 5 | AmethystShard×1 | WorkBenches | 源 MC 原生水晶碎片（晶洞掉落）→ 泰拉：由粉压制（保底，等晶洞世界生成补齐） |
-| `ChargedAmethyst` | 1 | AmethystDust×10 | WorkBenches | 源：晶洞里的紫水晶簇小概率掉落 → 泰拉：粉 ×10 或 紫晶 + 坠落之星 |
-| `ChargedAmethyst` | 1 | Amethyst×1 + FallenStar×1 | WorkBenches | 源：晶洞里的紫水晶簇小概率掉落 → 泰拉：粉 ×10 或 紫晶 + 坠落之星 |
 | `HexSlateItem` | 6 | AmethystDust×1 + StoneBlock×3 | WorkBenches | 源 238-243 "A"/"SSS"：粉1 + 深板岩3 → 6；泰拉深板岩对应物 = 石块 |
 | `SlateBlockItem` | 8 | AmethystDust×1 + StoneBlock×8 | WorkBenches | 源 281 ringAll(深板岩, 粉)：8 深板岩 + 1 粉 → 8 板岩块 |
 | `SlateTilesItem` | 4 | SlateBricksItem×4 | WorkBenches | 源 605-643 stoneSet：瓦 ← 砖 4:4（另加切石机 1:1 走重型工作台） |
@@ -146,6 +141,7 @@
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
+| `ChargedAmethyst` | 1 | AmethystDust×10 | CrystalBall | 源：只能从晶洞里的紫水晶簇掉落，咒法师自己捏不出 → 泰拉另加一条：水晶球（肉后巫师卖）旁 10 粉换 1 个（用户定）；晶洞里照样能挖到 |
 | `QuenchedAllayItem` | 1 | QuenchedAllayShard×4 | WorkBenches | 淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除小精灵 Pixie —— 神圣地肉后敌怪，用户定的进度 —— 要启蒙） |
 | `QuenchedAllayTilesItem` | 4 | QuenchedAllayBricksItem×4 | WorkBenches | 源 433 stoneSet（这一族没有柱） |
 | `QuenchedAllayTilesItem` | 1 | 〔HexRecipeGroups.QuenchedAllayBlocks〕×1 | HeavyWorkBench | 源 433 stoneSet（这一族没有柱） |
@@ -159,16 +155,16 @@
 | `CherryStaff` | 1 | ChargedAmethyst×1 + Pearlwood×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 87 staffRecipe(樱花木)。泰拉没有樱花木，用珍珠木代替 —— 而珍珠木只长在肉后的神圣地，所以实际门槛是肉后 |
 | `SpookyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 86 staffRecipe(红树)。泰拉用**阴森木**代替 —— 阴森木只在肉后的南瓜月掉落，门槛自带 |
 | `PearlwoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带 |
-| `AmethystPlanterItem` | 1 | AmethystDustBlockItem×1 + ChargedAmethyst×1 + SoulofLight×5 + SoulofNight×5 | MythrilAnvil | 移植版新增（用户定，原版没有）：原版紫水晶只靠母岩再生、母岩要脑叶切除；这里用肉后的光明 / 暗影之魂代替被切除的心智，门槛由魂自带 |
 | `QuenchedDebugger` | 1 | QuenchedAllayShard×4 | WorkBenches | 附属 HexDebug：上游 flyswatter_quenching，调试杖 + 淬灵晶碎片 ×4（碎片肉后） |
 | `QuenchedEvaluator` | 1 | QuenchedAllayShard×4 | WorkBenches | 附属 HexDebug：同上，运行杖 + 淬灵晶碎片 ×4 |
 
-## 肉后 · 启蒙（8 项）
+## 肉后 · 启蒙（9 项）
 
 源项目挂「启蒙」门槛的那一族：原动力、导线、阿卡夏三件、剖念法杖。启蒙 = 一次过载用掉 ≥80% 生命、只剩不到半颗心（按原版实现）；泰拉侧再要求肉后的秘银砧/山铜砧。
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
+| `AmethystPlanterItem` | 1 | AmethystDustBlockItem×1 + ChargedAmethyst×1 + SoulofLight×5 + SoulofNight×5 | MythrilAnvil + 已启蒙 | 移植版新增（用户定，原版没有）：原版紫水晶只靠母岩再生、母岩要脑叶切除（启蒙大法术）；这里用肉后的光明 / 暗影之魂代替被切除的心智，同样要求启蒙 → 秘银砧 + 已启蒙 |
 | `HexImpetusEmptyItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + CrystalShard×2 + IronFence×2 | MythrilAnvil + 已启蒙 | 源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书） |
 | `HexDirectrixEmptyItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + Wire×20 | MythrilAnvil + 已启蒙 | 源 400-408：同样挂 enlightenment → 秘银砧 + 已启蒙；比较器/观察者 → 电线（泰拉红石本体） |
 | `HexDirectrixItemBase` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一 |

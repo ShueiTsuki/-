@@ -98,6 +98,7 @@ public sealed class AmethystPlanterItem : ModItem
             .AddIngredient(ItemID.SoulofLight, 5)
             .AddIngredient(ItemID.SoulofNight, 5)
             .AddTile(TileID.MythrilAnvil)       // 秘银砧 / 山铜砧（肉后）
+            .AddCondition(HexConditions.Enlightened)   // 意识剥离要开悟才能产出母岩，种植盆同理（用户 2026-10-01 定）
             .Register();
     }
 }

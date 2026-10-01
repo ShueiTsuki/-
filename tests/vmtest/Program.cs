@@ -2486,10 +2486,9 @@ static class Program
             var r = AmethystLoot.RollCluster(
                 properTool: true, fortuneLevel: 0,
                 nextInt: n => 0,
-                chance: _ => true,
-                vanillaShardBase: 2);
-            Check("工具合格+时运0：粉=1（取下界），充能=1，碎片=2×0.5=1",
-                r.Dust == 1 && r.ChargedCrystal == 1 && r.Shards == 1,
+                chance: _ => true);
+            Check("工具合格+时运0：粉=1（取下界），充能=1，碎片=4×0.5=2",
+                r.Dust == 1 && r.ChargedCrystal == 1 && r.Shards == 2,
                 $"粉{r.Dust} 晶体{r.ChargedCrystal} 碎片{r.Shards}");
         }
         {
@@ -2497,8 +2496,7 @@ static class Program
             var r = AmethystLoot.RollCluster(
                 properTool: true, fortuneLevel: 0,
                 nextInt: n => n - 1,
-                chance: _ => true,
-                vanillaShardBase: 2);
+                chance: _ => true);
             Check("工具合格+时运0：粉取上界=4", r.Dust == 4, $"粉{r.Dust}");
         }
         {
@@ -2506,8 +2504,7 @@ static class Program
             var r = AmethystLoot.RollCluster(
                 properTool: false, fortuneLevel: 0,
                 nextInt: n => 0,
-                chance: _ => false,
-                vanillaShardBase: 2);
+                chance: _ => false);
             Check("工具不合格：粉可低到 0，充能晶体不中",
                 r.Dust == 0 && r.ChargedCrystal == 0, $"粉{r.Dust} 晶体{r.ChargedCrystal}");
         }
@@ -2518,8 +2515,7 @@ static class Program
             var r = AmethystLoot.RollCluster(
                 properTool: false, fortuneLevel: 4,
                 nextInt: n => n - 1,
-                chance: p => { seenChance = p; return true; },
-                vanillaShardBase: 1);
+                chance: p => { seenChance = p; return true; });
             Check("工具不合格时时运无效：粉上界=2、充能掉率=0.125",
                 r.Dust == 2 && System.Math.Abs(seenChance - 0.125) < 1e-9,
                 $"粉{r.Dust} 掉率{seenChance}");
@@ -2530,17 +2526,19 @@ static class Program
             AmethystLoot.RollCluster(
                 properTool: true, fortuneLevel: 3,
                 nextInt: n => 0,
-                chance: p => { seenChance = p; return false; },
-                vanillaShardBase: 1);
+                chance: p => { seenChance = p; return false; });
             Check("工具合格时充能掉率查表（时运3 -> 0.75）",
                 System.Math.Abs(seenChance - 0.75) < 1e-9, seenChance.ToString());
         }
         {
-            // 碎片减半：基础 3 -> 1（向下取整），源项目 AmethystReducerFunc 的效果
-            var r = AmethystLoot.RollCluster(
-                properTool: true, fortuneLevel: 0,
-                nextInt: n => 0, chance: _ => false, vanillaShardBase: 3);
-            Check("碎片减半：基础 3 -> 1（向下取整）", r.Shards == 1, r.Shards.ToString());
+            // 碎片：MC 原版合格工具 4 个（叠 ore_drops 时运）、否则 2 个，再经源项目 AmethystReducerFunc 减半、向下取整
+            var proper = AmethystLoot.RollCluster(true, 0, n => 0, _ => false);
+            var improper = AmethystLoot.RollCluster(false, 0, n => 0, _ => false);
+            // 时运 3、ore_drops 掷到最大：i = nextInt(5) - 1 = 3，4 × (3 + 1) = 16，减半 8
+            var lucky = AmethystLoot.RollCluster(true, 3, n => n - 1, _ => false);
+            Check("碎片：用镐 4×0.5=2，不用镐 2×0.5=1，时运 3 最多 16×0.5=8",
+                proper.Shards == 2 && improper.Shards == 1 && lucky.Shards == 8,
+                $"{proper.Shards} / {improper.Shards} / {lucky.Shards}");
         }
         {
             // 镐力 → 时运等级映射：分档边界
