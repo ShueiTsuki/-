@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 import gen_book_content as base
 import hexlang
 
-ADDONS = os.path.join(base.ROOT, 'tmod/HexCastingTerraria/Addons')
+ADDONS = os.path.join(base.REPO, 'HexCastingTerraria/Addons')
 BOOK_PREFIX = 'assets/hexcasting/patchouli_books/thehexbook/en_us/'
 
 # 附属 id -> (目录名, 中文语言文件在 jar 里的路径, 只取这些条目（None = 全部）)
@@ -38,11 +38,33 @@ EXTRA_ITEMS = {
 }
 
 
+# 附属书页里的「另一只手」→ 泰拉的实际操作（2026-10-01 用户要求；做法与说明见 gen_book_content.py 的 HAND_WORDING）。
+# 每条原文都必须命中，否则报错。
+ADDON_HAND_WORDING = {
+    'hexparse': [
+        # 编码 / 解码之策略只能用法杖施放，核心只能放在右边一格（Addons/HexParse/Game/HexParseIO.HeldIO）
+        ('读取我手中的核心，',
+         '读取快捷栏中手持物品右边一格的核心，'),
+        ('并将其解析至我手持的核心。',
+         '并将其解析至快捷栏中手持物品右边一格的核心。'),
+        # 内化卓越法术：手持物品和右边一格都找（HexParseActions.LearnFromHeld）
+        ('从手持物品（远古卷轴、核心、制成的施法道具等）内提取',
+         '从手持物品或快捷栏中它右边一格的物品（远古卷轴、核心、制成的施法道具等）内提取'),
+    ],
+    'hexdebug': [
+        # 空的调试杖读右边一格里的列表（Addons/HexDebug/Game/HexDebugSessions）
+        ('它还能从副手中的物品',
+         '它还能从快捷栏中手持物品右边一格的物品'),
+    ],
+}
+
 def main(addon_id):
     folder, zh_path, only = SPECS[addon_id]
     manifest = json.load(open(os.path.join(ADDONS, folder, 'addon.json'), encoding='utf-8'))
     jar = zipfile.ZipFile(manifest['upstream']['jar'])
     base.ITEM_MAP.update(EXTRA_ITEMS)
+    wording = ADDON_HAND_WORDING.get(addon_id, [])
+    base.WORDING[:] = base.HAND_WORDING + wording
 
     raw = jar.read(zh_path).decode('utf-8')
     addon_zh = json.loads(raw) if zh_path.endswith('.json') else hexlang.loads(raw)
@@ -129,6 +151,7 @@ def main(addon_id):
     w('        doc.RebuildIndex();')
     w('    }')
     w('}')
+    base.check_wording(wording)
     target = os.path.join(ADDONS, folder, 'Core', f'{folder}Book.Generated.cs')
     open(target, 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
     print(f'{manifest["name"]} 书页：新分类 {len(cats)} / 条目 {len(entries)} -> {target}')

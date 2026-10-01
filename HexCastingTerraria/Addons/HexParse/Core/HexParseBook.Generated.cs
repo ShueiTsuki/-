@@ -79,11 +79,11 @@ public static class HexParseBook
             c.Entries.Add(e);
             p = new BookPage { Kind = BookPageKind.Pattern, Title = "注释转换", Text = "将输入的注释Iota转换为字符串Iota，或其它内容转换为注释Iota；若未安装$(bold)$(thing)MoreIotas/$则无效果。", PatternId = "hexparse:switch_comment", Anchor = "hexparse:switch_comment", Input = "comment/any", Output = "string/comment" };
             e.Pages.Add(p);
-            p = new BookPage { Kind = BookPageKind.Pattern, Title = "编码之策略", Text = "读取我手中的核心，将其内容解析为代码输出至聊天窗口。$(br)只能在法杖内施放。", PatternId = "hexparse:focus2code", Anchor = "hexparse:focus2code", Input = "", Output = "" };
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "编码之策略", Text = "读取快捷栏中手持物品右边一格的核心，将其内容解析为代码输出至聊天窗口。$(br)只能在法杖内施放。", PatternId = "hexparse:focus2code", Anchor = "hexparse:focus2code", Input = "", Output = "" };
             e.Pages.Add(p);
-            p = new BookPage { Kind = BookPageKind.Pattern, Title = "解码之策略", Text = "从剪贴板读取代码，并将其解析至我手持的核心。$(br)只能在法杖内施放。", PatternId = "hexparse:code2focus", Anchor = "hexparse:code2focus", Input = "", Output = "" };
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "解码之策略", Text = "从剪贴板读取代码，并将其解析至快捷栏中手持物品右边一格的核心。$(br)只能在法杖内施放。", PatternId = "hexparse:code2focus", Anchor = "hexparse:code2focus", Input = "", Output = "" };
             e.Pages.Add(p);
-            p = new BookPage { Kind = BookPageKind.Pattern, Title = "内化卓越法术", Text = "从手持物品（远古卷轴、核心、制成的施法道具等）内提取卓越法术图案，返回装有解码器本次学习内容的列表。", PatternId = "hexparse:learn_patterns", Anchor = "hexparse:learn_patterns", Input = "", Output = "list" };
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "内化卓越法术", Text = "从手持物品或快捷栏中它右边一格的物品（远古卷轴、核心、制成的施法道具等）内提取卓越法术图案，返回装有解码器本次学习内容的列表。", PatternId = "hexparse:learn_patterns", Anchor = "hexparse:learn_patterns", Input = "", Output = "list" };
             e.Pages.Add(p);
             p = new BookPage { Kind = BookPageKind.Pattern, Title = "压缩注释之纯化", Text = "清除列表内所有注释iota，返回处理后的列表。", PatternId = "hexparse:remove_comments", Anchor = "hexparse:remove_comments", Input = "list", Output = "list" };
             e.Pages.Add(p);

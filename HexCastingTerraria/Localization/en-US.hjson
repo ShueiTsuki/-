@@ -156,7 +156,7 @@ Mods: {
 			StartTypingAlias: Name this pattern...
 			StartTyping: Start typing...
 			CountLocked: "+{0} locked"
-			WorldSpecificAutocomplete: This pattern is world-specific. Start casting with an Ancient Scroll in your offhand to learn it.
+			WorldSpecificAutocomplete: This pattern is world-specific. Put an Ancient Scroll in the hotbar slot right of your held item, then start casting to learn it.
 			NoSpace: Can't place this here
 			CountQueued: "{0} more to go"
 
@@ -229,143 +229,143 @@ Mods: {
 			}
 			PigmentDyeWhite: {
 				DisplayName: White Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeOrange: {
 				DisplayName: Orange Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeMagenta: {
 				DisplayName: Magenta Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeLightBlue: {
 				DisplayName: Light Blue Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeYellow: {
 				DisplayName: Yellow Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeLime: {
 				DisplayName: Lime Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyePink: {
 				DisplayName: Pink Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeGray: {
 				DisplayName: Gray Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeLightGray: {
 				DisplayName: Light Gray Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeCyan: {
 				DisplayName: Cyan Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyePurple: {
 				DisplayName: Purple Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeBlue: {
 				DisplayName: Blue Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeBrown: {
 				DisplayName: Brown Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeGreen: {
 				DisplayName: Green Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeRed: {
 				DisplayName: Red Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDyeBlack: {
 				DisplayName: Black Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideAgender: {
 				DisplayName: Agender Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideAroace: {
 				DisplayName: Aroace Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideAromantic: {
 				DisplayName: Aromantic Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideAsexual: {
 				DisplayName: Asexual Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideBisexual: {
 				DisplayName: Bisexual Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideDemiboy: {
 				DisplayName: Demiboy Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideDemigirl: {
 				DisplayName: Demigirl Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideGay: {
 				DisplayName: Gay Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideGenderfluid: {
 				DisplayName: Genderfluid Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideGenderqueer: {
 				DisplayName: Genderqueer Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideIntersex: {
 				DisplayName: Intersex Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideLesbian: {
 				DisplayName: Lesbian Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideNonbinary: {
 				DisplayName: Non-Binary Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPridePansexual: {
 				DisplayName: Pansexual Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPridePlural: {
 				DisplayName: Plural Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentPrideTransgender: {
 				DisplayName: Transgender Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentDefault: {
 				DisplayName: Vacant Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentAncient: {
 				DisplayName: Ancient Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			PigmentSoulglimmer: {
 				DisplayName: Soulglimmer Pigment
-				Tooltip: Hold it and cast Internalize Pigment to recolor your hex sparks and sentinel
+				Tooltip: Put it in the hotbar slot right of your held item and cast Internalize Pigment to recolor your hex sparks and sentinel
 			}
 			SubSandwich: {
 				DisplayName: Submarine Sandwich
