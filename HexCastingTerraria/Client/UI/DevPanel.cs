@@ -322,7 +322,7 @@ public sealed class DevPanel
 
         if (s.Great && !HexBook.CurrentProgress().Enlightened)
         {
-            Terraria.Utils.DrawBorderString(sb, "还没启蒙：施放大法术会失败并丢下手持物品（这也是解锁「过载」的办法）",
+            Terraria.Utils.DrawBorderString(sb, "还没启蒙：施放大法术会失败并丢下手持物品和快捷栏中它右边一格的物品（这也是解锁「过载」的办法）",
                 new Vector2(x, by + 38), Bad, 0.66f);
         }
     }

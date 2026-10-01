@@ -169,6 +169,7 @@
 - **偏差（泰拉适配）**：原版界面开着切不了物品；泰拉的数字键 / 滚轮能切 → 换了快捷栏格子就自动关画布（图案保留）。
 - **偏差（泰拉适配）**：泰拉按住 Shift 会自动把手上的东西换成镐子 / 火把（Auto Select），和原版「潜行 + 右键清空」冲突 → 拿着法杖或画布开着时屏蔽 Auto Select。
 - 开局：原版什么都不给；按用户要求开局给书，但每个角色只给一次。不再自动发移植期的「开发者法杖」（不是原版物品）。
+- **偏差（泰拉适配，文字）**：泰拉人没有副手 —— 玩家看到的「另一只手 / 副手 / 主手 / 手中（两只手）」类说法按用户要求（2026-10-01）改写成游戏内的实际操作，统一说「快捷栏中手持物品右边一格」（两只手 = 手持物品和快捷栏中它右边一格；探知透镜另可装备在饰品栏）。**只改文字，行为不变**。书页是生成的：替换表在 `_tools/gen_book_content.py` 的 `HAND_WORDING`（本体）和 `_tools/gen_addon_book.py` 的 `ADDON_HAND_WORDING`（HexParse / HexDebug），每条原文必须命中否则生成报错；其余是手改：`Localization/zh-Hans.hjson`、`en-US.hjson`（染色剂说明、Hexcessible 学大法术红字）、`CommonMishaps.cs`（MishapBadHeldItem 消息）、`Core/Dev/SampleHexes.cs`、`Client/UI/DevPanel.cs`。
 
 ## iota 的显示（2026-10-01 按原版重做）
 

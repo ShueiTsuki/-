@@ -16,12 +16,14 @@ sys.path.insert(0, os.path.dirname(__file__))
 import hexlang
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+# 本仓库（脚本所在的 tmod 目录；在 git worktree 里跑时就是那个 worktree，不会写到别的副本里去）
+REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 BOOK = os.path.join(ROOT, 'hexsrc/Common/src/main/resources/assets/hexcasting/patchouli_books/thehexbook/en_us')
 LANG_ZH = os.path.join(ROOT, 'hexsrc_assets/lang/zh_cn.flatten.json5')
 LANG_EN = os.path.join(ROOT, 'hexsrc_assets/lang/en_us.flatten.json5')
-OUT = os.path.join(ROOT, 'tmod/HexCastingTerraria/Core/Ui/BookContent.Generated.cs')
-VANILLA = os.path.join(ROOT, 'tmod/_tools/vanilla_ids.json')
-MOD_ITEMS_DIR = os.path.join(ROOT, 'tmod/HexCastingTerraria/Content')
+OUT = os.path.join(REPO, 'HexCastingTerraria/Core/Ui/BookContent.Generated.cs')
+VANILLA = os.path.join(REPO, '_tools/vanilla_ids.json')
+MOD_ITEMS_DIR = os.path.join(REPO, 'HexCastingTerraria/Content')
 
 # 原版物品 id（去掉 NBT）→ 泰拉物品。'Mod:类名' = 本模组物品，'Terraria:ItemID 字段名' = 原版物品。
 ITEM_MAP = {
@@ -84,6 +86,97 @@ for _p in ['agender', 'aroace', 'aromantic', 'asexual', 'bisexual', 'demiboy', '
     ITEM_MAP[f'hexcasting:pride_colorizer_{_p}'] = f'Mod:PigmentPride{_camel(_p)}'
 ITEM_MAP.update({'hexcasting:uuid_colorizer': 'Mod:PigmentSoulglimmer', 'hexcasting:default_colorizer': 'Mod:PigmentDefault',
                  'hexcasting:ancient_colorizer': 'Mod:PigmentAncient'})
+
+
+# ── 「另一只手」→ 泰拉的实际操作（2026-10-01 用户要求）──────────────────────────
+# 泰拉人没有副手。移植版把原版的「另一只手」做成 **快捷栏中手持物品右边一格**
+# （PlayerCastingEnvironment.PrimarySlots：inventory[(selectedItem + 1) % 10]，第 10 格绕回第 1 格）；
+# 原版「手中 / 两只手」= 手持物品 + 它右边一格。官方中文照 MC 写「另一只手 / 副手 / 主手」，
+# 玩家照着做不出来，所以生成时把这些句子换成泰拉里的实际操作。**只改文字，不改行为。**
+# 统一说法：「快捷栏中手持物品右边一格」。
+# 每条「原文片段」都必须在官方中文里命中，没命中（上游改了措辞）就报错退出，免得替换悄悄失效。
+# 附属书页的替换表在 gen_addon_book.py 的 ADDON_HAND_WORDING。
+HAND_WORDING = [
+    # 事故「向量越界 / 实体越界 / 实体免疫」：甩出去的是手持物品和右边一格（PlayerEffects.YeetHeld）
+    ('我手中的物品将会掉落并飞向对应',
+     '我手持的物品和快捷栏中它右边一格的物品将会掉落并飞向对应'),
+    # 事故「物品错误」（MishapBadHeldItem → DropHeldItems：两格一起丢）
+    ('如果在手中持有对应物品，则该物品会掉落在地。',
+     '如果需要的是快捷栏中手持物品右边一格的物品，则手持物品和这一格的物品都会掉落在地。'),
+    # 探知透镜：手持 / 右边一格 / 饰品栏都生效（Client/ScryingOverlay.HasSight）；泰拉不能戴在头上
+    ('施法时，在另一只手持有探知透镜就能缩短',
+     '施法时，把探知透镜放在快捷栏中手持物品右边一格就能缩短'),
+    ('我还可以把它当单片眼镜戴在头上。',
+     '我还可以把它当单片眼镜装备在饰品栏里。'),
+    # 结念绳
+    ('在另一只手持有$(item)结念绳/$时，',
+     '把$(item)结念绳/$放在快捷栏中手持物品右边一格时，'),
+    # 算盘：拿在手上 ±1，放在右边一格 ±0.1（HexPlayer.SetControls / Abacus.Scroll）
+    ('操作方法是潜行时手持算盘滚动滚轮。如果是主手持算盘，',
+     '操作方法是潜行时滚动滚轮。如果算盘拿在手上，'),
+    ('若是副手持算盘，',
+     '若算盘放在快捷栏中手持物品右边一格，'),
+    # 法术书：画布开着时滚轮直接翻右边一格的法术书（HexPlayer.SetControls）
+    ('时副手手持，并直接用滚轮改变活动页。',
+     '时把它放在快捷栏中手持物品右边一格，并直接用滚轮改变活动页。'),
+    # 染色剂
+    ('可手持之并以另一只手施放',
+     '可将其放在快捷栏中手持物品右边一格，再施放'),
+    # 读写 iota（PlayerCastingEnvironment.FindHeld）
+    ('一般可从另一只手中的物品中读取或写入 iota。',
+     '一般可从快捷栏中手持物品右边一格的物品中读取或写入 iota。'),
+    ('复制另一只手所持物品中 iota，',
+     '复制快捷栏中手持物品右边一格所放物品中的 iota，'),
+    ('并将其写入另一只手中的物品中。',
+     '并将其写入快捷栏中手持物品右边一格的物品中。'),
+    ('而非手中物品',
+     '而非快捷栏中手持物品右边一格的物品'),
+    ('如果另一只手中物品存有',
+     '如果快捷栏中手持物品右边一格的物品存有'),
+    ('如果能将 iota 写入另一只手中的物品，',
+     '如果能将 iota 写入快捷栏中手持物品右边一格的物品，'),
+    ('从我的副手读取 iota，',
+     '从快捷栏中手持物品右边一格的物品读取 iota，'),
+    # 放置方块：泰拉没有「法杖在副手」这种情况，删掉这一句（TerrariaCastingWorld.FindPlaceableSlot）
+    ('若$(l:items/staff)$(item)法杖/$在副手，则会从快捷栏一号位开始搜索。',
+     ''),
+    # 制作施法物品 / 重新充能 / 清除物品 / 内化染色剂 / 施法者之魅力 / 制作试剂瓶
+    ('它们都要求我在另一只手上手持对应的基础物品，',
+     '它们都要求我在快捷栏中手持物品右边一格放上对应的基础物品，'),
+    ('给另一只手中能装',
+     '给快捷栏中手持物品右边一格能装'),
+    ('就能给另一只手中物品的',
+     '就能给快捷栏中手持物品右边一格那件物品的'),
+    ('清除另一只手中写有',
+     '清除快捷栏中手持物品右边一格里写有'),
+    ('施法时需要在另一只手中持有',
+     '施法时需要在快捷栏中手持物品右边一格放有'),
+    ('的影响。另一只手持有',
+     '的影响。快捷栏中手持物品右边一格放有'),
+    ('我需要在另一只手中拿着一个',
+     '我需要在快捷栏中手持物品右边一格放一个'),
+]
+
+# 生成时实际生效的替换表（gen_addon_book.py 会接上附属自己的表）与命中计数
+WORDING = list(HAND_WORDING)
+_wording_hits = {}
+
+
+def reword(s):
+    """把书页正文里的「另一只手」类说法换成泰拉的实际操作（见 HAND_WORDING）。"""
+    for old, new in WORDING:
+        if old in s:
+            _wording_hits[old] = _wording_hits.get(old, 0) + s.count(old)
+            s = s.replace(old, new)
+    return s
+
+
+def check_wording(table):
+    """表里每条原文都得命中过；没命中说明上游措辞变了，替换悄悄失效 —— 直接报错。"""
+    miss = [old for old, _ in table if old not in _wording_hits]
+    if miss:
+        sys.exit('「另一只手」替换表里这些原文没有命中（官方中文改了？）：' + ' | '.join(miss))
+    print(f'  「另一只手」改写：{len(table)} 条，命中 {sum(_wording_hits.get(old, 0) for old, _ in table)} 处')
 
 
 def item_key(src):
@@ -213,6 +306,7 @@ def main():
     w('        return doc;')
     w('    }')
     w('}')
+    check_wording(HAND_WORDING)
     open(OUT, 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
 
     print(f'书本内容：{sum(1 for c in cats if c["entries"])} 分类 / {n_entries} 条目 / {n_pages} 页 -> {OUT}')
@@ -240,6 +334,7 @@ def emit_page(w, pg, t, unmapped):
     text = t(pg.get('text', ''))
     if typ == 'patchouli:link':
         text = text + '$(br2)' + t(pg.get('link_text', ''))
+    text = reword(text)
     props = [f'Kind = BookPageKind.{kind}']
     if title or header:
         props.append(f'Title = {cs(t(title or header))}')

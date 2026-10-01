@@ -155,7 +155,7 @@ public static class SampleHexes
         },
         new SampleHex
         {
-            Name = "换法术颜色", Description = "内化染色剂：手里拿一个染色剂（或放在手持物品右边那格），施放后火花和哨卫换成它的颜色，染色剂被消耗。",
+            Name = "换法术颜色", Description = "内化染色剂：把染色剂拿在手上或放在快捷栏中手持物品右边一格，施放后火花和哨卫换成它的颜色，染色剂被消耗。",
             Steps = new[] { P("colorize") },
         },
         new SampleHex

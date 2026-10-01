@@ -97,7 +97,7 @@ public static class HexDebugBook
         {
             e = new BookEntry { Id = "items/debugging", CategoryId = "items", NameKey = "hexdebug.category.items.entry.debugging", DisplayName = "调试物品", IconItem = "Debugger", SortNum = 0, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
             c.Entries.Add(e);
-            p = new BookPage { Kind = BookPageKind.Text, Text = "部分文献中有些不太明确的描述，称古代人会使用一件奇怪的物品协助他们发现复杂$(hex)咒术/$中的问题。我应已成功复刻出了它，定名为$(item)调试杖/$。$(br2)它的工作方式与$(l:items/hexcasting)$(item)造物/$类似。不过，它还能从副手中的物品（比如$(l:items/focus)$(item)核心/$）里直接施放$(hex)咒术/$。$(br2)有些可惜的是，$(item)调试杖/$自身没有太大用处；而为发挥出它的所有潜能，需要先$(l:https://github.com/object-Object/HexDebug/wiki/Setting-up-VSCode-with-HexDebug)准备好/$某种$(l:https://marketplace.visualstudio.com/items?itemName=object-Object.hex-casting)外部工具/$才能正常运作。" };
+            p = new BookPage { Kind = BookPageKind.Text, Text = "部分文献中有些不太明确的描述，称古代人会使用一件奇怪的物品协助他们发现复杂$(hex)咒术/$中的问题。我应已成功复刻出了它，定名为$(item)调试杖/$。$(br2)它的工作方式与$(l:items/hexcasting)$(item)造物/$类似。不过，它还能从快捷栏中手持物品右边一格的物品（比如$(l:items/focus)$(item)核心/$）里直接施放$(hex)咒术/$。$(br2)有些可惜的是，$(item)调试杖/$自身没有太大用处；而为发挥出它的所有潜能，需要先$(l:https://github.com/object-Object/HexDebug/wiki/Setting-up-VSCode-with-HexDebug)准备好/$某种$(l:https://marketplace.visualstudio.com/items?itemName=object-Object.hex-casting)外部工具/$才能正常运作。" };
             e.Pages.Add(p);
             p = new BookPage { Kind = BookPageKind.Crafting, Text = "$(italic)哐当！/$$(br2)潜行滚动滚轮还可切换$(item)调试杖/$的各种“步进模式”，操作与$(l:items/spellbook)$(item)法术书/$和$(l:items/abacus)$(item)算盘/$类似。", Anchor = "debugger", RecipeItem = "Debugger" };
             e.Pages.Add(p);

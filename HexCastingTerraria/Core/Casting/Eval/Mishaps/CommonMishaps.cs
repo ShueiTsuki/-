@@ -489,7 +489,7 @@ public sealed class MishapBadLocation : Mishap
 /// 「另一只手」里没有需要的东西。移植自源项目 `MishapBadOffhandItem`。
 ///
 /// 泰拉没有副手：「另一只手」= 快捷栏里施法物品右边那一格（见 PlayerCastingEnvironment.PrimarySlots），
-/// 其次才是手上拿着的。消息照原版的几种说法（bad_item.offhand + 各 key 的中文）。
+/// 其次才是手上拿着的。「需要什么」照原版各 key 的中文；「另一只手」按泰拉的实际操作写成「快捷栏中手持物品右边一格」（2026-10-01 用户要求）。
 /// </summary>
 public sealed class MishapBadHeldItem : Mishap
 {
@@ -530,7 +530,7 @@ public sealed class MishapBadHeldItem : Mishap
     };
 
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"需要在另一只手里持有{Wanted}（泰拉：快捷栏里施法物品右边那一格，或者手上）";
+        => $"需要在快捷栏中手持物品右边一格放有{Wanted}";
 }
 
 /// <summary>
