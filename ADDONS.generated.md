@@ -5,7 +5,7 @@
 
 | 附属 | 上游版本 | 许可 | 开关 | 功能已做 |
 |---|---|---|---|---|
-| [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 11 / 15 |
+| [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 12 / 15 |
 | [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 18 |
 | [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 10 / 12 |
 
@@ -25,7 +25,7 @@
 | 游戏内调试面板（偏差：上游在外部编辑器里看） | `Game/HexDebugPanel.cs`<br>`Game/HexDebugView.cs` | `adapter/DebugAdapter.kt` |
 | 图案 x22 | `Core/HexDebugPatterns.cs` | `registry/HexDebugActions.kt`<br>`casting/actions/OpIsDebugging.kt`<br>`casting/actions/splicing/` |
 | 认知危害 iota | `Core/HexDebugActions.cs` | `casting/iotas/CognitohazardIota.kt`<br>`registry/HexDebugIotaTypes.kt` |
-| 剪接台 / 制念台 | （待做） | `blocks/splicing/`<br>`gui/splicing/`<br>`splicing/`<br>`casting/eval/SplicingTableCastEnv.kt`<br>`networking/msg/MsgSplicingTable*`<br>`resources/splicing/SplicingTableIotasResourceReloadListener.kt`<br>`api/client/splicing/`<br>`api/splicing/` |
+| 剪接台 / 制念台 | `Core/Splicing/Selection.cs`<br>`Core/Splicing/SplicingTableData.cs`<br>`Core/Splicing/SplicingTableAction.cs`<br>`Core/Splicing/SplicingTableState.cs` | `blocks/splicing/`<br>`gui/splicing/`<br>`splicing/`<br>`casting/eval/SplicingTableCastEnv.kt`<br>`networking/msg/MsgSplicingTable*`<br>`resources/splicing/SplicingTableIotasResourceReloadListener.kt`<br>`api/client/splicing/`<br>`api/splicing/` |
 | 核心框架 | （待做） | `blocks/focusholder/`<br>`items/FocusHolderBlockItem.kt`<br>`recipes/FocusHolderFillingShapedRecipe.kt` |
 | 调试法术环 | （待做） | `debugger/circles/`<br>`mixin/MixinBlockEntityAbstractImpetus.java`<br>`mixin/MixinCircleExecutionState.java` |
 | 联机消息（调试状态、运行杖） | `Game/HexDebugNet.cs` | `networking/HexDebugNetworking.kt`<br>`networking/handler/`<br>`networking/msg/MsgDebuggerStateS2C.kt`<br>`networking/msg/MsgEvaluatorClientInfoS2C.kt`<br>`networking/msg/MsgEvaluatorStateS2C.kt`<br>`networking/msg/MsgPrintDebuggerStatusS2C.kt` |

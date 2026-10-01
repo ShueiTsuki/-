@@ -121,7 +121,12 @@
     },
     {
       "name": "剪接台 / 制念台",
-      "files": [],
+      "files": [
+        "Core/Splicing/Selection.cs",
+        "Core/Splicing/SplicingTableData.cs",
+        "Core/Splicing/SplicingTableAction.cs",
+        "Core/Splicing/SplicingTableState.cs"
+      ],
       "upstream": [
         "blocks/splicing/",
         "gui/splicing/",

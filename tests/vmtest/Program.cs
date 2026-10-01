@@ -5703,6 +5703,7 @@ static class Program
         Addons.HexParseTests.Run();
         Addons.HexcessibleTests.Run();
         Addons.HexDebugTests.Run();
+        Addons.SplicingTests.Run();
 
         Console.WriteLine($"================ 通过 {_pass} / 失败 {_fail} ================");
         Environment.Exit(_fail == 0 ? 0 : 1);
