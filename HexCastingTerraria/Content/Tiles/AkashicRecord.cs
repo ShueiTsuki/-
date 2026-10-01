@@ -49,9 +49,8 @@ public sealed class AkashicRecord : ModTile
         TileObjectData.newTile.AnchorBottom = new AnchorData(
             AnchorType.SolidTile | AnchorType.SolidWithTop | AnchorType.Table,
             TileObjectData.newTile.Width, 0);
-        // 用实体自带的 Hook_AfterPlacement，不自己写钩子 —— 少一处出错的地方
-        TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(
-            ModContent.GetInstance<AkashicRecordEntity>().Hook_AfterPlacement, -1, 0, false);
+        // 放图格实体用 tML 的通用钩子（实体自带的 Hook_AfterPlacement 在 1.4.4 默认什么都不放）
+        TileObjectData.newTile.HookPostPlaceMyPlayer = ModContent.GetInstance<AkashicRecordEntity>().Generic_HookPostPlaceMyPlayer;   // 1.4.4 的 Hook_AfterPlacement 默认什么都不放，见 TileEntityRepair
         TileObjectData.addTile(Type);
     }
 

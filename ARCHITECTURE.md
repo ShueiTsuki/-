@@ -203,6 +203,7 @@
 | `Tiles/AkashicRecord.cs` | 阿卡夏记录方块。对应源项目 `hexcasting:akashic_record`。 |
 | `Tiles/AmethystDustBlock.cs` | 紫水晶粉块。对应源项目 `hexcasting:amethyst_dust_block`（装饰方块）。 |
 | `Tiles/AmethystGeode.cs` | 晶洞母岩。对应 MC 的 `budding_amethyst`。 |
+| `Tiles/AmethystPlanter.cs` | 紫水晶种植盆。**移植版新增，原版没有**（2026-10-01 用户要的）。 |
 | `Tiles/CircleCursor.cs` | 法术环的「执行游标」：当前正在执行哪一格。 |
 | `Tiles/ConjuredBlock.cs` | 被召唤出来的方块/光源的存活管理。 |
 | `Tiles/DecoBlocks.Generated.cs` | 建材方块的公共实现（P2-6 装饰方块家族）。 |
@@ -213,6 +214,7 @@
 | `Tiles/HexSlate.cs` | 石板。对应源项目 `hexcasting:slate` —— **法术环的「指令」**。 |
 | `Tiles/MiscDeco.cs` | 贴在墙上的装饰/光源方块的公共实现。 |
 | `Tiles/QuenchedAllayDrops.cs` | 淬灵块的掉落（原版 loot_tables/blocks/quenched_allay.json）： |
+| `Tiles/TileEntityRepair.cs` | 补上缺的图格实体。 |
 | `Tiles/WallScroll.cs` | 壁挂卷轴。对应源项目的 `EntityWallScroll`。 |
 | `Worldgen/GeodeWorldGen.cs` | 紫水晶晶洞的世界生成。 |
 

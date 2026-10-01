@@ -131,8 +131,7 @@ public abstract class HexImpetusBase : ModTile
         TileObjectData.newTile.AnchorBottom = new AnchorData(
             AnchorType.SolidTile | AnchorType.SolidWithTop | AnchorType.Table,
             TileObjectData.newTile.Width, 0);
-        TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(
-            ModContent.GetInstance<HexImpetusEntity>().Hook_AfterPlacement, -1, 0, false);
+        TileObjectData.newTile.HookPostPlaceMyPlayer = ModContent.GetInstance<HexImpetusEntity>().Generic_HookPostPlaceMyPlayer;   // 1.4.4 的 Hook_AfterPlacement 默认什么都不放，见 TileEntityRepair
         TileObjectData.addTile(Type);
     }
 

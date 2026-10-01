@@ -599,6 +599,24 @@ foreach ($f in (Get-ChildItem (Join-Path $mod 'Config') -Filter *.cs)) {
 }
 Check "配置的 OnChanged（和它调到的方法）在加载途中不碰别的配置" ($badOnChanged.Count -eq 0) ($badOnChanged -join ', ')
 
+# ── 图格实体的放置钩子：tML 1.4.4 的 ModTileEntity.Hook_AfterPlacement 默认什么都不放（返回 -1）。
+#    2026-10-01 石板 / 促动石 / 导向石 / 阿卡夏记录 / 挂轴框都接的它，放下去没有图格实体（法术环走不动）；专用服务器测试不放方块，测不出来 ──
+$badHook = New-Object System.Collections.Generic.List[string]
+$hookSrc = @{}
+foreach ($f in (AllCs $mod)) { $hookSrc[$f.FullName] = [System.IO.File]::ReadAllText($f.FullName, [System.Text.Encoding]::UTF8) }
+foreach ($kv in $hookSrc.GetEnumerator()) {
+    foreach ($h in [regex]::Matches($kv.Value, 'GetInstance<(\w+)>\(\)\.Hook_AfterPlacement\s*,')) {
+        $ent = $h.Groups[1].Value
+        # 实体自己重写了 Hook_AfterPlacement（剪接台、核心框架）就没问题
+        $overrides = $false
+        foreach ($src in $hookSrc.Values) {
+            if ($src -match ('class\s+' + $ent + '\b') -and $src -match 'override int Hook_AfterPlacement') { $overrides = $true }
+        }
+        if (-not $overrides) { $badHook.Add((Rel $kv.Key $mod) + ' -> ' + $ent) }
+    }
+}
+Check "图格实体的放置钩子用 Generic_HookPostPlaceMyPlayer（Hook_AfterPlacement 默认不放实体）" ($badHook.Count -eq 0) ($badHook -join ', ')
+
 # ── 本地化文件：不加引号的值不能以 { [ , : 开头（Hjson 会当成对象 / 数组，整个语言文件加载失败、全部退回键名；只有专用服务器测试才看得出来）──
 $badHjson = New-Object System.Collections.Generic.List[string]
 foreach ($f in (Get-ChildItem (Join-Path $mod 'Localization') -Filter *.hjson)) {

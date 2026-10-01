@@ -1974,6 +1974,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>源项目 tag cannot_teleport（末影龙、凋灵这类）→ 泰拉：Boss、Boss 的身体部件、传送器不能传的 NPC（NPCID.Sets.TeleportationImmune）。</summary>
     public bool IsTeleportImmune(EntityIota entity)
     {
+        // 原版 tag hexcasting:cannot_teleport 列了 minecraft:item_frame（壁挂卷轴不在里面）
+        if (entity.Target == EntityIota.EntityKind.ItemFrame) return true;
         if (entity.Target != EntityIota.EntityKind.Npc || entity.Index < 0 || entity.Index >= Main.maxNPCs) return false;
         var n = Main.npc[entity.Index];
         if (n is not { active: true }) return false;
