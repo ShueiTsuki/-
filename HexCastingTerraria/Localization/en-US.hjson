@@ -622,7 +622,6 @@ Mods: {
 					Mine the grown cluster with a pickaxe to harvest
 					'''
 			}
-		}
 
 			AmethystDustBlockItem: {
 				DisplayName: Block of Amethyst Dust
@@ -778,6 +777,7 @@ Mods: {
 					Faces the mouse direction when placed
 					'''
 			}
+		}
 		Tiles: {
 			FocusHolderTile: {
 				MapEntry: Focal Frame
@@ -959,20 +959,12 @@ Mods: {
 			}
 			ConjuredLight: {
 				MapEntry: Conjured Light
-			}			HexDirectrixEmpty: {
-				MapEntry: Empty Directrix
 			}
 			HexDirectrixBoolean: {
 				MapEntry: Boolean Directrix
 			}
 			HexDirectrixRedstone: {
 				MapEntry: Redstone Directrix
-			}			HexImpetus: {
-				MapEntry: Hex Impetus
-			}			HexSlate: {
-				MapEntry: Hex Slate
-			}			GeodeCore: {
-				MapEntry: Geode Core
 			}
 			AmethystBudSmall: {
 				MapEntry: Small Amethyst Bud

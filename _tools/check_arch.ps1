@@ -123,6 +123,10 @@ Check "188 个图案的角度串与起笔方向与原版源码逐条一致" ($LA
 $cfgOut = & python (Join-Path $PSScriptRoot 'check_config_l10n.py') 2>&1
 Check "模组配置的每一项在中文与英文里都有文字，键对得上" ($LASTEXITCODE -eq 0) (($cfgOut | Select-Object -First 6) -join ' | ')
 
+# ── 语言文件的结构：物品 / 方块词条真的在 Items / Tiles 块里、没有重复的键（曾经 Items 块提前关掉，27 个物品退回英文类名）──
+$l10nOut = & python (Join-Path $PSScriptRoot 'check_l10n_structure.py') 2>&1
+Check "语言文件里物品 / 方块的词条都在 Items / Tiles 块里，没有重复的键" ($LASTEXITCODE -eq 0) (($l10nOut | Select-Object -First 6) -join ' | ')
+
 
 # ─────────────────────────────────────────────────────────────────────
 Write-Host "`n② 离线测试不许有排除项（排除 = 那段代码从没被测过）"

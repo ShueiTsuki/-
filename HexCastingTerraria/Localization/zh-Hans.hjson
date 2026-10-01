@@ -612,7 +612,6 @@ Mods: {
 					长成晶簇后用镐挖下收获
 					'''
 			}
-		}
 			AmethystDustBlockItem: {
 				DisplayName: 紫水晶粉块
 				Tooltip: 压实的紫水晶粉，可作建材
@@ -765,6 +764,7 @@ Mods: {
 					放置时轴向朝向鼠标方向
 					'''
 			}
+		}
 			Tiles: {
 			FocusHolderTile: {
 				MapEntry: 核心框架
