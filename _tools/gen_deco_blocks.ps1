@@ -155,8 +155,8 @@ foreach ($fam in $stoneFamilies) {
 }
 
 # 基底块的成形（源项目里不在 stoneSet 里，各自单列）
-Add-Rec 'SlateBlock' (New-Rec 8 ([ordered]@{ '@StoneBlock' = 8; '!AmethystDust' = 1 }) 'TileID.WorkBenches' `
-    '源 281 ringAll(深板岩, 紫水晶粉)：8 深板岩环 + 1 粉 → 8 板岩块')
+Add-Rec 'SlateBlock' (New-Rec 8 ([ordered]@{ '!DeepslateItem' = 8; '!AmethystDust' = 1 }) 'TileID.WorkBenches' `
+    '源 281 ringAll(深板岩, 紫水晶粉)：8 深板岩环 + 1 粉 → 8 板岩块。深板岩是移植版的物品（石块 + 粉压成，见 Content/Tiles/Deepslate.cs）')
 Add-Rec 'QuenchedAllay' (New-Rec 1 ([ordered]@{ '!QuenchedAllayShard' = 4 }) 'TileID.WorkBenches' `
     '源：淬灵块只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片，精准采集才掉方块本身。泰拉没有精准采集：用 4 片（掉落上限）换一块代替，敲了再合不会多出碎片')
 

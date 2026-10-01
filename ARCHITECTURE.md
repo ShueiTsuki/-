@@ -211,6 +211,7 @@
 | `Tiles/CircleCursor.cs` | 法术环的「执行游标」：当前正在执行哪一格。 |
 | `Tiles/ConjuredBlock.cs` | 被召唤出来的方块/光源的存活管理。 |
 | `Tiles/DecoBlocks.Generated.cs` | 建材方块的公共实现（P2-6 装饰方块家族）。 |
+| `Tiles/Deepslate.cs` | 深板岩。原版石板 / 板岩块的原料是 MC 的深板岩，泰拉没有；移植版自己做一个（2026-10-01 群友提议、用户定）： |
 | `Tiles/EdifiedFurnitureTiles.cs` | 启迪木门（关）。原版 edified_door（BlockHexDoor，木门：手就能开）。</summary> |
 | `Tiles/FletcherGaze.cs` | 制箭师促动石的「被盯着」计数（原版 BlockEntityLookingImpetus.serverTick）： |
 | `Tiles/HexDirectrix.cs` | 导线的公共基类。对应源项目 `BlockEmptyDirectrix` / `BlockBooleanDirectrix` / |

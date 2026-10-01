@@ -113,13 +113,12 @@ public sealed class HexSlateItem : ItemIotaStorage
         //     " A "
         //     "SSS"     A = 紫水晶粉 ×1，S = 深板岩 ×3  → 石板 ×6
         //
-        // 泰拉没有深板岩，用**石块**（StoneBlock）代替 —— 同属「地下的基础石头」，
-        // 而且泰拉的石块比 MC 的深板岩更易得，正好抵掉「没有深层/表层之分」这点差异。
-        // 比例（3 石 + 1 粉 → 6 石板）与原版逐项一致，**没有**额外加价：
-        // 石板在源项目里就是廉价消耗品（法术环要摆一堆），做贵了整个体系都推不动。
-        CreateRecipe(6)
-            .AddIngredient(ItemID.StoneBlock, 3)
-            .AddIngredient<AmethystDust>(1)
+        // 泰拉没有深板岩，移植版做了一个（Content/Tiles/Deepslate.cs：石块 ×6 + 粉 ×1 → 1 个）。
+        // 群友的方案、用户 2026-10-01 定：1 个深板岩 → 2 块石板，粉已经压在深板岩里，这里不再加。
+        // 深板岩和石板的比例（3 → 6）同原版；粉从 6 块 1 个变成 6 块 3 个。
+        // 这里曾经直接用石块代替深板岩：3 石块 + 1 粉 → 6 块。
+        CreateRecipe(2)
+            .AddIngredient<Tiles.DeepslateItem>(1)
             .AddTile(TileID.WorkBenches)
             .Register();
     }

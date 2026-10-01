@@ -708,6 +708,14 @@ Mods: {
 				DisplayName: Large Scroll
 				Tooltip: Holds a single pattern
 			}
+			DeepslateItem: {
+				DisplayName: Deepslate
+				Tooltip:
+					'''
+					Stone pressed together with amethyst dust
+					Used to make slates and slate blocks
+					'''
+			}
 			HexSlateItem: {
 				DisplayName: Blank Slate
 				WrittenName: Patterned Slate
@@ -945,6 +953,9 @@ Mods: {
 			}
 			HexImpetusEmpty: {
 				MapEntry: Empty Impetus
+			}
+			Deepslate: {
+				MapEntry: Deepslate
 			}
 			HexSlate: {
 				MapEntry: "Slate"

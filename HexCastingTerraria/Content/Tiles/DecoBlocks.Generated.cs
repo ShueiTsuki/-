@@ -58,9 +58,9 @@ public sealed class SlateBlockItem : HexDecoBlockItem
 
     public override void AddRecipes()
     {
-        // 源 281 ringAll(深板岩, 紫水晶粉)：8 深板岩环 + 1 粉 → 8 板岩块
+        // 源 281 ringAll(深板岩, 紫水晶粉)：8 深板岩环 + 1 粉 → 8 板岩块。深板岩是移植版的物品（石块 + 粉压成，见 Content/Tiles/Deepslate.cs）
         CreateRecipe(8)
-            .AddIngredient(ItemID.StoneBlock, 8)
+            .AddIngredient<DeepslateItem>(8)
             .AddIngredient<AmethystDust>(1)
             .AddTile(TileID.WorkBenches)
             .Register();

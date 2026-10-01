@@ -695,6 +695,14 @@ Mods: {
 				DisplayName: 大型卷轴
 				Tooltip: 可以存下一个图案
 			}
+			DeepslateItem: {
+				DisplayName: 深板岩
+				Tooltip:
+					'''
+					石块和紫水晶粉压实而成的深层岩石
+					用来制作石板和板岩块
+					'''
+			}
 			HexSlateItem: {
 				DisplayName: 空白石板
 				WrittenName: 有图案的石板
@@ -943,6 +951,9 @@ Mods: {
 			}
 			HexImpetusEmpty: {
 				MapEntry: 空白促动石
+			}
+			Deepslate: {
+				MapEntry: 深板岩
 			}
 			HexSlate: {
 				MapEntry: 石板

@@ -8,16 +8,17 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **126** 个可合成物品。
+共 **127** 个可合成物品。
 
-## 肉前（105 项）
+## 肉前（106 项）
 
 紫水晶 → 媒质 → 石板 → 法杖 → 工具与存储。源项目在这一段没有任何进度门槛。
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
-| `HexSlateItem` | 6 | AmethystDust×1 + StoneBlock×3 | WorkBenches | 源 238-243 "A"/"SSS"：粉1 + 深板岩3 → 6；泰拉深板岩对应物 = 石块 |
-| `SlateBlockItem` | 8 | AmethystDust×1 + StoneBlock×8 | WorkBenches | 源 281 ringAll(深板岩, 粉)：8 深板岩 + 1 粉 → 8 板岩块 |
+| `DeepslateItem` | 1 | AmethystDust×1 + StoneBlock×6 | WorkBenches | 移植版的物品（泰拉没有深板岩，群友提议、用户定）：石块 ×6 + 紫水晶粉 → 1，工作台 |
+| `HexSlateItem` | 2 | — | WorkBenches | 源 238-243 "A"/"SSS"：粉1 + 深板岩3 → 6；移植版：1 个深板岩 → 2 块（粉压在深板岩里） |
+| `SlateBlockItem` | 8 | DeepslateItem×8 + AmethystDust×1 | WorkBenches | 源 281 ringAll(深板岩, 粉)：8 深板岩 + 1 粉 → 8 板岩块 |
 | `SlateTilesItem` | 4 | SlateBricksItem×4 | WorkBenches | 源 605-643 stoneSet：瓦 ← 砖 4:4（另加切石机 1:1 走重型工作台） |
 | `SlateTilesItem` | 1 | 〔HexRecipeGroups.SlateBlocks〕×1 | HeavyWorkBench | 源 605-643 stoneSet：瓦 ← 砖 4:4（另加切石机 1:1 走重型工作台） |
 | `SlateBricksItem` | 4 | SlateBlockItem×4 | WorkBenches | 源 605-643 stoneSet：砖 ← 基底块 4:4，且砖 ← 小砖 1:1（回炉） |
