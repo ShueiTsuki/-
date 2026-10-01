@@ -50,6 +50,10 @@ public sealed class HexParseHost : IHexParseHost
                 return index >= 0 && index < Main.maxItems && Main.item[index].active ? new EntityIota(EntityIota.EntityKind.Item, index) : null;
             case "projectile":
                 return index >= 0 && index < Main.maxProjectiles && Main.projectile[index].active ? new EntityIota(EntityIota.EntityKind.Projectile, index) : null;
+            case "itemframe":
+                return Terraria.DataStructures.TileEntity.ByID.TryGetValue(index, out var te) && te is Terraria.GameContent.Tile_Entities.TEItemFrame
+                    ? new EntityIota(EntityIota.EntityKind.ItemFrame, index)
+                    : null;
             default:
                 return null;
         }
@@ -60,6 +64,7 @@ public sealed class HexParseHost : IHexParseHost
         EntityIota.EntityKind.Player => "entity_player_" + entity.Index,
         EntityIota.EntityKind.Npc => "entity_npc_" + entity.Index,
         EntityIota.EntityKind.Item => "entity_item_" + entity.Index,
+        EntityIota.EntityKind.ItemFrame => "entity_itemframe_" + entity.Index,
         _ => "entity_projectile_" + entity.Index,
     };
 

@@ -18,7 +18,7 @@ namespace HexCastingTerraria.Core.Casting.Actions;
 //   | 源项目          | 泰拉侧                        | 图案                        |
 //   |-----------------|-------------------------------|-----------------------------|
 //   | 副手物品        | 手持物品                      | read / write / readable / writable |
-//   | 实体（展示框等）| 掉在地上、本身是载体的物品    | read/entity / write/entity / …     |
+//   | 实体（展示框等）| 掉落物、物品框里的载体        | read/entity / write/entity / …     |
 //   | userData        | 同左（本次施法内有效）        | read/local / write/local    |
 //   | ——              | ——                            | erase（清空手持载体）        |
 

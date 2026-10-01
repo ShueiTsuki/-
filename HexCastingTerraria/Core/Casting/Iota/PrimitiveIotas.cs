@@ -164,6 +164,12 @@ public sealed class EntityIota : Iota
         /// `zone_entity/item` 要用它 —— 源项目那边是 MC 的 `ItemEntity`。
         /// </summary>
         Item = 3,
+
+        /// <summary>
+        /// 物品框（泰拉的 Item Frame）。原版的物品展示框是实体，泰拉的是带图格实体的方块 ——
+        /// 编号用它的图格实体 ID（TileEntity.ID）。和原版一样能被实体类图案找到、能比较里面的物品、能读写里面的载体。
+        /// </summary>
+        ItemFrame = 4,
     }
 
     public EntityKind Target { get; }

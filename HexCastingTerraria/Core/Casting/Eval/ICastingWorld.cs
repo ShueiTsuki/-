@@ -303,8 +303,15 @@ public interface ICastingWorld
     bool CompareBlocks(double x1, double y1, double x2, double y2, bool exact);
 
     /// <summary>
-    /// 两个物品实体是不是同一种物品。
-    /// <paramref name="exact"/> 为真时比**完整物品**（含前缀等），否则只比物品 ID。
+    /// 这个实体「拿着」一件物品吗（原版 HexItemHolderHandlers.applyHandlerFor 不为空）：
+    /// 掉落物 = 它自己；物品框 = 框里的东西；玩家 = 手持物品，手上空着就看快捷栏中手持物品右边一格（原版主手、空了看副手）。
+    /// 其他实体、或者拿着的是空的 → false。
+    /// </summary>
+    bool HasHeldItem(EntityIota entity);
+
+    /// <summary>
+    /// 两个实体拿着的物品是不是同一种（见 <see cref="HasHeldItem"/>）。
+    /// <paramref name="exact"/> 为真时比**完整物品**（含前缀、载体里的 iota），否则只比物品 ID。
     /// </summary>
     bool CompareItems(EntityIota a, EntityIota b, bool exact);
 
@@ -314,8 +321,7 @@ public interface ICastingWorld
     /// 这个实体身上是否有一个 iota 载体。
     /// 对应源项目 `IXplatAbstractions.findDataHolder(entity) != null`。
     ///
-    /// 泰拉侧的对应物是**掉在地上、本身就是载体的物品**（聚念核心、念珠、卷轴）。
-    /// 源项目那边还能读物品展示框、盔甲架之类，泰拉没有等价实体。
+    /// 和原版一样两种：**掉在地上、本身就是载体的物品**（核心、念珠、卷轴），和**物品框里放着的载体**。
     /// </summary>
     bool IsEntityIotaHolder(EntityIota entity);
 

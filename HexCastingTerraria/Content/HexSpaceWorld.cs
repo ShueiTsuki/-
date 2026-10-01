@@ -164,6 +164,8 @@ public sealed class HexSpaceWorld : ICastingWorld
 
     public bool CompareBlocks(double x1, double y1, double x2, double y2, bool exact) => _inner.CompareBlocks(x1, InY(y1), x2, InY(y2), exact);
 
+    public bool HasHeldItem(EntityIota entity) => _inner.HasHeldItem(entity);
+
     public bool CompareItems(EntityIota a, EntityIota b, bool exact) => _inner.CompareItems(a, b, exact);
 
     public bool IsEntityIotaHolder(EntityIota entity) => _inner.IsEntityIotaHolder(entity);

@@ -479,11 +479,22 @@ sealed class FakeWorld : ICastingWorld
             && ta.Paint == tb.Paint && ta.Half == tb.Half;
     }
 
+    /// <summary>玩家手上 / 物品框里的物品（掉落物用 <see cref="ItemSlots"/>）。</summary>
+    public Dictionary<(EntityIota.EntityKind, int), (int Type, int Prefix)> HeldBy { get; } = new();
+
+    private bool TryHeld(EntityIota e, out (int Type, int Prefix) item)
+    {
+        if (e.Target == EntityIota.EntityKind.Item) return ItemSlots.TryGetValue(e.Index, out item);
+        if (e.Target is EntityIota.EntityKind.Player or EntityIota.EntityKind.ItemFrame) return HeldBy.TryGetValue(Key(e), out item);
+        item = default;
+        return false;
+    }
+
+    public bool HasHeldItem(EntityIota entity) => TryHeld(entity, out _);
+
     public bool CompareItems(EntityIota a, EntityIota b, bool exact)
     {
-        if (a.Target != EntityIota.EntityKind.Item || b.Target != EntityIota.EntityKind.Item) return false;
-        if (!ItemSlots.TryGetValue(a.Index, out var ia)) return false;
-        if (!ItemSlots.TryGetValue(b.Index, out var ib)) return false;
+        if (!TryHeld(a, out var ia) || !TryHeld(b, out var ib)) return false;
         if (ia.Type != ib.Type) return false;
         if (!exact) return true;
 
@@ -4160,13 +4171,26 @@ static class Program
                 Sig(strEqual.Image) == "[true]", Sig(strEqual.Image));
 
             var strEmpty = Run2(env, i0, i9, "hexcasting:compare_item/strict");
-            Check("compare_item：空槽位 -> false",
-                Sig(strEmpty.Image) == "[false]", Sig(strEmpty.Image));
+            Check("compare_item：没拿东西 -> 事故（上游 handler 返回空）",
+                strEmpty.ResolutionType == ResolvedPatternType.Errored, Sig(strEmpty.Image));
 
             var notItem = Run2(env, i0, new EntityIota(EntityIota.EntityKind.Npc, 1),
                 "hexcasting:compare_item/strict");
-            Check("compare_item：参数不是物品实体 -> Errored",
+            Check("compare_item：参数不是能拿物品的实体（生物）-> Errored",
                 notItem.ResolutionType == ResolvedPatternType.Errored, Sig(notItem.Image));
+
+            // 上游 HexItemHolderHandlers：物品展示框（泰拉：物品框）= 框里的东西；玩家 = 手持物品（空了看「另一只手」）
+            var frame = new EntityIota(EntityIota.EntityKind.ItemFrame, 7);
+            var player = new EntityIota(EntityIota.EntityKind.Player, 0);
+            world.HeldBy[(EntityIota.EntityKind.ItemFrame, 7)] = (Type: 75, Prefix: 0);
+            world.HeldBy[(EntityIota.EntityKind.Player, 0)] = (Type: 24, Prefix: 0);
+            var frameSame = Run2(env, frame, i0, "hexcasting:compare_item/strict");
+            Check("compare_item：物品框里的东西和掉落物比", Sig(frameSame.Image) == "[true]", Sig(frameSame.Image));
+            var playerSame = Run2(env, player, i2, "hexcasting:compare_item/lenient");
+            Check("compare_item：玩家拿着的东西和掉落物比", Sig(playerSame.Image) == "[true]", Sig(playerSame.Image));
+            var emptyFrame = Run2(env, new EntityIota(EntityIota.EntityKind.ItemFrame, 8), i0, "hexcasting:compare_item/lenient");
+            Check("compare_item：空的物品框 -> 事故", emptyFrame.ResolutionType == ResolvedPatternType.Errored, Sig(emptyFrame.Image));
+            Check("实体 iota：物品框能存档读回", IotaSerializer.TryDeserialize(frame.Serialize(), out var back) && back is EntityIota { Target: EntityIota.EntityKind.ItemFrame, Index: 7 });
         }
         {
             // ── 「不适用于泰拉」的清单必须真的没被注册 ──

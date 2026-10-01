@@ -6,6 +6,8 @@ using HexCastingTerraria.Core.World;
 using Microsoft.Xna.Framework;
 using HexCastingTerraria.Core;
 using Terraria;
+using Terraria.DataStructures;
+using Terraria.GameContent.Tile_Entities;
 using Terraria.ModLoader;
 using HexCastingTerraria.Config;
 
@@ -120,6 +122,15 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 if (pr is not { active: true }) return false;
                 reading = Make(pr.Center, pr.Bottom, pr.velocity,
                     pr.GetGlobalProjectile<HexGlobalProjectile>().Look, pr.height);
+                return true;
+            }
+
+            case EntityIota.EntityKind.ItemFrame:
+            {
+                // 原版物品展示框：位置在框的正中、眼高 0、不会动。泰拉的框挂在墙上朝着屏幕外，平面内没有朝向，视线取 (1, 0)
+                if (FrameOf(iota) is not { } f) return false;
+                var c = FrameBox(f).Center.ToVector2();
+                reading = Make(c, c, Vector2.Zero, new Vector2(1f, 0f), FrameBox(f).Height, eyeFraction: 0f);
                 return true;
             }
 
@@ -324,7 +335,49 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             Add(new EntityIota(EntityIota.EntityKind.Projectile, i), pr.Hitbox);
         }
 
+        // 物品框（原版物品展示框是实体，射线能打中它）
+        foreach (var f in AllFrames()) Add(new EntityIota(EntityIota.EntityKind.ItemFrame, f.ID), FrameBox(f));
+
         return list;
+    }
+
+    // ── 物品框（原版的物品展示框实体；泰拉是带图格实体的方块）────────────
+
+    /// <summary>编号是图格实体 ID；框没了、或者那里已经不是物品框 → null。</summary>
+    private static TEItemFrame? FrameOf(EntityIota e)
+    {
+        if (e.Target != EntityIota.EntityKind.ItemFrame) return null;
+        if (!TileEntity.ByID.TryGetValue(e.Index, out var te) || te is not TEItemFrame f) return null;
+        return IsLiveFrame(f) ? f : null;
+    }
+
+    private static bool IsLiveFrame(TEItemFrame f)
+        => WorldGen.InWorld(f.Position.X, f.Position.Y, 2) && TEItemFrame.ValidTile(f.Position.X, f.Position.Y);
+
+    /// <summary>框占 2×2 格。</summary>
+    private static Rectangle FrameBox(TEItemFrame f) => new(f.Position.X * 16, f.Position.Y * 16, 32, 32);
+
+    private static System.Collections.Generic.List<TEItemFrame> AllFrames()
+    {
+        var list = new System.Collections.Generic.List<TEItemFrame>();
+        foreach (var te in TileEntity.ByID.Values)
+        {
+            if (te is TEItemFrame f && IsLiveFrame(f)) list.Add(f);
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// 原版 HangingEntity.push：挂着的东西被推一下就掉下来，框和里面的东西都掉。
+    /// 泰拉打物品框第一下掉出里面的东西、第二下才拆框，这里两步一起做。
+    /// </summary>
+    private static void BreakFrame(TEItemFrame f)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+        int x = f.Position.X, y = f.Position.Y;
+        if (!f.item.IsAir) f.DropItem();
+        WorldGen.KillTile(x, y);
+        if (Main.netMode == Terraria.ID.NetmodeID.Server) NetMessage.SendTileSquare(-1, x, y, 2, 2);
     }
 
     public (double X, double Y) FeetPosition(EntityIota entity)
@@ -414,6 +467,11 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 pr.netUpdate = true;
                 break;
             }
+
+            case EntityIota.EntityKind.ItemFrame:
+                // 原版 HangingEntity.push：只要推力不是零就掉下来
+                if ((mx != 0 || my != 0) && FrameOf(entity) is { } f) BreakFrame(f);
+                break;
         }
     }
 
@@ -656,6 +714,12 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 if (pr is not { active: true }) continue;
                 Consider(new EntityIota(EntityIota.EntityKind.Projectile, i), pr.Center);
             }
+
+            // 物品框：原版物品展示框不是生物、不是掉落物，同样只在「任意」或取反时被选中
+            foreach (var f in AllFrames())
+            {
+                Consider(new EntityIota(EntityIota.EntityKind.ItemFrame, f.ID), FrameBox(f).Center.ToVector2());
+            }
         }
 
         // 按距离升序 —— 源项目的 `.sortedBy { it.distanceToSqr(pos) }`
@@ -723,6 +787,9 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 return ia.type == ib.type;
             }
 
+            case EntityIota.EntityKind.ItemFrame:
+                return FrameOf(a) is not null && FrameOf(b) is not null;
+
             default:
                 return false;
         }
@@ -757,25 +824,50 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             && ta.TileColor == tb.TileColor;
     }
 
-    /// <summary>两个掉落物是不是同一种物品。strict 时连带前缀一起比。</summary>
+    /// <summary>
+    /// 原版 HexItemHolderHandlers：掉落物 = 它自己；物品展示框（泰拉：物品框）= 框里的东西；
+    /// 玩家 = 主手，主手空了看副手（泰拉：手持物品，空了看快捷栏中它右边一格）。别的实体、或者是空的 → null。
+    /// </summary>
+    private static Item? HeldItemOf(EntityIota e)
+    {
+        Item? it = null;
+        switch (e.Target)
+        {
+            case EntityIota.EntityKind.Item:
+                if (e.Index >= 0 && e.Index < Main.maxItems && Main.item[e.Index] is { active: true } w) it = w;
+                break;
+            case EntityIota.EntityKind.ItemFrame:
+                it = FrameOf(e)?.item;
+                break;
+            case EntityIota.EntityKind.Player:
+                if (e.Index >= 0 && e.Index < Main.maxPlayers && Main.player[e.Index] is { active: true, dead: false } p)
+                {
+                    it = p.HeldItem;
+                    if (it is null || it.IsAir) it = p.selectedItem is >= 0 and < 10 ? p.inventory[(p.selectedItem + 1) % 10] : null;
+                }
+                break;
+        }
+        return it is { IsAir: false } ? it : null;
+    }
+
+    public bool HasHeldItem(EntityIota entity) => HeldItemOf(entity) is not null;
+
     public bool CompareItems(EntityIota a, EntityIota b, bool exact)
     {
-        if (a.Target != EntityIota.EntityKind.Item || b.Target != EntityIota.EntityKind.Item) return false;
-        if (a.Index < 0 || a.Index >= Main.maxItems) return false;
-        if (b.Index < 0 || b.Index >= Main.maxItems) return false;
-
-        Item wa = Main.item[a.Index];
-        Item wb = Main.item[b.Index];
-        if (wa is null || wb is null) return false;
-        if (!wa.active || !wb.active) return false;
-
+        if (HeldItemOf(a) is not { } wa || HeldItemOf(b) is not { } wb) return false;
         if (wa.type != wb.type) return false;
-
         if (!exact) return true;
 
-        // strict：原版 ItemStack.isSameItemSameComponents —— 同种物品 + 同 NBT，数量不参与比较。
-        // 泰拉里 NBT 的对应物就是前缀。
-        return wa.prefix == wb.prefix;
+        // strict：原版 ItemStack.isSameItemSameTags —— 同种物品 + 同 NBT，数量不参与比较。
+        // 泰拉里对应 NBT 的是前缀，以及载体里存的 iota（原版存在 NBT 里）。
+        if (wa.prefix != wb.prefix) return false;
+        if (wa.ModItem is Items.ItemIotaStorage sa && wb.ModItem is Items.ItemIotaStorage sb)
+        {
+            var ia = sa.Read();
+            var ib = sb.Read();
+            return ia is null ? ib is null : ib is not null && ia.ValueEquals(ib);
+        }
+        return true;
     }
 
     /// <summary>[0, 1) 的随机数。</summary>
@@ -784,16 +876,16 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     // ── 实体身上的数据载体（read/entity 与 write/entity）──────────────
 
     /// <summary>
-    /// 取掉落物身上的 iota 载体。
-    ///
-    /// 泰拉侧的对应物 = **掉在地上、本身就是载体的物品**（聚念核心、念珠、卷轴）。
-    /// 源项目还能读物品展示框、盔甲架 —— 泰拉没有等价实体，见 ICastingWorld 的说明。
+    /// 取实体身上的 iota 载体（原版 ItemDelegatingEntityIotaHolder）：
+    /// **掉在地上、本身就是载体的物品**（核心、念珠、卷轴），和**物品框里放着的载体**（原版 ToItemFrame）。
     ///
     /// 注意：载体的状态挂在 <see cref="ModItem"/> 实例上（`ModItem` 是 per-Item 的），
     /// 所以必须从 `Main.item[i].ModItem` 取，不能自己 new 一个。
     /// </summary>
     private static Items.ItemIotaStorage? FindEntityStorage(EntityIota entity)
     {
+        if (entity.Target == EntityIota.EntityKind.ItemFrame)
+            return FrameOf(entity) is { item: { IsAir: false } framed } ? framed.ModItem as Items.ItemIotaStorage : null;
         if (entity.Target != EntityIota.EntityKind.Item) return null;
         if (entity.Index < 0 || entity.Index >= Main.maxItems) return null;
 
@@ -816,10 +908,11 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     public bool WriteEntityIota(EntityIota entity, Iota value)
     {
         if (FindEntityStorage(entity) is not { } storage || !storage.WriteIota(value, simulate: false)) return false;
-        // 地上的掉落物归服务端：写完广播一次（NetSend 带着里面的 iota），不然别人捡起来还是旧的
+        // 地上的掉落物 / 物品框归服务端：写完广播一次（NetSend 带着里面的 iota），不然别人看到、拿到的还是旧的
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
         {
-            NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, entity.Index);
+            if (FrameOf(entity) is { } f) NetMessage.SendData(Terraria.ID.MessageID.TileEntitySharing, -1, -1, null, f.ID, f.Position.X, f.Position.Y);
+            else NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, entity.Index);
         }
         return true;
     }
@@ -1729,6 +1822,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             if (it is not { active: true }) continue;
             Consider(new EntityIota(EntityIota.EntityKind.Item, i));
         }
+        foreach (var f in AllFrames()) Consider(new EntityIota(EntityIota.EntityKind.ItemFrame, f.ID));
 
         return best;
     }

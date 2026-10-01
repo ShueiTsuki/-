@@ -901,7 +901,7 @@ public static partial class BookContent
         e.Pages.Add(p);
         p = new BookPage { Kind = BookPageKind.Pattern, Title = "堆叠之馏化", Text = "和$(l:patterns/types#hexcasting:compare_item/lenient)$(action)分拣员之馏化/$类似，但会判断物品是否完全一致。两枚$(l:items/focus)$(item)核心/$只会在其中 iota 相同且$(l:patterns/spells/cyclevariant)$(thing)外观相同/$时判断为一致。", PatternId = "hexcasting:compare_item/strict", Anchor = "hexcasting:compare_item/strict", Input = "entity, entity", Output = "bool" };
         e.Pages.Add(p);
-        p = new BookPage { Kind = BookPageKind.Text, Title = "论物品容器", Text = "自然在面对传入$(l:patterns/types#hexcasting:compare_item/lenient)$(action)分拣员之馏化/$和$(l:patterns/types#hexcasting:compare_item/strict)$(action)堆叠之馏化/$的实体时，会按实体的类型分类处理：$(li)物品实体视为它们对应的物品$(li)物品展示框视为放在框中的物品，为空则招致事故$(li)玩家视为其当前手持的物品，优先选取主手" };
+        p = new BookPage { Kind = BookPageKind.Text, Title = "论物品容器", Text = "自然在面对传入$(l:patterns/types#hexcasting:compare_item/lenient)$(action)分拣员之馏化/$和$(l:patterns/types#hexcasting:compare_item/strict)$(action)堆叠之馏化/$的实体时，会按实体的类型分类处理：$(li)物品实体视为它们对应的物品$(li)物品框视为放在框中的物品，为空则招致事故$(li)玩家视为其当前手持的物品；手上没有东西时，视为快捷栏中手持物品右边一格的物品" };
         e.Pages.Add(p);
         p = new BookPage { Kind = BookPageKind.Pattern, Title = "分类学家之馏化", Text = "比较所给实体，判断它们是否类型相同。", PatternId = "hexcasting:compare_entity", Anchor = "hexcasting:compare_entity", Input = "entity, entity", Output = "bool" };
         e.Pages.Add(p);

@@ -59,13 +59,9 @@ public sealed class OpBlockEquality : ConstMediaAction
 }
 
 /// <summary>
-/// `compare_item/lenient` 与 `/strict`：两个物品实体是不是同一种物品。
-/// 移植自源项目 `OpItemEquality`。
-///
-/// 注意：**与源项目的差异**：源项目要求参数是「能持有物品的实体」
-/// （MC 的物品展示框、盔甲架之类）。
-/// 泰拉侧没有等价的通用实体，所以改为接受**掉在地上的物品**（`EntityKind.Item`）——
-/// 它们同样是「持有物品的实体」，语义最接近。
+/// `compare_item/lenient` 与 `/strict`：两个实体拿着的物品是不是同一种。
+/// 移植自源项目 `OpItemEquality` + `HexItemHolderHandlers`：掉落物、物品框、玩家（见 ICastingWorld.HasHeldItem），
+/// 别的实体或拿着的是空的 → 事故「一个持有物品的实体」。
 /// </summary>
 public sealed class OpItemEquality : ConstMediaAction
 {
@@ -77,17 +73,14 @@ public sealed class OpItemEquality : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
+        var world = env.RequireWorld();
+        // 上游的顺序：先取第一个的物品（取不到就事故），再取第二个的
         var a = env.ResolveEntity(args[0]);
+        if (!world.HasHeldItem(a)) throw new MishapInvalidIota(args[0], "一个持有物品的实体");
         var b = env.ResolveEntity(args[1]);
+        if (!world.HasHeldItem(b)) throw new MishapInvalidIota(args[1], "一个持有物品的实体");
 
-        if (a.Target != EntityIota.EntityKind.Item || b.Target != EntityIota.EntityKind.Item)
-        {
-            throw new MishapInvalidIota(
-                a.Target != EntityIota.EntityKind.Item ? args[0] : args[1],
-                "物品（掉在地上的东西）");
-        }
-
-        return new Iota[] { BooleanIota.Of(env.RequireWorld().CompareItems(a, b, _exact)) };
+        return new Iota[] { BooleanIota.Of(world.CompareItems(a, b, _exact)) };
     }
 }
 

@@ -37,6 +37,10 @@ public sealed class IotaDisplaySetup : ModSystem
                 return i >= 0 && i < Main.maxProjectiles && Main.projectile[i] is { active: true } pr ? pr.Name : null;
             case EntityIota.EntityKind.Item:
                 return i >= 0 && i < Main.maxItems && Main.item[i] is { active: true } it ? it.Name : null;
+            case EntityIota.EntityKind.ItemFrame:
+                return Terraria.DataStructures.TileEntity.ByID.TryGetValue(i, out var te) && te is Terraria.GameContent.Tile_Entities.TEItemFrame
+                    ? Terraria.Lang.GetItemNameValue(Terraria.ID.ItemID.ItemFrame)
+                    : null;
             default:
                 return null;
         }

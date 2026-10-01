@@ -209,7 +209,7 @@ internal static class IotaWire
             {
                 byte t = r.ReadByte();
                 int idx = r.ReadInt32();
-                if (t > (byte)EntityIota.EntityKind.Item) return GarbageIota.Instance;
+                if (t > (byte)EntityIota.EntityKind.ItemFrame) return GarbageIota.Instance;
                 return new EntityIota((EntityIota.EntityKind)t, idx);
             }
 

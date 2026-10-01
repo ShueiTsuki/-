@@ -81,7 +81,7 @@ public static class HexDebugBook
         {
             e = new BookEntry { Id = "items/focus_holder", CategoryId = "items", NameKey = "hexdebug.category.items.entry.focus_holder", DisplayName = "核心框架", IconItem = "FocusHolderItem", SortNum = 0, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
             c.Entries.Add(e);
-            p = new BookPage { Kind = BookPageKind.Text, Text = "$(l:items/focus)$(item)核心/$可用于在物品栏中存储$(hex)咒术/$和其他 iota，但总有些时候我会需要在世界中存储 iota。$(item)物品展示框/$太脆弱，$(l:greatwork/akashiclib)其他做法/$又太低效而且也……不道德。我需要更优雅的方法，最终成功借助$(item)核心框架/$实现了。" };
+            p = new BookPage { Kind = BookPageKind.Text, Text = "$(l:items/focus)$(item)核心/$可用于在物品栏中存储$(hex)咒术/$和其他 iota，但总有些时候我会需要在世界中存储 iota。$(item)物品框/$太脆弱，$(l:greatwork/akashiclib)其他做法/$又太低效而且也……不道德。我需要更优雅的方法，最终成功借助$(item)核心框架/$实现了。" };
             e.Pages.Add(p);
             p = new BookPage { Kind = BookPageKind.Text, Text = "$(item)核心框架/$自身没有用处，必须先向其放入一个$(l:items/focus)$(item)能存储 iota 的物品/$。可以用物品右击$(item)核心框架/$，也可在物品栏中以类似$(item)收纳袋/$的形式与单个$(item)框架/$交互。空手右击可取出物品。$(br2)物品形态下，装有物品的$(item)核心框架/$可用到任意接受其中物品的$(l:patterns/readwrite#hexcasting:read)图案/$和$(l:items/splicing_table)方块/$中去。放置后，可使用$(l:patterns/readwrite_blocks#hexcasting:read/entity)$(action)编年史家之纯化/$等图案访问。" };
             e.Pages.Add(p);
