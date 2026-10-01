@@ -32,6 +32,8 @@ _tools/ui_atlas.raw
 ENVIRONMENT_AND_TOOLCHAIN.md
 MyFirstMod/
 PHASE0_REPORT.md
+# 早期计划 / 交接 / 验收快照（2026-10-01 用户定挪出公开仓库，本地留着）
+_archive/
 Program.cs
 _MigrationGuide_1.4.5.md
 _art_refs/

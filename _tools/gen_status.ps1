@@ -2,6 +2,7 @@
 #
 # 为什么要有这份东西：审计发现根目录同时躺着 HANDOFF_STATUS.md（写 417/417、184/188）
 # 和 CODEX_HANDOFF.md（写 435/435、188/188），两份都在宣称"当前状态"，数字还不一样。
+# （这两份 2026-10-01 已挪出公开仓库，本地在 _archive/。）
 # AI 读到哪份就信哪份，它没有依据判断谁更新 —— 这是比"没文档"更糟的状态。
 #
 # 解法不是"再写一份更准的文档"，而是：
@@ -137,7 +138,7 @@ foreach ($k in $layers.Keys) {
 [void]$sb.AppendLine('- **像素级回归**：没有截图基线，改贴图不会有任何测试报警')
 [void]$sb.AppendLine('- 音频、联机双客户端同步、存档落盘往返、各项配置开关、性能')
 [void]$sb.AppendLine()
-[void]$sb.AppendLine('到目前为止，**在游戏里实际发现的问题全部来自人肉实测**（清单见 CODEX_HANDOFF.md 第 3 节与 AUDIT_VS_ORIGINAL.md 里用户 / 玩家反馈的各节），没有一条是自动化测试抓到的。')
+[void]$sb.AppendLine('到目前为止，**在游戏里实际发现的问题全部来自人肉实测**（清单见 AUDIT_VS_ORIGINAL.md 里用户 / 玩家反馈的各节），没有一条是自动化测试抓到的。')
 [void]$sb.AppendLine('这条统计本身就是对当前验证网的评级。')
 
 [System.IO.File]::WriteAllText((Join-Path (Split-Path -Parent $mod) 'STATUS.generated.md'), $sb.ToString(), $enc)

@@ -661,7 +661,7 @@ if (reqsEnlightenment && !vm.getEnv().isEnlightened()):
 ### 8.4 反噬 / 疯狂的实现
 
 - 媒质不足时的通用 mishap：`MishapNotEnoughMedia`（提示 `hexcasting.message.cant_overcast`）
-- 施法失败的副作用集中在 `api/casting/mishaps/**`（27 个具体 `Mishap` 类，见 `INTERFACE_CONTRACT_v1.md`）
+- 施法失败的副作用集中在 `api/casting/mishaps/**`（27 个具体 `Mishap` 类）
 - 反噬会调用 `env.mishapEnvironment` 的 `dropHeldItems()` 等，即**掉落手持物**
 
 ---

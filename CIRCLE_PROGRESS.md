@@ -6,7 +6,7 @@
 > 下面按现在的代码重写。
 >
 > 与原版的逐条对照和全部偏差：`AUDIT_VS_ORIGINAL.md`（第 25–27 条、「法术环」一节）。原版机制：`SPELL_CIRCLE_MECHANICS.md`。
-> 动手前的核查：`CIRCLE_PRECHECK.md`（历史记录）。测试数等数字只看 `STATUS.generated.md`。
+> 测试数等数字只看 `STATUS.generated.md`。
 
 ## 已完成
 

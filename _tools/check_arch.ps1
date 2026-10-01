@@ -201,8 +201,6 @@ if (Test-Path (Join-Path $tools 'measured.json')) {
 $patternClaimPattern = '(\d+)\s*条\s*图案|图案\s*(\d+)\s*条|(\d+)\s*/\s*(\d+)\s*图案|图案\s*(\d+)\s*/\s*(\d+)'
 # 历史快照可以写当时的图案数（必须登记并写明理由）
 $historyAllowPatternCounts = @{
-    'HEXCASTING_PORT_PLAN.md'  = 'Phase 0 计划（顶部已注明是历史快照），写的是当时提取的图案数'
-    'INTERFACE_CONTRACT_v1.md' = 'Phase 0 接口草案（顶部已注明是历史快照）'
 }
 $wrongClaims = New-Object System.Collections.Generic.List[string]
 foreach ($d in $allDocs) {
@@ -234,10 +232,7 @@ Check "文档里声称的图案数 == 实测（$measuredPatterns）" ($wrongClai
 # 但必须**显式列出并写明理由** —— 否则白名单迟早变成什么都能塞的后门。
 $testCountPattern = '(通过\s*\d+\s*/\s*\d+|离线测试\s*[*\s]*\d+\s*/\s*\d+|\d+\s*/\s*\d+\s*通过)'
 $historyAllowTestCounts = @{
-    'CIRCLE_PRECHECK.md'       = '日期化验收报告（法术环阶段），数字是当时快照'
     'TODO_PLAN.md'             = '按轮次累积的进度日志，每轮自带当时的数字'
-    'HEXCASTING_PORT_PLAN.md'  = '阶段计划，写的是该阶段的验收标准'
-    'CODEX_HANDOFF.md'         = '历史 bug 清单，正文不含测试数（留作显式豁免以免误伤引用）'
 }
 $testOffenders = New-Object System.Collections.Generic.List[string]
 foreach ($d in $allDocs) {
@@ -361,7 +356,7 @@ Write-Host "`n⑦ 本地化：每个可实例化的物品/方块都要有中文�
 & {
     # 双语：中文与英文各查一遍。
     # tModLoader 找不到词条时**静默回退到类名**，两种语言都会发生 ——
-    # 之前只查中文，于是英文缺 99 条一直没人发现（见 CODEX_HANDOFF 第 10 节）。
+    # 之前只查中文，于是英文缺 99 条一直没人发现。
     function Get-HaveKeys([string]$path) {
         $have = @{}
         if (-not (Test-Path $path)) { return $have }

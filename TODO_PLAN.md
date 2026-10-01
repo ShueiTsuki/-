@@ -1257,7 +1257,7 @@ MC 的紫水晶晶洞是**原版结构**，Hex Casting 只做两件事：
   → **已解决（2026-09-14）**：真实症状是打包期的 `Image loading failed: unknown image type`，
   原因是打包期那条解码路径读不了 GDI+ 写出的 PNG（tModLoader 内嵌模板那份能读）。
   修法是**不提供** `icon_small.png`，让 tModLoader 回退到自带模板 —— 现在打包 0 警告。
-  详见 `CODEX_HANDOFF.md` 第 9 节、断言⑩ 与 `_tools/gen_block_art.ps1` 末尾的说明。
+  详见断言⑩ 与 `_tools/gen_block_art.ps1` 末尾的说明。
 
 ## 明确不做的事
 
@@ -1448,7 +1448,7 @@ ModTile.PlaceInWorld 在 1.4.5 已被移除（2026-10-01 注：退回 1.4.4.9 �
 ## 顺带修掉的老问题
 
 `icon_small.png` 一直报 `does not exist`（用的是官方模板图标）—— 现在两种尺寸都是我们自己画的。
-（2026-10-01 核对：后来查清那条打包警告的真因，`icon_small.png` 已不再提供，见 `CODEX_HANDOFF.md` 第 9 节。）
+（2026-10-01 核对：后来查清那条打包警告的真因，`icon_small.png` 已不再提供，见上文 1258 行附近。）
 
 ## 生成脚本踩到的两个坑（都是「不报错但画错」）
 
