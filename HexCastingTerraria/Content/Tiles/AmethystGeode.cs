@@ -58,16 +58,26 @@ public sealed class GeodeCore : ModTile
     /// </summary>
     public override void RandomUpdate(int i, int j)
     {
-        // 调试开关：晶簇立即长成（跳过随机判定）
-        if (!AmethystGrowth.InstantGrowth && !AmethystLoot.RollGrowth(Main.rand.Next))
+        // 调试开关：晶簇立即长成（跳过随机判定，每次随机更新长一级）
+        if (AmethystGrowth.InstantGrowth)
         {
+            GrowOnce(i, j);
             return;
         }
 
-        // 随机挑一个方向（上/下/左/右）
-        int dir = Main.rand.Next(AmethystLoot.GrowthDirections);
+        // 泰拉的随机更新比 MC 的随机刻稀：把这段时间里 MC 该有的随机刻补上，每次照原版 1/5
+        int ticks = AmethystGrowth.McTicks(j);
+        for (int t = 0; t < ticks; t++)
+        {
+            if (AmethystLoot.RollGrowth(Main.rand.Next)) GrowOnce(i, j);
+        }
+    }
+
+    /// <summary>随机挑一个方向（上/下/左/右）长一级。</summary>
+    private static void GrowOnce(int i, int j)
+    {
         int ti = i, tj = j;
-        switch (dir)
+        switch (Main.rand.Next(AmethystLoot.GrowthDirections))
         {
             case AmethystLoot.DirectionUp: tj -= 1; break;   // 上
             case 1: tj += 1; break;   // 下
@@ -121,6 +131,12 @@ public abstract class AmethystGrowth : ModTile
 
     /// <summary>调试开关「晶簇立即长成」：跳过随机判定，每次随机刻都长一级（母岩与种植盆都认）。</summary>
     internal static bool InstantGrowth => HexClientConfig.Instance.InstantCrystalGrowth;
+
+    /// <summary>这一行的格子被泰拉随机更新抽到一次，相当于 MC 的几次随机刻（见 <see cref="AmethystLoot.McTicksPerUpdate"/>）。</summary>
+    internal static int McTicks(int j)
+        => AmethystLoot.RollMcTicks(
+            AmethystLoot.McTicksPerUpdate(Main.maxTilesX, Main.maxTilesY, Main.worldSurface, j, Main.remixWorld),
+            Main.rand.NextDouble);
 
     /// <summary>
     /// 让 (x, y) 这一格长一级。母岩（<see cref="GeodeCore"/>）和紫水晶种植盆（<see cref="AmethystPlanter"/>）共用，

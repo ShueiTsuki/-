@@ -2398,23 +2398,28 @@ static class Program
         {
             // 紫水晶种植盆（移植版新增）：每次随机刻的概率 = 母岩某一面 = 1/5 × 1/4。
             // 把两次掷骰的 5 × 4 种结果全部走一遍：正好 1 种生长，且是「过了 1/5、方向掷到上」
-            int hits = 0, total = 0;
-            bool rightOne = false;
+            int hits = 0;
             for (int a = 0; a < AmethystLoot.TickChanceDenominator; a++)
             {
-                for (int b = 0; b < AmethystLoot.GrowthDirections; b++)
-                {
-                    total++;
-                    int ta = a, tb = b;
-                    if (AmethystLoot.RollPlanterGrowth(n => n == AmethystLoot.TickChanceDenominator ? ta : tb))
-                    {
-                        hits++;
-                        rightOne = ta == 0 && tb == AmethystLoot.DirectionUp;
-                    }
-                }
+                int ta = a;
+                if (AmethystLoot.RollPlanterGrowth(_ => ta)) hits++;
             }
-            Check("种植盆：20 种掷骰里只有「1/5 命中 + 方向为上」生长（= 母岩一面）",
-                hits == 1 && total == 20 && rightOne, $"命中 {hits}/{total}");
+            Check("种植盆：每次随机刻 1/5 长一级（只朝上，不再掷方向）", hits == 1, $"命中 {hits}/5");
+
+            // 随机刻频率：泰拉一次随机更新补上 MC 该有的随机刻，按真实时间和 MC 一样快（用户给的算法）
+            // 小世界 4200 × 1200、地表线 300：地表约 1.95 次、地下约 11.9 次
+            double eSurf = AmethystLoot.McTicksPerUpdate(4200, 1200, 300, 100, remix: false);
+            double eUnder = AmethystLoot.McTicksPerUpdate(4200, 1200, 300, 800, remix: false);
+            Check("随机刻折算：小世界地表 / 地下各相当于 MC 的约 2 / 12 次随机刻",
+                System.Math.Abs(eSurf - 1.951) < 0.01 && System.Math.Abs(eUnder - 11.894) < 0.01, $"{eSurf:0.000} / {eUnder:0.000}");
+            // 每秒的期望随机刻数（泰拉抽中的概率 × 每次折算 × 60 帧）必须等于 MC 的 60/4096
+            double perSecond = AmethystLoot.TerrariaUpdateChance(4200, 1200, 300, 800, false) * eUnder * 60;
+            double planterSeconds = 4 * AmethystLoot.TickChanceDenominator / perSecond;
+            Check("种植盆一株从无到成熟的期望时间 = 20 次 MC 随机刻 = 1365⅓ 秒",
+                System.Math.Abs(planterSeconds - 4096.0 / 3) < 1e-6, $"{planterSeconds:0.###} 秒");
+            Check("随机刻拆成整数：2.25 次 = 2 次，按 25% 多一次",
+                AmethystLoot.RollMcTicks(2.25, () => 0.1) == 3 && AmethystLoot.RollMcTicks(2.25, () => 0.3) == 2
+                && AmethystLoot.RollMcTicks(3.0, () => 0.0) == 3);
         }
         {
             // ore_drops 公式：时运 0 原样；时运 >0 时 i = nextInt(f+2)-1，负数归零

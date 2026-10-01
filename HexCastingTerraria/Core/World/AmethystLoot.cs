@@ -100,13 +100,56 @@ public static class AmethystLoot
     /// <summary>
     /// 紫水晶种植盆一次随机刻是否让上方长一级（移植版新增，原版没有种植盆）。
     ///
-    /// 概率与母岩**某一面**完全相同：先过 <see cref="RollGrowth"/> 的 1/5，再在四个方向里正好掷到「上」，
-    /// 合计 1/20。种植盆只有朝上这一面能长，相当于只剩一面的母岩，不比母岩的任何一面快。
+    /// 和母岩一样每次随机刻 1/5 长一级；母岩随机挑一个方向，种植盆只有朝上这一面，所以不再掷方向 ——
+    /// 一株晶簇从无到成熟平均 4 级 × 5 = 20 次随机刻，按 MC 的随机刻频率是 1365⅓ 秒（用户 2026-10-01 给的算法），
+    /// 和一块母岩平均每 20 次随机刻长满一株的产量相同。
     /// </summary>
     public static bool RollPlanterGrowth(Func<int, int> nextInt)
     {
         if (nextInt == null) throw new ArgumentNullException(nameof(nextInt));
-        return RollGrowth(nextInt) && nextInt(GrowthDirections) == DirectionUp;
+        return RollGrowth(nextInt);
+    }
+
+    // ── 随机刻的频率：按真实时间和 MC 一样快 ───────────────────────────────
+
+    /// <summary>
+    /// MC 每个方块每游戏刻平均 3/4096 次随机刻（randomTickSpeed 默认 3，每个 16³ 区段每刻抽 3 格），
+    /// 一秒 20 刻 = 每秒 60/4096 次。泰拉一秒 60 帧，折成每帧就是 1/4096 次。
+    /// </summary>
+    public const double McRandomTicksPerTerrariaTick = 1.0 / 4096;
+
+    /// <summary>
+    /// 泰拉 WorldGen.UpdateWorld 一帧抽到第 <paramref name="y"/> 行某一格的概率（世界更新速率为 1 时）：
+    /// 地表每帧抽 maxX × maxY × 3e-5 次，均匀落在 x∈[10, maxX-10)、y∈[10, worldSurface-1)；
+    /// 地下每帧抽 maxX × maxY × 1.5e-5 次，落在 y∈[worldSurface-1, maxY-20)；
+    /// 颠倒世界的地下改成 2.5e-5 次、每次调两遍 RandomUpdate。（反编译 tML 1.4.4.9 核对）
+    /// </summary>
+    public static double TerrariaUpdateChance(int maxX, int maxY, double worldSurface, int y, bool remix)
+    {
+        int ws = (int)worldSurface;
+        double width = Math.Max(1, maxX - 20);
+        if (y < ws - 1)
+        {
+            return (double)maxX * maxY * 3e-5 / (width * Math.Max(1, ws - 1 - 10));
+        }
+        double picks = (double)maxX * maxY * (remix ? 2.5e-5 * 2 : 1.5e-5);
+        return picks / (width * Math.Max(1, maxY - 20 - (ws - 1)));
+    }
+
+    /// <summary>
+    /// 泰拉一次随机更新相当于 MC 的几次随机刻（期望）。泰拉抽得比 MC 稀（小世界地表约 3 分钟一次、地下约 12 分钟一次，
+    /// MC 约 68 秒一次），母岩 / 种植盆每次被抽到时把这段时间里 MC 该有的随机刻补上，生长按真实时间就和 MC 一样快。
+    /// 旅途模式调「世界更新速率」照样会加快 / 放慢（这里按速率 1 算，倍率留给泰拉自己乘）。
+    /// </summary>
+    public static double McTicksPerUpdate(int maxX, int maxY, double worldSurface, int y, bool remix)
+        => McRandomTicksPerTerrariaTick / TerrariaUpdateChance(maxX, maxY, worldSurface, y, remix);
+
+    /// <summary>把期望次数拆成整数：整数部分必定有，小数部分按概率多一次。</summary>
+    public static int RollMcTicks(double expected, Func<double> nextDouble)
+    {
+        if (nextDouble == null) throw new ArgumentNullException(nameof(nextDouble));
+        double whole = Math.Floor(expected);
+        return (int)whole + (nextDouble() < expected - whole ? 1 : 0);
     }
 
     /// <summary>

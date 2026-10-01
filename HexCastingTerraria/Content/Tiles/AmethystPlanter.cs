@@ -45,12 +45,18 @@ public sealed class AmethystPlanter : ModTile
     /// <summary>随机刻：按母岩一面的概率，让正上方那一格长一级。</summary>
     public override void RandomUpdate(int i, int j)
     {
-        if (!AmethystGrowth.InstantGrowth && !AmethystLoot.RollPlanterGrowth(Main.rand.Next))
+        if (AmethystGrowth.InstantGrowth)
         {
+            AmethystGrowth.GrowAt(i, j - 1);
             return;
         }
 
-        AmethystGrowth.GrowAt(i, j - 1);
+        // 和母岩一样把泰拉随机更新之间 MC 该有的随机刻补上；每次 1/5 让上方长一级（平均 1365⅓ 秒长成一株）
+        int ticks = AmethystGrowth.McTicks(j);
+        for (int t = 0; t < ticks; t++)
+        {
+            if (AmethystLoot.RollPlanterGrowth(Main.rand.Next)) AmethystGrowth.GrowAt(i, j - 1);
+        }
     }
 }
 
