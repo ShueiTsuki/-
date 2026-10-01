@@ -71,6 +71,11 @@ public static class BrainsweepRules
         Table.AddRange(recipes);
     }
 
+    /// <summary>附属加的配方（开着才加；卸载时 <see cref="Remove"/>）。</summary>
+    public static void Add(BrainsweepRecipe recipe) => Table.Add(recipe);
+
+    public static void Remove(BrainsweepRecipe recipe) => Table.Remove(recipe);
+
     /// <summary>把泰拉的城镇 NPC 类型编号编码成「种类编号」。</summary>
     public static int TownNpcSpecies(int npcType) => TownNpcSpeciesBase - npcType;
 

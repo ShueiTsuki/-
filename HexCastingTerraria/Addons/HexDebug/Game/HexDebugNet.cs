@@ -28,6 +28,13 @@ internal static class HexDebugNet
         EvalPattern = 2,
         ToggleBreakpoint = 3,
 
+        // 剪接台（客户端 → 服务端）
+        SpliceSetSlot = 4,
+        SpliceAction = 5,
+        SpliceSelect = 6,
+        SpliceDraw = 7,
+        SpliceCast = 8,
+
         // 服务端 → 客户端
         View = 10,
         RemoveThread = 11,
@@ -35,6 +42,9 @@ internal static class HexDebugNet
         Status = 13,
         EvalOpened = 14,
         EvalResult = 15,
+
+        // 剪接台（服务端 → 客户端）：画的图案上什么色
+        SpliceDrawResult = 16,
     }
 
     private static HexAddon Addon => AddonRegistry.All.First(x => x.Id == "hexdebug");
@@ -112,6 +122,13 @@ internal static class HexDebugNet
             case Msg.ToggleBreakpoint:
                 HexDebugSessions.ToggleBreakpoint(player, r.ReadInt32(), r.ReadInt32());
                 break;
+            case Msg.SpliceSetSlot:
+            case Msg.SpliceAction:
+            case Msg.SpliceSelect:
+            case Msg.SpliceDraw:
+            case Msg.SpliceCast:
+                Splicing.SplicingTableNet.HandleServer(msg, r, player);
+                break;
         }
     }
 
@@ -138,6 +155,9 @@ internal static class HexDebugNet
                 HexDebugClient.OpenEvaluator(thread, reset, ReadLines(r));
                 break;
             }
+            case Msg.SpliceDrawResult:
+                Splicing.SplicingTableUI.DrawResult((ResolvedPatternType)r.ReadByte());
+                break;
             case Msg.EvalResult:
             {
                 int thread = r.ReadByte();

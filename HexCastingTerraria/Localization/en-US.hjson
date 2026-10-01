@@ -29,6 +29,79 @@ Mods: {
 				Stop: "Mode: Stop"
 			}
 
+			Splicing: {
+				MediaBar: Media: {0} / {1}
+				NoList: Put a list holder (focus, spellbook...) in the list slot
+				ClipboardIs: Clipboard: {0}
+				Draw: Draw
+				Cast: Cast
+
+				Button: {
+					ViewLeft: Move View Left
+					ViewLeftPage: Move View to Previous Page
+					ViewLeftFull: Move View to Start
+					ViewRight: Move View Right
+					ViewRightPage: Move View to Next Page
+					ViewRightFull: Move View to End
+					CursorLeft: Move Cursor Left
+					CursorRight: Move Cursor Right
+					ExpandSelectionLeft: Expand Selection Left
+					ExpandSelectionRight: Expand Selection Right
+					MoveSelectionLeft: Move Selection Left
+					MoveSelectionRight: Move Selection Right
+					SelectNone: Select None
+					SelectAll: Select All
+					Undo: Undo
+					Redo: Redo
+					NudgeLeft: Nudge Left
+					NudgeRight: Nudge Right
+					Duplicate: Duplicate
+					Delete: Delete
+					Backspace: Backspace
+					Cut: Cut
+					Copy: Copy
+					PasteVerbatim: Paste (Verbatim)
+					PasteSplat: Paste (Splat)
+					Export: Export as .hexpattern
+				}
+
+				Short: {
+					CursorLeft: Cur<
+					CursorRight: Cur>
+					ExpandSelectionLeft: Ext<
+					ExpandSelectionRight: Ext>
+					MoveSelectionLeft: Sel<
+					MoveSelectionRight: Sel>
+					SelectNone: None
+					SelectAll: All
+					Undo: Undo
+					Redo: Redo
+					NudgeLeft: Nudge<
+					NudgeRight: Nudge>
+					Duplicate: Dup
+					Delete: Del
+					Backspace: Bksp
+					Cut: Cut
+					Copy: Copy
+					PasteVerbatim: Paste
+					PasteSplat: Splat
+				}
+
+				Tooltip: {
+					Index: Index: {0}
+					Depth: Depth: {0}
+					Signature: Signature: {0}
+					Length: Length: {0}
+				}
+
+				Slot: {
+					List: List
+					Clipboard: Clipboard
+					Media: Media
+					Staff: Staff
+				}
+			}
+
 			Panel: {
 				Because: " ({0})"
 				Source: Source #{0}
@@ -101,6 +174,12 @@ Mods: {
 		}
 
 		Items: {
+			SplicingTableItem: {
+				DisplayName: Splicing Table
+			}
+			EnlightenedSplicingTableItem: {
+				DisplayName: Mindsplice Table
+			}
 			Debugger: {
 				DisplayName: "Debugger"
 			}
@@ -671,6 +750,12 @@ Mods: {
 					'''
 			}
 		Tiles: {
+			SplicingTableTile: {
+				MapEntry: Splicing Table
+			}
+			EnlightenedSplicingTableTile: {
+				MapEntry: Mindsplice Table
+			}
 			EdifiedDoorClosed: {
 				MapEntry: Edified Door
 			}

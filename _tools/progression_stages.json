@@ -132,7 +132,8 @@
       "EdifiedButtonItem": "源 edified_button：启迪木板 ×1 → 1",
       "EdifiedPressurePlateItem": "源 edified_pressure_plate：启迪木板 ×2 → 1",
       "Debugger": "附属 HexDebug：上游 recipes/debugger.json，造物 + 充能紫水晶 ×3 + 金锭（无门槛；造物本身肉前）",
-      "Evaluator": "附属 HexDebug：上游 recipes/evaluator.json，板岩方块 ×2 + 充能紫水晶 ×3（无门槛）"
+      "Evaluator": "附属 HexDebug：上游 recipes/evaluator.json，板岩方块 ×2 + 充能紫水晶 ×3（无门槛）",
+      "SplicingTableItem": "附属 HexDebug：上游 recipes/splicing_table.json，启迪木板 ×2 + 充能紫水晶 + 紫水晶碎片 ×2 + 核心 + 板岩方块 ×2 + 金锭（材料都是肉前）"
     },
     "肉后": {
       "QuenchedAllayItem": "淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除小精灵 Pixie —— 神圣地肉后敌怪，用户定的进度 —— 要启蒙）",

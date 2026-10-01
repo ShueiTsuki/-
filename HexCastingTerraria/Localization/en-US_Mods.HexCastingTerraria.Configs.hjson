@@ -446,4 +446,29 @@ HexDebugOptions: {
 		Label: Max debug threads
 		Tooltip: How many hexes can be debugged at once after enlightenment (Quenched Debugger switches threads); 1 before.
 	}
+
+	MaxUndoStackSize: {
+		Label: Max undo stack size
+		Tooltip: Maximum length of the splicing table undo history. Set to 0 to disable the limit.
+	}
+
+	SplicingTableMediaCost: {
+		Label: Splicing table media cost
+		Tooltip: Amount of media consumed by actions in the splicing table.
+	}
+
+	SplicingTableMaxMedia: {
+		Label: Splicing table max media
+		Tooltip: Maximum media capacity of the splicing table.
+	}
+
+	SplicingTableCastingCooldown: {
+		Label: Mindsplice table casting cooldown
+		Tooltip: Cooldown of the mindsplice table cast button, in frames (upstream uses ticks; 1 tick = 3 frames).
+	}
+
+	SplicingTableAmbit: {
+		Label: Mindsplice table ambit
+		Tooltip: Radius of the mindsplice table ambit, in blocks.
+	}
 }

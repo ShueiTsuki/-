@@ -43,7 +43,17 @@ public sealed class HexDebugAddon : HexAddon
                 "hexdebug:quenched_debugger", 10 * global::HexCastingTerraria.Core.Media.MediaConstants.CrystalUnit, "一根空的淬灵调试杖"),
         };
         foreach (var (id, action) in actions) PatternRegistry.RegisterAction(id, action);
+
+        // 上游 brainsweep/enlightened_splicing_table：剪接台 + 3 级工具匠（泰拉：哥布林工匠，同本体促动石的映射），1000000 媒质
+        _enlighten = new global::HexCastingTerraria.Core.Casting.Actions.BrainsweepRecipe(
+            ModContent.TileType<Splicing.SplicingTableTile>(),
+            global::HexCastingTerraria.Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(Terraria.ID.NPCID.GoblinTinkerer),
+            ModContent.TileType<Splicing.EnlightenedSplicingTableTile>(), -1,
+            10 * global::HexCastingTerraria.Core.Media.MediaConstants.CrystalUnit);
+        global::HexCastingTerraria.Core.Casting.Actions.BrainsweepRules.Add(_enlighten.Value);
     }
+
+    private global::HexCastingTerraria.Core.Casting.Actions.BrainsweepRecipe? _enlighten;
 
     public override void AddBookContent(global::HexCastingTerraria.Core.Ui.BookDocument book) => HexDebugBook.AddTo(book);
 
@@ -51,6 +61,8 @@ public sealed class HexDebugAddon : HexAddon
 
     public override void OnUnload()
     {
+        if (_enlighten is { } recipe) global::HexCastingTerraria.Core.Casting.Actions.BrainsweepRules.Remove(recipe);
+        _enlighten = null;
         HexDebugSessions.Clear();
         HexDebugClient.Clear();
         IotaSerializer.UnregisterKind(CognitohazardIota.KindTag);

@@ -26,6 +26,79 @@ Mods: {
 				Stop: 模式：停止
 			}
 
+			Splicing: {
+				MediaBar: 媒质：{0} / {1}
+				NoList: 列表槽里放一个能存列表的物品（核心、法术书……）
+				ClipboardIs: 剪贴板：{0}
+				Draw: 画图案
+				Cast: 激活编辑台
+
+				Button: {
+					ViewLeft: 向左移动视野
+					ViewLeftPage: 将视野移动到上一页
+					ViewLeftFull: 将视野移动到开头
+					ViewRight: 向右移动视野
+					ViewRightPage: 将视野移动到下一页
+					ViewRightFull: 将视野移动到末尾
+					CursorLeft: 向左移动光标
+					CursorRight: 向右移动光标
+					ExpandSelectionLeft: 向左延伸选区
+					ExpandSelectionRight: 向右延伸选区
+					MoveSelectionLeft: 向左移动选区
+					MoveSelectionRight: 向右移动选区
+					SelectNone: 取消选区
+					SelectAll: 全选
+					Undo: 撤销
+					Redo: 重做
+					NudgeLeft: 左移
+					NudgeRight: 右移
+					Duplicate: 重复
+					Delete: 删除
+					Backspace: 退格
+					Cut: 剪切
+					Copy: 复制
+					PasteVerbatim: 粘贴（逐项）
+					PasteSplat: 粘贴（扁平化）
+					Export: 导出为.hexpattern文件
+				}
+
+				Short: {
+					CursorLeft: 光标左
+					CursorRight: 光标右
+					ExpandSelectionLeft: 左扩
+					ExpandSelectionRight: 右扩
+					MoveSelectionLeft: 选区左
+					MoveSelectionRight: 选区右
+					SelectNone: 不选
+					SelectAll: 全选
+					Undo: 撤销
+					Redo: 重做
+					NudgeLeft: 左移
+					NudgeRight: 右移
+					Duplicate: 重复
+					Delete: 删除
+					Backspace: 退格
+					Cut: 剪切
+					Copy: 复制
+					PasteVerbatim: 粘贴
+					PasteSplat: 展开粘贴
+				}
+
+				Tooltip: {
+					Index: 索引下标：{0}
+					Depth: 深度：{0}
+					Signature: 图案编码：{0}
+					Length: 长度：{0}
+				}
+
+				Slot: {
+					List: 列表
+					Clipboard: 剪贴板
+					Media: 媒质
+					Staff: 法杖
+				}
+			}
+
 			Panel: {
 				Because: （{0}）
 				Source: 源码 #{0}
@@ -98,6 +171,12 @@ Mods: {
 		}
 
 		Items: {
+			SplicingTableItem: {
+				DisplayName: 剪接台
+			}
+			EnlightenedSplicingTableItem: {
+				DisplayName: 制念台
+			}
 			Debugger: {
 				DisplayName: 调试杖
 			}
@@ -659,6 +738,12 @@ Mods: {
 					'''
 			}
 			Tiles: {
+			SplicingTableTile: {
+				MapEntry: 剪接台
+			}
+			EnlightenedSplicingTableTile: {
+				MapEntry: 制念台
+			}
 			EdifiedDoorClosed: {
 				MapEntry: 启迪木门
 			}

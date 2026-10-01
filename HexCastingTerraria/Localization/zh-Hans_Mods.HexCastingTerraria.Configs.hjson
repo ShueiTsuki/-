@@ -446,4 +446,29 @@ HexDebugOptions: {
 		Label: 调试线程上限
 		Tooltip: 启蒙后能同时调试几段咒术（淬灵调试杖切换线程）；没启蒙只有 1 段。
 	}
+
+	MaxUndoStackSize: {
+		Label: 撤销历史步数上限
+		Tooltip: 剪接台撤销历史的长度上限。设为0可禁用上限。
+	}
+
+	SplicingTableMediaCost: {
+		Label: 剪接台媒质消耗
+		Tooltip: 在剪接台中执行操作消耗的媒质量。
+	}
+
+	SplicingTableMaxMedia: {
+		Label: 剪接台最大媒质量
+		Tooltip: 剪接台的最大媒质容量。
+	}
+
+	SplicingTableCastingCooldown: {
+		Label: 制念台施法冷却
+		Tooltip: 制念台施法按钮的冷却时间，以帧计（上游以刻计，1 刻 = 3 帧）。
+	}
+
+	SplicingTableAmbit: {
+		Label: 制念台影响范围
+		Tooltip: 制念台的影响范围半径，以格计。
+	}
 }

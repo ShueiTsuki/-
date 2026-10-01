@@ -8,9 +8,9 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **126** 个可合成物品。
+共 **127** 个可合成物品。
 
-## 肉前（106 项）
+## 肉前（107 项）
 
 紫水晶 → 媒质 → 石板 → 法杖 → 工具与存储。源项目在这一段没有任何进度门槛。
 
@@ -136,6 +136,7 @@
 | `EdifiedPressurePlateItem` | 1 | EdifiedPlanksItem×2 | WorkBenches | 源 edified_pressure_plate：启迪木板 ×2 → 1 |
 | `Debugger` | 1 | ChargedAmethyst×3 | Anvils | 附属 HexDebug：上游 recipes/debugger.json，造物 + 充能紫水晶 ×3 + 金锭（无门槛；造物本身肉前） |
 | `Evaluator` | 1 | ChargedAmethyst×3 + 〔Content.Items.HexRecipeGroups.SlateBlocks〕×2 | WorkBenches | 附属 HexDebug：上游 recipes/evaluator.json，板岩方块 ×2 + 充能紫水晶 ×3（无门槛） |
+| `SplicingTableItem` | 1 | AmethystShard×2 + 〔HexRecipeGroups.SlateBlocks〕×2 | WorkBenches | 附属 HexDebug：上游 recipes/splicing_table.json，启迪木板 ×2 + 充能紫水晶 + 紫水晶碎片 ×2 + 核心 + 板岩方块 ×2 + 金锭（材料都是肉前） |
 
 ## 肉后（11 项）
 

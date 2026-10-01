@@ -125,7 +125,11 @@
         "Core/Splicing/Selection.cs",
         "Core/Splicing/SplicingTableData.cs",
         "Core/Splicing/SplicingTableAction.cs",
-        "Core/Splicing/SplicingTableState.cs"
+        "Core/Splicing/SplicingTableState.cs",
+        "Game/Splicing/SplicingTable.cs",
+        "Game/Splicing/SplicingTableCastEnv.cs",
+        "Game/Splicing/SplicingTableNet.cs",
+        "Game/Splicing/SplicingTableUI.cs"
       ],
       "upstream": [
         "blocks/splicing/",

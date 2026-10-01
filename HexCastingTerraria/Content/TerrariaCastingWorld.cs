@@ -32,6 +32,9 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// </summary>
     private readonly (int MinX, int MinY, int MaxX, int MaxY)? _circleBounds;
 
+    /// <summary>不以施法者为心、而以某一点为心的施法范围（图格坐标与半径）。附属的方块施法用（HexDebug 制念台，上游 splicingTableAmbit）。</summary>
+    public (double X, double Y, double Radius)? Ambit { get; init; }
+
     public TerrariaCastingWorld(Player? caster, (int MinX, int MinY, int MaxX, int MaxY)? circleBounds = null)
     {
         _caster = caster;
@@ -218,6 +221,13 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             {
                 return true;
             }
+        }
+
+        // 附属的方块施法（HexDebug 制念台）：范围以方块为心（大哨卫照样延伸，见上）
+        if (Ambit is { } a)
+        {
+            double adx = tileX - a.X, ady = tileY - a.Y;
+            return adx * adx + ady * ady + z * z <= a.Radius * a.Radius + 1e-10;
         }
 
         // 玩家：以自身为中心 32 格半径

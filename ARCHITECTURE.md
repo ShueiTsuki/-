@@ -281,6 +281,10 @@
 | `HexDebug/Game/HexDebugSessions.cs` | 玩家用调试杖的调试来历（上游 core api SimplePlayerBasedDebugEnv）：跑完不接着跑；重启 = 用同一串 iota 重新开始。 |
 | `HexDebug/Game/HexDebugText.cs` | HexDebug 的文字（上游 lang 文件的官方译文；调试面板的标签是移植版自己的，跟随游戏语言）。</summary> |
 | `HexDebug/Game/HexDebugView.cs` | 一个调试线程此刻的样子，服务端算好发给本人客户端的游戏内调试面板。 |
+| `HexDebug/Game/Splicing/SplicingTable.cs` | 剪接台 / 制念台（上游 blocks/splicing/SplicingTableBlock.kt）：1×1，右键打开编辑界面。</summary> |
+| `HexDebug/Game/Splicing/SplicingTableCastEnv.cs` | 制念台施放融注咒术时的施法环境（上游 casting/eval/SplicingTableCastEnv.kt）：施法者还是按下按钮的玩家， |
+| `HexDebug/Game/Splicing/SplicingTableNet.cs` | 剪接台的请求（上游 MsgSplicingTableActionC2S / SelectIndexC2S / NewStaffPatternC2S、制念台的施法按钮； |
+| `HexDebug/Game/Splicing/SplicingTableUI.cs` | 剪接台的界面（上游 gui/splicing/SplicingTableScreen.kt）：像箱子一样，打开时背包也开着，用泰拉的物品格子放东西。 |
 | `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |
 | `HexParse/Core/CodeParser.cs` | 代码 -> iota 列表（上游 parsers/ParserMain.java 的 ParseCode + str2nbt/* 全部符号解析器 + macro/MacroProcessor.java）。 |
 | `HexParse/Core/CommentIota.cs` | 注释 iota（上游 hooks/CommentIota.java + CommentIotaType.java）。 |
