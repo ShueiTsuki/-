@@ -604,6 +604,14 @@ Mods: {
 					施法时直接从背包扣取
 					'''
 			}
+			AmethystPlanterItem: {
+				DisplayName: 紫水晶种植盆
+				Tooltip:
+					'''
+					放下后，紫水晶会在它上方生长
+					长成晶簇后用镐挖下收获
+					'''
+			}
 		}
 			AmethystDustBlockItem: {
 				DisplayName: 紫水晶粉块
@@ -952,6 +960,9 @@ Mods: {
 			}
 			AmethystCluster: {
 				MapEntry: 紫水晶簇
+			}
+			AmethystPlanter: {
+				MapEntry: 紫水晶种植盆
 			}
 		}
 			Keybinds: {

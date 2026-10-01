@@ -51,6 +51,7 @@ internal static class DevKit
         yield return ModContent.ItemType<ChargedAmethyst>();
         yield return ModContent.ItemType<QuenchedAllayShard>();
         yield return ModContent.ItemType<CreativeUnlocker>();   // 媒质立方（原版的创造模式物品）
+        yield return ModContent.ItemType<AmethystPlanterItem>(); // 紫水晶种植盆（移植版新增；配合「晶簇立即长成」测生长与收获）
 
         // 颜料（内化染色剂用）：单色、多色渐变、灵魂闪光各一
         yield return ModContent.ItemType<PigmentDyeRed>();
