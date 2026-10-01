@@ -1,4 +1,3 @@
-using System.IO;
 using HexCastingTerraria.Content.Items;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -69,7 +68,7 @@ public sealed class DeepslateItem : ModItem
 
 /// <summary>
 /// 客户端：内容加载完以后，把游戏自带的花岗岩贴图（方块图集和物品图标）读出来，去色调亮成中等深灰，
-/// 换成深板岩自己的贴图。只在内存里做，不存任何文件。
+/// 换成深板岩自己的贴图（<see cref="VanillaRecolor"/>）。只在内存里做，不存任何文件。
 ///
 /// 为什么不在画的时候乘一个颜色：花岗岩是很艳的蓝紫色，乘色只能压暗，压掉蓝色后几乎是黑的、还带青紫杂点；
 /// 用户看过离线预览后选了「先去色、再调亮」这一版（2026-10-01）。
@@ -87,8 +86,8 @@ public sealed class DeepslateArt : ModSystem
             // 上色只是外观：万一失败，记日志、照用原版花岗岩的样子，不能让整个模组加载失败
             try
             {
-                _tile = Recolor($"Images/Tiles_{TileID.Granite}", "DeepslateTile");
-                _item = Recolor($"Images/Item_{ItemID.Granite}", "DeepslateItem");
+                _tile = VanillaRecolor.Create($"Images/Tiles_{TileID.Granite}", "DeepslateTile", Recolor);
+                _item = VanillaRecolor.Create($"Images/Item_{ItemID.Granite}", "DeepslateItem", Recolor);
                 TextureAssets.Tile[ModContent.TileType<Deepslate>()] = _tile;
                 TextureAssets.Item[ModContent.ItemType<DeepslateItem>()] = _item;
             }
@@ -114,34 +113,18 @@ public sealed class DeepslateArt : ModSystem
         });
     }
 
-    /// <summary>
-    /// 每个像素取 RGB 里最大的那个当亮度，乘 0.6 再加 18，三个通道都用它（蓝色多 5，带一点冷色）。
-    /// 泰拉贴图读出来是预乘过透明度的，先还原再算，存成 PNG 后读回来时泰拉会再预乘一次。
-    /// </summary>
+    private static void Recolor(Color[] data, int width, int height)
+    {
+        for (int i = 0; i < data.Length; i++) data[i] = DeepslateColor(data[i]);
+    }
+
+    /// <summary>每个像素取 RGB 里最大的那个当亮度，乘 0.6 再加 18，三个通道都用它（蓝色多 5，带一点冷色）。传进来的是直通透明度。</summary>
     internal static Color DeepslateColor(Color c)
     {
         if (c.A == 0) return Color.Transparent;
-        float k = 255f / c.A;
-        float v = System.Math.Max(c.R, System.Math.Max(c.G, c.B)) * k * 0.6f + 18f;
+        float v = System.Math.Max(c.R, System.Math.Max(c.G, c.B)) * 0.6f + 18f;
         byte gray = (byte)System.Math.Min(255f, v);
         byte blue = (byte)System.Math.Min(255f, v + 5f);
         return new Color(gray, gray, blue, c.A);
-    }
-
-    private static Asset<Texture2D> Recolor(string vanillaPath, string name)
-    {
-        var src = Main.Assets.Request<Texture2D>(vanillaPath, AssetRequestMode.ImmediateLoad).Value;
-        var data = new Color[src.Width * src.Height];
-        src.GetData(data);
-        for (int i = 0; i < data.Length; i++) data[i] = DeepslateColor(data[i]);
-
-        using var png = new MemoryStream();
-        using (var tex = new Texture2D(Main.graphics.GraphicsDevice, src.Width, src.Height))
-        {
-            tex.SetData(data);
-            tex.SaveAsPng(png, src.Width, src.Height);
-        }
-        png.Position = 0;
-        return Main.Assets.CreateUntracked<Texture2D>(png, name + ".png", AssetRequestMode.ImmediateLoad);
     }
 }

@@ -155,6 +155,7 @@
 
 | 文件 | 职责 |
 |---|---|
+| `Buffs/Resonance.cs` | 「共振」增益（移植版新增，用户 2026-10-01 定）：喝共振药水（<see cref="Items.ResonancePotion"/>）得到，30 分钟。 |
 | `DevTextureDump.cs` | 开发用：把**原版泰拉的 UI 贴图**导出成 PNG，供离线比对。 |
 | `HexChestLoot.cs` | 往世界里的箱子塞原版的三种战利品（源项目 HexLootHandler）： |
 | `HexCommands.cs` | /hexcasting 指令。移植自源项目 common/command（HexCommands.register）： |
@@ -170,7 +171,7 @@
 | `Items/DevStaff.cs` | 开发者法杖（Dev Staff）。 |
 | `Items/EdifiedFurniture.cs` | 启迪木的家具。原版 HexBlocks 里有 8 种：楼梯、台阶、栅栏、栅栏门、门、活板门、按钮、压力板。 |
 | `Items/HexBookItem.cs` | 咒法学之书。对应源项目的 `hexcasting:thehexbook`（Patchouli 写的那本引导书）。 |
-| `Items/HexConditions.cs` | 本模组的配方条件。</summary> |
+| `Items/HexConditions.cs` | 本模组的配方 / 商店条件。</summary> |
 | `Items/HexDecoBlockItem.cs` | 建材方块物品的公共实现（配合 <see cref="HexDecoBlock"/>）。 |
 | `Items/HexDirectrixItems.cs` | 导线的公共物品基类。对应源项目三根 `*Directrix` 的物品形态。 |
 | `Items/HexImpetusItem.cs` | 促动石（物品形态）的公共部分。对应源项目 `hexcasting:impetus/*`。 |
@@ -190,6 +191,7 @@
 | `Items/PackagedSpellCast.cs` | 打包法术专用环境：媒质**从物品自己的池子里扣**，不是从玩家身上。 |
 | `Items/PigmentItem.cs` | 颜料（染色剂）。移植自源项目 <c>common/items/pigment/*</c>： |
 | `Items/PigmentItems.Generated.cs` | 35 种颜料（原版 ItemDyePigment ×16、ItemPridePigment ×16、空无 / 远古 / 灵魂闪光）。 |
+| `Items/ResonancePotion.cs` | 共振药水（移植版新增，用户 2026-10-01 定）：喝了得到「共振」增益（<see cref="Resonance"/>）30 分钟 —— |
 | `Items/ScryingLens.cs` | 探知透镜。对应源项目 `hexcasting:lens`（ItemLens）。 |
 | `Items/Spellbook.cs` | 法术书。对应源项目 `hexcasting:spellbook`（ItemSpellbook，**不是**那本引导书）。 |
 | `Items/SubSandwich.cs` | 潜艇三明治。原版 HexItems.SUBMARINE_SANDWICH：食物（饥饿值 14、饱和度 1.2 —— 比牛排还顶饱）， |
@@ -225,6 +227,7 @@
 | `Tiles/TileEntityRepair.cs` | 补上缺的图格实体。 |
 | `Tiles/TileMiner.cs` | 是谁拿着镐在挖这一格。掉落要看「用没用对工具」、时运（镐力换算）、共振前缀的方块都靠它： |
 | `Tiles/WallScroll.cs` | 壁挂卷轴。对应源项目的 `EntityWallScroll`。 |
+| `VanillaRecolor.cs` | 把游戏自带的一张贴图读出来改色，做成本模组自己的贴图：深板岩（<see cref="Tiles.DeepslateArt"/>）、 |
 | `WorldDisplayNames.cs` | 事故消息里要报的世界上的名字：那一格方块叫什么（上游 Mishap.blockAtPos）、地上那堆物品是什么有几个（上游 MishapBadItem）。 |
 | `Worldgen/GeodeWorldGen.cs` | 紫水晶晶洞的世界生成。 |
 

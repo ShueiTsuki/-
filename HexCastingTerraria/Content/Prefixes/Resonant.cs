@@ -7,6 +7,7 @@ namespace HexCastingTerraria.Content.Prefixes;
 
 /// <summary>
 /// 「共振」：镐子专属的前缀（移植版新增，用户 2026-10-01 定），代替原版的精准采集附魔 —— 泰拉没有附魔。
+/// 喝共振药水得到的「共振」增益（<see cref="Buffs.Resonance"/>）效果一样，判定都走 <see cref="Active"/>。
 /// 只对咒法学里原版要精准采集的方块起作用：现在只有淬灵晶块（挖掉掉方块本身，见 <see cref="Tiles.QuenchedAllayGlobal"/>）；
 /// 原版另一个是启迪树叶，那只是装饰，用户定不接。不改任何数值。
 ///
@@ -29,4 +30,7 @@ public sealed class Resonant : ModPrefix
 
     /// <summary>这件物品是不是带共振的镐子。</summary>
     public static bool On(Item? item) => item is { IsAir: false } && item.pick > 0 && item.prefix == ModContent.PrefixType<Resonant>();
+
+    /// <summary>这个人挖东西时有没有共振：手里是带共振的镐子，或者身上有共振增益（喝了共振药水）。</summary>
+    public static bool Active(Player player) => On(player.HeldItem) || player.HasBuff<Buffs.Resonance>();
 }

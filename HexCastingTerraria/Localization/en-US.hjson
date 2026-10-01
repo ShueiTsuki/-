@@ -192,6 +192,13 @@ Mods: {
 			}
 		}
 
+		Buffs: {
+			Resonance: {
+				DisplayName: Resonance
+				Description: You can now harvest certain things without breaking them
+			}
+		}
+
 		Conditions: {
 			Sealable: The first one of this item in your inventory holds something and is not sealed
 			Enlightened: Enlightened
@@ -376,6 +383,10 @@ Mods: {
 			}
 			SubSandwich: {
 				DisplayName: Submarine Sandwich
+			}
+			ResonancePotion: {
+				DisplayName: Resonance Potion
+				Tooltip: Lets you harvest certain things without breaking them
 			}
 			CreativeUnlocker: {
 				DisplayName: The Media Cube

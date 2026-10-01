@@ -189,6 +189,13 @@ Mods: {
 			}
 		}
 
+		Buffs: {
+			Resonance: {
+				DisplayName: 共振
+				Description: 你现在可以采集某些东西而不破坏
+			}
+		}
+
 		Conditions: {
 			Enlightened: 已获得启迪
 			Sealable: 背包里第一件同类物品存着东西、还没密封
@@ -373,6 +380,10 @@ Mods: {
 			}
 			SubSandwich: {
 				DisplayName: 潜艇三明治
+			}
+			ResonancePotion: {
+				DisplayName: 共振药水
+				Tooltip: 可以采集某些东西而不破坏
 			}
 			CreativeUnlocker: {
 				DisplayName: 媒质立方

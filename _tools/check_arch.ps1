@@ -346,7 +346,7 @@ if (-not $SkipMeasured) {
 }
 
 # ─────────────────────────────────────────────────────────────────────
-Write-Host "`n⑦ 本地化：每个可实例化的物品/方块都要有中文词条"
+Write-Host "`n⑦ 本地化：每个可实例化的物品/方块/增益都要有中文词条"
 # ─────────────────────────────────────────────────────────────────────
 # tModLoader 找不到词条时**直接显示英文类名**（`JewelerHammer`、`AmethystTilesItem`），
 # 而且不报错、不警告、日志里一个字都没有 —— 只能靠人翻物品栏发现。
@@ -383,6 +383,7 @@ Write-Host "`n⑦ 本地化：每个可实例化的物品/方块都要有中文�
             while ($cur -and $guard++ -lt 20) {
                 if ($cur -eq 'ModItem') { return 'Item' }
                 if ($cur -eq 'ModTile') { return 'Tile' }
+                if ($cur -eq 'ModBuff') { return 'Buff' }   # 2026-10-01 加共振增益时补上：增益缺词条同样静默显示类名
                 if (-not $cls.ContainsKey($cur)) { break }
                 $cur = $cls[$cur]
             }
@@ -398,9 +399,9 @@ Write-Host "`n⑦ 本地化：每个可实例化的物品/方块都要有中文�
             if (-not $zhHave.ContainsKey($k)) { $missZh.Add("$kind`:$k") }
             if (-not $enHave.ContainsKey($k)) { $missEn.Add("$kind`:$k") }
         }
-        Check "所有可实例化物品/方块都有中文词条（缺 $($missZh.Count) 个）" ($missZh.Count -eq 0) `
+        Check "所有可实例化物品/方块/增益都有中文词条（缺 $($missZh.Count) 个）" ($missZh.Count -eq 0) `
               (($missZh | Select-Object -First 6) -join ', ')
-        Check "所有可实例化物品/方块都有英文词条（缺 $($missEn.Count) 个）" ($missEn.Count -eq 0) `
+        Check "所有可实例化物品/方块/增益都有英文词条（缺 $($missEn.Count) 个）" ($missEn.Count -eq 0) `
               (($missEn | Select-Object -First 6) -join ', ')
 }
 

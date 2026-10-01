@@ -12,7 +12,7 @@ namespace HexCastingTerraria.Content.Tiles;
 /// 淬灵晶系方块照原版（BlockQuenchedAllay 与掉落表 quenched_allay.json）。放在 GlobalTile 里是因为这几个类由脚本生成
 /// （DecoBlocks.Generated.cs），不手改；发光在生成器里（亮度 4）。
 ///
-/// 掉落（只管淬灵晶块）：用「共振」镐挖掉方块本身（原版的精准采集，见 <see cref="Resonant"/>）；
+/// 掉落（只管淬灵晶块）：用「共振」镐挖、或者喝了共振药水再挖，掉方块本身（原版的精准采集，见 <see cref="Resonant.Active"/>）；
 /// 否则掉 2~5 片淬灵晶碎片（<see cref="QuenchedLoot.RollShards"/>，时运按镐力换算）。淬灵晶瓦 / 砖照原版掉自己。
 /// 这里曾经用 CanDrop 返回 false 再在 Drop 里生成碎片 —— tML 1.4.4 里 CanDrop 返回 false 以后根本不调用 Drop，
 /// 淬灵晶块敲掉一片碎片都不掉。现在照晶簇的写法：在 KillTile 里关掉默认掉落、自己生成。
@@ -32,7 +32,7 @@ public sealed class QuenchedAllayGlobal : GlobalTile
         var source = new EntitySource_TileBreak(i, j);
         var position = new Vector2(i * 16, j * 16);
         var size = new Vector2(16, 16);
-        if (miner is not null && Resonant.On(miner.HeldItem))
+        if (miner is not null && Resonant.Active(miner))
         {
             Item.NewItem(source, position, size, ModContent.ItemType<QuenchedAllayItem>(), 1);
             return;

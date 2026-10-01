@@ -125,6 +125,7 @@
       "PigmentAncient": "同 PigmentItem：紫水晶粉 ×4 + 铜锭",
       "PigmentSoulglimmer": "同 PigmentItem：紫水晶粉 ×8 + 紫水晶碎片",
       "SubSandwich": "源 165-174 潜艇三明治：has_item(紫水晶碎片)，无门槛 → 肉前；熟牛肉 → 烤松鼠、面包 → 干草",
+      "ResonancePotion": "移植版新增（用户 2026-10-01 定）：材料都是肉前的 → 肉前；只对淬灵晶块有用（肉后 · 启蒙才拿得到），巫师在玩家开悟后也卖",
       "EdifiedDoorItem": "源 edified_door：启迪木板 ×6 → 3（木门配方，无门槛）→ 肉前",
       "EdifiedFenceItem": "源 edified_fence：启迪木板 → 泰拉栅栏墙（1 → 4，泰拉木栅栏的比例）",
       "EdifiedButtonItem": "源 edified_button：启迪木板 ×1 → 1",
