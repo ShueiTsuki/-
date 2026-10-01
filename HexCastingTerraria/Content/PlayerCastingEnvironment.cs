@@ -382,7 +382,8 @@ public class PlayerCastingEnvironment : CastingEnvironment
                 var msg = doMishap.Mishap.ErrorMessageWithName(this, doMishap.ErrorCtx);
                 if (!string.IsNullOrEmpty(msg))
                 {
-                    PrintMessage(msg!);
+                    DebugObserver?.OnMishap(msg!);
+                    Deliver(msg!);
                 }
             }
         }
@@ -390,6 +391,12 @@ public class PlayerCastingEnvironment : CastingEnvironment
 
     /// <summary>把消息发到玩家聊天框。对应源项目 printMessage → sendSystemMessage。</summary>
     public override void PrintMessage(string message)
+    {
+        DebugObserver?.OnPrint(message);
+        Deliver(message);
+    }
+
+    private static void Deliver(string message)
     {
         if (Main.netMode == Terraria.ID.NetmodeID.Server)
         {

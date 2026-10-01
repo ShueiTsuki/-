@@ -246,7 +246,7 @@ public sealed class CastingVM
     /// size：普通 iota 1，列表 = 1 + 子项 size 之和；depth：普通 iota 1，列表 = 1 + 子项最大 depth。
     ///（这里曾用「总数 > 1024」「嵌套层数 > 256」，与原版各差一两个）
     /// </summary>
-    private static bool IsStackTooLarge(IReadOnlyList<Iota> stack)
+    public static bool IsStackTooLarge(IReadOnlyList<Iota> stack)
     {
         int total = 1;
         for (int i = 0; i < stack.Count; i++)

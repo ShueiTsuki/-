@@ -33,7 +33,12 @@
     },
     {
       "name": "步进核心（单步进入 / 跳过 / 跳出、继续、重启、停止、调用栈）",
-      "files": [],
+      "files": [
+        "Core/DebugTypes.cs",
+        "Core/HexDebugger.cs",
+        "Core/DebugEnvironment.cs",
+        "Core/IotaText.cs"
+      ],
       "upstream": [
         "debugger/HexDebugger.kt",
         "debugger/DebugStepResult.kt",
@@ -65,7 +70,10 @@
     },
     {
       "name": "断点",
-      "files": [],
+      "files": [
+        "Core/FrameBreakpoint.cs",
+        "Core/HexDebugActions.cs"
+      ],
       "upstream": [
         "casting/actions/OpBreakpoint.kt",
         "casting/eval/FrameBreakpoint.kt",
@@ -81,7 +89,9 @@
     },
     {
       "name": "图案 x22",
-      "files": [],
+      "files": [
+        "Core/HexDebugPatterns.cs"
+      ],
       "upstream": [
         "registry/HexDebugActions.kt",
         "casting/actions/OpIsDebugging.kt",
@@ -90,7 +100,9 @@
     },
     {
       "name": "认知危害 iota",
-      "files": [],
+      "files": [
+        "Core/HexDebugActions.cs"
+      ],
       "upstream": [
         "casting/iotas/CognitohazardIota.kt",
         "registry/HexDebugIotaTypes.kt"

@@ -120,6 +120,9 @@ public abstract class CastingEnvironment
     /// </summary>
     public virtual void PrintMessage(string message) { }
 
+    /// <summary>附属调试器（HexDebug）：正在调试这次施法时不为 null，见 <see cref="ICastDebugObserver"/>。</summary>
+    public ICastDebugObserver? DebugObserver { get; set; }
+
     /// <summary>
     /// 世界访问。
     ///

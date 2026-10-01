@@ -150,6 +150,8 @@ public sealed class OpEval : IAction
         CastingEnvironment env, CastingImage image, SpellContinuation continuation,
         List<Iota> newStack, Iota iota)
     {
+        env.DebugObserver?.OnEval();
+
         SpellList instrs;
         bool single;
 

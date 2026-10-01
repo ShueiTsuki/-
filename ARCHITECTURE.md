@@ -91,6 +91,7 @@
 | `Casting/Circles/CircleTraversal.cs` | 法术环对世界的访问。 |
 | `Casting/Eval/CastingEnvironment.cs` | 打包法术的种类。对应源项目的三个物品：cypher（符纸，一次性）、 |
 | `Casting/Eval/CastResult.cs` | 对施法 VM 做一次操作的结果。 |
+| `Casting/Eval/ICastDebugObserver.cs` | 附属调试器（HexDebug）在施法环境上的挂点。本体只在三处通知它（上游 HexDebug 用 mixin 注入的同样三处）： |
 | `Casting/Eval/ICastingWorld.cs` | 施法环境对「世界」的**只读**访问抽象。 |
 | `Casting/Eval/Mishaps/CommonMishaps.cs` | 栈上的参数不够。惩罚：把缺的那几个补成垃圾值（源项目同）。</summary> |
 | `Casting/Eval/Mishaps/Mishap.cs` | mishap 的上下文：出错的图案与（可能的）图案名。 |
@@ -258,6 +259,13 @@
 | `Hexcessible/Game/HexcessibleOptions.cs` | Hexcessible 的配置项，挂在客户端「附属兼容」页的 Hexcessible 开关下面（上游 HexcessibleConfig，默认值照搬）。 |
 | `Hexcessible/Game/HexcessibleStore.cs` | Hexcessible 自己记的东西（上游放在配置文件里、界面上不显示的 patternAliases / knownWorldPatterns）： |
 | `Hexcessible/Game/TooltipBox.cs` | 画 Minecraft 样式的提示框（上游用 DrawContext.drawTooltip：深紫底、紫色渐变边框，贴在给定点右上方，出屏就往回挪）。 |
+| `HexDebug/Core/DebugEnvironment.cs` | 调试输出的类别（上游 OutputCategory：普通输出 / 错误）。</summary> |
+| `HexDebug/Core/DebugTypes.cs` | 上游 debugger/Enums.kt DebuggerState。</summary> |
+| `HexDebug/Core/FrameBreakpoint.cs` | 断点帧（上游 casting/eval/FrameBreakpoint.kt）：不调试时什么都不做；调试器看到它就停。 |
+| `HexDebug/Core/HexDebugActions.cs` | 认知危害 iota（上游 casting/iotas/CognitohazardIota.kt）：被调试器登记到就结束调试；平时求值什么都不做。 |
+| `HexDebug/Core/HexDebugger.cs` | 调用栈里的一帧（上游 DAP StackFrame）：帧名、指向的源码位置；虚拟帧是尾调用省掉的 FrameFinishEval。</summary> |
+| `HexDebug/Core/HexDebugPatterns.cs` | HexDebug 的 22 个图案（上游 registry/HexDebugActions.kt，形状照抄）。开关关着也要登记形状（本世界大法术笔顺不许和它们撞）； |
+| `HexDebug/Core/IotaText.cs` | iota 转成文字（上游 utils/Extensions.kt 的 displayWithPatternName / toHexpatternSource / getI18nOrNull / simpleString）。 |
 | `HexDebug/Game/HexDebugAddon.cs` | HexDebug 附属的入口：调试杖逐步执行咒术、剪接台编辑咒术（object-Object，MIT）。 |
 | `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |
 | `HexParse/Core/CodeParser.cs` | 代码 -> iota 列表（上游 parsers/ParserMain.java 的 ParseCode + str2nbt/* 全部符号解析器 + macro/MacroProcessor.java）。 |
