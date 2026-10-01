@@ -262,8 +262,38 @@ public enum ImpetusDisplay : byte
 }
 
 /// <summary>促动石的数据：媒质、出口方向、走环状态、显示、牧师绑定。</summary>
+/// <summary>
+/// 附属调试器（HexDebug 调试法术环）在促动石上的挂点（上游用 mixin 注入 CircleExecutionState.tick 与 BlockSlate.acceptControlFlow）：
+/// 环第一次走到一块石板时交给调试器，调试器暂停期间环原地等待；调试器跑完这块石板就交回新的栈，环接着往出口走。
+/// </summary>
+public interface ICircleDebugHook
+{
+    /// <summary>调试器还在这块石板上（环原地等）。</summary>
+    bool IsPaused { get; }
+
+    /// <summary>第一次走到一块石板：把石板上的图案交给调试器（空石板给 null）。</summary>
+    void OnSlate(HexImpetusEntity impetus, CastingEnvironment env, CastingImage image, Core.Casting.Math.HexPattern? pattern);
+
+    /// <summary>调试器跑完这块石板后的栈（取一次就清空）。</summary>
+    CastingImage? TakeNewImage();
+
+    /// <summary>环停了（走完、出错或被停止）。</summary>
+    void OnEnd();
+}
+
 public sealed class HexImpetusEntity : ModTileEntity
 {
+    /// <summary>附属调试器挂在这里时，环每到一块石板交给它（见 <see cref="ICircleDebugHook"/>）。</summary>
+    public ICircleDebugHook? DebugHook { get; set; }
+
+    private bool _debugEntered;
+
+    /// <summary>附属：从外面停掉这个环（HexDebug 停止调试）。</summary>
+    public void StopExecution()
+    {
+        if (IsRunning) End();
+    }
+
     /// <summary>原版 MAX_CAPACITY。</summary>
     public const long MaxCapacity = 9_000_000_000_000_000_000L;
 
@@ -510,10 +540,29 @@ public sealed class HexImpetusEntity : ModTileEntity
             return;
         }
 
+        var at = new Vector2((CurrentX + 0.5f) * 16f, (CurrentY + 0.5f) * 16f);
+
+        // HexDebug 调试法术环：石板交给调试器；调试器暂停时原地等，跑完后用它的栈接着往出口走
+        if (DebugHook is { } hook && comp.Value.Kind == CircleComponentKind.Slate && _vm != null)
+        {
+            if (!_debugEntered)
+            {
+                _debugEntered = true;
+                CircleCursor.MarkAndBroadcast(CurrentX, CurrentY);
+                if (Main.netMode == NetmodeID.Server) SpellSounds.Broadcast("spellcircle.find_block", at.X, at.Y);
+                else SpellSounds.Play("spellcircle.find_block", at);
+                ReachedCount++;
+                hook.OnSlate(this, _vm.Env, _vm.Image, world.GetSlatePattern(CurrentX, CurrentY));
+            }
+            if (!IsRunning || hook.IsPaused) return;
+            if (hook.TakeNewImage() is { } image) _vm.SetImage(image.WithOverriddenUsedOps(0));
+            ChooseExit(world, comp.Value);
+            return;
+        }
+
         CircleCursor.MarkAndBroadcast(CurrentX, CurrentY);
 
         // 环每走一格轻响一下（原版 spellcircle.find_block）
-        var at = new Vector2((CurrentX + 0.5f) * 16f, (CurrentY + 0.5f) * 16f);
         if (Main.netMode == NetmodeID.Server) SpellSounds.Broadcast("spellcircle.find_block", at.X, at.Y);
         else SpellSounds.Play("spellcircle.find_block", at);
 
@@ -546,6 +595,14 @@ public sealed class HexImpetusEntity : ModTileEntity
             // 每走完一格重置算力（源项目 withOverriddenUsedOps(0)）
             _vm.SetImage(outcome.Image.WithOverriddenUsedOps(0));
         }
+
+        ChooseExit(world, comp.Value);
+    }
+
+    /// <summary>这一格处理完，按部件找出口往下走。</summary>
+    private void ChooseExit(TerrariaCircleWorld world, CircleComponent component)
+    {
+        var comp = (CircleComponent?)component;
 
         // 导向石：出口由它自己决定
         if (comp.Value.Kind is CircleComponentKind.DirectrixEmpty
@@ -591,6 +648,7 @@ public sealed class HexImpetusEntity : ModTileEntity
 
     private void Advance(CircleDir dir)
     {
+        _debugEntered = false;
         var (x, y) = dir.Offset(CurrentX, CurrentY);
         CurrentX = x;
         CurrentY = y;
@@ -666,6 +724,10 @@ public sealed class HexImpetusEntity : ModTileEntity
     {
         IsRunning = false;
         _vm = null;
+        _debugEntered = false;
+        var hook = DebugHook;
+        DebugHook = null;
+        hook?.OnEnd();
         CircleCursor.Clear();
         Sync();
     }

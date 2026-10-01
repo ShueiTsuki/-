@@ -272,6 +272,7 @@
 | `HexDebug/Core/Splicing/SplicingTableAction.cs` | 剪接台的按钮操作（上游 splicing/SplicingTableAction.kt，顺序与名字照搬）。</summary> |
 | `HexDebug/Core/Splicing/SplicingTableData.cs` | 剪接台槽位里的物品能不能读写 iota（核心、法术书……）。由游戏侧实现。</summary> |
 | `HexDebug/Core/Splicing/SplicingTableState.cs` | 剪接台方块实体里与游戏无关的那部分（上游 blocks/splicing/SplicingTableBlockEntity.kt 的 |
+| `HexDebug/Game/CircleDebugging.cs` | 调试法术环（上游 debugger/circles/CircleDebugEnv.kt + MixinBlockEntityAbstractImpetus / MixinCircleExecutionState / MixinBlockSlate）： |
 | `HexDebug/Game/HexDebugAddon.cs` | HexDebug 附属的入口：调试杖逐步执行咒术、剪接台编辑咒术（object-Object，MIT）。 |
 | `HexDebug/Game/HexDebugClient.cs` | 客户端这边的调试状态：每个线程最新的样子（调试面板画它）、输出记录、运行杖的画布。 |
 | `HexDebug/Game/HexDebugItems.cs` | 贴图（上游 jar 里的 16×16 放大两倍，_tools/gen_hexdebug_art.py 生成）。</summary> |

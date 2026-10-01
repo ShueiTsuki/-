@@ -156,7 +156,9 @@
     },
     {
       "name": "调试法术环",
-      "files": [],
+      "files": [
+        "Game/CircleDebugging.cs"
+      ],
       "upstream": [
         "debugger/circles/",
         "mixin/MixinBlockEntityAbstractImpetus.java",

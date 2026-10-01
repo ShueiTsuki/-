@@ -70,6 +70,19 @@ public abstract class DebuggerItemBase : ItemPackagedSpell, IShiftScrollable
     {
         if (player.whoAmI != Main.myPlayer) return true;
         int slot = player.selectedItem;
+        // 对着促动石用：调试法术环（上游 useOn）
+        var tile = Main.MouseWorld.ToTileCoordinates();
+        if (Terraria.DataStructures.TileEntity.ByPosition.TryGetValue(new Terraria.DataStructures.Point16(tile.X, tile.Y), out var te)
+            && te is Content.Tiles.HexImpetusEntity)
+        {
+            HexDebugNet.ToServer(HexDebugNet.Msg.UseDebuggerOn, w =>
+            {
+                w.Write((byte)slot);
+                w.Write((short)tile.X);
+                w.Write((short)tile.Y);
+            });
+            return true;
+        }
         HexDebugNet.ToServer(HexDebugNet.Msg.UseDebugger, w => w.Write((byte)slot));
         return true;
     }

@@ -26,6 +26,7 @@ Mods: {
 				Stop: 模式：停止
 			}
 
+			CircleName: 法术环
 			FocusHolderItemIs: 物品：{0}
 
 			BadBlock: {

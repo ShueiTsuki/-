@@ -73,6 +73,26 @@ internal static class HexDebugSessions
 
     // ==================== 调试杖 ====================
 
+    /// <summary>
+    /// 上游 DebuggerItem.useOn：对着促动石用 = 开始调试这个法术环（这个线程没在用、环也没在跑时）；
+    /// 否则当成平常的使用（上游 useOn 返回 PASS 后 MC 再调 use）。
+    /// </summary>
+    public static void UseDebuggerOn(Player player, int slot, int x, int y)
+    {
+        if (slot >= 0 && slot < player.inventory.Length && player.inventory[slot].ModItem is DebuggerItemBase item
+            && Debugger(player.whoAmI, item.ThreadId) is null
+            && CircleDebugging.ImpetusAt(player, x, y) is { IsRunning: false } impetus
+            && HexPlayer.Get(player).PackagedCooldown <= 0)
+        {
+            if (CircleDebugging.Start(player, impetus, item.ThreadId))
+            {
+                HexPlayer.Get(player).StartPackagedCooldown(item.CooldownTicks);
+                return;
+            }
+        }
+        UseDebugger(player, slot);
+    }
+
     /// <summary>上游 DebuggerItem.use：没在调试就开始；在调试就按步进模式走一步（正在跑时按「可暂停」的模式就暂停）。</summary>
     public static void UseDebugger(Player player, int slot)
     {
@@ -123,12 +143,25 @@ internal static class HexDebugSessions
         hexPlayer.StartPackagedCooldown(item.CooldownTicks);
     }
 
-    /// <summary>上游 createDebugThread + startDebuggingIotas。线程号超出范围或已被占用时返回 false。</summary>
+    /// <summary>调试杖：建线程并开始调试它封着的咒术。线程号超出范围或已被占用时返回 false。</summary>
     public static bool Start(Player player, PlayerDebugEnv debugEnv, int threadId)
     {
+        if (!CreateThread(player, threadId, () => debugEnv, out _)) return false;
+        if (!StartDebuggingIotas(player, debugEnv, debugEnv.Env, debugEnv.Iotas, null))
+        {
+            RemoveThread(player.whoAmI, threadId, terminate: false);
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>上游 createDebugThread：线程号超出范围（没启蒙只有 1 个）或已被占用时返回 false。</summary>
+    public static bool CreateThread(Player player, int threadId, System.Func<DebugEnvironment> makeEnv, out DebugEnvironment debugEnv)
+    {
+        debugEnv = null!;
         var s = Get(player.whoAmI);
         if (threadId < 0 || threadId >= MaxThreads(player) || s.Debuggers.ContainsKey(threadId)) return false;
-
+        debugEnv = makeEnv();
         var dbg = new HexDebugger(s.Shared, debugEnv, threadId);
         debugEnv.Output = (text, cat, _) => HexDebugNet.ToClient(player.whoAmI, HexDebugNet.Msg.Output, w =>
         {
@@ -138,13 +171,18 @@ internal static class HexDebugSessions
         });
         s.Debuggers[threadId] = dbg;
         s.EvaluatorModified.Remove(threadId);
+        SendView(player.whoAmI, dbg);
+        return true;
+    }
 
-        var result = dbg.StartExecuting(debugEnv.Env, debugEnv.Iotas, null);
-        if (result is null)
-        {
-            s.Debuggers.Remove(threadId);
-            return false;
-        }
+    /// <summary>上游 startDebuggingIotas：在这个线程上开始（或接着，法术环的下一块石板）调试一串 iota。</summary>
+    public static bool StartDebuggingIotas(Player player, DebugEnvironment debugEnv, CastingEnvironment env, IReadOnlyList<Iota> iotas, CastingImage? image)
+    {
+        if (!Sessions.TryGetValue(player.whoAmI, out var s)) return false;
+        var dbg = s.Debuggers.Values.FirstOrDefault(d => ReferenceEquals(d.DebugEnv, debugEnv));
+        if (dbg is null) return false;
+        var result = dbg.StartExecuting(env, iotas, image);
+        if (result is null) return false;
         Handle(player, dbg, result);
         return true;
     }

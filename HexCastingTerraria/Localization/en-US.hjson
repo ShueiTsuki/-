@@ -29,6 +29,7 @@ Mods: {
 				Stop: "Mode: Stop"
 			}
 
+			CircleName: Spell circle
 			FocusHolderItemIs: Item: {0}
 
 			BadBlock: {

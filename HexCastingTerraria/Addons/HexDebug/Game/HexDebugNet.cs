@@ -24,6 +24,7 @@ internal static class HexDebugNet
     {
         // 客户端 → 服务端
         UseDebugger = 0,
+        UseDebuggerOn = 17,
         EvalOpen = 1,
         EvalPattern = 2,
         ToggleBreakpoint = 3,
@@ -111,6 +112,14 @@ internal static class HexDebugNet
             case Msg.UseDebugger:
                 HexDebugSessions.UseDebugger(player, r.ReadByte());
                 break;
+            case Msg.UseDebuggerOn:
+            {
+                int slot = r.ReadByte();
+                int x = r.ReadInt16();
+                int y = r.ReadInt16();
+                HexDebugSessions.UseDebuggerOn(player, slot, x, y);
+                break;
+            }
             case Msg.EvalOpen:
                 HexDebugSessions.OpenEvaluator(player, r.ReadByte(), r.ReadBoolean());
                 break;
