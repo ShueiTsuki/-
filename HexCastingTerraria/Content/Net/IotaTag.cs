@@ -118,6 +118,8 @@ public static class IotaTag
                 failures.Add($"{iota.Display()}：{e.Message}");
             }
         }
-        return (samples.Count, failures);
+        // 法术环走到一半存档用的施法镜像（CastingImageTag）一起查
+        failures.AddRange(CastingImageTag.SelfTest());
+        return (samples.Count + 1, failures);
     }
 }

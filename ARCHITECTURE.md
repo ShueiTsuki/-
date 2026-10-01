@@ -192,6 +192,7 @@
 | `Items/Spellbook.cs` | 法术书。对应源项目 `hexcasting:spellbook`（ItemSpellbook，**不是**那本引导书）。 |
 | `Items/SubSandwich.cs` | 潜艇三明治。原版 HexItems.SUBMARINE_SANDWICH：食物（饥饿值 14、饱和度 1.2 —— 比牛排还顶饱）， |
 | `Items/WallScrollFrames.cs` | 卷轴挂板的基类。对应源项目里「把卷轴挂到墙上」那一步所需的载体。 |
+| `Net/CastingImageTag.cs` | 施法镜像 ↔ 存档（原版 CastingImage.serializeToNbt / loadFromNbt）。法术环走到一半存档时用： |
 | `Net/HexNet.cs` | 网络消息类型。 |
 | `Net/HexNetSync.cs` | 方块交互的上报辅助。 |
 | `Net/IotaTag.cs` | iota ↔ 存档（<see cref="TagCompound"/>）。**所有存 iota 的物品 / 方块实体都走这里**。 |

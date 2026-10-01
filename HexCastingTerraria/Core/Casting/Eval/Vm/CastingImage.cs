@@ -46,7 +46,7 @@ public sealed class CastingImage
     public long OpsConsumed { get; }
 
     /// <summary>
-    /// 本次施法的临时数据袋（不序列化、不进存档）。
+    /// 本次施法的临时数据袋。法术环走到一半存档时跟着镜像一起存（Content/Net/CastingImageTag，原版同样存在镜像里）。
     /// 见 <see cref="CastUserData"/> 的说明。
     /// </summary>
     public CastUserData UserData { get; }

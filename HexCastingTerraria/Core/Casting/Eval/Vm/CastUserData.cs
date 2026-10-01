@@ -49,6 +49,12 @@ public sealed class CastUserData
         set.Add(key);
     }
 
+    /// <summary>所有分组和里面的键（法术环走到一半存档用，见 Content/Net/CastingImageTag）。</summary>
+    public IEnumerable<(string Group, IReadOnlyCollection<string> Keys)> Groups()
+    {
+        foreach (var kv in _groups) yield return (kv.Key, kv.Value);
+    }
+
     /// <summary>
     /// 复制一份。对应源项目 `userData.copy()`。
     ///

@@ -327,6 +327,12 @@ public sealed class HexImpetusEntity : ModTileEntity
 
     private CastingVM? _vm;
 
+    /// <summary>环的包围盒（泰拉图格坐标，原版 positive_pos / negative_pos）：启动时闭包校验算出，每一步建施法环境都要用。</summary>
+    private int _minX, _minY, _maxX, _maxY;
+
+    /// <summary>读档后还没走下一步时的镜像：读档时玩家还没进来，施法环境等走第一步时再建。</summary>
+    private CastingImage? _savedImage;
+
     /// <summary>
     /// 原动力自己的颜料（原版 BlockEntityAbstractImpetus.pigment）：在环里施放「内化染色剂」染的是它，不是施法者。
     /// 空 = 没染过，用启动时施法者的颜料（原版 executionState.casterPigment），再没有就是默认。
@@ -475,27 +481,14 @@ public sealed class HexImpetusEntity : ModTileEntity
         }
 
         var live = caster is { active: true, dead: false } ? caster : null;
-        var circleWorld = new HexSpaceWorld(TerrariaCastingWorld.ForCircle(
-            closure.MinX, closure.MinY, closure.MaxX, closure.MaxY, live));
-
-        // 给法术看的坐标一律是法术坐标（Y 朝上，见 HexSpaceWorld）：上下翻转后，泰拉的 MaxY 变成最小的那个
-        var state = new CircleState
-        {
-            ImpetusX = Position.X,
-            ImpetusY = HexSpaceWorld.BlockY(Position.Y),
-            ImpetusDir = StartDir,
-            YUp = true,
-            MinX = closure.MinX, MinY = HexSpaceWorld.BlockY(closure.MaxY),
-            MaxX = closure.MaxX, MaxY = HexSpaceWorld.BlockY(closure.MinY),
-        };
-
-        var casterEnv = live is null ? null : new PlayerCastingEnvironment(live) { CircleHands = true };
+        _minX = closure.MinX;
+        _minY = closure.MinY;
+        _maxX = closure.MaxX;
+        _maxY = closure.MaxY;
         _casterPigment = live is null ? null : (HexPlayer.Get(live).PigmentIdOrDefault, HexPlayer.Get(live).PigmentOwner);
         _casterUuid = live is null ? System.Guid.Empty : HexPlayer.Get(live).Uuid;
-        var env = new CircleCastingEnvironment(circleWorld, state, ExtractMedia, casterEnv,
-            (msg, mishap) => Display(msg, mishap ? ImpetusDisplay.Mishap : ImpetusDisplay.Print),
-            SetPigment);
-        _vm = CastingVM.Empty(env);
+        _savedImage = null;
+        _vm = BuildVm(new CastingImage());
 
         IsRunning = true;
         ReachedCount = 0;
@@ -509,6 +502,44 @@ public sealed class HexImpetusEntity : ModTileEntity
         DisplayMsg = null;
         DisplayIcon = ImpetusDisplay.None;
         Sync();
+    }
+
+    /// <summary>
+    /// 原版 CircleExecutionState.tick 每一步都 new CircleCastEnv，施法者按 UUID 现找（getCaster：不在线就是 null）。
+    /// 这里同样每一步重建施法环境、镜像接着用 —— 施法者中途下线 / 上线、读档以后接着走都对。
+    /// </summary>
+    private CastingVM BuildVm(CastingImage image)
+    {
+        var live = FindCaster();
+        var circleWorld = new HexSpaceWorld(TerrariaCastingWorld.ForCircle(_minX, _minY, _maxX, _maxY, live));
+
+        // 给法术看的坐标一律是法术坐标（Y 朝上，见 HexSpaceWorld）：上下翻转后，泰拉的 MaxY 变成最小的那个
+        var state = new CircleState
+        {
+            ImpetusX = Position.X,
+            ImpetusY = HexSpaceWorld.BlockY(Position.Y),
+            ImpetusDir = StartDir,
+            YUp = true,
+            MinX = _minX, MinY = HexSpaceWorld.BlockY(_maxY),
+            MaxX = _maxX, MaxY = HexSpaceWorld.BlockY(_minY),
+        };
+
+        var casterEnv = live is null ? null : new PlayerCastingEnvironment(live) { CircleHands = true };
+        var env = new CircleCastingEnvironment(circleWorld, state, ExtractMedia, casterEnv,
+            (msg, mishap) => Display(msg, mishap ? ImpetusDisplay.Mishap : ImpetusDisplay.Print),
+            SetPigment);
+        return new CastingVM(image, env);
+    }
+
+    /// <summary>启动它的人（牧师促动石是绑定的人）现在在不在、活没活着；不在就是没有施法者。</summary>
+    private Player? FindCaster()
+    {
+        if (_casterUuid == System.Guid.Empty) return null;
+        foreach (var p in Main.ActivePlayers)
+        {
+            if (!p.dead && HexPlayer.Get(p).Uuid == _casterUuid) return p;
+        }
+        return null;
     }
 
     // ── 走环 ───────────────────────────────────────────────────────
@@ -532,6 +563,9 @@ public sealed class HexImpetusEntity : ModTileEntity
     /// <summary>走一格。移植自源项目 `CircleExecutionState.tick`。</summary>
     private void StepOnce()
     {
+        _vm = BuildVm(_vm?.Image ?? _savedImage ?? new CastingImage());
+        _savedImage = null;
+
         var world = new TerrariaCircleWorld(Position.X, Position.Y, StartDir);
         var comp = world.GetComponent(CurrentX, CurrentY);
 
@@ -729,6 +763,7 @@ public sealed class HexImpetusEntity : ModTileEntity
     {
         IsRunning = false;
         _vm = null;
+        _savedImage = null;
         _debugEntered = false;
         var hook = DebugHook;
         DebugHook = null;
@@ -831,7 +866,29 @@ public sealed class HexImpetusEntity : ModTileEntity
             tag["pigment"] = PigmentId;
             tag["pigmentOwner"] = PigmentOwner.ToString();
         }
-        // 走环状态**不存档**：世界重载后控制流位置已无意义（原版会存执行状态，这里是有意简化）
+        // 走环状态照原版存档（CircleExecutionState.save）：读档后接着走。2026-10-01 之前不存，重进世界环就停了
+        if (IsRunning && (_vm?.Image ?? _savedImage) is { } image)
+        {
+            var run = new TagCompound
+            {
+                ["x"] = CurrentX,
+                ["y"] = CurrentY,
+                ["from"] = (byte)_enteredFrom,
+                ["reached"] = ReachedCount,
+                ["minX"] = _minX,
+                ["minY"] = _minY,
+                ["maxX"] = _maxX,
+                ["maxY"] = _maxY,
+                ["image"] = Net.CastingImageTag.ToTag(image),
+                ["caster"] = _casterUuid.ToString(),
+            };
+            if (_casterPigment is { } cp)
+            {
+                run["pigment"] = cp.Id;
+                run["pigmentOwner"] = cp.Owner.ToString();
+            }
+            tag["run"] = run;
+        }
     }
 
     public override void LoadData(TagCompound tag)
@@ -844,7 +901,29 @@ public sealed class HexImpetusEntity : ModTileEntity
         BoundName = tag.TryGet("bound", out string name) ? name : null;
         PigmentId = tag.TryGet("pigment", out string pigment) && Core.Media.Pigments.Find(pigment) is not null ? pigment : string.Empty;
         PigmentOwner = tag.TryGet("pigmentOwner", out string owner) && System.Guid.TryParse(owner, out var g) ? g : System.Guid.Empty;
+
         IsRunning = false;
+        _vm = null;
+        _savedImage = null;
+        if (tag.TryGet("run", out TagCompound run))
+        {
+            CurrentX = run.GetInt("x");
+            CurrentY = run.GetInt("y");
+            byte from = run.GetByte("from");
+            _enteredFrom = from <= (byte)CircleDir.Right ? (CircleDir)from : StartDir;
+            ReachedCount = run.GetInt("reached");
+            _minX = run.GetInt("minX");
+            _minY = run.GetInt("minY");
+            _maxX = run.GetInt("maxX");
+            _maxY = run.GetInt("maxY");
+            _savedImage = Net.CastingImageTag.FromTag(run.GetCompound("image"));
+            _casterUuid = System.Guid.TryParse(run.GetString("caster"), out var cu) ? cu : System.Guid.Empty;
+            _casterPigment = run.TryGet("pigment", out string cpid) && Core.Media.Pigments.Find(cpid) is not null
+                ? (cpid, System.Guid.TryParse(run.GetString("pigmentOwner"), out var po) ? po : System.Guid.Empty)
+                : null;
+            _tickCounter = 0;
+            IsRunning = true;
+        }
     }
 
     public override void NetSend(System.IO.BinaryWriter writer)
