@@ -281,6 +281,8 @@
 | `HexDebug/Game/HexDebugSessions.cs` | 玩家用调试杖的调试来历（上游 core api SimplePlayerBasedDebugEnv）：跑完不接着跑；重启 = 用同一串 iota 重新开始。 |
 | `HexDebug/Game/HexDebugText.cs` | HexDebug 的文字（上游 lang 文件的官方译文；调试面板的标签是移植版自己的，跟随游戏语言）。</summary> |
 | `HexDebug/Game/HexDebugView.cs` | 一个调试线程此刻的样子，服务端算好发给本人客户端的游戏内调试面板。 |
+| `HexDebug/Game/Splicing/FocusHolder.cs` | 核心框架（上游 blocks/focusholder/）：在世界里放一个 iota 载体（核心、法术书……）。 |
+| `HexDebug/Game/Splicing/SplicingPatterns.cs` | 剪接台的 16 个图案（上游 casting/actions/splicing/*）：从咒术里读写剪接台的选区、视野、剪贴板、 |
 | `HexDebug/Game/Splicing/SplicingTable.cs` | 剪接台 / 制念台（上游 blocks/splicing/SplicingTableBlock.kt）：1×1，右键打开编辑界面。</summary> |
 | `HexDebug/Game/Splicing/SplicingTableCastEnv.cs` | 制念台施放融注咒术时的施法环境（上游 casting/eval/SplicingTableCastEnv.kt）：施法者还是按下按钮的玩家， |
 | `HexDebug/Game/Splicing/SplicingTableNet.cs` | 剪接台的请求（上游 MsgSplicingTableActionC2S / SelectIndexC2S / NewStaffPatternC2S、制念台的施法按钮； |

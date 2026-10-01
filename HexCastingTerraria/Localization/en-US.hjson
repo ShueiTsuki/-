@@ -29,6 +29,21 @@ Mods: {
 				Stop: "Mode: Stop"
 			}
 
+			FocusHolderItemIs: Item: {0}
+
+			BadBlock: {
+				SplicingTable: expected a splicing table
+				Enlightened: expected a mindsplice table
+				ClipboardRead: expected a splicing table with a readable clipboard item
+				ClipboardWrite: expected a splicing table with a writable clipboard item
+				ClipboardSpellbook: expected a splicing table with a non-empty spellbook in the clipboard slot
+				TableOrHolder: expected a splicing table or focal frame
+				TableOrHolderSpellbook: expected a splicing table or focal frame with a non-empty spellbook in the main slot
+				PositiveOrNull: a positive integer or null
+				PositiveInt: a positive integer
+				IntBetween: an integer between {0} and {1}
+			}
+
 			Splicing: {
 				MediaBar: Media: {0} / {1}
 				NoList: Put a list holder (focus, spellbook...) in the list slot
@@ -174,6 +189,9 @@ Mods: {
 		}
 
 		Items: {
+			FocusHolderItem: {
+				DisplayName: Focal Frame
+			}
 			SplicingTableItem: {
 				DisplayName: Splicing Table
 			}
@@ -750,6 +768,9 @@ Mods: {
 					'''
 			}
 		Tiles: {
+			FocusHolderTile: {
+				MapEntry: Focal Frame
+			}
 			SplicingTableTile: {
 				MapEntry: Splicing Table
 			}

@@ -18,6 +18,25 @@ public static class HexDebugBook
         c = doc.FindCategory("greatwork");
         if (c != null)
         {
+            e = new BookEntry { Id = "greatwork/enlightened_splicing_table", CategoryId = "greatwork", NameKey = "hexdebug.category.greatwork.entry.enlightened_splicing_table", DisplayName = "制念台", IconItem = "EnlightenedSplicingTableItem", SortNum = 0, Advancement = "hexcasting:enlightenment", EntryColor = -1, Priority = false, Secret = false };
+            c.Entries.Add(e);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "$(l:items/splicing_table)$(item)剪接台/$还可以。能堪其任。但有限制，且限制极大。我已$(italic)见到/$它的能力，我必须达到它的极限，无论代价如何。$(br2)我$(l)要/$让剪接台具有思维。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "解决方案。当然。很熟悉——对其无穷的复杂性而言都能说是$(italic)简单/$了。就和我$(l:greatwork/impetus)先前的洞察与领悟一样/$，我可特种化意识——将其从躯体中剥离，重新导向、连接、改造、$(italic)变形/$——令其贴合任务的需求。像是$(l:greatwork/impetus)$(item)促动石/$……但更加卓越，更加复杂，更加更加更加更加更——集、中、精、神。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Brainsweep, Text = "另一种$(l:greatwork/brainsweeping)$(thing)意识剥离/$仪式。它对意识的要求与$(l:greatwork/impetus)$(item)工具匠促动石/$的几乎没有区别，但由于它的功能更为领域和精密，意识也相应需要积累更多的经验。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "所得的$(thing)制念台/$与先前基本一致，但已经过嬗变和$(italic)改进/$，经历了至关重要的变化。制念台的意识能够介导图案，也就能几乎不费吹灰之力施放$(italic)任意/$$(hex)咒术/$；只需要按一下按钮，一切就都能化作现实。$(br)启动这一过程仍需要$(l:items/splicing_table#cost)灌注/$少量媒质——确实浪费，但也许比古代那些过时、短视的设计要好些。法术需要的媒质也会从这里抽取。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "当然，剥离出来的意识也有局限。我必须先$(italic)教会/$它做事；就算是如此熟练的意识，也没法只靠猜谜就猜中我的意图。和$(l:greatwork/impetus)$(item)促动石/$不一样的是，它不需要石板——命令要直接$(l:patterns/enlightened_splicing_table)$(thing)融注/$入它的意识，直接覆写它的神经通路，让它只能随着我的意志做事。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "而为实现更复杂的操作——要是有耐心和$(l:casting/mishaps)气量/$的话，让$(thing)制念台/$控制、$(italic)统领/$、另一个制念台、周而复始、周而复始周而复始周而复始周而复始直到无穷——制念台能小范围延展其影响力（恰好 4 格）。确实不算大，但足够绝大多数情况用了。若是需要更大的范围，可以用我的$(l:patterns/great_spells/greater_sentinel#hexcasting:sentinel/create/great)$(action)卓越哨卫/$。" };
+            e.Pages.Add(p);
+        }
+
+        c = doc.FindCategory("greatwork");
+        if (c != null)
+        {
             e = new BookEntry { Id = "greatwork/quenching_debuggers", CategoryId = "greatwork", NameKey = "hexdebug.category.greatwork.entry.quenching_debuggers", DisplayName = "调试杖的淬灵", IconItem = "QuenchedDebugger", SortNum = 5, Advancement = "hexcasting:enlightenment", EntryColor = -1, Priority = false, Secret = false };
             c.Entries.Add(e);
             p = new BookPage { Kind = BookPageKind.Text, Text = "我的意识已然神化，但我的$(l:items/debugging)工具/$还极为$(italic)低效/$，在卓伟之作的宏大之下愈发脆弱。我需要——不，我$(bold)应得/$——更多。$(br2)悦灵的碎片是改进的绝佳介质。淬灵晶会改变外形、四处跳动，经它们改进的工具也可以——滚动滚轮时按住$(k:sneak)和$(k:sprint)，即可切换当前调试的$(hex)咒术/$槽。" };
@@ -35,6 +54,47 @@ public static class HexDebugBook
         c = doc.FindCategory("items");
         if (c != null)
         {
+            e = new BookEntry { Id = "items/splicing_table", CategoryId = "items", NameKey = "hexdebug.category.items.entry.splicing_table", DisplayName = "剪接台", IconItem = "SplicingTableItem", SortNum = 0, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
+            c.Entries.Add(e);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "我的$(hex)咒术/$日益复杂，修补我自己的失误也愈发耗时。$(l:patterns/patterns_as_iotas#hexcasting:undo)$(action)消隐/$，$(l:patterns/lists#hexcasting:replace)$(action)外科医师之提整/$等图案对简单的替换来说已经足够，但我认为还可精益求精。$(br2)$(l:items/splicing_table)$(item)剪接台/$就是我对这些麻烦的回应：功能完备的工作站，专为查看和编辑$(hex)咒术/$准备。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "开始之前，需将$(l:items/focus)$(item)核心/$等包含列表 iota 的物品放入界面中央。界面会显示列表中的前 9 个 iota。显示栏两侧的箭头可更改显示的区域；也可按住 $(k:sneak) 以按页移动，或按照 $(k:sprint) 以直接移动到开头或结尾。$(br2)如果要和其他人分享$(hex)咒术/$，可以按下右侧的大按钮，将列表内容复制到我的“剪贴板”。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "点击 iota 及 iota 间的空位可选择它们。按住 $(k:sneak) 再次点击则可选择一系列 iota。$(br2)此外，还有按钮专为选择整个列表（$(thing)全选/$）和清空选择区域（$(thing)取消选区/$）。$(br2)选择 iota 能解锁$(l:items/splicing_table)$(item)剪接台/$的真正力量：编辑$(hex)咒术/$。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "只要$(l:items/splicing_table#cost)媒质充足/$，即可执行以下操作：$(li)$(thing)左移/$：将所选 iota 向左移动一格。$(li)$(thing)右移/$：将所选 iota 向右移动一格。$(li)$(thing)删除/$：从列表中移除所选 iota。$(li)$(thing)重复/$：创建所选 iota 的副本。$(li)$(thing)撤销/$：撤回最近一次操作。$(li)$(thing)重做/$：重做$(thing)撤销/$所撤回的操作。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "更高级的操作需要额外存储空间。可在左侧槽位中放入可存储 iota 的物品，以解锁以下操作：$(li)$(thing)复制/$：将所选 iota 作为列表写入辅助物品。$(li)$(thing)剪切/$：与$(thing)复制/$功能一致，不过原本选择的 iota 会被删除。$(li)$(thing)粘贴/$：使用辅助物品中的 iota 覆盖所选的 iota。如果用于覆盖的 iota 是列表，则会粘贴其中内容；按住 $(k:sneak) 可改为粘贴列表本身。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "最后，还可向左下角槽位放入$(l:items/staff)$(item)法杖/$，以显示微缩版的咒术网格。在该网格中绘制的图案会直接插入列表，覆盖选中的 iota。$(br2)右侧还有 6 个通用物品槽。这些槽位没有特殊功能，只是方便存放物品。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "可惜的是，这种强大的功能有其代价。修改物品的 iota 存储空间需要消耗$(media)媒质/$——每次操作消耗大约 1/10 个$(l:items/amethyst)$(item)紫水晶粉/$。$(br2)右下角的槽位可用于向$(l:items/splicing_table)$(item)剪接台/$补充$(media)媒质/$。单次最多可补充 10 个$(l:items/amethyst)$(item)紫水晶粉/$；多出的会被忽略，直至出现足够完全接收新$(media)媒质/$物品的缺口，才会进行消耗。", Anchor = "cost" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "如果这里提到的消耗还是难以承受，或是想要执行比之前提到的更复杂的操作，那就还有一种做法。可以使用$(l:patterns/readwrite_blocks#hexcasting:read/entity)$(action)编年史家之纯化/$等图案操纵主槽位中的事物，我也为此设计了若干$(l:patterns/splicing_table)专用的图案/$，以控制剪接台其他方面的状态。$(br2)接下来的突破点，就在于如何让剪接台自行思考了……" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Crafting, Text = "$(italic)看着她一个接一个接上铭印串，随着她的手指以快得几乎看不见的速度在托盘上舞动，小金属方块飞入飞出。/$", Anchor = "splicing_table", RecipeItem = "SplicingTableItem" };
+            e.Pages.Add(p);
+        }
+
+        c = doc.FindCategory("items");
+        if (c != null)
+        {
+            e = new BookEntry { Id = "items/focus_holder", CategoryId = "items", NameKey = "hexdebug.category.items.entry.focus_holder", DisplayName = "核心框架", IconItem = "FocusHolderItem", SortNum = 0, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
+            c.Entries.Add(e);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "$(l:items/focus)$(item)核心/$可用于在物品栏中存储$(hex)咒术/$和其他 iota，但总有些时候我会需要在世界中存储 iota。$(item)物品展示框/$太脆弱，$(l:greatwork/akashiclib)其他做法/$又太低效而且也……不道德。我需要更优雅的方法，最终成功借助$(item)核心框架/$实现了。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "$(item)核心框架/$自身没有用处，必须先向其放入一个$(l:items/focus)$(item)能存储 iota 的物品/$。可以用物品右击$(item)核心框架/$，也可在物品栏中以类似$(item)收纳袋/$的形式与单个$(item)框架/$交互。空手右击可取出物品。$(br2)物品形态下，装有物品的$(item)核心框架/$可用到任意接受其中物品的$(l:patterns/readwrite#hexcasting:read)图案/$和$(l:items/splicing_table)方块/$中去。放置后，可使用$(l:patterns/readwrite_blocks#hexcasting:read/entity)$(action)编年史家之纯化/$等图案访问。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Crafting, Anchor = "focus_holder", RecipeItem = "FocusHolderItem" };
+            p.RecipeItems.Add("FocusHolderItem");
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "$(italic)两千部电影，四千部专辑，音乐、词句、图片，都仿佛诉说着过去阳光明媚的甜蜜日子。/$" };
+            e.Pages.Add(p);
+        }
+
+        c = doc.FindCategory("items");
+        if (c != null)
+        {
             e = new BookEntry { Id = "items/debugging", CategoryId = "items", NameKey = "hexdebug.category.items.entry.debugging", DisplayName = "调试物品", IconItem = "Debugger", SortNum = 0, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
             c.Entries.Add(e);
             p = new BookPage { Kind = BookPageKind.Text, Text = "部分文献中有些不太明确的描述，称古代人会使用一件奇怪的物品协助他们发现复杂$(hex)咒术/$中的问题。我应已成功复刻出了它，定名为$(item)调试杖/$。$(br2)它的工作方式与$(l:items/hexcasting)$(item)造物/$类似。不过，它还能从副手中的物品（比如$(l:items/focus)$(item)核心/$）里直接施放$(hex)咒术/$。$(br2)有些可惜的是，$(item)调试杖/$自身没有太大用处；而为发挥出它的所有潜能，需要先$(l:https://github.com/object-Object/HexDebug/wiki/Setting-up-VSCode-with-HexDebug)准备好/$某种$(l:https://marketplace.visualstudio.com/items?itemName=object-Object.hex-casting)外部工具/$才能正常运作。" };
@@ -44,6 +104,56 @@ public static class HexDebugBook
             p = new BookPage { Kind = BookPageKind.Text, Text = "我又新制造了一种法杖——$(l:items/debugging#evaluator)$(item)运行杖/$，用以补充$(l:items/debugging#debugger)$(item)调试杖/$的功能。$(br2)调试$(hex)咒术/$时，此法杖绘制的图案会运行于$(l:items/debugging#debugger)$(item)调试杖/$当前的栈和$(l:patterns/readwrite#hexcasting:local)$(thing)渡鸦之思/$。$(br2)清空咒术网格后，$(l:items/debugging#debugger)$(item)调试杖/$似乎会回到$(l:items/debugging#evaluator)$(item)运行杖/$绘制首个图案前的状态。当然，这种操作无法撤回已造成实际影响的法术。" };
             e.Pages.Add(p);
             p = new BookPage { Kind = BookPageKind.Crafting, Text = "$(italic)哐啷！/$", Anchor = "evaluator", RecipeItem = "Evaluator" };
+            e.Pages.Add(p);
+        }
+
+        c = doc.FindCategory("patterns");
+        if (c != null)
+        {
+            e = new BookEntry { Id = "patterns/enlightened_splicing_table", CategoryId = "patterns", NameKey = "hexdebug.category.patterns.entry.enlightened_splicing_table", DisplayName = "制念台图案", IconItem = "EnlightenedSplicingTableItem", SortNum = 0, Advancement = "hexcasting:enlightenment", EntryColor = -1, Priority = false, Secret = false };
+            c.Entries.Add(e);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "融注制念台", Text = "移除栈顶向量和图案列表，将该列表融注到该处$(l:greatwork/enlightened_splicing_table)$(item)制念台/$中。$(br)消耗大约 5 个$(l:items/amethyst)$(item)充能紫水晶/$。", PatternId = "hexdebug:splicing/enlightened/hex/write", Anchor = "hexdebug:splicing/enlightened/hex/write", Input = "vec, list", Output = "" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "制念之纯化", Text = "移除栈顶向量，返回该处$(l:greatwork/enlightened_splicing_table)$(item)制念台/$当前融注的$(hex)咒术/$，若尚未融注则返回 $(thing)Null/$。", PatternId = "hexdebug:splicing/enlightened/hex/read", Anchor = "hexdebug:splicing/enlightened/hex/read", Input = "vec", Output = "list | null" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "在此之外，我还可以在$(l:greatwork/enlightened_splicing_table)$(item)制念台/$中施放$(l:patterns/circle#hexcasting:circle/impetus_pos)$(action)指路石之精思/$和$(l:patterns/circle#hexcasting:circle/impetus_dir)$(action)磁石之精思/$。不过，若是试图用$(l:items/staff)$(item)法杖/$施放，或是在$(l:greatwork/enlightened_splicing_table)$(item)制念台/$中试图施放其他仅限$(l:greatwork/spellcircles)$(item)法术环/$的图案，则仍然会招致可怖的事故。" };
+            e.Pages.Add(p);
+        }
+
+        c = doc.FindCategory("patterns");
+        if (c != null)
+        {
+            e = new BookEntry { Id = "patterns/splicing_table", CategoryId = "patterns", NameKey = "hexdebug.category.patterns.entry.splicing_table", DisplayName = "剪接台图案", IconItem = "SplicingTableItem", SortNum = 0, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
+            c.Entries.Add(e);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "齿孔胶片之纯化", Text = "移除栈顶向量，返回该处$(l:items/splicing_table)$(item)剪接台/$视野最左侧 iota 的索引下标。", PatternId = "hexdebug:splicing/view_index/read", Anchor = "hexdebug:splicing/view_index/read", Input = "vec", Output = "num" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "齿孔胶片之策略", Text = "移除栈顶向量和数，移动该处$(l:items/splicing_table)$(item)剪接台/$的视野，以让所给下标的元素在视野最左侧。", PatternId = "hexdebug:splicing/view_index/write", Anchor = "hexdebug:splicing/view_index/write", Input = "vec, num", Output = "" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "剪接器之分解", Text = "移除栈顶向量，返回代表该处$(l:items/splicing_table)$(item)剪接台/$当前选中区域的两个值。", PatternId = "hexdebug:splicing/selection/read", Anchor = "hexdebug:splicing/selection/read", Input = "vec", Output = "num | null, num | null" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Text, Text = "若选中一定范围的 iota，则返回两个数，分别对应起始（包含）和结束（不包含）位置。如果选中了两 iota 间的边沿，则返回边沿右侧 iota 的索引下标，同时再返回一个 $(thing)Null/$。如果未选中任何东西，则返回两个 $(thing)Null/$。" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "剪接器之策略", Text = "移除栈顶向量和两个值，按照前页描述根据所给的两个值设置该处$(l:items/splicing_table)$(item)剪接台/$的选中区域。", PatternId = "hexdebug:splicing/selection/write", Anchor = "hexdebug:splicing/selection/write", Input = "vec, num | null, num | null", Output = "" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "合成师之纯化", Text = "移除栈顶向量，复制该处$(l:items/splicing_table)$(item)剪接台/$副槽位中物品的存储内容并返回。", PatternId = "hexdebug:splicing/clipboard/read", Anchor = "hexdebug:splicing/clipboard/read", Input = "vec", Output = "any" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "合成师之策略", Text = "移除栈顶向量和 iota，将该 iota 保存至该处$(l:items/splicing_table)$(item)剪接台/$副槽位中的物品。$(br)和$(l:patterns/readwrite_blocks#hexcasting:write/entity)$(action)编年史家之策略/$类似，我不可用此图案写入我的真名。", PatternId = "hexdebug:splicing/clipboard/write", Anchor = "hexdebug:splicing/clipboard/write", Input = "vec, any", Output = "" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "制片人之纯化", Text = "若所给向量处有$(l:items/splicing_table)$(item)剪接台/$，且其副槽位物品可读，则将该向量替换为 $(thing)True/$；否则返回 $(thing)False/$。", PatternId = "hexdebug:splicing/clipboard/readable", Anchor = "hexdebug:splicing/clipboard/readable", Input = "vec", Output = "bool" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "导演之纯化", Text = "若所给向量处有$(l:items/splicing_table)$(item)剪接台/$，且其副槽位物品可写，则将该向量替换为 $(thing)True/$；否则返回 $(thing)False/$。", PatternId = "hexdebug:splicing/clipboard/writable", Anchor = "hexdebug:splicing/clipboard/writable", Input = "vec", Output = "bool" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "放映员之纯化", Text = "移除栈顶向量，返回该处$(l:items/splicing_table)$(item)剪接台/$或$(l:items/focus_holder)$(item)核心框架/$主槽位中$(l:items/spellbook)$(item)法术书/$当前的页码（以 1 起始）。", PatternId = "hexdebug:splicing/list/spellbook_index/read", Anchor = "hexdebug:splicing/list/spellbook_index/read", Input = "vec", Output = "num" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "放映员之策略", Text = "移除栈顶向量和数，将该处$(l:items/splicing_table)$(item)剪接台/$或$(l:items/focus_holder)$(item)核心框架/$主槽位中的$(l:items/spellbook)$(item)法术书/$翻到对应页。", PatternId = "hexdebug:splicing/list/spellbook_index/write", Anchor = "hexdebug:splicing/list/spellbook_index/write", Input = "vec, num", Output = "" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "快门之纯化", Text = "若所给向量处有$(l:items/splicing_table)$(item)剪接台/$或$(l:items/focus_holder)$(item)核心框架/$，且其主槽位中法术书至少有一页记有内容，则将该向量替换为 $(thing)True/$；否则返回 $(thing)False/$。", PatternId = "hexdebug:splicing/list/spellbook_index/readable", Anchor = "hexdebug:splicing/list/spellbook_index/readable", Input = "vec", Output = "bool" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "放映员之纯化，第二型", Text = "与$(l:patterns/splicing_table#hexdebug:splicing/list/spellbook_index/read)$(action)放映员之纯化/$类似，但会读取副槽位中$(l:items/spellbook)$(item)法术书/$当前的页码，而非主槽位。", PatternId = "hexdebug:splicing/clipboard/spellbook_index/read", Anchor = "hexdebug:splicing/clipboard/spellbook_index/read", Input = "vec", Output = "num" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "放映员之策略，第二型", Text = "与$(l:patterns/splicing_table#hexdebug:splicing/list/spellbook_index/write)$(action)放映员之策略/$类似，但会修改副槽位中$(l:items/spellbook)$(item)法术书/$当前的页码，而非主槽位。", PatternId = "hexdebug:splicing/clipboard/spellbook_index/write", Anchor = "hexdebug:splicing/clipboard/spellbook_index/write", Input = "vec, num", Output = "" };
+            e.Pages.Add(p);
+            p = new BookPage { Kind = BookPageKind.Pattern, Title = "快门之纯化，第二型", Text = "与$(l:patterns/splicing_table#hexdebug:splicing/list/spellbook_index/readable)$(action)快门之纯化/$类似，但会检验副槽位中的$(l:items/spellbook)$(item)法术书/$，而非主槽位。", PatternId = "hexdebug:splicing/clipboard/spellbook_index/readable", Anchor = "hexdebug:splicing/clipboard/spellbook_index/readable", Input = "vec", Output = "bool" };
             e.Pages.Add(p);
         }
 

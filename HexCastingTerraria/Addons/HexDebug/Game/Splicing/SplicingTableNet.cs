@@ -44,6 +44,9 @@ internal static class SplicingTableNet
 
     public static void Cast(int x, int y) => Send(HexDebugNet.Msg.SpliceCast, x, y, _ => { });
 
+    /// <summary>核心框架：客户端换下来的东西（手上的那件已经在客户端换好了，和泰拉箱子一样）。</summary>
+    public static void SetFocusHolder(int x, int y, Item item) => Send(HexDebugNet.Msg.FocusHolderSet, x, y, w => ItemIO.Send(item, w, writeStack: true));
+
     public static void HandleServer(HexDebugNet.Msg msg, BinaryReader r, Player player)
     {
         int x = r.ReadInt16();
@@ -84,6 +87,12 @@ internal static class SplicingTableNet
             case HexDebugNet.Msg.SpliceCast:
                 if (te is not null && InReach(player, x, y)) te.CastHex(player);
                 break;
+            case HexDebugNet.Msg.FocusHolderSet:
+            {
+                var item = ItemIO.Receive(r, readStack: true);
+                if (FocusHolderEntity.FindAt(x, y) is { } holder && InReach(player, x, y)) holder.SetItem(item);
+                break;
+            }
         }
     }
 

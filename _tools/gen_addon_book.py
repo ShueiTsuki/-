@@ -20,11 +20,9 @@ ADDONS = os.path.join(base.ROOT, 'tmod/HexCastingTerraria/Addons')
 BOOK_PREFIX = 'assets/hexcasting/patchouli_books/thehexbook/en_us/'
 
 # 附属 id -> (目录名, 中文语言文件在 jar 里的路径, 只取这些条目（None = 全部）)
-# HexDebug 分两批：先是调试（调试杖、运行杖、断点等），剪接台 / 核心框架的条目随剪接台一起加
 SPECS = {
     'hexparse': ('HexParse', 'assets/hexparse/lang/zh_cn.json', None),
-    'hexdebug': ('HexDebug', 'assets/hexdebug/lang/zh_cn.json',
-                 {'items/debugging', 'patterns/debugging', 'greatwork/quenching_debuggers'}),
+    'hexdebug': ('HexDebug', 'assets/hexdebug/lang/zh_cn.json', None),
 }
 
 # 附属书页里新出现的图标（MC 物品 -> 泰拉对应物），合并进本体的映射
@@ -34,6 +32,9 @@ EXTRA_ITEMS = {
     'hexdebug:quenched_debugger': 'QuenchedDebugger',
     'hexdebug:evaluator': 'Evaluator',
     'hexdebug:quenched_evaluator': 'QuenchedEvaluator',
+    'hexdebug:splicing_table': 'SplicingTableItem',
+    'hexdebug:enlightened_splicing_table': 'EnlightenedSplicingTableItem',
+    'hexdebug:focus_holder': 'FocusHolderItem',
 }
 
 

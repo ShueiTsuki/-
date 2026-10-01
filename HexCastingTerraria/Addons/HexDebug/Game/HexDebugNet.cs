@@ -34,6 +34,7 @@ internal static class HexDebugNet
         SpliceSelect = 6,
         SpliceDraw = 7,
         SpliceCast = 8,
+        FocusHolderSet = 9,
 
         // 服务端 → 客户端
         View = 10,
@@ -127,6 +128,7 @@ internal static class HexDebugNet
             case Msg.SpliceSelect:
             case Msg.SpliceDraw:
             case Msg.SpliceCast:
+            case Msg.FocusHolderSet:
                 Splicing.SplicingTableNet.HandleServer(msg, r, player);
                 break;
         }

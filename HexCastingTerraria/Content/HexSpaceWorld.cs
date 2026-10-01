@@ -221,4 +221,7 @@ public sealed class HexSpaceWorld : ICastingWorld
 
     /// <summary>法术位置 y → 泰拉图格 y（连续值）。</summary>
     public static double TileY(double hexY) => H - hexY;
+
+    /// <summary>法术坐标里一个方块位置 → 泰拉图格（附属的方块类图案用，例如 HexDebug 的剪接图案）。</summary>
+    public static (int X, int Y) TileOf(double x, double y) => ((int)System.Math.Floor(x), (int)System.Math.Floor(InY(y)));
 }

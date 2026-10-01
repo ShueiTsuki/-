@@ -102,6 +102,12 @@ public sealed class Spellbook : ItemIotaStorage, IHexVariantItem
     /// <summary>密封当前页（原版 setSealed(stack, true)）。</summary>
     public void SealCurrentPage() => _sealed = new HashSet<int>(_sealed) { GetPage(1) };
 
+    /// <summary>整本都是空的（原版 arePagesEmpty）。</summary>
+    public bool ArePagesEmpty => _pages.Count == 0;
+
+    /// <summary>直接选中某一页（HexDebug 放映员之策略：上游直接写 TAG_SELECTED_PAGE）。</summary>
+    public void SelectPage(int index) => _selected = System.Math.Clamp(index, 0, MaxPages);
+
     /// <summary>原版 rotatePageIdx：空白书停在 0；否则 ±1，最小 1，最大 64（不回卷）。返回新页码。</summary>
     public int RotatePage(bool increase)
     {

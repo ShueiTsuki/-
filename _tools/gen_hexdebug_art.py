@@ -54,4 +54,7 @@ tile_sheet([block('splicing_table/front.png')], 'SplicingTable.png')
 item_icon(block('splicing_table/front.png'), 'SplicingTableItem.png')
 tile_sheet([block('enlightened_splicing_table/front/dim.png'), block('enlightened_splicing_table/front/lit.png')], 'EnlightenedSplicingTable.png')
 item_icon(block('enlightened_splicing_table/front/dim.png'), 'EnlightenedSplicingTableItem.png')
-print('wrote', len(NAMES) + 4, 'files to', OUT)
+# 核心框架：空 / 装着东西两帧
+tile_sheet([block('focus_holder/empty.png'), block('focus_holder/full.png')], 'FocusHolder.png')
+item_icon(block('focus_holder/empty.png'), 'FocusHolderItem.png')
+print('wrote', len(NAMES) + 6, 'files to', OUT)

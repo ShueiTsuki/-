@@ -26,6 +26,21 @@ Mods: {
 				Stop: 模式：停止
 			}
 
+			FocusHolderItemIs: 物品：{0}
+
+			BadBlock: {
+				SplicingTable: 需要一个剪接台
+				Enlightened: 需要一个制念台
+				ClipboardRead: 需要放有可读副物品的剪接台
+				ClipboardWrite: 需要放有可写副物品的剪接台
+				ClipboardSpellbook: 需要副物品槽中有非空法术书的剪接台
+				TableOrHolder: 需要一个剪接台或核心框架
+				TableOrHolderSpellbook: 需要主物品槽中有非空法术书的剪接台或核心框架
+				PositiveOrNull: 一个正整数或Null
+				PositiveInt: 一个正整数
+				IntBetween: 一个介于{0}和{1}之间的整数
+			}
+
 			Splicing: {
 				MediaBar: 媒质：{0} / {1}
 				NoList: 列表槽里放一个能存列表的物品（核心、法术书……）
@@ -171,6 +186,9 @@ Mods: {
 		}
 
 		Items: {
+			FocusHolderItem: {
+				DisplayName: 核心框架
+			}
 			SplicingTableItem: {
 				DisplayName: 剪接台
 			}
@@ -738,6 +756,9 @@ Mods: {
 					'''
 			}
 			Tiles: {
+			FocusHolderTile: {
+				MapEntry: 核心框架
+			}
 			SplicingTableTile: {
 				MapEntry: 剪接台
 			}
