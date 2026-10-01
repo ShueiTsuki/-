@@ -40,9 +40,9 @@ public sealed class HexPlayer : ModPlayer
                 // 原版：媒质立方 = 取之不尽的媒质瓶（getMedia = Long.MAX_VALUE、扣了也不少）
                 list.Add(new MediaSource { Slot = i, Priority = MediaPriority.Battery, Stored = long.MaxValue });
             }
-            else if (item.ModItem is Items.MediaMaterial material)
+            else if (Items.MediaItems.TryGet(item, out long unit, out int priority))
             {
-                list.Add(new MediaSource { Slot = i, Priority = material.Priority, UnitValue = material.MediaValue, Count = item.stack });
+                list.Add(new MediaSource { Slot = i, Priority = priority, UnitValue = unit, Count = item.stack });
             }
         }
         return list;

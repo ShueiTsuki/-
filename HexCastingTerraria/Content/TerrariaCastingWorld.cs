@@ -1484,12 +1484,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     {
         var w = GroundItem(itemEntity);
         if (w is null) return 0;
-        return w.ModItem switch
-        {
-            Items.MediaMaterial m => m.MediaValue * w.stack,
-            Items.MediaFlask f when !forBattery => f.Media,
-            _ => 0,
-        };
+        if (Items.MediaItems.TryGet(w, out long unit, out _)) return unit * w.stack;
+        return w.ModItem is Items.MediaFlask f && !forBattery ? f.Media : 0;
     }
 
     /// <summary>
@@ -1503,21 +1499,19 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (w is null) return 0;
         Item item = w;
         long got;
-        switch (item.ModItem)
+        if (Items.MediaItems.TryGet(item, out long unit, out _))
         {
-            case Items.MediaMaterial m:
-            {
-                long unit = m.MediaValue;
-                int used = cost < 0 ? item.stack : (int)System.Math.Min((cost + unit - 1) / unit, item.stack);
-                item.stack -= used;
-                got = used * unit;
-                break;
-            }
-            case Items.MediaFlask f when !forBattery:
-                got = f.Withdraw(cost < 0 ? f.Media : cost);
-                break;
-            default:
-                return 0;
+            int used = cost < 0 ? item.stack : (int)System.Math.Min((cost + unit - 1) / unit, item.stack);
+            item.stack -= used;
+            got = used * unit;
+        }
+        else if (item.ModItem is Items.MediaFlask f && !forBattery)
+        {
+            got = f.Withdraw(cost < 0 ? f.Media : cost);
+        }
+        else
+        {
+            return 0;
         }
         if (item.stack <= 0)
         {
@@ -1691,7 +1685,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             tile.TileType = (ushort)recipe.ResultTile;
             tile.TileFrameX = 0;
             tile.TileFrameY = 0;
-            // 自动选帧的实心方块（阿卡夏记录、母岩、淬灵块）要重新算一次帧，否则和四周接不上
+            // 自动选帧的实心方块（阿卡夏记录、母岩、淬灵晶块）要重新算一次帧，否则和四周接不上
             if (!Main.tileFrameImportant[recipe.ResultTile]) WorldGen.SquareTileFrame(tx, ty);
 
             if (Main.netMode == Terraria.ID.NetmodeID.Server)

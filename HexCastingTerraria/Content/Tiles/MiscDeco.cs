@@ -69,19 +69,19 @@ public abstract class WallDeco : ModTile
     public override void NumDust(int i, int j, bool fail, ref int num) => num = fail ? 1 : 3;
 }
 
-/// <summary>卷轴纸。对应源项目 `hexcasting:scroll_paper`。纯装饰。</summary>
+/// <summary>纸卷轴。对应源项目 `hexcasting:scroll_paper`。纯装饰。</summary>
 public sealed class ScrollPaper : WallDeco
 {
     protected override Color MapColor => new(226, 214, 186);
 }
 
-/// <summary>古卷轴纸。对应源项目 `hexcasting:ancient_scroll_paper`。</summary>
+/// <summary>远古纸卷轴。对应源项目 `hexcasting:ancient_scroll_paper`。</summary>
 public sealed class AncientScrollPaper : WallDeco
 {
     protected override Color MapColor => new(206, 196, 158);
 }
 
-/// <summary>卷轴纸灯笼。对应源项目 `hexcasting:scroll_paper_lantern`，会发光。</summary>
+/// <summary>纸灯笼。对应源项目 `hexcasting:scroll_paper_lantern`，会发光。</summary>
 public sealed class ScrollPaperLantern : WallDeco
 {
     protected override Color MapColor => new(240, 226, 186);
@@ -89,7 +89,7 @@ public sealed class ScrollPaperLantern : WallDeco
     protected override (float, float, float) LightColor => (0.62f, 0.56f, 0.40f);
 }
 
-/// <summary>古卷轴纸灯笼。对应源项目 `hexcasting:ancient_scroll_paper_lantern`。</summary>
+/// <summary>远古纸灯笼。对应源项目 `hexcasting:ancient_scroll_paper_lantern`。</summary>
 public sealed class AncientScrollPaperLantern : WallDeco
 {
     protected override Color MapColor => new(220, 208, 160);

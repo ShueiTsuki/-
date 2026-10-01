@@ -10,21 +10,24 @@ namespace HexCastingTerraria.Content.Items;
 // 全部复用 <see cref="HexDecoBlockItem"/> 的行为（贴图复用方块那张）。
 // 这里每个类只声明「我是哪个方块 + 我稀有度多少 + 我怎么合成」。
 
-/// <summary>卷轴纸（物品）。</summary>
+/// <summary>纸卷轴（物品）。</summary>
 public sealed class ScrollPaperItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<ScrollPaper>();
 
     public override void AddRecipes()
     {
-        CreateRecipe(4)
-            .AddIngredient(ItemID.Silk, 1)
+        // 源 HexplatRecipes ringAll(纸, 紫水晶碎片)：8 纸围一个碎片 → 8。泰拉没有纸，同卷轴用丝绸代替。
+        // 这里曾经是 1 丝绸 → 4、没有碎片，2026-10-01 照原版改。
+        CreateRecipe(8)
+            .AddIngredient(ItemID.Silk, 8)
+            .AddIngredient<AmethystShard>(1)
             .AddTile(TileID.WorkBenches)
             .Register();
     }
 }
 
-/// <summary>古卷轴纸（物品）。</summary>
+/// <summary>远古纸卷轴（物品）。</summary>
 public sealed class AncientScrollPaperItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AncientScrollPaper>();
@@ -39,7 +42,7 @@ public sealed class AncientScrollPaperItem : HexDecoBlockItem
     }
 }
 
-/// <summary>卷轴纸灯笼（物品）。</summary>
+/// <summary>纸灯笼（物品）。</summary>
 public sealed class ScrollPaperLanternItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<ScrollPaperLantern>();
@@ -54,7 +57,7 @@ public sealed class ScrollPaperLanternItem : HexDecoBlockItem
     }
 }
 
-/// <summary>古卷轴纸灯笼（物品）。</summary>
+/// <summary>远古纸灯笼（物品）。</summary>
 public sealed class AncientScrollPaperLanternItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AncientScrollPaperLantern>();

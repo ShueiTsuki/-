@@ -27,23 +27,22 @@ public sealed class SplicingTableCastEnv : PlayerCastingEnvironment
         long left = _table.WithdrawForCast(cost, simulate);
         if (left <= 0) return 0;
         var item = _table.Slots[SplicingTableEntity.SlotMedia];
-        switch (item.ModItem)
+        if (item.ModItem is MediaFlask flask)
         {
-            case MediaFlask flask:
-                long have = System.Math.Min(left, flask.Media);
-                if (!simulate) flask.Withdraw(have);
-                left -= have;
-                break;
-            case MediaMaterial mat:
-                // 原版：静态媒质物品按整个扣，多出来的浪费掉
-                int need = (int)System.Math.Min(item.stack, (left + mat.MediaValue - 1) / mat.MediaValue);
-                if (!simulate)
-                {
-                    item.stack -= need;
-                    if (item.stack <= 0) item.TurnToAir();
-                }
-                left -= need * mat.MediaValue;
-                break;
+            long have = System.Math.Min(left, flask.Media);
+            if (!simulate) flask.Withdraw(have);
+            left -= have;
+        }
+        else if (MediaItems.TryGet(item, out long unit, out _))
+        {
+            // 原版：静态媒质物品按整个扣，多出来的浪费掉
+            int need = (int)System.Math.Min(item.stack, (left + unit - 1) / unit);
+            if (!simulate)
+            {
+                item.stack -= need;
+                if (item.stack <= 0) item.TurnToAir();
+            }
+            left -= need * unit;
         }
         return System.Math.Max(0, left);
     }

@@ -232,28 +232,9 @@ public abstract class AmethystGrowth : ModTile
 
     /// <summary>
     /// 是谁拿着镐在挖这一格（原版的「工具合格」= 用镐挖它本身）。爆炸、法术、贴着的方块没了 → null（按没用对工具掉）。
-    /// 单机 / 本地客户端看本人瞄着的格子；服务端不知道别人瞄着哪儿，就找附近正在挥镐的玩家。
+    /// 怎么认见 <see cref="TileMiner.Find"/>（淬灵晶块也用它）。
     /// </summary>
-    private static Player? Miner(int i, int j)
-    {
-        if (_brokenBySupportLoss) return null;
-        var center = new Vector2(i * 16 + 8, j * 16 + 8);
-        if (Main.netMode != NetmodeID.Server)
-        {
-            var p = Main.LocalPlayer;
-            return p is { active: true, dead: false } && p.itemAnimation > 0 && IsPickaxe(p.HeldItem)
-                   && Player.tileTargetX == i && Player.tileTargetY == j ? p : null;
-        }
-        Player? best = null;
-        float bestD = 16f * 12f;
-        foreach (var p in Main.ActivePlayers)
-        {
-            if (p.dead || p.itemAnimation <= 0 || !IsPickaxe(p.HeldItem)) continue;
-            float d = Vector2.Distance(p.Center, center);
-            if (d < bestD) { best = p; bestD = d; }
-        }
-        return best;
-    }
+    private static Player? Miner(int i, int j) => _brokenBySupportLoss ? null : TileMiner.Find(i, j);
 
     /// <summary>
     /// 掉落。**芽阶段不掉任何东西** —— 提前敲掉就白等一轮生长。
@@ -310,10 +291,6 @@ public abstract class AmethystGrowth : ModTile
                 ModContent.ItemType<Items.AmethystShard>(), loot.Shards);
         }
     }
-
-    /// <summary>是否镐类工具。源项目的「工具合格」判定即 `cluster_max_harvestables` 标签。</summary>
-    internal static bool IsPickaxe(Item item)
-        => !item.IsAir && item.pick > 0;
 }
 
 /// <summary>小芽。</summary>

@@ -182,6 +182,13 @@ Mods: {
 			}
 		}
 
+		Prefixes: {
+			Resonant: {
+				DisplayName: 共振
+				Effect: 挖淬灵晶块时掉方块本身，相当于精准采集
+			}
+		}
+
 		Conditions: {
 			Enlightened: 已获得启迪
 			Sealable: 背包里第一件同类物品存着东西、还没密封
@@ -415,16 +422,16 @@ Mods: {
 				DisplayName: 大型挂轴框
 			}
 			ScrollPaperItem: {
-				DisplayName: 卷轴纸
+				DisplayName: 纸卷轴
 			}
 			ScrollPaperLanternItem: {
-				DisplayName: 卷轴纸灯笼
+				DisplayName: 纸灯笼
 			}
 			AncientScrollPaperItem: {
-				DisplayName: 远古卷轴纸
+				DisplayName: 远古纸卷轴
 			}
 			AncientScrollPaperLanternItem: {
-				DisplayName: 远古卷轴纸灯笼
+				DisplayName: 远古纸灯笼
 			}
 			AkashicBookshelfItem: {
 				DisplayName: 阿卡夏书架
@@ -433,7 +440,7 @@ Mods: {
 				DisplayName: 阿卡夏桥接块
 			}
 			AmethystSconceItem: {
-				DisplayName: 紫晶烛台
+				DisplayName: 紫水晶灯台
 			}
 			SlateBlockItem: {
 				DisplayName: 板岩块
@@ -445,7 +452,7 @@ Mods: {
 				DisplayName: 板岩砖
 			}
 			SlateBricksSmallItem: {
-				DisplayName: 小板岩砖
+				DisplayName: 板岩小型砖
 			}
 			SlatePillarItem: {
 				DisplayName: 板岩柱
@@ -457,49 +464,49 @@ Mods: {
 				DisplayName: 板岩紫晶砖
 			}
 			SlateAmethystBricksSmallItem: {
-				DisplayName: 小板岩紫晶砖
+				DisplayName: 板岩紫晶小型砖
 			}
 			SlateAmethystPillarItem: {
 				DisplayName: 板岩紫晶柱
 			}
 			AmethystTilesItem: {
-				DisplayName: 紫晶瓦
+				DisplayName: 紫水晶瓦
 			}
 			AmethystBricksItem: {
-				DisplayName: 紫晶砖
+				DisplayName: 紫水晶砖
 			}
 			AmethystBricksSmallItem: {
-				DisplayName: 小紫晶砖
+				DisplayName: 紫水晶小型砖
 			}
 			AmethystPillarItem: {
-				DisplayName: 紫晶柱
+				DisplayName: 紫水晶柱
 			}
 			QuenchedAllayItem: {
-				DisplayName: 淬灵块
+				DisplayName: 淬灵晶块
 			}
 			QuenchedAllayTilesItem: {
-				DisplayName: 淬灵瓦
+				DisplayName: 淬灵晶瓦
 			}
 			QuenchedAllayBricksItem: {
-				DisplayName: 淬灵砖
+				DisplayName: 淬灵晶砖
 			}
 			QuenchedAllayBricksSmallItem: {
-				DisplayName: 小淬灵砖
+				DisplayName: 淬灵晶小型砖
 			}
 			EdifiedLogItem: {
 				DisplayName: 启迪原木
 			}
 			EdifiedLogAmethystItem: {
-				DisplayName: 紫晶启迪原木
+				DisplayName: 晶紫启迪原木
 			}
 			EdifiedLogAventurineItem: {
-				DisplayName: 东陵启迪原木
+				DisplayName: 砂蓝启迪原木
 			}
 			EdifiedLogCitrineItem: {
-				DisplayName: 黄晶启迪原木
+				DisplayName: 晶黄启迪原木
 			}
 			EdifiedLogPurpleItem: {
-				DisplayName: 紫启迪原木
+				DisplayName: 紫色启迪原木
 			}
 			StrippedEdifiedLogItem: {
 				DisplayName: 去皮启迪原木
@@ -514,19 +521,19 @@ Mods: {
 				DisplayName: 启迪木板
 			}
 			EdifiedPanelItem: {
-				DisplayName: 启迪木面板
+				DisplayName: 启迪木块
 			}
 			EdifiedTileItem: {
-				DisplayName: 启迪木瓷砖
+				DisplayName: 启迪木方砖
 			}
 			AmethystEdifiedLeavesItem: {
-				DisplayName: 紫晶启迪树叶
+				DisplayName: 晶紫启迪树叶
 			}
 			AventurineEdifiedLeavesItem: {
-				DisplayName: 东陵启迪树叶
+				DisplayName: 砂蓝启迪树叶
 			}
 			CitrineEdifiedLeavesItem: {
-				DisplayName: 黄晶启迪树叶
+				DisplayName: 晶黄启迪树叶
 			}
 			DevStaff: {
 				DisplayName: 咒法学开发者法杖
@@ -797,7 +804,7 @@ Mods: {
 				MapEntry: 启迪木压力板
 			}
 			AmethystSconce: {
-				MapEntry: 紫晶烛台
+				MapEntry: 紫水晶灯台
 			}
 			AkashicRecord: {
 				MapEntry: 阿卡夏记录
@@ -812,16 +819,16 @@ Mods: {
 				MapEntry: 紫水晶粉块
 			}
 			ScrollPaper: {
-				MapEntry: 卷轴纸
+				MapEntry: 纸卷轴
 			}
 			ScrollPaperLantern: {
-				MapEntry: 卷轴纸灯笼
+				MapEntry: 纸灯笼
 			}
 			AncientScrollPaper: {
-				MapEntry: 远古卷轴纸
+				MapEntry: 远古纸卷轴
 			}
 			AncientScrollPaperLantern: {
-				MapEntry: 远古卷轴纸灯笼
+				MapEntry: 远古纸灯笼
 			}
 			WallScrollSmall: {
 				MapEntry: 小型挂轴
@@ -842,7 +849,7 @@ Mods: {
 				MapEntry: 板岩砖
 			}
 			SlateBricksSmall: {
-				MapEntry: 小板岩砖
+				MapEntry: 板岩小型砖
 			}
 			SlatePillar: {
 				MapEntry: 板岩柱
@@ -854,49 +861,49 @@ Mods: {
 				MapEntry: 板岩紫晶砖
 			}
 			SlateAmethystBricksSmall: {
-				MapEntry: 小板岩紫晶砖
+				MapEntry: 板岩紫晶小型砖
 			}
 			SlateAmethystPillar: {
 				MapEntry: 板岩紫晶柱
 			}
 			AmethystTiles: {
-				MapEntry: 紫晶瓦
+				MapEntry: 紫水晶瓦
 			}
 			AmethystBricks: {
-				MapEntry: 紫晶砖
+				MapEntry: 紫水晶砖
 			}
 			AmethystBricksSmall: {
-				MapEntry: 小紫晶砖
+				MapEntry: 紫水晶小型砖
 			}
 			AmethystPillar: {
-				MapEntry: 紫晶柱
+				MapEntry: 紫水晶柱
 			}
 			QuenchedAllay: {
-				MapEntry: 淬灵块
+				MapEntry: 淬灵晶块
 			}
 			QuenchedAllayTiles: {
-				MapEntry: 淬灵瓦
+				MapEntry: 淬灵晶瓦
 			}
 			QuenchedAllayBricks: {
-				MapEntry: 淬灵砖
+				MapEntry: 淬灵晶砖
 			}
 			QuenchedAllayBricksSmall: {
-				MapEntry: 小淬灵砖
+				MapEntry: 淬灵晶小型砖
 			}
 			EdifiedLog: {
 				MapEntry: 启迪原木
 			}
 			EdifiedLogAmethyst: {
-				MapEntry: 紫晶启迪原木
+				MapEntry: 晶紫启迪原木
 			}
 			EdifiedLogAventurine: {
-				MapEntry: 东陵启迪原木
+				MapEntry: 砂蓝启迪原木
 			}
 			EdifiedLogCitrine: {
-				MapEntry: 黄晶启迪原木
+				MapEntry: 晶黄启迪原木
 			}
 			EdifiedLogPurple: {
-				MapEntry: 紫启迪原木
+				MapEntry: 紫色启迪原木
 			}
 			StrippedEdifiedLog: {
 				MapEntry: 去皮启迪原木
@@ -911,19 +918,19 @@ Mods: {
 				MapEntry: 启迪木板
 			}
 			EdifiedPanel: {
-				MapEntry: 启迪木面板
+				MapEntry: 启迪木块
 			}
 			EdifiedTile: {
-				MapEntry: 启迪木瓷砖
+				MapEntry: 启迪木方砖
 			}
 			AmethystEdifiedLeaves: {
-				MapEntry: 紫晶启迪树叶
+				MapEntry: 晶紫启迪树叶
 			}
 			AventurineEdifiedLeaves: {
-				MapEntry: 东陵启迪树叶
+				MapEntry: 砂蓝启迪树叶
 			}
 			CitrineEdifiedLeaves: {
-				MapEntry: 黄晶启迪树叶
+				MapEntry: 晶黄启迪树叶
 			}
 			ConjuredBlock: {
 				MapEntry: 召唤方块

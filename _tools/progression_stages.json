@@ -39,7 +39,7 @@
       "AmethystBricksItem": "源 432 stoneSet",
       "AmethystBricksSmallItem": "源 432 stoneSet",
       "AmethystPillarItem": "源 432 stoneSet",
-      "SlateAmethystTilesItem": "源 441-459：板岩瓦 + 紫晶瓦 → 2（shapeless 混料，四条并列）",
+      "SlateAmethystTilesItem": "源 441-459：板岩瓦 + 紫水晶瓦 → 2（shapeless 混料，四条并列）",
       "SlateAmethystBricksItem": "源 441-459 混料",
       "SlateAmethystBricksSmallItem": "源 441-459 混料",
       "SlateAmethystPillarItem": "源 441-459 混料",
@@ -78,10 +78,10 @@
       "ScrollSmall": "源 215-220：纸 ×1 + 粉 ×1",
       "ScrollMedium": "源 222-228：纸 ×4 + 粉 ×1",
       "ScrollLarge": "源 230-236：纸 ×8 + 粉 ×1",
-      "ScrollPaperItem": "源 287 ringAll(纸, 紫水晶碎片)：8 纸 + 1 碎片 → 8 卷轴纸",
-      "AncientScrollPaperItem": "源 290-293：棕色染料 + 卷轴纸 ×8 → 8",
-      "ScrollPaperLanternItem": "源 295-296 stack(卷轴纸, 火把)",
-      "AncientScrollPaperLanternItem": "源 298-305：古卷轴纸 + 火把 / 棕色染料染色",
+      "ScrollPaperItem": "源 287 ringAll(纸, 紫水晶碎片)：8 纸 + 1 碎片 → 8 纸卷轴；移植版丝绸代纸",
+      "AncientScrollPaperItem": "源 290-293：棕色染料 + 纸卷轴 ×8 → 8",
+      "ScrollPaperLanternItem": "源 295-296 stack(纸卷轴, 火把)",
+      "AncientScrollPaperLanternItem": "源 298-305：远古纸卷轴 + 火把 / 棕色染料染色",
       "AmethystSconceItem": "源 307-310 stack：充能紫水晶 + 铜锭 → 4",
       "WallScrollFrameSmall": "源项目无对应物：泰拉侧为「可放置的壁挂卷轴」补的框，纯肉前木工活",
       "WallScrollFrameMedium": "同上",
@@ -136,7 +136,6 @@
     },
     "肉后": {
       "ChargedAmethyst": "源：只能从晶洞里的紫水晶簇掉落，咒法师自己捏不出 → 泰拉另加一条：水晶球（肉后巫师卖）旁 10 粉换 1 个（用户定）；晶洞里照样能挖到",
-      "QuenchedAllayItem": "淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除小精灵 Pixie —— 神圣地肉后敌怪，用户定的进度 —— 要启蒙）",
       "QuenchedAllayTilesItem": "源 433 stoneSet（这一族没有柱）",
       "QuenchedAllayBricksItem": "源 433 stoneSet",
       "QuenchedAllayBricksSmallItem": "源 433 stoneSet",
@@ -152,12 +151,19 @@
       "AmethystPlanterItem": "移植版新增（用户定，原版没有）：原版紫水晶只靠母岩再生、母岩要脑叶切除（启蒙大法术）；这里用肉后的光明 / 暗影之魂代替被切除的心智，同样要求启蒙 → 秘银砧 + 已启蒙",
       "HexImpetusEmptyItem": "源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书）",
       "HexDirectrixEmptyItem": "源 400-408：同样挂 enlightenment → 秘银砧 + 已启蒙；比较器/观察者 → 电线（泰拉红石本体）",
-      "HexDirectrixItemBase": "布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一",
-      "HexDirectrixBooleanItem": "同 HexDirectrixItemBase（配方继承自基类的 RegisterRecipe）",
-      "HexDirectrixRedstoneItem": "同 HexDirectrixItemBase",
       "AkashicBookshelfItem": "源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment → 秘银砧 + 已启蒙",
       "AkashicLigatureItem": "源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment → 秘银砧 + 已启蒙",
       "MindspliceStaff": "源 91：这一把的「W」槽是 MINDFLAYED_CIRCLE_COMPONENTS，即脑叶切除产物"
     }
+  },
+  "brainsweepOnly": {
+    "_comment": "原版只能剥离意识（脑叶切除，启蒙大战法术）得到、没有合成配方的东西。它们不进 entries（那里只放有配方的），但算「肉后 · 启蒙」这一档的材料；也不许有合成配方（检查会报错）。",
+    "HexDirectrixBooleanItem": "空白导向石 + 牧羊人（移植版：染料商）",
+    "HexDirectrixRedstoneItem": "空白导向石 + 石匠（移植版：爆破专家）",
+    "HexImpetusItem": "空白促动石 + 工具匠（移植版：哥布林工匠）",
+    "HexImpetusLookItem": "空白促动石 + 制箭师（移植版：军火商）",
+    "HexImpetusRedstoneItem": "空白促动石 + 牧师（移植版：护士）",
+    "AkashicRecordItem": "阿卡夏桥接块 + 5 级图书管理员（移植版：巫师）",
+    "QuenchedAllayItem": "紫水晶块 + 悦灵（移植版：紫水晶粉块 + 小精灵），挖要共振镐"
   }
 }

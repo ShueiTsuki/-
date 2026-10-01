@@ -2541,6 +2541,26 @@ static class Program
                 $"{proper.Shards} / {improper.Shards} / {lucky.Shards}");
         }
         {
+            // 淬灵晶块（原版 quenchedPool）：均匀 2~4 片，再按时运 0.25 / 0.5 / 0.75 / 1.0 的概率多 1 片
+            double seen0 = -1, seen3 = -1, seen9 = -1;
+            int low = QuenchedLoot.RollShards(0, n => 0, p => { seen0 = p; return false; });
+            int high = QuenchedLoot.RollShards(3, n => n - 1, p => { seen3 = p; return true; });
+            QuenchedLoot.RollShards(9, n => 0, p => { seen9 = p; return false; });
+            var rng = new System.Random(4242);
+            int min = int.MaxValue, max = int.MinValue;
+            for (int i = 0; i < 4000; i++)
+            {
+                int k = QuenchedLoot.RollShards(rng.Next(5), n => rng.Next(n), p => rng.NextDouble() < p);
+                min = System.Math.Min(min, k);
+                max = System.Math.Max(max, k);
+            }
+            Check("淬灵晶块：最少 2 片、最多 5 片；多 1 片的概率按时运查表（0 -> 0.25，3 及以上 -> 1.0）",
+                low == 2 && high == 5 && min == 2 && max == 5
+                && System.Math.Abs(seen0 - 0.25) < 1e-9 && System.Math.Abs(seen3 - 1.0) < 1e-9 && System.Math.Abs(seen9 - 1.0) < 1e-9
+                && System.Math.Abs(QuenchedLoot.BonusChance(1) - 0.5) < 1e-9 && System.Math.Abs(QuenchedLoot.BonusChance(2) - 0.75) < 1e-9,
+                $"{low}/{high} 模拟 [{min},{max}] 概率 {seen0}/{seen3}/{seen9}");
+        }
+        {
             // 镐力 → 时运等级映射：分档边界
             bool ok = AmethystLoot.FortuneFromPickaxePower(35) == 0
                    && AmethystLoot.FortuneFromPickaxePower(99) == 0

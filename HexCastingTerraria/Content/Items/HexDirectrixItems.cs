@@ -46,28 +46,6 @@ public abstract class HexDirectrixItemBase : ModItem
         Item.rare = ItemRarityID.LightPurple;
         Item.value = Item.sellPrice(silver: 15);
     }
-
-    /// <summary>
-    /// 公共配方：以**空导线**为底加料。
-    ///
-    /// 源项目里这两个变体是「脑叶切除」的产物
-    /// （`brainsweep/directrix_boolean` = 空导线 + 牧羊人村民 ×1，
-    ///   `brainsweep/directrix_redstone` = 空导线 + 石匠村民 ×1），
-    /// 而脑叶切除在 `HexActionTagProvider` 的启蒙名单里 —— 是**大战法术**。
-    /// 整族因此锁在肉后（秘银砧）+ 已启蒙。
-    ///
-    /// 泰拉没有村民可供切除，用宝石定语义：钻石=布尔、红宝石=红石，
-    /// 和本模组的颜料体系（宝石定色）一致。
-    /// </summary>
-    protected void RegisterRecipe(int extraType, int extraCount)
-    {
-        CreateRecipe()
-            .AddIngredient<HexDirectrixEmptyItem>(1)
-            .AddIngredient(extraType, extraCount)
-            .AddTile(TileID.MythrilAnvil)       // 秘银砧 / 山铜砧（肉后）
-            .AddCondition(HexConditions.Enlightened)
-            .Register();
-    }
 }
 
 /// <summary>
@@ -115,8 +93,8 @@ public sealed class HexDirectrixBooleanItem : HexDirectrixItemBase
     public override int TileType => ModContent.TileType<HexDirectrixBoolean>();
     protected override string TextureName => "HexDirectrixBoolean";
 
-    // 用确定存在的基础物品，不去猜罕见的逻辑门 ID
-    public override void AddRecipes() => RegisterRecipe(ItemID.Diamond, 1);
+    // 没有合成配方：原版只能对放在世界里的空白导向石剥离意识（牧羊人，移植版对应染料商）得到，见 HexCastingTerraria.ConfigureBrainsweepRecipes。
+    // 这里曾经另给了「空白导向石 + 钻石」的合成，2026-10-01 照原版去掉。
 }
 
 /// <summary>
@@ -130,5 +108,6 @@ public sealed class HexDirectrixRedstoneItem : HexDirectrixItemBase
     public override int TileType => ModContent.TileType<HexDirectrixRedstone>();
     protected override string TextureName => "HexDirectrixRedstone";
 
-    public override void AddRecipes() => RegisterRecipe(ItemID.Ruby, 1);
+    // 没有合成配方：原版只能对放在世界里的空白导向石剥离意识（石匠，移植版对应爆破专家）得到。
+    // 这里曾经另给了「空白导向石 + 红宝石」的合成，2026-10-01 照原版去掉。
 }

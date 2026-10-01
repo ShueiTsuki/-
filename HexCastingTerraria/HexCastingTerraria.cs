@@ -156,7 +156,7 @@ namespace HexCastingTerraria
                 // 原版：阿卡夏桥接块 + 5 级图书管理员 → 记录方块（泰拉没有图书管理员，对应巫师）
                 new Core.Casting.Actions.BrainsweepRecipe(akashicLigature, wizard, akashicRecord, none, crystal10),
 
-                // 原版：紫水晶块 + 悦灵 → **淬灵块**（方块，敲掉掉 2~4 片碎片），1 晶体。
+                // 原版：紫水晶块 + 悦灵 → **淬灵晶块**（方块，敲掉掉 2~5 片碎片，精准采集 / 共振镐掉方块本身），1 晶体。
                 // 泰拉的悦灵 = **小精灵（Pixie）**：神圣地的精灵，肉后才有 —— 用户按进度特意定的，淬灵线整条落在肉后
                 //（与法术环「肉后 · 启蒙」同一档）。按 netID 匹配（它不是城镇 NPC）。
                 // 这里曾经写成 TownNpcSpecies(粉妖精)：城镇 NPC 编码配小动物，**这条配方永远匹配不上**；产物也错成了碎片物品。

@@ -398,7 +398,7 @@ public sealed class HexImpetusEntity : ModTileEntity
 
     /// <summary>能塞进促动石的东西：媒质材料、媒质之瓶（原版 extractMedia(stack, drainForBatteries = true) > 0）。</summary>
     public static bool IsMediaItem(Item item)
-        => !item.IsAir && (item.ModItem is Items.MediaMaterial || item.ModItem is Items.MediaFlask { Media: > 0 }
+        => !item.IsAir && (Items.MediaItems.Is(item) || item.ModItem is Items.MediaFlask { Media: > 0 }
                            || item.ModItem is Items.CreativeUnlocker);
 
     /// <summary>
@@ -417,12 +417,12 @@ public sealed class HexImpetusEntity : ModTileEntity
                 PlayerEffects.ConsumeSlot(p, slot, 1);
                 Media = -1;
                 break;
-            case Items.MediaMaterial m:
+            case var _ when Items.MediaItems.TryGet(item, out long unit, out _):
             {
-                int n = (int)System.Math.Min(item.stack, room / m.MediaValue);
+                int n = (int)System.Math.Min(item.stack, room / unit);
                 if (n <= 0) return;
                 PlayerEffects.ConsumeSlot(p, slot, n);
-                Media += n * m.MediaValue;
+                Media += n * unit;
                 break;
             }
             case Items.MediaFlask f:

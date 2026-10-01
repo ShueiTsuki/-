@@ -185,6 +185,13 @@ Mods: {
 			}
 		}
 
+		Prefixes: {
+			Resonant: {
+				DisplayName: Resonant
+				Effect: Mines Quenched Allay blocks intact, as Silk Touch would
+			}
+		}
+
 		Conditions: {
 			Sealable: The first one of this item in your inventory holds something and is not sealed
 			Enlightened: Enlightened

@@ -30,17 +30,28 @@ public abstract class HexDecoBlock : ModTile
     /// <summary>是否阻挡光线（树叶这类不该挡）。</summary>
     protected virtual bool BlocksLight => true;
 
+    /// <summary>发出的光，null = 不发光（原版淬灵晶系亮度 4）。</summary>
+    protected virtual Vector3? LightColor => null;
+
     public override void SetStaticDefaults()
     {
         Main.tileSolid[Type] = true;
         Main.tileBlockLight[Type] = BlocksLight;
         Main.tileMergeDirt[Type] = false;
-        Main.tileLighted[Type] = false;
+        Main.tileLighted[Type] = LightColor is not null;
 
         MinPick = RequiredPick;
         DustType = BlockDust;
         HitSound = SoundID.Tink;
         AddMapEntry(MapColor);
+    }
+
+    public override void ModifyLight(int i, int j, ref float r, ref float g, ref float b)
+    {
+        if (LightColor is not { } c) return;
+        r = c.X;
+        g = c.Y;
+        b = c.Z;
     }
 }
 
@@ -132,13 +143,13 @@ public sealed class SlateBricksItem : HexDecoBlockItem
     }
 }
 
-/// <summary>小板岩砖。对应源项目 `hexcasting:slate_bricks_small`。</summary>
+/// <summary>板岩小型砖。对应源项目 `hexcasting:slate_bricks_small`。</summary>
 public sealed class SlateBricksSmall : HexDecoBlock
 {
     protected override Color MapColor => new(82, 76, 98);
 }
 
-/// <summary>小板岩砖（物品形态）。</summary>
+/// <summary>板岩小型砖（物品形态）。</summary>
 public sealed class SlateBricksSmallItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<SlateBricksSmall>();
@@ -238,13 +249,13 @@ public sealed class SlateAmethystBricksItem : HexDecoBlockItem
     }
 }
 
-/// <summary>小板岩紫晶砖。对应源项目 `hexcasting:slate_amethyst_bricks_small`。</summary>
+/// <summary>板岩紫晶小型砖。对应源项目 `hexcasting:slate_amethyst_bricks_small`。</summary>
 public sealed class SlateAmethystBricksSmall : HexDecoBlock
 {
     protected override Color MapColor => new(104, 88, 118);
 }
 
-/// <summary>小板岩紫晶砖（物品形态）。</summary>
+/// <summary>板岩紫晶小型砖（物品形态）。</summary>
 public sealed class SlateAmethystBricksSmallItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<SlateAmethystBricksSmall>();
@@ -286,13 +297,13 @@ public sealed class SlateAmethystPillarItem : HexDecoBlockItem
     }
 }
 
-/// <summary>紫晶瓦。对应源项目 `hexcasting:amethyst_tiles`。</summary>
+/// <summary>紫水晶瓦。对应源项目 `hexcasting:amethyst_tiles`。</summary>
 public sealed class AmethystTiles : HexDecoBlock
 {
     protected override Color MapColor => new(138, 112, 176);
 }
 
-/// <summary>紫晶瓦（物品形态）。</summary>
+/// <summary>紫水晶瓦（物品形态）。</summary>
 public sealed class AmethystTilesItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AmethystTiles>();
@@ -315,13 +326,13 @@ public sealed class AmethystTilesItem : HexDecoBlockItem
     }
 }
 
-/// <summary>紫晶砖。对应源项目 `hexcasting:amethyst_bricks`。</summary>
+/// <summary>紫水晶砖。对应源项目 `hexcasting:amethyst_bricks`。</summary>
 public sealed class AmethystBricks : HexDecoBlock
 {
     protected override Color MapColor => new(144, 118, 182);
 }
 
-/// <summary>紫晶砖（物品形态）。</summary>
+/// <summary>紫水晶砖（物品形态）。</summary>
 public sealed class AmethystBricksItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AmethystBricks>();
@@ -350,13 +361,13 @@ public sealed class AmethystBricksItem : HexDecoBlockItem
     }
 }
 
-/// <summary>小紫晶砖。对应源项目 `hexcasting:amethyst_bricks_small`。</summary>
+/// <summary>紫水晶小型砖。对应源项目 `hexcasting:amethyst_bricks_small`。</summary>
 public sealed class AmethystBricksSmall : HexDecoBlock
 {
     protected override Color MapColor => new(150, 124, 188);
 }
 
-/// <summary>小紫晶砖（物品形态）。</summary>
+/// <summary>紫水晶小型砖（物品形态）。</summary>
 public sealed class AmethystBricksSmallItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AmethystBricksSmall>();
@@ -379,13 +390,13 @@ public sealed class AmethystBricksSmallItem : HexDecoBlockItem
     }
 }
 
-/// <summary>紫晶柱。对应源项目 `hexcasting:amethyst_pillar`。</summary>
+/// <summary>紫水晶柱。对应源项目 `hexcasting:amethyst_pillar`。</summary>
 public sealed class AmethystPillar : HexDecoBlock
 {
     protected override Color MapColor => new(140, 114, 178);
 }
 
-/// <summary>紫晶柱（物品形态）。</summary>
+/// <summary>紫水晶柱（物品形态）。</summary>
 public sealed class AmethystPillarItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AmethystPillar>();
@@ -408,38 +419,32 @@ public sealed class AmethystPillarItem : HexDecoBlockItem
     }
 }
 
-/// <summary>淬灵块。对应源项目 `hexcasting:quenched_allay`。</summary>
+/// <summary>淬灵晶块。对应源项目 `hexcasting:quenched_allay`。</summary>
 public sealed class QuenchedAllay : HexDecoBlock
 {
     protected override Color MapColor => new(104, 168, 178);
     protected override int RequiredPick => 1;
+    protected override Vector3? LightColor => new(0.16f, 0.12f, 0.24f);
 }
 
-/// <summary>淬灵块（物品形态）。</summary>
+/// <summary>淬灵晶块（物品形态）。</summary>
 public sealed class QuenchedAllayItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<QuenchedAllay>();
     protected override int ItemRarity => ItemRarityID.Pink;
 
-    public override void AddRecipes()
-    {
-        // 源：淬灵块只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片，精准采集才掉方块本身。泰拉没有精准采集：用 4 片（掉落上限）换一块代替，敲了再合不会多出碎片
-        CreateRecipe()
-            .AddIngredient<QuenchedAllayShard>(4)
-            .AddTile(TileID.WorkBenches)
-            .Register();
-
-    }
+    // 没有合成配方：源项目这一项也不是合成的（见 _tools/gen_deco_blocks.ps1 的配方表）
 }
 
-/// <summary>淬灵瓦。对应源项目 `hexcasting:quenched_allay_tiles`。</summary>
+/// <summary>淬灵晶瓦。对应源项目 `hexcasting:quenched_allay_tiles`。</summary>
 public sealed class QuenchedAllayTiles : HexDecoBlock
 {
     protected override Color MapColor => new(108, 174, 184);
     protected override int RequiredPick => 1;
+    protected override Vector3? LightColor => new(0.16f, 0.12f, 0.24f);
 }
 
-/// <summary>淬灵瓦（物品形态）。</summary>
+/// <summary>淬灵晶瓦（物品形态）。</summary>
 public sealed class QuenchedAllayTilesItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<QuenchedAllayTiles>();
@@ -462,14 +467,15 @@ public sealed class QuenchedAllayTilesItem : HexDecoBlockItem
     }
 }
 
-/// <summary>淬灵砖。对应源项目 `hexcasting:quenched_allay_bricks`。</summary>
+/// <summary>淬灵晶砖。对应源项目 `hexcasting:quenched_allay_bricks`。</summary>
 public sealed class QuenchedAllayBricks : HexDecoBlock
 {
     protected override Color MapColor => new(112, 180, 190);
     protected override int RequiredPick => 1;
+    protected override Vector3? LightColor => new(0.16f, 0.12f, 0.24f);
 }
 
-/// <summary>淬灵砖（物品形态）。</summary>
+/// <summary>淬灵晶砖（物品形态）。</summary>
 public sealed class QuenchedAllayBricksItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<QuenchedAllayBricks>();
@@ -498,14 +504,15 @@ public sealed class QuenchedAllayBricksItem : HexDecoBlockItem
     }
 }
 
-/// <summary>小淬灵砖。对应源项目 `hexcasting:quenched_allay_bricks_small`。</summary>
+/// <summary>淬灵晶小型砖。对应源项目 `hexcasting:quenched_allay_bricks_small`。</summary>
 public sealed class QuenchedAllayBricksSmall : HexDecoBlock
 {
     protected override Color MapColor => new(116, 186, 196);
     protected override int RequiredPick => 1;
+    protected override Vector3? LightColor => new(0.16f, 0.12f, 0.24f);
 }
 
-/// <summary>小淬灵砖（物品形态）。</summary>
+/// <summary>淬灵晶小型砖（物品形态）。</summary>
 public sealed class QuenchedAllayBricksSmallItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<QuenchedAllayBricksSmall>();
@@ -552,14 +559,14 @@ public sealed class EdifiedLogItem : HexDecoBlockItem
     }
 }
 
-/// <summary>紫晶启迪原木。对应源项目 `hexcasting:edified_log_amethyst`。</summary>
+/// <summary>晶紫启迪原木。对应源项目 `hexcasting:edified_log_amethyst`。</summary>
 public sealed class EdifiedLogAmethyst : HexDecoBlock
 {
     protected override Color MapColor => new(100, 84, 78);
     protected override int BlockDust => DustID.WoodFurniture;
 }
 
-/// <summary>紫晶启迪原木（物品形态）。</summary>
+/// <summary>晶紫启迪原木（物品形态）。</summary>
 public sealed class EdifiedLogAmethystItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<EdifiedLogAmethyst>();
@@ -577,14 +584,14 @@ public sealed class EdifiedLogAmethystItem : HexDecoBlockItem
     }
 }
 
-/// <summary>东陵启迪原木。对应源项目 `hexcasting:edified_log_aventurine`。</summary>
+/// <summary>砂蓝启迪原木。对应源项目 `hexcasting:edified_log_aventurine`。</summary>
 public sealed class EdifiedLogAventurine : HexDecoBlock
 {
     protected override Color MapColor => new(94, 90, 68);
     protected override int BlockDust => DustID.WoodFurniture;
 }
 
-/// <summary>东陵启迪原木（物品形态）。</summary>
+/// <summary>砂蓝启迪原木（物品形态）。</summary>
 public sealed class EdifiedLogAventurineItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<EdifiedLogAventurine>();
@@ -602,14 +609,14 @@ public sealed class EdifiedLogAventurineItem : HexDecoBlockItem
     }
 }
 
-/// <summary>黄晶启迪原木。对应源项目 `hexcasting:edified_log_citrine`。</summary>
+/// <summary>晶黄启迪原木。对应源项目 `hexcasting:edified_log_citrine`。</summary>
 public sealed class EdifiedLogCitrine : HexDecoBlock
 {
     protected override Color MapColor => new(104, 92, 62);
     protected override int BlockDust => DustID.WoodFurniture;
 }
 
-/// <summary>黄晶启迪原木（物品形态）。</summary>
+/// <summary>晶黄启迪原木（物品形态）。</summary>
 public sealed class EdifiedLogCitrineItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<EdifiedLogCitrine>();
@@ -627,14 +634,14 @@ public sealed class EdifiedLogCitrineItem : HexDecoBlockItem
     }
 }
 
-/// <summary>紫启迪原木。对应源项目 `hexcasting:edified_log_purple`。</summary>
+/// <summary>紫色启迪原木。对应源项目 `hexcasting:edified_log_purple`。</summary>
 public sealed class EdifiedLogPurple : HexDecoBlock
 {
     protected override Color MapColor => new(92, 80, 74);
     protected override int BlockDust => DustID.WoodFurniture;
 }
 
-/// <summary>紫启迪原木（物品形态）。</summary>
+/// <summary>紫色启迪原木（物品形态）。</summary>
 public sealed class EdifiedLogPurpleItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<EdifiedLogPurple>();
@@ -748,14 +755,14 @@ public sealed class EdifiedPlanksItem : HexDecoBlockItem
     }
 }
 
-/// <summary>启迪木面板。对应源项目 `hexcasting:edified_panel`。</summary>
+/// <summary>启迪木块。对应源项目 `hexcasting:edified_panel`。</summary>
 public sealed class EdifiedPanel : HexDecoBlock
 {
     protected override Color MapColor => new(138, 124, 98);
     protected override int BlockDust => DustID.WoodFurniture;
 }
 
-/// <summary>启迪木面板（物品形态）。</summary>
+/// <summary>启迪木块（物品形态）。</summary>
 public sealed class EdifiedPanelItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<EdifiedPanel>();
@@ -772,14 +779,14 @@ public sealed class EdifiedPanelItem : HexDecoBlockItem
     }
 }
 
-/// <summary>启迪木瓷砖。对应源项目 `hexcasting:edified_tile`。</summary>
+/// <summary>启迪木方砖。对应源项目 `hexcasting:edified_tile`。</summary>
 public sealed class EdifiedTile : HexDecoBlock
 {
     protected override Color MapColor => new(142, 128, 102);
     protected override int BlockDust => DustID.WoodFurniture;
 }
 
-/// <summary>启迪木瓷砖（物品形态）。</summary>
+/// <summary>启迪木方砖（物品形态）。</summary>
 public sealed class EdifiedTileItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<EdifiedTile>();
@@ -796,7 +803,7 @@ public sealed class EdifiedTileItem : HexDecoBlockItem
     }
 }
 
-/// <summary>紫晶启迪树叶。对应源项目 `hexcasting:amethyst_edified_leaves`。</summary>
+/// <summary>晶紫启迪树叶。对应源项目 `hexcasting:amethyst_edified_leaves`。</summary>
 public sealed class AmethystEdifiedLeaves : HexDecoBlock
 {
     protected override Color MapColor => new(122, 100, 150);
@@ -804,7 +811,7 @@ public sealed class AmethystEdifiedLeaves : HexDecoBlock
     protected override bool BlocksLight => false;
 }
 
-/// <summary>紫晶启迪树叶（物品形态）。</summary>
+/// <summary>晶紫启迪树叶（物品形态）。</summary>
 public sealed class AmethystEdifiedLeavesItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AmethystEdifiedLeaves>();
@@ -822,7 +829,7 @@ public sealed class AmethystEdifiedLeavesItem : HexDecoBlockItem
     }
 }
 
-/// <summary>东陵启迪树叶。对应源项目 `hexcasting:aventurine_edified_leaves`。</summary>
+/// <summary>砂蓝启迪树叶。对应源项目 `hexcasting:aventurine_edified_leaves`。</summary>
 public sealed class AventurineEdifiedLeaves : HexDecoBlock
 {
     protected override Color MapColor => new(112, 122, 96);
@@ -830,7 +837,7 @@ public sealed class AventurineEdifiedLeaves : HexDecoBlock
     protected override bool BlocksLight => false;
 }
 
-/// <summary>东陵启迪树叶（物品形态）。</summary>
+/// <summary>砂蓝启迪树叶（物品形态）。</summary>
 public sealed class AventurineEdifiedLeavesItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AventurineEdifiedLeaves>();
@@ -848,7 +855,7 @@ public sealed class AventurineEdifiedLeavesItem : HexDecoBlockItem
     }
 }
 
-/// <summary>黄晶启迪树叶。对应源项目 `hexcasting:citrine_edified_leaves`。</summary>
+/// <summary>晶黄启迪树叶。对应源项目 `hexcasting:citrine_edified_leaves`。</summary>
 public sealed class CitrineEdifiedLeaves : HexDecoBlock
 {
     protected override Color MapColor => new(134, 120, 88);
@@ -856,7 +863,7 @@ public sealed class CitrineEdifiedLeaves : HexDecoBlock
     protected override bool BlocksLight => false;
 }
 
-/// <summary>黄晶启迪树叶（物品形态）。</summary>
+/// <summary>晶黄启迪树叶（物品形态）。</summary>
 public sealed class CitrineEdifiedLeavesItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<CitrineEdifiedLeaves>();

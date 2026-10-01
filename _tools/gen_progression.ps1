@@ -123,13 +123,24 @@ foreach ($k in $declared.Keys) {
 $gateStage = '肉后 · 启蒙'
 $gated = @{}
 foreach ($p in $cfg.entries.$gateStage.PSObject.Properties) { $gated[$p.Name] = $true }
+# 只能剥离意识得到的东西（progression_stages.json 的 brainsweepOnly）也算这一档的材料（剥离意识是启蒙大战法术），
+# 但它们自己不能有合成配方 —— 牧羊人 / 石匠导向石曾经就多了一条（2026-10-01 去掉）
+$gatedMaterials = @{}
+foreach ($k in $gated.Keys) { $gatedMaterials[$k] = $true }
+if ($cfg.brainsweepOnly) {
+    foreach ($p in $cfg.brainsweepOnly.PSObject.Properties) {
+        if ($p.Name -eq '_comment') { continue }
+        $gatedMaterials[$p.Name] = $true
+        if ($inventory.Contains($p.Name)) { $errors.Add("只能剥离意识得到的 $($p.Name) 有了合成配方（原版没有）") }
+    }
+}
 foreach ($cls in @($gated.Keys)) {
     if (-not $inventory.Contains($cls)) { continue }
     $tiles = ($inventory[$cls] | ForEach-Object { $_.Tile }) -join ' '
     $ing   = ($inventory[$cls] | ForEach-Object { $_.Ing }) -join ' '
     if ($tiles -match 'MythrilAnvil' -and $tiles -match '已启蒙') { continue }
     $byMaterial = $false
-    foreach ($k in $gated.Keys) {
+    foreach ($k in $gatedMaterials.Keys) {
         if ($k -ne $cls -and $ing -match [regex]::Escape($k)) { $byMaterial = $true; break }
     }
     if (-not $byMaterial) {

@@ -216,7 +216,7 @@ public sealed class SplicingTableEntity : AddonTileEntity
     public static bool CanPlace(int slot, Item item) => item.IsAir || slot switch
     {
         SlotList or SlotClipboard => item.ModItem is ItemIotaStorage,
-        SlotMedia => item.ModItem is MediaMaterial or MediaFlask,
+        SlotMedia => MediaItems.Is(item) || item.ModItem is MediaFlask,
         SlotStaff => item.ModItem is HexStaff,
         _ => true,
     };
@@ -309,19 +309,18 @@ public sealed class SplicingTableEntity : AddonTileEntity
     {
         if (_isCasting || Media >= MaxMedia) return;
         var item = Slots[SlotMedia];
-        switch (item.ModItem)
+        if (MediaItems.TryGet(item, out long unit, out _))
         {
-            case MediaMaterial mat:
-                while (item.stack > 0 && Media + mat.MediaValue <= MaxMedia)
-                {
-                    item.stack--;
-                    Media += mat.MediaValue;
-                }
-                if (item.stack <= 0) item.TurnToAir();
-                break;
-            case MediaFlask flask:
-                Media += flask.Withdraw(MaxMedia - Media);
-                break;
+            while (item.stack > 0 && Media + unit <= MaxMedia)
+            {
+                item.stack--;
+                Media += unit;
+            }
+            if (item.stack <= 0) item.TurnToAir();
+        }
+        else if (item.ModItem is MediaFlask flask)
+        {
+            Media += flask.Withdraw(MaxMedia - Media);
         }
     }
 

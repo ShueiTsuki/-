@@ -20,10 +20,10 @@ public static class MediaConstants
     /// <summary>晶体：10 粉。</summary>
     public const long CrystalUnit = 10 * DustUnit;
 
-    /// <summary>淬灵碎晶：3 晶体。</summary>
+    /// <summary>淬灵晶碎片：3 个充能紫水晶。</summary>
     public const long QuenchedShardUnit = 3 * CrystalUnit;
 
-    /// <summary>淬灵方块：4 淬灵碎晶。</summary>
+    /// <summary>淬灵晶块：4 片淬灵晶碎片。</summary>
     public const long QuenchedBlockUnit = 4 * QuenchedShardUnit;
 
 
@@ -32,19 +32,19 @@ public static class MediaConstants
     {
         if (media >= QuenchedBlockUnit)
         {
-            return $"{media / (double)QuenchedBlockUnit:0.##} 淬灵块";
+            return $"{media / (double)QuenchedBlockUnit:0.##} 淬灵晶块";
         }
         if (media >= QuenchedShardUnit)
         {
-            return $"{media / (double)QuenchedShardUnit:0.##} 淬灵碎晶";
+            return $"{media / (double)QuenchedShardUnit:0.##} 淬灵晶碎片";
         }
         if (media >= CrystalUnit)
         {
-            return $"{media / (double)CrystalUnit:0.##} 晶体";
+            return $"{media / (double)CrystalUnit:0.##} 充能紫水晶";
         }
         if (media >= DustUnit)
         {
-            return $"{media / (double)DustUnit:0.##} 粉";
+            return $"{media / (double)DustUnit:0.##} 紫水晶粉";
         }
         return media.ToString();
     }

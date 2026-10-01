@@ -147,6 +147,7 @@
 | `World/AmethystLoot.cs` | 晶簇的生长阶段。对应 MC 的四个方块。</summary> |
 | `World/HexAxes.cs` | 法术坐标（原版约定：方块单位、+Y 朝上）与泰拉图格坐标（+Y 朝下）之间的换算公式。 |
 | `World/LookResolver.cs` | 视线解析的输入。 |
+| `World/QuenchedLoot.cs` | 淬灵晶块的掉落（源项目 datagen/HexLootTables.java 的 quenchedPool），纯逻辑，离线可测。 |
 | `World/SegmentSweep.cs` | 一个实体的判定箱，坐标单位：**图格**。 |
 | `World/TileRaycast.cs` | 二维图格网格上的射线求交（Amanatides &amp; Woo 的 DDA 算法）。 |
 
@@ -183,8 +184,9 @@
 | `Items/ItemStateArt.cs` | 按物品**实例**的状态换贴图（原版的 item model overrides + 叠层着色）。 |
 | `Items/JewelerHammer.cs` | 珠宝匠锤。对应源项目 `hexcasting:jeweler_hammer`。 |
 | `Items/MediaFlask.cs` | 媒质瓶（源项目 ItemMediaBattery，「媒质之瓶 / phial of media」）。 |
+| `Items/MediaItems.cs` | 按整件算媒质的物品（源项目 ADMediaHolder 的静态持有者）：紫水晶粉、紫水晶碎片、充能紫水晶、淬灵晶碎片（<see cref="MediaMaterial"/>）， |
 | `Items/MediaMaterials.cs` | 媒质材料物品的基类（源项目 CCMediaHolder.Static）。 |
-| `Items/MiscDecoItems.cs` | 卷轴纸（物品）。</summary> |
+| `Items/MiscDecoItems.cs` | 纸卷轴（物品）。</summary> |
 | `Items/PackagedSpellCast.cs` | 打包法术专用环境：媒质**从物品自己的池子里扣**，不是从玩家身上。 |
 | `Items/PigmentItem.cs` | 颜料（染色剂）。移植自源项目 <c>common/items/pigment/*</c>： |
 | `Items/PigmentItems.Generated.cs` | 35 种颜料（原版 ItemDyePigment ×16、ItemPridePigment ×16、空无 / 远古 / 灵魂闪光）。 |
@@ -200,6 +202,7 @@
 | `PerWorldPatternSystem.cs` | 大法术「每个世界的笔顺」的存档与同步（源项目 ScrungledPatternsSave）。 |
 | `PlayerCastingEnvironment.cs` | 玩家施法环境：把 VM 的抽象需求接到泰拉玩家身上。 |
 | `PlayerEffects.cs` | 作用在「玩家自己的东西」上的效果：生命、背包、手持物品、氧气。 |
+| `Prefixes/Resonant.cs` | 「共振」：镐子专属的前缀（移植版新增，用户 2026-10-01 定），代替原版的精准采集附魔 —— 泰拉没有附魔。 |
 | `SpellSounds.cs` | 咒法学的音效层。 |
 | `SpellVisuals.cs` | 法术粒子的表现层：把 Core 算出来的 <see cref="ParticleSpray"/> 变成真正的 dust。 |
 | `TerrariaCastingWorld.cs` | <see cref="ICastingWorld"/> 的泰拉瑞亚实现。 |
@@ -218,8 +221,9 @@
 | `Tiles/HexImpetus.cs` | 法术环对泰拉世界的访问实现。 |
 | `Tiles/HexSlate.cs` | 石板。对应源项目 `hexcasting:slate` —— **法术环的「指令」**。 |
 | `Tiles/MiscDeco.cs` | 贴在墙上的装饰/光源方块的公共实现。 |
-| `Tiles/QuenchedAllayDrops.cs` | 淬灵块的掉落（原版 loot_tables/blocks/quenched_allay.json）： |
+| `Tiles/QuenchedAllayGlobal.cs` | 淬灵晶系方块照原版（BlockQuenchedAllay 与掉落表 quenched_allay.json）。放在 GlobalTile 里是因为这几个类由脚本生成 |
 | `Tiles/TileEntityRepair.cs` | 补上缺的图格实体。 |
+| `Tiles/TileMiner.cs` | 是谁拿着镐在挖这一格。掉落要看「用没用对工具」、时运（镐力换算）、共振前缀的方块都靠它： |
 | `Tiles/WallScroll.cs` | 壁挂卷轴。对应源项目的 `EntityWallScroll`。 |
 | `WorldDisplayNames.cs` | 事故消息里要报的世界上的名字：那一格方块叫什么（上游 Mishap.blockAtPos）、地上那堆物品是什么有几个（上游 MishapBadItem）。 |
 | `Worldgen/GeodeWorldGen.cs` | 紫水晶晶洞的世界生成。 |

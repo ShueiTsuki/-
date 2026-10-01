@@ -8,7 +8,7 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **127** 个可合成物品。
+共 **123** 个可合成物品。
 
 ## 肉前（106 项）
 
@@ -39,7 +39,7 @@
 | `AmethystBricksSmallItem` | 1 | 〔HexRecipeGroups.AmethystBlocks〕×1 | HeavyWorkBench | 源 432 stoneSet |
 | `AmethystPillarItem` | 2 | AmethystDustBlockItem×2 | WorkBenches | 源 432 stoneSet |
 | `AmethystPillarItem` | 1 | 〔HexRecipeGroups.AmethystBlocks〕×1 | HeavyWorkBench | 源 432 stoneSet |
-| `SlateAmethystTilesItem` | 2 | SlateTilesItem×1 + AmethystTilesItem×1 | WorkBenches | 源 441-459：板岩瓦 + 紫晶瓦 → 2（shapeless 混料，四条并列） |
+| `SlateAmethystTilesItem` | 2 | SlateTilesItem×1 + AmethystTilesItem×1 | WorkBenches | 源 441-459：板岩瓦 + 紫水晶瓦 → 2（shapeless 混料，四条并列） |
 | `SlateAmethystBricksItem` | 2 | SlateBricksItem×1 + AmethystBricksItem×1 | WorkBenches | 源 441-459 混料 |
 | `SlateAmethystBricksSmallItem` | 2 | SlateBricksSmallItem×1 + AmethystBricksSmallItem×1 | WorkBenches | 源 441-459 混料 |
 | `SlateAmethystPillarItem` | 2 | SlatePillarItem×1 + AmethystPillarItem×1 | WorkBenches | 源 441-459 混料 |
@@ -72,17 +72,17 @@
 | `Focus` | 1 | ChargedAmethyst×1 + FallenStar×4 + Silk×4 | WorkBenches | 源 98-117：萤石粉 ×4 + 皮革 ×2 + 纸 ×2 + 充能紫水晶 ×1 |
 | `ThoughtKnot` | 1 | AmethystDust×1 + Silk×1 | Loom | 源 93-97：粉 ×1 + 线 ×1（徒手；泰拉用织布机） |
 | `ThoughtKnot` | 1 | Hive×1 | WorkBenches | 源 93-97：粉 ×1 + 线 ×1（徒手；泰拉用织布机） |
-| `Abacus` | 1 | Amethyst×2 + 〔RecipeGroupID.Wood〕×6 | WorkBenches | 源 156-163 "WAW"/"SAS"/"WAW"：木板 ×4 + 紫水晶碎片 ×2 + 木棍 ×2 |
+| `Abacus` | 1 | AmethystShard×2 + 〔RecipeGroupID.Wood〕×6 | WorkBenches | 源 156-163 "WAW"/"SAS"/"WAW"：木板 ×4 + 紫水晶碎片 ×2 + 木棍 ×2 |
 | `Cypher` | 1 | AmethystDust×1 + CopperBar×4 | WorkBenches | 源 131-135 ringCornerless：铜锭 ×4 + 粉 ×1 |
 | `Trinket` | 1 | AmethystShard×1 + 〔RecipeGroupID.IronBar〕×4 | Anvils | 源 137-141 ringCornerless：铁锭 ×4 + 紫水晶碎片 ×1 |
 | `Artifact` | 1 | ChargedAmethyst×1 + GoldBar×4 + Diamond×1 | Anvils | 源 143-151：金锭 ×4 + 充能紫水晶 ×1 + 唱片 ×1（唱片 → 泰拉用钻石代替） |
 | `ScrollSmall` | 1 | AmethystDust×1 + Silk×1 | WorkBenches | 源 215-220：纸 ×1 + 粉 ×1 |
 | `ScrollMedium` | 1 | AmethystDust×1 + Silk×4 | WorkBenches | 源 222-228：纸 ×4 + 粉 ×1 |
 | `ScrollLarge` | 1 | AmethystDust×1 + Silk×8 | WorkBenches | 源 230-236：纸 ×8 + 粉 ×1 |
-| `ScrollPaperItem` | 4 | Silk×1 | WorkBenches | 源 287 ringAll(纸, 紫水晶碎片)：8 纸 + 1 碎片 → 8 卷轴纸 |
-| `AncientScrollPaperItem` | 4 | ScrollPaperItem×4 + AmethystDust×1 | WorkBenches | 源 290-293：棕色染料 + 卷轴纸 ×8 → 8 |
-| `ScrollPaperLanternItem` | 2 | ScrollPaperItem×2 + Torch×1 | WorkBenches | 源 295-296 stack(卷轴纸, 火把) |
-| `AncientScrollPaperLanternItem` | 2 | AncientScrollPaperItem×2 + Torch×1 | WorkBenches | 源 298-305：古卷轴纸 + 火把 / 棕色染料染色 |
+| `ScrollPaperItem` | 8 | AmethystShard×1 + Silk×8 | WorkBenches | 源 287 ringAll(纸, 紫水晶碎片)：8 纸 + 1 碎片 → 8 纸卷轴；移植版丝绸代纸 |
+| `AncientScrollPaperItem` | 4 | ScrollPaperItem×4 + AmethystDust×1 | WorkBenches | 源 290-293：棕色染料 + 纸卷轴 ×8 → 8 |
+| `ScrollPaperLanternItem` | 2 | ScrollPaperItem×2 + Torch×1 | WorkBenches | 源 295-296 stack(纸卷轴, 火把) |
+| `AncientScrollPaperLanternItem` | 2 | AncientScrollPaperItem×2 + Torch×1 | WorkBenches | 源 298-305：远古纸卷轴 + 火把 / 棕色染料染色 |
 | `AmethystSconceItem` | 1 | Amethyst×2 + Torch×1 | WorkBenches | 源 307-310 stack：充能紫水晶 + 铜锭 → 4 |
 | `WallScrollFrameSmall` | 2 | Wood×6 + Silk×2 | WorkBenches | 源项目无对应物：泰拉侧为「可放置的壁挂卷轴」补的框，纯肉前木工活 |
 | `WallScrollFrameMedium` | 2 | Wood×12 + Silk×4 | WorkBenches | 同上 |
@@ -136,14 +136,13 @@
 | `FocusHolderItem` | 1 | 〔HexRecipeGroups.SlateBlocks〕×4 | WorkBenches | 附属 HexDebug：上游 recipes/focus_holder.json，金粒 ×4 + 板岩方块 ×4（泰拉：金锭 ×1）；另有「框架 + 核心材料」装进新核心的配方 |
 | `FocusHolderItem` | 1 | FallenStar×4 + Silk×4 | WorkBenches | 附属 HexDebug：上游 recipes/focus_holder.json，金粒 ×4 + 板岩方块 ×4（泰拉：金锭 ×1）；另有「框架 + 核心材料」装进新核心的配方 |
 
-## 肉后（12 项）
+## 肉后（11 项）
 
 淬灵系（泰拉对应物是神圣地妖精）、法术书（源项目要末地合唱果）、珍珠木法杖、紫水晶种植盆（移植版新增，用魂合成）。
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
 | `ChargedAmethyst` | 1 | AmethystDust×10 | CrystalBall | 源：只能从晶洞里的紫水晶簇掉落，咒法师自己捏不出 → 泰拉另加一条：水晶球（肉后巫师卖）旁 10 粉换 1 个（用户定）；晶洞里照样能挖到 |
-| `QuenchedAllayItem` | 1 | QuenchedAllayShard×4 | WorkBenches | 淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除小精灵 Pixie —— 神圣地肉后敌怪，用户定的进度 —— 要启蒙） |
 | `QuenchedAllayTilesItem` | 4 | QuenchedAllayBricksItem×4 | WorkBenches | 源 433 stoneSet（这一族没有柱） |
 | `QuenchedAllayTilesItem` | 1 | 〔HexRecipeGroups.QuenchedAllayBlocks〕×1 | HeavyWorkBench | 源 433 stoneSet（这一族没有柱） |
 | `QuenchedAllayBricksItem` | 4 | QuenchedAllayItem×4 | WorkBenches | 源 433 stoneSet |
@@ -159,7 +158,7 @@
 | `QuenchedDebugger` | 1 | QuenchedAllayShard×4 | WorkBenches | 附属 HexDebug：上游 flyswatter_quenching，调试杖 + 淬灵晶碎片 ×4（碎片肉后） |
 | `QuenchedEvaluator` | 1 | QuenchedAllayShard×4 | WorkBenches | 附属 HexDebug：同上，运行杖 + 淬灵晶碎片 ×4 |
 
-## 肉后 · 启蒙（9 项）
+## 肉后 · 启蒙（6 项）
 
 源项目挂「启蒙」门槛的那一族：原动力、导线、阿卡夏三件、剖念法杖。启蒙 = 一次过载用掉 ≥80% 生命、只剩不到半颗心（按原版实现）；泰拉侧再要求肉后的秘银砧/山铜砧。
 
@@ -168,9 +167,6 @@
 | `AmethystPlanterItem` | 1 | AmethystDustBlockItem×1 + ChargedAmethyst×1 + SoulofLight×5 + SoulofNight×5 | MythrilAnvil + 已启蒙 | 移植版新增（用户定，原版没有）：原版紫水晶只靠母岩再生、母岩要脑叶切除（启蒙大法术）；这里用肉后的光明 / 暗影之魂代替被切除的心智，同样要求启蒙 → 秘银砧 + 已启蒙 |
 | `HexImpetusEmptyItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + CrystalShard×2 + IronFence×2 | MythrilAnvil + 已启蒙 | 源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书） |
 | `HexDirectrixEmptyItem` | 1 | SlateBlockItem×4 + ChargedAmethyst×1 + Wire×20 | MythrilAnvil + 已启蒙 | 源 400-408：同样挂 enlightenment → 秘银砧 + 已启蒙；比较器/观察者 → 电线（泰拉红石本体） |
-| `HexDirectrixItemBase` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 布尔/红石导线：源项目是 brainsweep(空导线 + 村民)，启蒙大战法术之一 |
-| `HexDirectrixBooleanItem` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 同 HexDirectrixItemBase（配方继承自基类的 RegisterRecipe） |
-| `HexDirectrixRedstoneItem` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 同 HexDirectrixItemBase |
 | `AkashicBookshelfItem` | 1 | EdifiedPlanksItem×2 + Book×3 + 〔HexRecipeGroups.EdifiedLogs〕×4 | MythrilAnvil + 已启蒙 | 源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment → 秘银砧 + 已启蒙 |
 | `AkashicLigatureItem` | 4 | EdifiedPlanksItem×2 + AmethystDust×1 + AmethystShard×1 + ChargedAmethyst×1 + 〔HexRecipeGroups.EdifiedLogs〕×4 | MythrilAnvil + 已启蒙 | 源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment → 秘银砧 + 已启蒙 |
 | `MindspliceStaff` | 1 | HexDirectrixRedstoneItem×1 + ChargedAmethyst×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 91：这一把的「W」槽是 MINDFLAYED_CIRCLE_COMPONENTS，即脑叶切除产物 |

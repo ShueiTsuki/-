@@ -28,24 +28,24 @@ $blocks = @(
     @('SlateBlock',              '板岩块',           70, 66, 84, 'plain',       0,  'Stone', 0),
     @('SlateTiles',              '板岩瓦',           74, 70, 90, 'tiles',       0,  'Stone', 0),
     @('SlateBricks',             '板岩砖',           78, 72, 94, 'bricks',      0,  'Stone', 0),
-    @('SlateBricksSmall',        '小板岩砖',         82, 76, 98, 'bricksSmall', 0,  'Stone', 0),
+    @('SlateBricksSmall',        '板岩小型砖',         82, 76, 98, 'bricksSmall', 0,  'Stone', 0),
     @('SlatePillar',             '板岩柱',           76, 70, 92, 'pillar',      0,  'Stone', 0),
     @('SlateAmethystTiles',      '板岩紫晶瓦',       96, 80, 110, 'tiles',      0,  'Stone', 0),
     @('SlateAmethystBricks',     '板岩紫晶砖',       100, 84, 114, 'bricks',    0,  'Stone', 0),
-    @('SlateAmethystBricksSmall','小板岩紫晶砖',     104, 88, 118, 'bricksSmall', 0, 'Stone', 0),
+    @('SlateAmethystBricksSmall','板岩紫晶小型砖',     104, 88, 118, 'bricksSmall', 0, 'Stone', 0),
     @('SlateAmethystPillar',     '板岩紫晶柱',       98, 82, 112, 'pillar',     0,  'Stone', 0),
 
     # ── 紫晶系（源项目 4 种；基底块是 Content/Tiles/AmethystDustBlock.cs 手写的）──
-    @('AmethystTiles',           '紫晶瓦',           138, 112, 176, 'tiles',     0,  'Stone', 1),
-    @('AmethystBricks',          '紫晶砖',           144, 118, 182, 'bricks',    0,  'Stone', 1),
-    @('AmethystBricksSmall',     '小紫晶砖',         150, 124, 188, 'bricksSmall', 0, 'Stone', 1),
-    @('AmethystPillar',          '紫晶柱',           140, 114, 178, 'pillar',    0,  'Stone', 1),
+    @('AmethystTiles',           '紫水晶瓦',           138, 112, 176, 'tiles',     0,  'Stone', 1),
+    @('AmethystBricks',          '紫水晶砖',           144, 118, 182, 'bricks',    0,  'Stone', 1),
+    @('AmethystBricksSmall',     '紫水晶小型砖',         150, 124, 188, 'bricksSmall', 0, 'Stone', 1),
+    @('AmethystPillar',          '紫水晶柱',           140, 114, 178, 'pillar',    0,  'Stone', 1),
 
     # ── 淬灵系（源项目 4 种）──
-    @('QuenchedAllay',           '淬灵块',           104, 168, 178, 'plain',     1,  'Stone', 2),
-    @('QuenchedAllayTiles',      '淬灵瓦',           108, 174, 184, 'tiles',     1,  'Stone', 2),
-    @('QuenchedAllayBricks',     '淬灵砖',           112, 180, 190, 'bricks',    1,  'Stone', 2),
-    @('QuenchedAllayBricksSmall','小淬灵砖',         116, 186, 196, 'bricksSmall', 1, 'Stone', 2),
+    @('QuenchedAllay',           '淬灵晶块',           104, 168, 178, 'plain',     1,  'Stone', 2),
+    @('QuenchedAllayTiles',      '淬灵晶瓦',           108, 174, 184, 'tiles',     1,  'Stone', 2),
+    @('QuenchedAllayBricks',     '淬灵晶砖',           112, 180, 190, 'bricks',    1,  'Stone', 2),
+    @('QuenchedAllayBricksSmall','淬灵晶小型砖',         116, 186, 196, 'bricksSmall', 1, 'Stone', 2),
 
     # ── 启迪木系（源项目的木材家族，14 种）──
     # 稀有度档 1（蓝）：源项目里它不是终局内容 —— 「启迪/edify」是**普通法术**
@@ -53,19 +53,19 @@ $blocks = @(
     # 作用是**把树苗启迪成启迪树苗**，种下去长成阿卡夏树 → 产出启迪原木与彩色启迪树叶。
     # 也就是说它的真实门槛是「找到一棵树苗 + 会画那一个图案」，属于**肉前**。
     @('EdifiedLog',              '启迪原木',         96, 84, 66, 'bark',        0,  'WoodFurniture',  1),
-    @('EdifiedLogAmethyst',      '紫晶启迪原木',     100, 84, 78, 'bark',        0,  'WoodFurniture',  1),
-    @('EdifiedLogAventurine',    '东陵启迪原木',     94, 90, 68, 'bark',         0,  'WoodFurniture',  1),
-    @('EdifiedLogCitrine',       '黄晶启迪原木',     104, 92, 62, 'bark',        0,  'WoodFurniture',  1),
-    @('EdifiedLogPurple',        '紫启迪原木',       92, 80, 74, 'bark',         0,  'WoodFurniture',  1),
+    @('EdifiedLogAmethyst',      '晶紫启迪原木',     100, 84, 78, 'bark',        0,  'WoodFurniture',  1),
+    @('EdifiedLogAventurine',    '砂蓝启迪原木',     94, 90, 68, 'bark',         0,  'WoodFurniture',  1),
+    @('EdifiedLogCitrine',       '晶黄启迪原木',     104, 92, 62, 'bark',        0,  'WoodFurniture',  1),
+    @('EdifiedLogPurple',        '紫色启迪原木',       92, 80, 74, 'bark',         0,  'WoodFurniture',  1),
     @('StrippedEdifiedLog',      '去皮启迪原木',     120, 108, 88, 'strippedBark', 0, 'WoodFurniture', 1),
     @('EdifiedWood',             '启迪木',           96, 84, 66, 'bark',         0,  'WoodFurniture',  1),
     @('StrippedEdifiedWood',     '去皮启迪木',       120, 108, 88, 'strippedBark', 0, 'WoodFurniture', 1),
     @('EdifiedPlanks',           '启迪木板',         132, 118, 92, 'planks',      0,  'WoodFurniture',  1),
-    @('EdifiedPanel',            '启迪木面板',       138, 124, 98, 'planks',      0,  'WoodFurniture',  1),
-    @('EdifiedTile',             '启迪木瓷砖',       142, 128, 102, 'tiles',      0,  'WoodFurniture',  1),
-    @('AmethystEdifiedLeaves',   '紫晶启迪树叶',     122, 100, 150, 'leaves',     0,  'Grass', 1),
-    @('AventurineEdifiedLeaves', '东陵启迪树叶',     112, 122, 96, 'leaves',      0,  'Grass', 1),
-    @('CitrineEdifiedLeaves',    '黄晶启迪树叶',     134, 120, 88, 'leaves',      0,  'Grass', 1)
+    @('EdifiedPanel',            '启迪木块',       138, 124, 98, 'planks',      0,  'WoodFurniture',  1),
+    @('EdifiedTile',             '启迪木方砖',       142, 128, 102, 'tiles',      0,  'WoodFurniture',  1),
+    @('AmethystEdifiedLeaves',   '晶紫启迪树叶',     122, 100, 150, 'leaves',     0,  'Grass', 1),
+    @('AventurineEdifiedLeaves', '砂蓝启迪树叶',     112, 122, 96, 'leaves',      0,  'Grass', 1),
+    @('CitrineEdifiedLeaves',    '晶黄启迪树叶',     134, 120, 88, 'leaves',      0,  'Grass', 1)
 )
 
 # ══ 配方表 ═══════════════════════════════════════════════════════════
@@ -157,8 +157,8 @@ foreach ($fam in $stoneFamilies) {
 # 基底块的成形（源项目里不在 stoneSet 里，各自单列）
 Add-Rec 'SlateBlock' (New-Rec 8 ([ordered]@{ '!DeepslateItem' = 8; '!AmethystDust' = 1 }) 'TileID.WorkBenches' `
     '源 281 ringAll(深板岩, 紫水晶粉)：8 深板岩环 + 1 粉 → 8 板岩块。深板岩是移植版的物品（石块 + 粉压成，见 Content/Tiles/Deepslate.cs）')
-Add-Rec 'QuenchedAllay' (New-Rec 1 ([ordered]@{ '!QuenchedAllayShard' = 4 }) 'TileID.WorkBenches' `
-    '源：淬灵块只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片，精准采集才掉方块本身。泰拉没有精准采集：用 4 片（掉落上限）换一块代替，敲了再合不会多出碎片')
+# 淬灵晶块没有合成：照原版只能剥离意识（紫水晶块 + 悦灵）得到，挖它要「共振」镐（原版的精准采集）才掉方块本身。
+# 这里曾经有「4 片碎片 → 1 块」代替精准采集，2026-10-01 有了共振前缀后去掉。
 
 # ── 板岩 × 紫晶 混料（源项目 441-459，shapeless 1 + 1 → 2）──
 $stoneMix = @(
@@ -387,17 +387,28 @@ $sb = New-Object System.Text.StringBuilder
 [void]$sb.AppendLine("    /// <summary>是否阻挡光线（树叶这类不该挡）。</summary>")
 [void]$sb.AppendLine("    protected virtual bool BlocksLight => true;")
 [void]$sb.AppendLine()
+[void]$sb.AppendLine("    /// <summary>发出的光，null = 不发光（原版淬灵晶系亮度 4）。</summary>")
+[void]$sb.AppendLine("    protected virtual Vector3? LightColor => null;")
+[void]$sb.AppendLine()
 [void]$sb.AppendLine("    public override void SetStaticDefaults()")
 [void]$sb.AppendLine("    {")
 [void]$sb.AppendLine("        Main.tileSolid[Type] = true;")
 [void]$sb.AppendLine("        Main.tileBlockLight[Type] = BlocksLight;")
 [void]$sb.AppendLine("        Main.tileMergeDirt[Type] = false;")
-[void]$sb.AppendLine("        Main.tileLighted[Type] = false;")
+[void]$sb.AppendLine("        Main.tileLighted[Type] = LightColor is not null;")
 [void]$sb.AppendLine()
 [void]$sb.AppendLine("        MinPick = RequiredPick;")
 [void]$sb.AppendLine("        DustType = BlockDust;")
 [void]$sb.AppendLine("        HitSound = SoundID.Tink;")
 [void]$sb.AppendLine("        AddMapEntry(MapColor);")
+[void]$sb.AppendLine("    }")
+[void]$sb.AppendLine()
+[void]$sb.AppendLine("    public override void ModifyLight(int i, int j, ref float r, ref float g, ref float b)")
+[void]$sb.AppendLine("    {")
+[void]$sb.AppendLine("        if (LightColor is not { } c) return;")
+[void]$sb.AppendLine("        r = c.X;")
+[void]$sb.AppendLine("        g = c.Y;")
+[void]$sb.AppendLine("        b = c.Z;")
 [void]$sb.AppendLine("    }")
 [void]$sb.AppendLine("}")
 [void]$sb.AppendLine()
@@ -422,6 +433,8 @@ foreach ($b in $blocks) {
     if ($pick -gt 0) { [void]$sb.AppendLine("    protected override int RequiredPick => $pick;") }
     if ($dust -ne 'Stone') { [void]$sb.AppendLine("    protected override int BlockDust => DustID.$dust;") }
     if ($b[5] -eq 'leaves') { [void]$sb.AppendLine("    protected override bool BlocksLight => false;") }
+    # 原版淬灵晶系（BlockQuenchedAllay）亮度 4：和阿卡夏桥接块同一档的淡紫
+    if ($cls -like 'QuenchedAllay*') { [void]$sb.AppendLine("    protected override Vector3? LightColor => new(0.16f, 0.12f, 0.24f);") }
 
     [void]$sb.AppendLine("}")
     [void]$sb.AppendLine()
