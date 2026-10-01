@@ -309,6 +309,9 @@ public sealed class MishapInvalidIota : Mishap
     /// <summary>出错参数离栈顶多远（0 = 栈顶）。不给时按引用在栈上找（参数就是栈上那个对象）。</summary>
     public int? ReverseIdx { get; init; }
 
+    /// <summary>同一个事故，指明出错的是栈顶往下第几个（原版 reverseIdx）。</summary>
+    public MishapInvalidIota At(int reverseIdx) => new(Perpetrator, Expected) { ReverseIdx = reverseIdx };
+
     /// <summary>按引用在栈上找到的位置（离栈顶多远）；-1 = 不在栈上；null = 还没找过。</summary>
     private int? _located;
 

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    和原版对拍：移植版这一侧。和 vmtest 一样直接编译模组的整个 Core/（不引用 tModLoader），
+    读 tests/oracle 下的用例和原版跑出来的结果，用移植版的施法虚拟机跑同样的输入，逐步比对。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>oracleport</AssemblyName>
+    <RootNamespace>HexCastingTerraria</RootNamespace>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\HexCastingTerraria\Core\**\*.cs" LinkBase="Core" />
+    <Compile Include="..\..\..\HexCastingTerraria\Addons\*\Core\**\*.cs" LinkBase="Addons" />
+    <Compile Include="..\..\Shared\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+</Project>

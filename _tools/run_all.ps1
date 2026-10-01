@@ -138,6 +138,42 @@ else {
     }
 }
 
+# ── 2b. 和原版对拍：同一批咒术，原版（MC 里跑出来、入库的标准答案）和移植版逐步比对 ──
+# 标准答案由 tests/oracle/original.py 在没有界面的 MC 服务器里用原版咒法学 0.11.4 跑出来；这里只跑移植版这一侧，不需要 MC。
+# 用例由 gen_cases.py 现场生成：生成器改了却没重跑原版，就会出现「原版没有结果」而判红。
+if ($SkipVmTest) { Skip '和原版对拍（施法虚拟机）' '-SkipVmTest' }
+else {
+    Step '和原版对拍（施法虚拟机）' {
+        $o = Join-Path $tmod 'tests\oracle'
+        $env:PYTHONUTF8 = '1'
+        & python (Join-Path $o 'gen_cases.py') | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Host '  生成用例失败' -ForegroundColor Red; return $false }
+        $prevEnc = [Console]::OutputEncoding
+        try {
+            [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+            $out = & dotnet run -c Release --project (Join-Path $o 'port\oracleport.csproj') -- `
+                (Join-Path $o 'cases\basic.json') (Join-Path $o 'golden\basic.json.gz') (Join-Path $o 'out\report.json') 2>&1 | Out-String -Width 400
+            $code = $LASTEXITCODE
+        }
+        finally { [Console]::OutputEncoding = $prevEnc }
+        $m = [regex]::Match($out, '用例 (\d+)：一致 (\d+)，不一致 (\d+)，移植版缺世界 (\d+)，原版没有结果 (\d+)')
+        if (-not $m.Success) {
+            Write-Host '  解析不到汇总行（多半是对拍工程编译失败）' -ForegroundColor Red
+            ($out -split "`n" | Where-Object { $_ -match 'error' } | Select-Object -First 8) | ForEach-Object { Write-Host "    $($_.Trim())" }
+            return $false
+        }
+        Write-Host "  $($m.Value)   (退出码 $code)"
+        if ($code -ne 0) {
+            ($out -split "`n" | Where-Object { $_ -match '^\s+hexcasting:' } | Select-Object -First 15) | ForEach-Object { Write-Host "    $($_.Trim())" -ForegroundColor Red }
+            Write-Host '    明细：tests\oracle\out\report.json' -ForegroundColor Red
+        }
+        $script:facts.oracle = [ordered]@{
+            cases = [int]$m.Groups[1].Value; same = [int]$m.Groups[2].Value; diff = [int]$m.Groups[3].Value
+            noWorld = [int]$m.Groups[4].Value; missing = [int]$m.Groups[5].Value }
+        return ($code -eq 0)
+    }
+}
+
 # ── 3. 拖拽 + 几何（产出 measured.json）─────────────────────────────
 Step '拖拽 + 几何验证（画布/坐标）' {
     $d = Invoke-TestProject (Join-Path $tmod 'tests\drawtest')

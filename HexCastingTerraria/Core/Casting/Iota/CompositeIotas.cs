@@ -133,6 +133,9 @@ public sealed class PatternIota : Iota
         Pattern = pat;
     }
 
+    /// <summary>原版 PatternIota.isTruthy 恒为 true（这里曾经沿用基类的 false，和原版对拍时发现，2026-10-02 补上）。</summary>
+    public override bool IsTruthy() => true;
+
     public string AnglesSignature => Pattern.AnglesSignature();
 
     public Math.HexDir StartDir => Pattern.StartDir;

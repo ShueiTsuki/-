@@ -94,7 +94,8 @@ public sealed class OpDeconstructVec : ConstMediaAction
 }
 
 /// <summary>
-/// print 图案：把栈顶 iota 的显示文本发到聊天框，并消耗掉它。
+/// print 图案：把栈顶 iota 的显示文本发到聊天框，栈不变 —— 原版 OpPrint 只读栈顶、不弹出
+/// （这里曾经把它弹掉了，和原版对拍时发现，2026-10-02 改回）。
 /// 移植自源项目 common/casting/actions/spells/OpPrint.kt。
 /// </summary>
 public sealed class OpPrint : ConstMediaAction
@@ -107,7 +108,7 @@ public sealed class OpPrint : ConstMediaAction
     {
         // 上游 env.printMessage(datum.display())：带颜色、列表显示内容、图案是小图（聊天栏认这些标记）
         env.PrintMessage(DisplayTags.Of(args[0]));
-        return Array.Empty<Iota>();
+        return new[] { args[0] };
     }
 }
 
@@ -127,6 +128,8 @@ public static class MathActions
         // 这里**不能**重复注册（同 Id 二次注册会覆盖/报错）。
         "index", "slice", "append", "unappend", "reverse",
         "index_of", "remove_from", "replace", "construct", "deconstruct",
+        // 集合运算（ListSetArithmetic）：与 / 或 / 异或和上面的逻辑运算共用图案，这里只多一个唯一之纯化
+        "unique",
     };
 
     public static int Register()

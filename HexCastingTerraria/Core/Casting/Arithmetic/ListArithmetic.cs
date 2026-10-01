@@ -180,6 +180,8 @@ public sealed class ListArithmetic : IArithmetic
 
             case "remove_from":
             {
+                // 源项目 OperatorRemove 只接受（列表, 数）：第二个不是数就不归这里管，由分派报「运算参数无效」
+                if (args[1] is not DoubleIota) return null;
                 // 索引越界 → 原样返回列表（源项目同，不报错）
                 int i = NextInt(args[1]);
                 var items = new List<Iota>(list.Items);

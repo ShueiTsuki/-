@@ -1,5 +1,5 @@
 {
-    "at":  "2026-10-01 19:40:35",
+    "at":  "2026-10-02 07:40:13",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
@@ -8,6 +8,13 @@
     "vmtest":  {
                    "passed":  861,
                    "failed":  0
+               },
+    "oracle":  {
+                   "cases":  9193,
+                   "same":  8005,
+                   "diff":  0,
+                   "noWorld":  1188,
+                   "missing":  0
                },
     "drawtest":  {
                      "passed":  141,
@@ -19,14 +26,14 @@
                },
     "package":  {
                     "ok":  true,
-                    "bytes":  1073652
+                    "bytes":  1078128
                 },
     "server":  {
                    "ok":  true
                },
     "tml":  {
-                "commit":  "666f69962d3bdffde54fc14025f02634965b4e7c",
-                "dllBuilt":  "2026-10-01 01:48"
+                "commit":  "c9545cf27d56c456321e1896274c02adf67d0140",
+                "dllBuilt":  "2026-10-02 02:18"
             },
     "skipped":  [
 

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "hexoracle",
+  "version": "1.0.0",
+  "name": "Hex Oracle",
+  "description": "Test-only mod: runs hexes through the original Hex Casting VM on a headless server and dumps the results, for diffing the Terraria port against the original.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["hexoracle.HexOracle"]
+  },
+  "depends": {
+    "hexcasting": "0.11.4",
+    "fabric-api": "*"
+  }
+}

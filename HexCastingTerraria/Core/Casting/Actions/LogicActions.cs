@@ -179,6 +179,12 @@ public sealed class OpSwizzle : IAction
         {
             code = CastingEnvironment.RequirePositiveLong(stack[stack.Count - 1]);
         }
+        catch (MishapInvalidIota m)
+        {
+            // 原版是 stack.getPositiveLong(stack.lastIndex)，没传参数个数：事故下标就是 lastIndex，
+            // 被换成垃圾的是整个栈最底下那格。照搬（和原版对拍时发现，2026-10-02）。
+            return OperationResult.Fail(m.At(stack.Count - 1), image);
+        }
         catch (Mishap m)
         {
             return OperationResult.Fail(m, image);

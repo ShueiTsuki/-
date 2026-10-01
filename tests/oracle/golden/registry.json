@@ -1,0 +1,1521 @@
+{
+ "source": "hexcasting-fabric-1.20.1-0.11.4",
+ "actions": [
+  {
+   "id": "hexcasting:2dup",
+   "dir": "EAST",
+   "angles": "aadadaaw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpTwiddling",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:abs",
+   "dir": "NORTH_EAST",
+   "angles": "wqaqw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:add",
+   "dir": "NORTH_EAST",
+   "angles": "waaw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:add_motion",
+   "dir": "SOUTH_WEST",
+   "angles": "awqqqwaqw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpAddMotion",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:akashic/read",
+   "dir": "WEST",
+   "angles": "qqqwqqqqqaq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.akashic.OpAkashicRead",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:akashic/write",
+   "dir": "EAST",
+   "angles": "eeeweeeeede",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.akashic.OpAkashicWrite",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:and",
+   "dir": "NORTH_EAST",
+   "angles": "wdw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:append",
+   "dir": "SOUTH_WEST",
+   "angles": "edqde",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:arccos",
+   "dir": "NORTH_EAST",
+   "angles": "adeeeee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:arcsin",
+   "dir": "SOUTH_EAST",
+   "angles": "ddeeeee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:arctan",
+   "dir": "NORTH_EAST",
+   "angles": "eadeeeeew",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:arctan2",
+   "dir": "WEST",
+   "angles": "deadeeeeewd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:beep",
+   "dir": "WEST",
+   "angles": "adaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpBeep",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:blink",
+   "dir": "SOUTH_WEST",
+   "angles": "awqqqwaq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpBlink",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:bonemeal",
+   "dir": "NORTH_EAST",
+   "angles": "wqaqwawqaqw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpTheOnlyReasonAnyoneDownloadedPsi",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:bool_coerce",
+   "dir": "NORTH_EAST",
+   "angles": "aw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.math.logic.OpCoerceToBool",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:brainsweep",
+   "dir": "NORTH_EAST",
+   "angles": "adedqeqdedaqadeeedeeeweweweqe",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.great.OpBrainsweep",
+   "spell": true,
+   "canonicalDir": "NORTH_EAST",
+   "canonicalAngles": "qeqwqwqwqwqeqaeqeaqeqaeqaqded"
+  },
+  {
+   "id": "hexcasting:break_block",
+   "dir": "EAST",
+   "angles": "qaqqqqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpBreakBlock",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:ceil",
+   "dir": "EAST",
+   "angles": "qwe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:circle/bounds/max",
+   "dir": "WEST",
+   "angles": "aqwqawaaqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.circles.OpCircleBounds",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:circle/bounds/min",
+   "dir": "SOUTH_WEST",
+   "angles": "eaqwqaewdd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.circles.OpCircleBounds",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:circle/impetus_dir",
+   "dir": "SOUTH_WEST",
+   "angles": "eaqwqaewede",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.circles.OpImpetusDir",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:circle/impetus_pos",
+   "dir": "SOUTH_WEST",
+   "angles": "eaqwqae",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.circles.OpImpetusPos",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:close_all_parens",
+   "dir": "EAST",
+   "angles": "eadedae",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.escaping.OpCloseAllParens",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:close_paren",
+   "dir": "EAST",
+   "angles": "eee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.escaping.OpCloseParen",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:coerce_axial",
+   "dir": "NORTH_WEST",
+   "angles": "qqqqqaww",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.math.OpCoerceToAxial",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:colorize",
+   "dir": "EAST",
+   "angles": "awddwqawqwawq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpColorize",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:compare_block/lenient",
+   "dir": "NORTH_WEST",
+   "angles": "qqqqqeqeeeee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.types.OpBlockEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:compare_block/strict",
+   "dir": "NORTH_WEST",
+   "angles": "qwawqwadadwewdwe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.types.OpBlockEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:compare_entity",
+   "dir": "NORTH_WEST",
+   "angles": "aqaeqded",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.types.OpEntityEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:compare_item/lenient",
+   "dir": "NORTH_WEST",
+   "angles": "qaeaqeqedqde",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.types.OpItemEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:compare_item/strict",
+   "dir": "NORTH_WEST",
+   "angles": "qaeaqewqedqde",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.types.OpItemEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:conjure_block",
+   "dir": "NORTH_EAST",
+   "angles": "qqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpConjureBlock",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:conjure_light",
+   "dir": "NORTH_EAST",
+   "angles": "qqd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpConjureBlock",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:const/double/e",
+   "dir": "EAST",
+   "angles": "aaq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/double/phi",
+   "dir": "NORTH_EAST",
+   "angles": "wdded",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/double/pi",
+   "dir": "NORTH_EAST",
+   "angles": "qdwdq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/double/tau",
+   "dir": "NORTH_WEST",
+   "angles": "eawae",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/false",
+   "dir": "NORTH_EAST",
+   "angles": "dedq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/null",
+   "dir": "EAST",
+   "angles": "d",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/true",
+   "dir": "SOUTH_EAST",
+   "angles": "aqae",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/vec/0",
+   "dir": "NORTH_WEST",
+   "angles": "qqqqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/vec/nx",
+   "dir": "SOUTH_WEST",
+   "angles": "eeeeeqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/vec/ny",
+   "dir": "SOUTH_WEST",
+   "angles": "eeeeeqw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/vec/nz",
+   "dir": "SOUTH_WEST",
+   "angles": "eeeeeqd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/vec/px",
+   "dir": "NORTH_WEST",
+   "angles": "qqqqqea",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/vec/py",
+   "dir": "NORTH_WEST",
+   "angles": "qqqqqew",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:const/vec/pz",
+   "dir": "NORTH_WEST",
+   "angles": "qqqqqed",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.Action$Companion$makeConstantOp$1",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:construct",
+   "dir": "SOUTH_EAST",
+   "angles": "ddewedd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:construct_vec",
+   "dir": "EAST",
+   "angles": "eqqqqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:cos",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqad",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:craft/artifact",
+   "dir": "EAST",
+   "angles": "wwaqqqqqeawqwqwqwqwqwwqqeadaeqqeqqeadaeqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpMakePackagedSpell",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:craft/battery",
+   "dir": "NORTH_WEST",
+   "angles": "wqwqeaeaqweeqdwewewedqwqedqdeaeeq",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpMakeBattery",
+   "spell": true,
+   "canonicalDir": "SOUTH_WEST",
+   "canonicalAngles": "aqqqaqwwaqqqqqeqaqqqawwqwqwqwqwqw"
+  },
+  {
+   "id": "hexcasting:craft/cypher",
+   "dir": "EAST",
+   "angles": "waqqqqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpMakePackagedSpell",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:craft/trinket",
+   "dir": "EAST",
+   "angles": "wwaqqqqqeaqeaeqqqeaeq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpMakePackagedSpell",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:create_lava",
+   "dir": "WEST",
+   "angles": "eawqadaqadq",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpCreateFluid",
+   "spell": true,
+   "canonicalDir": "EAST",
+   "canonicalAngles": "eaqawqadaqd"
+  },
+  {
+   "id": "hexcasting:create_water",
+   "dir": "SOUTH_EAST",
+   "angles": "aqawqadaq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpCreateFluid",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:cycle_variant",
+   "dir": "WEST",
+   "angles": "dwaawedwewdwe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpCycleVariant",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:deconstruct",
+   "dir": "SOUTH_WEST",
+   "angles": "aaqwqaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:deconstruct_vec",
+   "dir": "EAST",
+   "angles": "qeeeee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:destroy_water",
+   "dir": "SOUTH_WEST",
+   "angles": "dedwedade",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpDestroyFluid",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:dispel_rain",
+   "dir": "SOUTH_WEST",
+   "angles": "ewdaadqqqwwwqqqewaaw",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.great.OpWeather",
+   "spell": true,
+   "canonicalDir": "EAST",
+   "canonicalAngles": "eeewwweeewwaqqddqdqd"
+  },
+  {
+   "id": "hexcasting:div",
+   "dir": "NORTH_EAST",
+   "angles": "wdedw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:duplicate",
+   "dir": "EAST",
+   "angles": "aadaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpTwiddling",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:duplicate_n",
+   "dir": "EAST",
+   "angles": "aadaadaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpDuplicateN",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:edify",
+   "dir": "NORTH_EAST",
+   "angles": "wqaqwd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpEdifySapling",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:empty_list",
+   "dir": "NORTH_EAST",
+   "angles": "qqaeaae",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.lists.OpEmptyList",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:entity_pos/eye",
+   "dir": "EAST",
+   "angles": "aa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.queryentity.OpEntityPos",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:entity_pos/foot",
+   "dir": "NORTH_EAST",
+   "angles": "dd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.queryentity.OpEntityPos",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:equals",
+   "dir": "EAST",
+   "angles": "ad",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.math.logic.OpEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:erase",
+   "dir": "EAST",
+   "angles": "qdqawwaww",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpErase",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:escape",
+   "dir": "WEST",
+   "angles": "qqqaw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.escaping.OpEscape",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:eval",
+   "dir": "SOUTH_EAST",
+   "angles": "deaqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.eval.OpEval",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:eval/cc",
+   "dir": "NORTH_WEST",
+   "angles": "qwaqde",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.eval.OpEvalBreakable",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:explode",
+   "dir": "EAST",
+   "angles": "aawaawaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpExplode",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:explode/fire",
+   "dir": "EAST",
+   "angles": "ddwddwdd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpExplode",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:extinguish",
+   "dir": "SOUTH_WEST",
+   "angles": "ddedwdwd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpExtinguish",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:fisherman",
+   "dir": "WEST",
+   "angles": "ddad",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpFisherman",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:fisherman/copy",
+   "dir": "EAST",
+   "angles": "aada",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpFishermanButItCopies",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:flight",
+   "dir": "WEST",
+   "angles": "qawawaddwwdq",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.great.OpAltiora",
+   "spell": true,
+   "canonicalDir": "NORTH_WEST",
+   "canonicalAngles": "eawwaeawawaa"
+  },
+  {
+   "id": "hexcasting:flight/can_fly",
+   "dir": "NORTH_EAST",
+   "angles": "dwdwdeweaqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.queryentity.OpCanEntityHexFly",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:flight/range",
+   "dir": "SOUTH_WEST",
+   "angles": "awawaawq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpFlight",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:flight/time",
+   "dir": "NORTH_EAST",
+   "angles": "dwdwdewq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpFlight",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:floor",
+   "dir": "EAST",
+   "angles": "ewq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:for_each",
+   "dir": "NORTH_EAST",
+   "angles": "dadad",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.eval.OpForEach",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_caster",
+   "dir": "NORTH_EAST",
+   "angles": "qaq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetCaster",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqdaqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntityAt",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity/animal",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqdaqaawa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntityAt",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity/item",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqdaqaaww",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntityAt",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity/living",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqdaqaawd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntityAt",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity/monster",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqdaqaawq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntityAt",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity/player",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqdaqaawe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntityAt",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity_height",
+   "dir": "NORTH_EAST",
+   "angles": "awq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.queryentity.OpEntityHeight",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity_look",
+   "dir": "EAST",
+   "angles": "wa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.queryentity.OpEntityLook",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_entity_velocity",
+   "dir": "EAST",
+   "angles": "wq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.queryentity.OpEntityVelocity",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:get_media",
+   "dir": "WEST",
+   "angles": "dde",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.environment.OpGetMedia",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:greater",
+   "dir": "SOUTH_EAST",
+   "angles": "e",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:greater_eq",
+   "dir": "SOUTH_EAST",
+   "angles": "ee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:halt",
+   "dir": "SOUTH_WEST",
+   "angles": "aqdee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.eval.OpHalt",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:if",
+   "dir": "SOUTH_EAST",
+   "angles": "awdd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.math.logic.OpBoolIf",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:ignite",
+   "dir": "SOUTH_EAST",
+   "angles": "aaqawawa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpIgnite",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:index",
+   "dir": "NORTH_WEST",
+   "angles": "deeed",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:index_of",
+   "dir": "EAST",
+   "angles": "dedqde",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:last_n_list",
+   "dir": "SOUTH_WEST",
+   "angles": "ewdqdwe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.lists.OpLastNToList",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:less",
+   "dir": "SOUTH_WEST",
+   "angles": "q",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:less_eq",
+   "dir": "SOUTH_WEST",
+   "angles": "qq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:lightning",
+   "dir": "NORTH_WEST",
+   "angles": "ewqqwddawdwaddw",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.great.OpLightning",
+   "spell": true,
+   "canonicalDir": "EAST",
+   "canonicalAngles": "waadwawdaaweewq"
+  },
+  {
+   "id": "hexcasting:logarithm",
+   "dir": "NORTH_WEST",
+   "angles": "eqaqe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:modulo",
+   "dir": "NORTH_EAST",
+   "angles": "addwaad",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:mul",
+   "dir": "SOUTH_EAST",
+   "angles": "waqaw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:not",
+   "dir": "NORTH_WEST",
+   "angles": "dw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:not_equals",
+   "dir": "EAST",
+   "angles": "da",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.math.logic.OpEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:open_n_parens",
+   "dir": "WEST",
+   "angles": "qdaqadq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.escaping.OpOpenNParens",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:open_paren",
+   "dir": "WEST",
+   "angles": "qqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.escaping.OpOpenParen",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:or",
+   "dir": "SOUTH_EAST",
+   "angles": "waw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:over",
+   "dir": "EAST",
+   "angles": "aaedd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpTwiddling",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:place_block",
+   "dir": "SOUTH_WEST",
+   "angles": "eeeeede",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPlaceBlock",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:potion/absorption",
+   "dir": "SOUTH_EAST",
+   "angles": "edawawaqeeeaa",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true,
+   "canonicalDir": "SOUTH_WEST",
+   "canonicalAngles": "qqaawawaeqqdd"
+  },
+  {
+   "id": "hexcasting:potion/haste",
+   "dir": "EAST",
+   "angles": "eeeddwdwdqwdd",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true,
+   "canonicalDir": "SOUTH_EAST",
+   "canonicalAngles": "qaawawaeqqqdd"
+  },
+  {
+   "id": "hexcasting:potion/levitation",
+   "dir": "WEST",
+   "angles": "qqqqqawwawawd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:potion/night_vision",
+   "dir": "SOUTH_WEST",
+   "angles": "eqawawadeeeaa",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true,
+   "canonicalDir": "WEST",
+   "canonicalAngles": "qqqaawawaeqdd"
+  },
+  {
+   "id": "hexcasting:potion/poison",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqadwawaww",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:potion/regeneration",
+   "dir": "NORTH_EAST",
+   "angles": "qqqqeawawaawa",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true,
+   "canonicalDir": "NORTH_WEST",
+   "canonicalAngles": "qqqqaawawaedd"
+  },
+  {
+   "id": "hexcasting:potion/slowness",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqadwawaw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:potion/strength",
+   "dir": "SOUTH_EAST",
+   "angles": "adaqqqwadawaq",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true,
+   "canonicalDir": "EAST",
+   "canonicalAngles": "aawawaeqqqqdd"
+  },
+  {
+   "id": "hexcasting:potion/weakness",
+   "dir": "NORTH_WEST",
+   "angles": "qqqqqaqwawaw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:potion/wither",
+   "dir": "SOUTH_WEST",
+   "angles": "qqqqqaewawawe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPotionEffect",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:pow",
+   "dir": "NORTH_WEST",
+   "angles": "wedew",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:print",
+   "dir": "NORTH_EAST",
+   "angles": "de",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpPrint",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:random",
+   "dir": "NORTH_WEST",
+   "angles": "eqqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.math.OpRandom",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:raycast",
+   "dir": "EAST",
+   "angles": "wqaawdd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.raycast.OpBlockRaycast",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:raycast/axis",
+   "dir": "EAST",
+   "angles": "weddwaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.raycast.OpBlockAxisRaycast",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:raycast/entity",
+   "dir": "EAST",
+   "angles": "weaqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.raycast.OpEntityRaycast",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:read",
+   "dir": "EAST",
+   "angles": "aqqqqq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.rw.OpRead",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:read/entity",
+   "dir": "EAST",
+   "angles": "wawqwqwqwqwqw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerRead",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:read/local",
+   "dir": "NORTH_EAST",
+   "angles": "qeewdweddw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.local.OpPeekLocal",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:read_into_parens",
+   "dir": "EAST",
+   "angles": "aqqqqqwded",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.escaping.OpReadIntoParens",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:readable",
+   "dir": "EAST",
+   "angles": "aqqqqqe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.rw.OpReadable",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:readable/entity",
+   "dir": "EAST",
+   "angles": "wawqwqwqwqwqwew",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerReadable",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:recharge",
+   "dir": "NORTH_WEST",
+   "angles": "qqqqqwaeaeaeaeaea",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.OpRecharge",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:remove_from",
+   "dir": "SOUTH_WEST",
+   "angles": "edqdewaqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:replace",
+   "dir": "NORTH_WEST",
+   "angles": "wqaeaqw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:reverse",
+   "dir": "EAST",
+   "angles": "qqqaede",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:rotate",
+   "dir": "EAST",
+   "angles": "aaeaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpTwiddling",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:rotate_reverse",
+   "dir": "NORTH_EAST",
+   "angles": "ddqdd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpTwiddling",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:runtime_escape",
+   "dir": "SOUTH_EAST",
+   "angles": "wdeee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.escaping.OpRuntimeEscape",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:sentinel/create",
+   "dir": "EAST",
+   "angles": "waeawae",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.sentinel.OpCreateSentinel",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:sentinel/create/great",
+   "dir": "EAST",
+   "angles": "eedeqqqwqwqqawdqd",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.sentinel.OpCreateSentinel",
+   "spell": true,
+   "canonicalDir": "EAST",
+   "canonicalAngles": "waeawaeqqqwqwqqwq"
+  },
+  {
+   "id": "hexcasting:sentinel/destroy",
+   "dir": "NORTH_EAST",
+   "angles": "qdwdqdw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.sentinel.OpDestroySentinel",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:sentinel/get_pos",
+   "dir": "EAST",
+   "angles": "waeawaede",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.sentinel.OpGetSentinelPos",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:sentinel/wayfind",
+   "dir": "EAST",
+   "angles": "waeawaedwa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.sentinel.OpGetSentinelWayfind",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:sin",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:singleton",
+   "dir": "EAST",
+   "angles": "adeeed",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.lists.OpSingleton",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:slice",
+   "dir": "NORTH_WEST",
+   "angles": "qaeaqwded",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:splat",
+   "dir": "NORTH_WEST",
+   "angles": "qwaeawq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.lists.OpSplat",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:stack_len",
+   "dir": "NORTH_WEST",
+   "angles": "qwaeawqaeaqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpStackSize",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:sub",
+   "dir": "NORTH_WEST",
+   "angles": "wddw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:summon_rain",
+   "dir": "SOUTH_EAST",
+   "angles": "aewwddawdwqeeewwwee",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.great.OpWeather",
+   "spell": true,
+   "canonicalDir": "WEST",
+   "canonicalAngles": "wwweeewwweewdawdwad"
+  },
+  {
+   "id": "hexcasting:swap",
+   "dir": "EAST",
+   "angles": "aawdd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpTwiddling",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:swizzle",
+   "dir": "SOUTH_EAST",
+   "angles": "qaawdde",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpAlwinfyHasAscendedToABeingOfPureMath",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:tan",
+   "dir": "SOUTH_WEST",
+   "angles": "wqqqqqadq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:teleport/great",
+   "dir": "NORTH_EAST",
+   "angles": "qqwwwqqaeeaeeeeedweeewwweedqqaw",
+   "perWorld": true,
+   "class": "at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport",
+   "spell": true,
+   "canonicalDir": "EAST",
+   "canonicalAngles": "wwwqqqwwwqqeqqwwwqqwqqdqqqqqdqq"
+  },
+  {
+   "id": "hexcasting:thanatos",
+   "dir": "SOUTH_EAST",
+   "angles": "qqaed",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.eval.OpThanos",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:tuck",
+   "dir": "EAST",
+   "angles": "ddqaa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.stack.OpTwiddling",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:type_equals",
+   "dir": "EAST",
+   "angles": "wawdw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.types.OpTypeEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:type_not_equals",
+   "dir": "EAST",
+   "angles": "wdwaw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.types.OpTypeEquality",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:unappend",
+   "dir": "NORTH_WEST",
+   "angles": "qaeaq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:undo",
+   "dir": "EAST",
+   "angles": "eeedw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.escaping.OpUndo",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:unique",
+   "dir": "NORTH_EAST",
+   "angles": "aweaqa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:writable",
+   "dir": "EAST",
+   "angles": "deeeeeq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.rw.OpWritable",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:writable/entity",
+   "dir": "EAST",
+   "angles": "wdwewewewewewqw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerWritable",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:write",
+   "dir": "EAST",
+   "angles": "deeeee",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.rw.OpWrite",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:write/entity",
+   "dir": "EAST",
+   "angles": "wdwewewewewew",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerWrite",
+   "spell": true
+  },
+  {
+   "id": "hexcasting:write/local",
+   "dir": "NORTH_WEST",
+   "angles": "eqqwawqaaw",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.local.OpPushLocal",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:xor",
+   "dir": "NORTH_WEST",
+   "angles": "dwa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.api.casting.castables.OperationAction",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqwded",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/animal",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqwdeddwa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/item",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqwdeddww",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/living",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqwdeddwd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/monster",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqwdeddwq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/not_animal",
+   "dir": "NORTH_EAST",
+   "angles": "eeeeewaqaawa",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/not_item",
+   "dir": "NORTH_EAST",
+   "angles": "eeeeewaqaaww",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/not_living",
+   "dir": "NORTH_EAST",
+   "angles": "eeeeewaqaawd",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/not_monster",
+   "dir": "NORTH_EAST",
+   "angles": "eeeeewaqaawq",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/not_player",
+   "dir": "NORTH_EAST",
+   "angles": "eeeeewaqaawe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  },
+  {
+   "id": "hexcasting:zone_entity/player",
+   "dir": "SOUTH_EAST",
+   "angles": "qqqqqwdeddwe",
+   "perWorld": false,
+   "class": "at.petrak.hexcasting.common.casting.actions.selectors.OpGetEntitiesBy",
+   "spell": false
+  }
+ ]
+}

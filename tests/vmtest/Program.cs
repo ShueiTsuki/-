@@ -3219,15 +3219,15 @@ static class Program
                 r.ResolutionType == ResolvedPatternType.Evaluated && r.Image.EscapeNext);
         }
         {
-            // duplicate_n：把栈顶项复制 n 份成一个列表
+            // duplicate_n：把栈顶项复制 n 份，逐个压回栈上（原版 List(count) { args[0] }；这里曾经写成「压一个列表」，
+            // 测试也照着错的写，2026-10-02 和原版对拍时发现）
             var env = new TestEnv();
             var img = new CastingImage(new Iota[] { new DoubleIota(7), new DoubleIota(3) });
             var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:duplicate_n") });
-            Check("duplicate_n：7 复制 3 份 -> list(3) 且都是 7",
+            Check("duplicate_n：7 复制 3 份 -> 栈上 3 个 7",
                 r.ResolutionType == ResolvedPatternType.Evaluated
-                && r.Image.Stack.Count == 1
-                && r.Image.Stack[0] is ListIota { Count: 3 } l
-                && l.Items[0] is DoubleIota { Value: 7 },
+                && r.Image.Stack.Count == 3
+                && r.Image.Stack.All(x => x is DoubleIota { Value: 7 }),
                 Sig(r.Image));
         }
         {
@@ -3236,7 +3236,7 @@ static class Program
             var img10 = new CastingImage(new Iota[] { new DoubleIota(5), new DoubleIota(10) });
             var r10 = new CastingVM(img10, env10).QueueExecute(img10, new Iota[] { P("hexcasting:duplicate_n") });
             Check("duplicate_n：复制 10 份",
-                r10.Image.Stack.Count == 1 && r10.Image.Stack[0] is ListIota { Count: 10 },
+                r10.Image.Stack.Count == 10 && r10.Image.Stack.All(x => x is DoubleIota { Value: 5 }),
                 Sig(r10.Image));
 
             // duplicate_n：超大 n **被截断**（源项目注释：在这里抛异常的话错误会指向本图案，

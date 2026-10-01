@@ -387,18 +387,34 @@ public sealed class BitwiseSetArithmetic : IArithmetic
 
 /// <summary>
 /// 列表的集合运算。逐行对齐源项目 ListSetArithmetic.kt（相等用 Iota.tolerates）：
-///   与 = 交集（保留左表顺序）；或 = 左表 + 右表里左表没有的；异或 = 对称差。
-/// 「唯一之纯化」在原版也属于这一类，移植版单独做成了 OpUnique。
-/// 注意：这一类曾经整个缺失。
+///   与 = 交集（保留左表顺序）；或 = 左表 + 右表里左表没有的；异或 = 对称差；
+///   唯一之纯化 = 去重，保留首次出现的顺序（OperatorUnique）。
+/// 注意：这一类曾经整个缺失；唯一之纯化曾经单独做成普通图案，参数不是列表时报的事故和原版不同
+///（原版是「运算参数无效」、参数换成垃圾），和原版对拍时发现，2026-10-02 并回这里。
 /// </summary>
 public sealed class ListSetArithmetic : IArithmetic
 {
     public string Name => "list_set_ops";
 
-    public int Arity(string op) => op is "and" or "or" or "xor" ? 2 : -1;
+    public int Arity(string op) => op switch
+    {
+        "and" or "or" or "xor" => 2,
+        "unique" => 1,
+        _ => -1,
+    };
 
     public IReadOnlyList<Iota>? Apply(string op, IReadOnlyList<Iota> args)
     {
+        if (op == "unique")
+        {
+            if (args.Count != 1 || args[0] is not ListIota only) return null;
+            var kept = new List<Iota>();
+            foreach (var item in only.Items)
+            {
+                if (!In(kept, item)) kept.Add(item);
+            }
+            return new Iota[] { new ListIota(kept) };
+        }
         if (args.Count != 2 || args[0] is not ListIota l0 || args[1] is not ListIota l1) return null;
         static bool In(IReadOnlyList<Iota> list, Iota x)
         {

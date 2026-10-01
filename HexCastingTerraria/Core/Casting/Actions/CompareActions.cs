@@ -48,13 +48,27 @@ public sealed class OpBlockEquality : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x1, y1, z1) = CastingEnvironment.RequireVec3(args[0]);
-        var (x2, y2, z2) = CastingEnvironment.RequireVec3(args[1]);
-
+        // 照原版的顺序：取第一个位置、查范围，再取第二个、查范围。
+        // 原版这里取参数时漏传了参数个数（args.getBlockPos(0) 而不是 getBlockPos(0, argc)），类型不对时事故的下标
+        // 就是 0 / 1 本身，被换成垃圾的格子和出错的那个正好反过来；照搬（和原版对拍时发现，2026-10-02）。
+        var (x1, y1, z1) = Vec3At(args[0], 0);
         env.AssertVecInRange(x1, y1, z1);
+        var (x2, y2, z2) = Vec3At(args[1], 1);
         env.AssertVecInRange(x2, y2, z2);
 
         return new Iota[] { BooleanIota.Of(env.RequireWorld().CompareBlocks(x1, y1, x2, y2, _exact)) };
+    }
+
+    private static (double X, double Y, double Z) Vec3At(Iota iota, int reverseIdx)
+    {
+        try
+        {
+            return CastingEnvironment.RequireVec3(iota);
+        }
+        catch (MishapInvalidIota m)
+        {
+            throw m.At(reverseIdx);
+        }
     }
 }
 

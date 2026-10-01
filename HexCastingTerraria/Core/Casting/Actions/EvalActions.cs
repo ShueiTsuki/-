@@ -47,8 +47,10 @@ public sealed class OpForEach : IAction
             throw new MishapNotEnoughArgs(2, stack.Count);
         }
 
-        var instrs = AsList(stack[stack.Count - 2]);
-        var datums = AsList(stack[stack.Count - 1]);
+        // 原版先取指令（stack.getList(lastIndex - 1, size)，下标 1）再取数据（下标 0）；
+        // 写明下标：两个都是空值时按引用回栈里找会找成栈顶那个（和原版对拍时发现，2026-10-02）
+        var instrs = AsList(stack[stack.Count - 2], 1);
+        var datums = AsList(stack[stack.Count - 1], 0);
         stack.RemoveAt(stack.Count - 1);
         stack.RemoveAt(stack.Count - 1);
 
@@ -62,11 +64,11 @@ public sealed class OpForEach : IAction
             EvalSound.Thoth);
     }
 
-    private static SpellList AsList(Iota iota)
+    private static SpellList AsList(Iota iota, int reverseIdx)
     {
         if (iota is not ListIota list)
         {
-            throw new MishapInvalidIota(iota, InvalidValue.List);
+            throw new MishapInvalidIota(iota, InvalidValue.List) { ReverseIdx = reverseIdx };
         }
         return new SpellList.LList(0, list.Items);
     }

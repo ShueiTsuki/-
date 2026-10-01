@@ -90,7 +90,7 @@ public abstract class ConstMediaAction : IAction
         }
 
         // 取末尾 Argc 个作为参数并弹出
-        var args = new List<Iota>(Argc);
+        var args = new ArgReads(Argc);
         for (int i = stack.Count - Argc; i < stack.Count; i++)
         {
             args.Add(stack[i]);
@@ -114,6 +114,11 @@ public abstract class ConstMediaAction : IAction
         }
         catch (Mishap m)
         {
+            // 参数类型不对：指向最后读过的那个参数（见 ArgReads）
+            if (m is MishapInvalidIota { ReverseIdx: null } bad && args.LastReadIndexOf(bad.Perpetrator) is var i and >= 0)
+            {
+                m = bad.At(Argc - 1 - i);
+            }
             // 兼容尚未改造为 Error 返回的行为：在这里收口，仍然不向日志泄漏。
             return OperationResult.Fail(m, image);
         }
@@ -124,5 +129,54 @@ public abstract class ConstMediaAction : IAction
 
         var image2 = image.WithStack(stack).WithUsedOps(opCount);
         return new OperationResult(image2, sideEffects, continuation, EvalSound.NormalExecute);
+    }
+}
+
+/// <summary>
+/// 常量图案的参数表，顺带记下 Execute 依次读了哪几个参数。
+///
+/// 原版每个取参数的函数都带着下标（args.getXxx(idx, argc)），类型不对时事故就指向那个下标、把那一格换成垃圾。
+/// 移植版的取值函数只拿到 iota 本身，事故原先按对象引用回栈里找 —— 空值、真假值这些全局只有一个实例，
+/// 栈上有两个空值时会找错格子（和原版对拍时发现，2026-10-02）。所以出错时取「最后读过、而且就是它」的那个参数。
+/// </summary>
+internal sealed class ArgReads : IReadOnlyList<Iota>
+{
+    private readonly List<Iota> _items;
+    private readonly List<int> _reads = new();
+
+    public ArgReads(int capacity) => _items = new List<Iota>(capacity);
+
+    public void Add(Iota iota) => _items.Add(iota);
+
+    public int Count => _items.Count;
+
+    public Iota this[int index]
+    {
+        get
+        {
+            _reads.Add(index);
+            return _items[index];
+        }
+    }
+
+    public IEnumerator<Iota> GetEnumerator()
+    {
+        for (int i = 0; i < _items.Count; i++) yield return this[i];
+    }
+
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>最后读过的、引用上就是 <paramref name="iota"/> 的参数下标；没读过返回 -1。</summary>
+    public int LastReadIndexOf(Iota iota)
+    {
+        for (int k = _reads.Count - 1; k >= 0; k--)
+        {
+            if (ReferenceEquals(_items[_reads[k]], iota)) return _reads[k];
+        }
+        for (int i = 0; i < _items.Count; i++)
+        {
+            if (ReferenceEquals(_items[i], iota)) return i;
+        }
+        return -1;
     }
 }

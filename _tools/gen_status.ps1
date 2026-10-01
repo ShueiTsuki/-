@@ -61,6 +61,7 @@ function Fact($obj, [scriptblock]$fmt, [string]$none = '未运行') {
 $compileText = Fact $run.compile { param($c) "$($c.errors) 错 $($c.warnings) 警" }
 $assetText   = Fact $run.assets  { param($a) "$($a.needTexture) 个类需要贴图，缺失 $($a.missing)" }
 $packText    = Fact $run.package { param($p) if ($p.ok) { "$($p.bytes) 字节" } else { '打包失败' } } '未运行（run_all.ps1 -Package）'
+$oracleText  = Fact $run.oracle  { param($o) "$($o.cases) 个用例：一致 $($o.same)，不一致 $($o.diff)，移植版这边还没接世界的 $($o.noWorld)" }
 $serverText  = Fact $run.server  { param($v) if ($v.ok) { '通过（加载 + 进入世界，无未登记异常）' } else { '失败' } } '未运行（run_all.ps1 -Package）'
 $tmlText     = if ($run -and $run.tml) { "commit ``$($run.tml.commit.Substring(0,10))``，dll 构建于 $($run.tml.dllBuilt)" } else { '未记录' }
 $runWhen     = if ($run) { $run.at } else { '(尚未运行 run_all.ps1)' }
@@ -118,6 +119,7 @@ foreach ($k in $layers.Keys) {
 [void]$sb.AppendLine('|---|---|---|')
 [void]$sb.AppendLine("| 编译 | $compileText | ``build.ps1 -CompileOnly`` |")
 [void]$sb.AppendLine("| 离线 VM（栈机语义） | $vmPassed 通过 / $vmFailed 失败 | ``tests\vmtest`` |")
+[void]$sb.AppendLine("| 和原版对拍（同一批咒术，原版咒法学 0.11.4 跑出的结果逐步比对） | $oracleText | ``tests\oracle`` |")
 [void]$sb.AppendLine("| 拖拽 + 几何（画布/坐标） | $($measured.checksPassed) 通过 / $($measured.checksFailed) 失败 | ``tests\drawtest`` |")
 [void]$sb.AppendLine("| 贴图存在性 | $assetText | ``_tools\check_assets.ps1`` |")
 [void]$sb.AppendLine('| 架构约束 | 见 `_tools\check_arch.ps1` | `_tools\check_arch.ps1` |')

@@ -23,9 +23,12 @@ public sealed class OpOpenNParens : IAction
     public OperationResult Operate(CastingEnvironment env, CastingImage image, SpellContinuation continuation)
     {
         var stack = new List<Iota>(image.Stack);
+        // 原版是 newStack.getPositiveInt(newStack.lastIndex)，没先查栈空、也没传参数个数：
+        //   栈空时报的是「要 0 个参数、有 0 个」，不压垃圾；类型不对时下标就是 lastIndex，被换成垃圾的是整个栈最底下那格。
+        // 两处都照搬（和原版对拍时发现，2026-10-02）。
         if (stack.Count == 0)
         {
-            return OperationResult.Fail(new MishapNotEnoughArgs(1, 0), image);
+            return OperationResult.Fail(new MishapNotEnoughArgs(0, 0), image);
         }
 
         // 源项目 getPositiveInt
@@ -33,6 +36,10 @@ public sealed class OpOpenNParens : IAction
         try
         {
             layers = CastingEnvironment.RequirePositiveInt(stack[stack.Count - 1]);
+        }
+        catch (MishapInvalidIota m)
+        {
+            return OperationResult.Fail(m.At(stack.Count - 1), image);
         }
         catch (Mishap m)
         {
@@ -105,7 +112,8 @@ public sealed class OpRuntimeEscape : IAction
 }
 
 /// <summary>
-/// `duplicate_n`：把栈顶项复制 n 份，返回一个列表。
+/// `duplicate_n`：把栈顶项复制 n 份，一份一份压回栈上（原版返回 List(count) { args[0] }，常量图案的返回值逐个入栈；
+/// 这里曾经包成一个列表压上去，和原版对拍时发现，2026-10-02 改回）。
 /// 移植自源项目 `OpDuplicateN`。
 ///
 /// n 超过 1024 时**不报错而是截断**（源项目 `MAX_SERIALIZATION_TOTAL`）——
@@ -133,37 +141,7 @@ public sealed class OpDuplicateN : ConstMediaAction
             list.Add(args[0]);
         }
 
-        return new Iota[] { new ListIota(list) };
-    }
-}
-
-/// <summary>
-/// `unique`：列表去重（用容差比较）。
-/// 移植自源项目 `OperatorUnique`。保留**首次出现**的顺序。
-/// </summary>
-public sealed class OpUnique : ConstMediaAction
-{
-    public override int Argc => 1;
-
-    public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
-    {
-        if (args[0] is not ListIota list)
-        {
-            throw new MishapInvalidIota(args[0], InvalidValue.List);
-        }
-
-        var output = new List<Iota>();
-        foreach (var item in list.Items)
-        {
-            bool seen = false;
-            foreach (var kept in output)
-            {
-                if (Iota.Tolerates(kept, item)) { seen = true; break; }
-            }
-            if (!seen) output.Add(item);
-        }
-
-        return new Iota[] { new ListIota(output) };
+        return list;
     }
 }
 
@@ -234,6 +212,12 @@ public sealed class OpFisherman : IAction
         {
             depth = CastingEnvironment.RequireIntBetween(stack[stack.Count - 1], -maxIdx, maxIdx);
         }
+        catch (MishapInvalidIota m) when (_copy)
+        {
+            // 复制版在原版是 stack.getIntBetween(stack.lastIndex, …)，没传参数个数：事故下标就是 lastIndex，
+            // 被换成垃圾的是整个栈最底下那格（移动版明确写了下标 0，是栈顶）。照搬（和原版对拍时发现，2026-10-02）。
+            return OperationResult.Fail(m.At(stack.Count - 1), image);
+        }
         catch (Mishap m)
         {
             return OperationResult.Fail(m, image);
@@ -282,7 +266,6 @@ public static class StackUtilActions
         PatternRegistry.RegisterAction("hexcasting:runtime_escape", new OpRuntimeEscape());
 
         PatternRegistry.RegisterAction("hexcasting:duplicate_n", new OpDuplicateN());
-        PatternRegistry.RegisterAction("hexcasting:unique", new OpUnique());
 
         PatternRegistry.RegisterAction("hexcasting:random", new OpRandom());
         PatternRegistry.RegisterAction("hexcasting:get_media", new OpGetMedia());
