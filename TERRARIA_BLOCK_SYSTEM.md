@@ -63,9 +63,11 @@ Impetus    = 1×1 ModTile + ModTileEntity（存 CircleExecutionState + 媒质）
 
 泰拉用 `TileFrameX/Y` 编码「我属于结构的哪一块」，帧运算由 `TileObjectData` 托管。
 
-> 本模组目前**只有阿卡夏记录用到了 TileEntity**（1×1），
+> 写这段时（2026-09-29 基线之前）本模组**只有阿卡夏记录用到了 TileEntity**（1×1），
 > 还没有真正需要 `TileObjectData` 多方块的东西。
 > 将来的「启迪木门 / 桌子 / 书架」会用到。
+> （2026-10-01 核对：现在石板、促动石、导向石、卷轴挂板，以及附属 HexDebug 的剪接台 / 核心框架都有方块实体；
+> 多格的有卷轴挂板（2×2 / 3×3 / 4×4）和启迪木门（关 1×3 / 开 2×3）。）
 
 ---
 

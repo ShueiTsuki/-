@@ -1,5 +1,11 @@
 # 咒法学 → 泰拉瑞亚 tModLoader 移植计划
 
+> **历史快照（2026-10-01 加注）**：这是项目最早的移植计划（Phase 0，写于 2026-09-14 之前），不是当前状态，下面的「状态：进行中（Phase 0 准备）」早已过时。
+> 已经变了的大事：目标平台 2026-10-01 退回 **tModLoader 1.4.4.9 stable**（net8.0 / C# 12，见 `HexCastingTerraria/HexCastingTerraria.csproj`），不再是 1.4.5；
+> 媒质按原版全部来自背包物品，没有「自定义玩家资源」；图案、物品、法术环、书都已做完，附属也并进来了。
+> 现在的状态看 `STATUS.generated.md`、`ADDONS.generated.md`，与原版的对照看 `AUDIT_VS_ORIGINAL.md`。
+> 文中引用的 `ENVIRONMENT_AND_TOOLCHAIN.md`、`PHASE0_REPORT.md` 在 .gitignore 里，不在仓库中。
+
 > 状态：**进行中**（Phase 0 准备）
 > 源项目：[FallingColors/HexMod](https://github.com/FallingColors/HexMod) v0.11.4（commit `6b64165be3`），MIT 协议
 > **目标平台：tModLoader 1.4.5**（`1.4.5-dev` beta 分支，net10.0 / C# 14）— 用户已确认

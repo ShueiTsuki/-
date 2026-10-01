@@ -1,5 +1,9 @@
 # 接口契约 v1（A1~A4 必须遵守）
 
+> **历史快照（2026-10-01 加注）**：这是 Phase 0 给多 agent 并行开发定的接口契约草案（与 `HEXCASTING_PORT_PLAN.md` 同一批，写于 2026-09-14 之前），
+> 状态停在「待你确认」。实际的目录与分层和这里不一样（例如没有 `Patterns/` 目录，图案行为在 `Core/Casting/Actions/`），
+> 以脚本生成的 `ARCHITECTURE.md` 为准；当前状态看 `STATUS.generated.md`。
+
 > 依据：`hexcasting-fabric-1.20.1-0.11.4.jar` 中 842 个 class 的真实清单（已提取核对，非推测）
 > 目的：让多个 subagent 并行产出的代码能拼在一起。**任何实现偏离本契约，必须先在本文档提 PR 修订。**
 > 状态：**待你确认**（与 `HEXCASTING_PORT_PLAN.md` 同一确认批次）

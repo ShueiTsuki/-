@@ -5,6 +5,11 @@
 
 当前批次（2026-10-01，用户指定，来源 https://addons.hexxy.media/）：**HexParse、Hexcessible、HexDebug**。
 
+**进度（2026-10-01 核对）**：三个附属的 P0–P3d 都已做完。每个附属哪些功能做了、在哪个文件，看自动生成的 [ADDONS.generated.md](ADDONS.generated.md)：
+标「（待做）」的只剩依赖其他还没移植的附属的插件 / 智能签名；HexParse 表里「与 HexDebug 联动」一行也标着待做，但代码在被联动的
+HexDebug 那边（`Addons/HexDebug/Interop/HexParseCommentRenderer.cs`），已经做了。下面各附属表里的「泰拉侧打算」和「做的顺序」是动工前的计划，
+留作设计记录；与上游的偏差以各附属自己的 `README.md` 为准。
+
 ## 上游与版本（钉死，与本地 jar 同一版本）
 
 | 附属 | 版本（Modrinth 1.20.1 Fabric 最新） | 本地 jar（`D:\DeepSeekHarness\mod\`） | 源码（`D:\DeepSeekHarness\addons_src\`） | 许可 | 规模 |
@@ -35,6 +40,7 @@
 - **联机**：服务端开关由**开服的人**决定（「创建并游玩」= 房主自己的设置；专用服务器 = 服务器的配置文件）。别人进服时，tML 把服务器的开关发过来；和自己本地不一样就弹「需要重载」，点一下自动重载再进服，不用手动改，也不会改动他自己本地保存的设置。所有人用的是同一个 tmod，不用另外下载。
 - **游玩中改**：需要重载的开关，联机时服务器会直接拒绝（tML 提示「这些更改需要重载，无法保存」）→ 要改就停服、改配置、重开；单人可以在配置菜单里改，tML 会提示重载模组后生效。Hexcessible 这种客户端开关每个人随时自己改，立即生效，互不影响。
 - **开关在加载内容之前就读好了**：tML 先 `AutoloadConfig`（把配置从磁盘读进来；联机重载时用服务器发来的值）再 `Autoload` 内容，所以附属的 `IsLoadingEnabled` 读 `HexAddonsConfig.Instance` 是可靠的（Mod.cs / ConfigManager.Add 已确认）。只有「总开关」标 `[ReloadRequired]`；各附属的子选项不标，房主能在游戏里随时改。
+  **例外是配置自己的 `OnChanged`**：tML 在加载配置的过程中就会调它，这时别的配置还是 null。2026-10-01 客户端配置的 OnChanged 去读服务端的附属开关，空引用让整个模组被禁用（c7958a7 修）。现在 OnChanged 只用自己的字段，附属的 `IsEnabled` 读配置一律空安全（配置还没加载时当作关），`check_arch` 有一条断言：OnChanged 和它调到的方法在判断 `gameMenu` 之前不许碰别的配置。
 - **每个世界的大法术笔顺**：生成时要避开所有已有图案的签名。这里必须避开**全部附属**的图案（不管开没开），否则一个在附属关着时建的世界，可能生成一条和附属图案撞车的大法术笔顺，开了附属以后那条大法术就画不出来（查表时普通图案优先）。附属图案的签名是编译期就确定的静态数据，登记表里一直都有，只是没开时不参与识别。
 - **本体物品里存着附属的 iota**（例如核心里存了 HexParse 的注释 iota，然后把 HexParse 关了）：原版 Hex Casting 遇到不认识的 iota 类型会变成垃圾，数据就丢了。本模组要求更严：P0 的 iota 扩展点必须把**不认识的 iota 原样保留**（显示成「未加载的 iota」，执行时当垃圾处理，存档时原样写回），重新打开附属就恢复。这条做进 IotaTag 的自检。附属的图案本身只是一串角度，关掉后画出来就是无效图案，和原版没装这个附属时一样。
 
@@ -49,7 +55,9 @@ HexCastingTerraria/Addons/
     ├── README.md                 给人看的：这个附属是什么、泰拉侧怎么玩、与上游的偏差
     ├── Core/                     纯逻辑（零 Terraria / XNA 引用，和主 Core 同一条断言），离线测试直接编译
     ├── Game/                     游戏侧：图案注册胶水、指令、物品、方块、联机消息、ModSystem
-    └── Client/                   （可选）纯客户端绘制 / 输入
+    ├── Client/                   （可选）纯客户端绘制 / 输入（实际三个附属都没建，客户端代码也放在 Game/）
+    ├── Interop/                  （可选）跨附属联动（目前只有 HexDebug 有）
+    └── Assets/                   （可选）贴图（目前只有 HexDebug 有）
 tests/vmtest/Addons/<附属名>Tests.cs   该附属的离线用例
 Config/HexAddonsConfig.cs              服务端开关 + 各附属的服务端子配置
 Config/HexAddonsClientConfig.cs        客户端开关 + 各附属的客户端子配置
@@ -98,12 +106,12 @@ P0 只做三个附属都要用的（已完成的标「P0 已做」）；只有�
 | 附属框架（AddonRegistry、两份配置、AddonContent、清单断言、测试工程编译 Addons/*/Core、索引生成）（P0 已做） | 全部 | 上面「目录」「断言」两节 |
 | `PatternRegistry` 按命名空间登记附属图案 + 附属图案的动作注册（P0 已做） | HexParse、HexDebug | 现在 188 条是生成数据一次装进去的；加一个 `RegisterAddonPatterns(ns, …)`，大法术 / 每世界笔顺不受影响 |
 | 书：附属分类 / 条目（P0 已做入口 HexAddon.AddBookContent；生成器读附属 jar 在 P1 做） | HexParse、HexDebug | Hexcessible 没有书页 |
-| **画布输入状态机**（空闲 / 鼠标绘制 / 键盘绘制 / 自动补全 / 改别名）—— P2 开头做 | Hexcessible（HexDebug 的剪接台小画布也要） | 照 Hexcessible 的 `DrawState` 拆：现在画布的输入逻辑都堆在 HexClientSystem 里，先抽成状态机，本体行为不变 |
-| **文本输入框**（泰拉里打字：拦住按键不触发游戏操作、中文输入法）—— P2 开头做 | Hexcessible 自动补全 / 改别名、HexDebug 剪接台 | 用泰拉自己的文本输入（`Main.GetInputText` + `PlayerInput.WritingText`） |
-| **剪贴板**（读 / 写系统剪贴板）—— P1 开头做 | HexParse、HexDebug 剪接台 | `ReLogic.OS.Platform.Get<IClipboard>()`；联机时服务端向客户端要（HexParse 的 MsgPull/PushClipboard） |
+| **画布输入状态机**（空闲 / 鼠标绘制 / 键盘绘制 / 自动补全 / 改别名）（P2 已做：`Addons/Hexcessible/Game/HexcessibleCanvas.cs`） | Hexcessible（HexDebug 的剪接台小画布也要） | 照 Hexcessible 的 `DrawState` 拆：现在画布的输入逻辑都堆在 HexClientSystem 里，先抽成状态机，本体行为不变 |
+| **文本输入框**（泰拉里打字：拦住按键不触发游戏操作、中文输入法）（已做：Hexcessible 画布、HexDebug 剪接台界面 `SplicingTableUI.cs`） | Hexcessible 自动补全 / 改别名、HexDebug 剪接台 | 用泰拉自己的文本输入（`Main.GetInputText` + `PlayerInput.WritingText`） |
+| **剪贴板**（读 / 写系统剪贴板）（P1 已做：`Addons/HexParse/Game/HexParseIO.cs`、联机走 `HexParseNet.cs`） | HexParse、HexDebug 剪接台 | `ReLogic.OS.Platform.Get<IClipboard>()`；联机时服务端向客户端要（HexParse 的 MsgPull/PushClipboard） |
 | 新 iota 类型的扩展点（序列化、联机编码、显示）（P0 已做） | HexParse 注释 iota、HexDebug 认知危害 iota | `IotaSerializer` / `IotaWire` / `IotaTag` 目前是封闭的 switch，改成可登记；**不认识的类型原样保留**（见「开关的实际效果」最后一条） |
 | 服务端附属开关只许房主改（P0 已做） | HexParse、HexDebug | `HexAddonsConfig.AcceptClientChanges`：只接受房主（`Main.countsAsHostForGameplay`）的修改；需要重载的项 tML 本来就拒绝 |
-| 多格方块 + 带界面的方块实体模板 | HexDebug 剪接台、核心框架 | 本体已有板岩 / 原动力的方块实体，照那个模式 |
+| 多格方块 + 带界面的方块实体模板 | HexDebug 剪接台、核心框架 | 本体已有板岩 / 原动力的方块实体，照那个模式。P3b 已做：剪接台 / 制念台 / 核心框架都是 1×1 带方块实体（`AddonTileEntity`），没用到多格 |
 
 ---
 
@@ -117,8 +125,8 @@ P0 只做三个附属都要用的（已完成的标「P0 已做」）；只有�
 | 解析主循环（`[ ]` 嵌套、未知符号提示、括号不配对恢复、每个 iota 的媒质消耗） | ParserMain.java, CostTracker.kt | 照搬（Core） |
 | token：图案名（长 / 短 id）、`( ) { } \ del undo`、大法术（按解锁表，未解锁留 `<id?>` 占位注释） | str2nbt/ToPattern.java, hooks/PatternMapper.java | 照搬 |
 | token：`num_x`、`mask_-v`、`_wedsaq`、数字、`vec_x_y_z`、true/false/null/garbage、self | ConstParsers.java, ToMiscConst.kt, misc/NumEvaluatorBrute.java | 照搬 |
-| token：`entity_<uuid>` | ToEntity.java | **偏差**：泰拉实体没有 UUID —— 玩家 `entity_player_<名>`，NPC `entity_npc_<编号>` |
-| 别名（内置 hermes / iris / thoth / pop / 1.19 旧名…）+ 玩家自定义；宏 `#名` 展开（防递归、缩进叠加） | ToDialect.java, macro/* | 照搬；宏存客户端 `Main.SavePath/HexParse/macro.json`，进服时发给服务端 |
+| token：`entity_<uuid>` | ToEntity.java | **偏差**：泰拉实体没有 UUID —— 一律按编号：`entity_player_编号`、`entity_npc_编号`、`entity_item_编号`、`entity_projectile_编号`、`entity_itemframe_编号`（物品框，2026-10-01 物品框当实体以后加的） |
+| 别名（内置 hermes / iris / thoth / pop / 1.19 旧名…）+ 玩家自定义；宏 `#名` 展开（防递归、缩进叠加） | ToDialect.java, macro/* | 照搬；宏存客户端 `Main.SavePath/HexParse/macro.json`。**偏差**：泰拉侧解析在本人客户端做，宏不用发给服务端（上游在服务端解析，进服时才要发） |
 | 反向：iota → 文本（图案名 / `num_` / `mask_` / `_角度`、数字、向量、注释、实体…；未知类型 `nbt_<base64>`） | nbt2str/*, FallbackBinaryParser.kt | 照搬；`nbt_` 用本模组的 IotaTag 编码 |
 | 注释 iota（绿色文字、执行时跳过；换行缩进 `tab_N`） | hooks/CommentIota*.java | 新 iota 类型（走 P0 的 iota 扩展点） |
 | 大法术解锁表（BY_SCROLL / ALL / DISABLED；代码里 DISABLED = 全禁，文档写反了，以代码为准） | hooks/GreatPatternUnlocker.java | 存世界 |
@@ -126,7 +134,7 @@ P0 只做三个附属都要用的（已完成的标「P0 已做」）；只有�
 | 指令 `/hexParse`：`<代码> [重命名]`、read / read_signatures / read_hexbug / share、clipboard / clipboard_angles / clipboard_hexpattern、mind_stack peek/push/push_clipboard、macro / dialect list/define/define_clipboard/remove、conflict、lehmer、donate、learn_great、unlock_great | commands/* | 照搬；**偏差**：泰拉聊天不能点击复制 → 读出来的代码直接写进剪贴板并提示；泰拉物品不能改名 → 核心上存一个自定义名显示在名字行 |
 | 剪贴板（服务端向客户端要剪贴板、客户端预检后回传） | network/MsgPull/PushClipboard.java | 照搬（单人直接读） |
 | `.hexpattern` 格式（按英文图案名映射） | parsers/hexpattern/* | 照搬（用 hexsrc_assets 的 en_us 名） |
-| 嵌套列表 / 括号彩色显示 | mixin/iota/* | 客户端子开关 |
+| 嵌套列表 / 括号彩色显示 | mixin/iota/* | 已做（2026-10-01，本体 iota 显示按原版重做以后接上）。**偏差**：开关是服务端「HexParse 设置」里的「嵌套彩色显示」（房主定），不是上游那样各人的客户端设置，见 HexParse README |
 | 书：「HexParse指令」分类 4 条 + 图案条目 | jar assets/…/thehexbook, lang/zh_cn.json | 生成器读 jar |
 | 配置 10 项 | config/HexParseConfig.java | 照搬到 HexAddonsConfig.HexParse |
 | 其他附属的插件解析（MoreIotas / Hexal / Hexcellular / HexPose / Oneironaut / Ephemera …） | str2nbt/plugins, nbt2str/plugins | 那些附属移植后再接；现在不做 |
@@ -185,12 +193,14 @@ P0 只做三个附属都要用的（已完成的标「P0 已做」）；只有�
 | 联动 | 上游位置 | 何时做 |
 |---|---|---|
 | Hexcessible 在 HexDebug 剪接台的施法界面里：照常能用（上游只显示悬停 / 手画提示、不能打字；按玩家反馈放开，见 Hexcessible README） | hexcessible `DrawStateHexdbgInterop*Mixin` | 已做 |
-| HexParse 的 `read_hexbug`（按 hexbug 格式读） | hexparse commands | 与 HexParse 一起 |
+| HexParse 的 `read_hexbug`（按 hexbug 格式读） | hexparse commands | 已做（随 HexParse）。其实不算跨附属：hexbug 指的是 Discord 上 HexBug 机器人 `/patterns hex` 的格式，不依赖 HexDebug |
 | HexDebug 剪接台里画 HexParse 的注释 iota | hexparse `compat/hexdebug/CommentRenderer.kt` | 已做（HexDebug/Interop） |
 
 （2026-10-01 核对上游源码：HexParse 没有「读写剪接台」的 IO 方式，原表那一行是计划时的误记，已删。）
 
-联动代码放在**被联动的那个附属**目录里（`Addons/HexDebug/Interop/Hexcessible*.cs`），`addon.json` 的 `requires` 里写明「可选依赖」，框架保证两边都加载才注册。
+联动代码放在**被联动的那个附属**目录里，`addon.json` 的 `requires` 里写明「可选依赖」，框架保证两边都加载才注册。
+实际落地：HexParse 注释在剪接台里画 → `Addons/HexDebug/Interop/HexParseCommentRenderer.cs`（HexDebug 的 `requires` 写了 hexparse）；
+Hexcessible 在剪接台画布里能用 → 是 Hexcessible 自己的画布逻辑，在 `Addons/Hexcessible/Game/HexcessibleCanvas.cs`。
 
 ---
 
@@ -204,7 +214,7 @@ P0 只做三个附属都要用的（已完成的标「P0 已做」）；只有�
 | **P3a HexDebug 调试** | 步进核心（Core）+ 调试杖 / 运行杖 + 断点 + 游戏内调试面板 + 22 个图案 + 认知危害 iota + 书 | 最大的附属，先做不需要新界面的部分 |
 | **P3b HexDebug 剪接台** | 剪接台 / 制念台 / 核心框架 + 编辑界面 + 配方 | 需要一整套新界面 |
 | **P3c 跨附属联动** | 上一节的三条 | 两边都做完才有意义 |
-| **P3d DAP（可选）** | 外部调试服务器，默认关 | 需求最小、牵涉本地端口，最后做 |
+| **P3d DAP（可选）** | 外部调试服务器，默认关（已做，2026-10-01） | 需求最小、牵涉本地端口，最后做 |
 
 预计规模（C#）：P0 约 1500 行，HexParse 约 3500 行，Hexcessible 约 2000 行，HexDebug 约 5000 行（不含 DAP）。
 
