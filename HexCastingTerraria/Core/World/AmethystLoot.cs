@@ -89,6 +89,49 @@ public static class AmethystLoot
     }
 
     /// <summary>
+    /// 母岩可生长的方向数。源项目 `BuddingAmethystBlock` 掷六个方向（`DIRECTIONS[random.nextInt(6)]`），
+    /// 2D 只有上下左右四个。
+    /// </summary>
+    public const int GrowthDirections = 4;
+
+    /// <summary>方向编号「上」（与 GeodeCore.RandomUpdate 的方向表一致：0 上 / 1 下 / 2 左 / 3 右）。</summary>
+    public const int DirectionUp = 0;
+
+    /// <summary>
+    /// 紫水晶种植盆一次随机刻是否让上方长一级（移植版新增，原版没有种植盆）。
+    ///
+    /// 概率与母岩**某一面**完全相同：先过 <see cref="RollGrowth"/> 的 1/5，再在四个方向里正好掷到「上」，
+    /// 合计 1/20。种植盆只有朝上这一面能长，相当于只剩一面的母岩，不比母岩的任何一面快。
+    /// </summary>
+    public static bool RollPlanterGrowth(Func<int, int> nextInt)
+    {
+        if (nextInt == null) throw new ArgumentNullException(nameof(nextInt));
+        return RollGrowth(nextInt) && nextInt(GrowthDirections) == DirectionUp;
+    }
+
+    /// <summary>
+    /// 一次生长落到目标格上，这一格变成什么。返回 null = 这一格不变。
+    ///
+    /// 照 MC 的 `BuddingAmethystBlock.randomTick`：
+    ///   - 目标格能长（`canClusterGrowAtState`：空气或满格水）→ 小芽
+    ///   - 目标格是小芽 / 中芽 / 大芽 → 升一级
+    ///   - 已成熟、或是**别的方块** → 不动
+    /// 移植版不记晶簇朝向（贴图统一朝上），所以不查源项目的 `FACING == direction`。
+    /// 2026-10-01 之前移植版把「别的方块」也当成空阶段，母岩会把贴着的石头、另一块母岩直接改成小芽。
+    /// </summary>
+    /// <param name="spotEmpty">目标格没有方块。</param>
+    /// <param name="occupant">目标格上的晶簇阶段；不是晶簇的方块传 <see cref="AmethystStage.None"/>。</param>
+    public static AmethystStage? GrowInto(bool spotEmpty, AmethystStage occupant)
+    {
+        if (spotEmpty) return AmethystStage.SmallBud;
+        return occupant switch
+        {
+            AmethystStage.SmallBud or AmethystStage.MediumBud or AmethystStage.LargeBud => NextStage(occupant),
+            _ => null,
+        };
+    }
+
+    /// <summary>
     /// MC 的 `ore_drops` 附魔加成公式（`ApplyBonusCount.ORE_DROPS`）：
     /// <code>
     ///   i = rand.nextInt(fortune + 2) - 1

@@ -8,6 +8,7 @@
   - 原版没有 / MC 原生物品不在 jar 里的：保留现有贴图，只修图集格式
 
 颜料（染色剂）的动画贴图在 _tools/gen_pigments.py。
+紫水晶种植盆（移植版新增，原版没有贴图，用原版方块贴图拼）在 _tools/gen_planter_art.py。
 
 来源：本地原版 jar（hexwork/jar/assets/hexcasting/textures，HexMod v0.11.4，MIT）。
 """

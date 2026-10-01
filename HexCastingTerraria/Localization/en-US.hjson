@@ -613,6 +613,15 @@ Mods: {
 					Spent straight from your inventory when casting
 					'''
 			}
+
+			AmethystPlanterItem: {
+				DisplayName: Amethyst Planter
+				Tooltip:
+					'''
+					Once placed, amethyst grows on top of it
+					Mine the grown cluster with a pickaxe to harvest
+					'''
+			}
 		}
 
 			AmethystDustBlockItem: {
@@ -976,6 +985,9 @@ Mods: {
 			}
 			AmethystCluster: {
 				MapEntry: Amethyst Cluster
+			}
+			AmethystPlanter: {
+				MapEntry: Amethyst Planter
 			}
 		}
 		Keybinds: {

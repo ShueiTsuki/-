@@ -53,76 +53,30 @@ public sealed class GeodeCore : ModTile
     /// 移植自 MC 的 `BuddingAmethystBlock.randomTick`：
     ///   1. `rand.nextInt(5) == 0` 才继续（1/5 概率）
     ///   2. 随机挑一个方向
-    ///   3. 该方向若是空位 → 长出小芽；若已是某一级晶簇 → 升一级；已成熟 → 不动
+    ///   3. 该方向若是空位 → 长出小芽；若已是某一级芽 → 升一级；已成熟或是别的方块 → 不动
+    ///      （第 3 步与紫水晶种植盆共用，见 <see cref="AmethystGrowth.GrowAt"/>）
     /// </summary>
     public override void RandomUpdate(int i, int j)
     {
         // 调试开关：晶簇立即长成（跳过随机判定）
-        bool forceGrow = HexClientConfig.Instance.InstantCrystalGrowth;
-
-        if (!forceGrow && !AmethystLoot.RollGrowth(Main.rand.Next))
+        if (!AmethystGrowth.InstantGrowth && !AmethystLoot.RollGrowth(Main.rand.Next))
         {
             return;
         }
 
         // 随机挑一个方向（上/下/左/右）
-        int dir = Main.rand.Next(4);
+        int dir = Main.rand.Next(AmethystLoot.GrowthDirections);
         int ti = i, tj = j;
         switch (dir)
         {
-            case 0: tj -= 1; break;   // 上
+            case AmethystLoot.DirectionUp: tj -= 1; break;   // 上
             case 1: tj += 1; break;   // 下
             case 2: ti -= 1; break;   // 左
             default: ti += 1; break;  // 右
         }
 
-        if (!WorldGen.InWorld(ti, tj, 1))
-        {
-            return;
-        }
-
-        var tile = Main.tile[ti, tj];
-
-        // 空位 → 长出小芽
-        if (!tile.HasTile)
-        {
-            WorldGen.PlaceTile(ti, tj, ModContent.TileType<AmethystBudSmall>(), mute: true);
-            return;
-        }
-
-        // 已是某一级 → 升一级
-        int next = StageToTile(AmethystLoot.NextStage(TileToStage(tile.TileType)));
-        if (next > 0 && next != tile.TileType)
-        {
-            tile.TileType = (ushort)next;
-            tile.HasTile = true;
-            // 通知客户端这一格变了；不置位的话联机下只有服务端看得见生长
-            if (Main.netMode == NetmodeID.Server)
-            {
-                NetMessage.SendTileSquare(-1, ti, tj, 1);
-            }
-        }
+        AmethystGrowth.GrowAt(ti, tj);
     }
-
-    /// <summary>方块类型 → 生长阶段。</summary>
-    internal static AmethystStage TileToStage(int tileType)
-    {
-        if (tileType == ModContent.TileType<AmethystBudSmall>()) return AmethystStage.SmallBud;
-        if (tileType == ModContent.TileType<AmethystBudMedium>()) return AmethystStage.MediumBud;
-        if (tileType == ModContent.TileType<AmethystBudLarge>()) return AmethystStage.LargeBud;
-        if (tileType == ModContent.TileType<AmethystCluster>()) return AmethystStage.Cluster;
-        return AmethystStage.None;
-    }
-
-    /// <summary>生长阶段 → 方块类型。0 表示该阶段没有对应方块。</summary>
-    internal static int StageToTile(AmethystStage stage) => stage switch
-    {
-        AmethystStage.SmallBud => ModContent.TileType<AmethystBudSmall>(),
-        AmethystStage.MediumBud => ModContent.TileType<AmethystBudMedium>(),
-        AmethystStage.LargeBud => ModContent.TileType<AmethystBudLarge>(),
-        AmethystStage.Cluster => ModContent.TileType<AmethystCluster>(),
-        _ => 0,
-    };
 }
 
 /// <summary>
@@ -165,9 +119,73 @@ public abstract class AmethystGrowth : ModTile
         b = 0.95f * strength;
     }
 
+    /// <summary>调试开关「晶簇立即长成」：跳过随机判定，每次随机刻都长一级（母岩与种植盆都认）。</summary>
+    internal static bool InstantGrowth => HexClientConfig.Instance.InstantCrystalGrowth;
+
+    /// <summary>
+    /// 让 (x, y) 这一格长一级。母岩（<see cref="GeodeCore"/>）和紫水晶种植盆（<see cref="AmethystPlanter"/>）共用，
+    /// 规则在 <see cref="AmethystLoot.GrowInto"/>：空位长出小芽、芽升一级，成熟晶簇和别的方块不动。
+    /// 服务端改完要发 SendTileSquare，否则联机下只有服务端看得见生长 ——
+    /// 2026-10-01 之前「空位长出小芽」这一步没发，客户端要等它长到中芽才看得见。
+    /// </summary>
+    internal static void GrowAt(int x, int y)
+    {
+        if (!WorldGen.InWorld(x, y, 1))
+        {
+            return;
+        }
+
+        var tile = Main.tile[x, y];
+        var next = AmethystLoot.GrowInto(!tile.HasTile, tile.HasTile ? TileToStage(tile.TileType) : AmethystStage.None);
+        if (next is not { } stage)
+        {
+            return;
+        }
+
+        int type = StageToTile(stage);
+        if (!tile.HasTile)
+        {
+            // 新芽走一遍放置流程（取帧、查支撑）；放不下就算了
+            if (!WorldGen.PlaceTile(x, y, type, mute: true))
+            {
+                return;
+            }
+        }
+        else
+        {
+            tile.TileType = (ushort)type;
+        }
+
+        if (Main.netMode == NetmodeID.Server)
+        {
+            NetMessage.SendTileSquare(-1, x, y, 1);
+        }
+    }
+
+    /// <summary>方块类型 → 生长阶段。不是晶簇的方块返回 <see cref="AmethystStage.None"/>。</summary>
+    internal static AmethystStage TileToStage(int tileType)
+    {
+        if (tileType == ModContent.TileType<AmethystBudSmall>()) return AmethystStage.SmallBud;
+        if (tileType == ModContent.TileType<AmethystBudMedium>()) return AmethystStage.MediumBud;
+        if (tileType == ModContent.TileType<AmethystBudLarge>()) return AmethystStage.LargeBud;
+        if (tileType == ModContent.TileType<AmethystCluster>()) return AmethystStage.Cluster;
+        return AmethystStage.None;
+    }
+
+    /// <summary>生长阶段 → 方块类型。0 表示该阶段没有对应方块。</summary>
+    internal static int StageToTile(AmethystStage stage) => stage switch
+    {
+        AmethystStage.SmallBud => ModContent.TileType<AmethystBudSmall>(),
+        AmethystStage.MediumBud => ModContent.TileType<AmethystBudMedium>(),
+        AmethystStage.LargeBud => ModContent.TileType<AmethystBudLarge>(),
+        AmethystStage.Cluster => ModContent.TileType<AmethystCluster>(),
+        _ => 0,
+    };
+
     /// <summary>
     /// 原版：晶簇贴着长出它的那块方块，那块没了它就碎掉（按「没用对工具」掉落）。
     /// 移植版不记朝向（贴图统一朝上），所以只要上下左右还有一块能长出它的方块就算贴着。
+    /// 紫水晶种植盆只长朝上那一面，所以只有盆的**正上方**算贴着（盆的旁边、下面都不算）。
     /// </summary>
     public override bool TileFrame(int i, int j, ref bool resetFrame, ref bool noBreak)
     {
@@ -181,12 +199,18 @@ public abstract class AmethystGrowth : ModTile
         return true;
     }
 
-    /// <summary>能长出晶簇的方块：母岩。</summary>
-    internal static bool IsGrower(int i, int j)
-        => WorldGen.InWorld(i, j) && Main.tile[i, j] is { HasTile: true } t && t.TileType == ModContent.TileType<GeodeCore>();
+    /// <summary>能向四面长出晶簇的方块：母岩。</summary>
+    internal static bool IsGrower(int i, int j) => IsTileOf<GeodeCore>(i, j);
+
+    /// <summary>只向上长出晶簇的方块：紫水晶种植盆。</summary>
+    internal static bool IsPlanter(int i, int j) => IsTileOf<AmethystPlanter>(i, j);
+
+    private static bool IsTileOf<T>(int i, int j) where T : ModTile
+        => WorldGen.InWorld(i, j) && Main.tile[i, j] is { HasTile: true } t && t.TileType == ModContent.TileType<T>();
 
     private static bool IsSupported(int i, int j)
-        => IsGrower(i, j + 1) || IsGrower(i, j - 1) || IsGrower(i - 1, j) || IsGrower(i + 1, j);
+        => IsGrower(i, j + 1) || IsGrower(i, j - 1) || IsGrower(i - 1, j) || IsGrower(i + 1, j)
+           || IsPlanter(i, j + 1);
 
     [System.ThreadStatic] private static bool _brokenBySupportLoss;
 

@@ -8,7 +8,7 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **128** 个可合成物品。
+共 **129** 个可合成物品。
 
 ## 肉前（108 项）
 
@@ -140,9 +140,9 @@
 | `FocusHolderItem` | 1 | 〔HexRecipeGroups.SlateBlocks〕×4 | WorkBenches | 附属 HexDebug：上游 recipes/focus_holder.json，金粒 ×4 + 板岩方块 ×4（泰拉：金锭 ×1）；另有「框架 + 核心材料」装进新核心的配方 |
 | `FocusHolderItem` | 1 | FallenStar×4 + Silk×4 | WorkBenches | 附属 HexDebug：上游 recipes/focus_holder.json，金粒 ×4 + 板岩方块 ×4（泰拉：金锭 ×1）；另有「框架 + 核心材料」装进新核心的配方 |
 
-## 肉后（11 项）
+## 肉后（12 项）
 
-淬灵系（泰拉对应物是神圣地妖精）、法术书（源项目要末地合唱果）、珍珠木法杖。
+淬灵系（泰拉对应物是神圣地妖精）、法术书（源项目要末地合唱果）、珍珠木法杖、紫水晶种植盆（移植版新增，用魂合成）。
 
 | 物品类 | 产出 | 材料 | 合成站 | 依据 |
 |---|---|---|---|---|
@@ -159,6 +159,7 @@
 | `CherryStaff` | 1 | ChargedAmethyst×1 + Pearlwood×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 87 staffRecipe(樱花木)。泰拉没有樱花木，用珍珠木代替 —— 而珍珠木只长在肉后的神圣地，所以实际门槛是肉后 |
 | `SpookyStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 86 staffRecipe(红树)。泰拉用**阴森木**代替 —— 阴森木只在肉后的南瓜月掉落，门槛自带 |
 | `PearlwoodStaff` | 1 | ChargedAmethyst×1 + {WoodType}×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带 |
+| `AmethystPlanterItem` | 1 | AmethystDustBlockItem×1 + ChargedAmethyst×1 + SoulofLight×5 + SoulofNight×5 | MythrilAnvil | 移植版新增（用户定，原版没有）：原版紫水晶只靠母岩再生、母岩要脑叶切除；这里用肉后的光明 / 暗影之魂代替被切除的心智，门槛由魂自带 |
 | `QuenchedDebugger` | 1 | QuenchedAllayShard×4 | WorkBenches | 附属 HexDebug：上游 flyswatter_quenching，调试杖 + 淬灵晶碎片 ×4（碎片肉后） |
 | `QuenchedEvaluator` | 1 | QuenchedAllayShard×4 | WorkBenches | 附属 HexDebug：同上，运行杖 + 淬灵晶碎片 ×4 |
 

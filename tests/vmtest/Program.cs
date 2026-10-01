@@ -2355,6 +2355,44 @@ static class Program
                 && !AmethystLoot.RollGrowth(_ => 4));
         }
         {
+            // 一次生长落到目标格上（母岩与种植盆共用）：照 MC BuddingAmethystBlock.randomTick ——
+            // 空位 → 小芽，芽 → 升一级，成熟 / 别的方块 → 不动
+            bool ok = AmethystLoot.GrowInto(true, AmethystStage.None) == AmethystStage.SmallBud
+                   && AmethystLoot.GrowInto(false, AmethystStage.SmallBud) == AmethystStage.MediumBud
+                   && AmethystLoot.GrowInto(false, AmethystStage.MediumBud) == AmethystStage.LargeBud
+                   && AmethystLoot.GrowInto(false, AmethystStage.LargeBud) == AmethystStage.Cluster
+                   && AmethystLoot.GrowInto(false, AmethystStage.Cluster) == null;
+            Check("生长落点：空位→小芽、芽升一级、成熟不动", ok);
+        }
+        {
+            // 【回归】目标格是别的方块（石头、另一块母岩、种植盆上放的东西）→ 不动。
+            // 之前移植版把非晶簇方块当成「空阶段」，母岩会把贴着的石头直接改成小芽；
+            // 原版 canClusterGrowAtState 只认空气和满格水
+            Check("生长落点：别的方块挡着 → 不长（不吞掉邻格）",
+                AmethystLoot.GrowInto(false, AmethystStage.None) == null);
+        }
+        {
+            // 紫水晶种植盆（移植版新增）：每次随机刻的概率 = 母岩某一面 = 1/5 × 1/4。
+            // 把两次掷骰的 5 × 4 种结果全部走一遍：正好 1 种生长，且是「过了 1/5、方向掷到上」
+            int hits = 0, total = 0;
+            bool rightOne = false;
+            for (int a = 0; a < AmethystLoot.TickChanceDenominator; a++)
+            {
+                for (int b = 0; b < AmethystLoot.GrowthDirections; b++)
+                {
+                    total++;
+                    int ta = a, tb = b;
+                    if (AmethystLoot.RollPlanterGrowth(n => n == AmethystLoot.TickChanceDenominator ? ta : tb))
+                    {
+                        hits++;
+                        rightOne = ta == 0 && tb == AmethystLoot.DirectionUp;
+                    }
+                }
+            }
+            Check("种植盆：20 种掷骰里只有「1/5 命中 + 方向为上」生长（= 母岩一面）",
+                hits == 1 && total == 20 && rightOne, $"命中 {hits}/{total}");
+        }
+        {
             // ore_drops 公式：时运 0 原样；时运 >0 时 i = nextInt(f+2)-1，负数归零
             int o0 = AmethystLoot.ApplyOreDrops(3, 0, _ => 0);            // 时运 0 -> 3
             int o1 = AmethystLoot.ApplyOreDrops(3, 2, _ => 0);            // nextInt(4)=0 -> i=-1 -> 0 -> 3
