@@ -98,6 +98,29 @@ public sealed class HexCanvas
         _resolved.Clear();
     }
 
+    /// <summary>画布上的图案快照（运行杖与法杖各用各的图案）。</summary>
+    public sealed class Snapshot
+    {
+        internal Snapshot((List<DrawnPattern>, HashSet<HexCoord>) drawer, List<ResolvedPattern> resolved)
+        {
+            Drawer = drawer;
+            Resolved = resolved;
+        }
+
+        internal (List<DrawnPattern>, HashSet<HexCoord>) Drawer { get; }
+
+        internal List<ResolvedPattern> Resolved { get; }
+    }
+
+    public Snapshot TakeSnapshot() => new(_drawer.Snapshot(), new List<ResolvedPattern>(_resolved));
+
+    public void RestoreSnapshot(Snapshot s)
+    {
+        _drawer.Restore(s.Drawer);
+        _resolved.Clear();
+        _resolved.AddRange(s.Resolved);
+    }
+
     /// <summary>放弃正在画的一笔（不关画布）。</summary>
     public void CancelStroke() => _drawer.Cancel();
 

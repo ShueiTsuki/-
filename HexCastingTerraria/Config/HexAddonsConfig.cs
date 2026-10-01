@@ -33,6 +33,9 @@ public sealed class HexAddonsConfig : ModConfig
     [ReloadRequired]
     public bool HexDebug { get; set; }
 
+    /// <summary>HexDebug 的配置项（上游 HexDebugServerConfig）。</summary>
+    public Addons.HexDebug.Game.HexDebugOptions HexDebugOptions { get; set; } = new();
+
     /// <summary>配置改了（包括进服时收到服务器的值）：把附属的子配置写进各自的设置。</summary>
     public override void OnChanged() => HexParseOptions.Apply();
 

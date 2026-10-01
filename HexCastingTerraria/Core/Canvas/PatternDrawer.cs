@@ -84,6 +84,16 @@ public sealed class PatternDrawer
 
     public bool IsUsed(HexCoord c) => _usedSpots.Contains(c);
 
+    /// <summary>记下已画的图案与占用的格点（运行杖换用画布时保存法杖的那一份）。</summary>
+    public (List<DrawnPattern> Patterns, HashSet<HexCoord> Used) Snapshot() => (new(_patterns), new(_usedSpots));
+
+    public void Restore((List<DrawnPattern> Patterns, HashSet<HexCoord> Used) snapshot)
+    {
+        Reset();
+        _patterns.AddRange(snapshot.Patterns);
+        foreach (var c in snapshot.Used) _usedSpots.Add(c);
+    }
+
     /// <summary>清空全部已画图案（对应原版关闭施法界面后清栈重开）。</summary>
     public void Reset()
     {

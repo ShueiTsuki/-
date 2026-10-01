@@ -179,6 +179,11 @@ HexAddonsConfig: {
 		Label: HexDebug
 		Tooltip: Debugger items that step through hexes, Splicing Table for editing hexes (object-Object). Off = not installed. In multiplayer the host decides; changing it requires reloading mods.
 	}
+
+	HexDebugOptions: {
+		Label: HexDebug options
+		Tooltip: Only used when the toggle is on. The host can change these in game without reloading.
+	}
 }
 
 HexAddonsClientConfig: {
@@ -431,5 +436,14 @@ KeyDocsMode: {
 	Always: {
 		Label: Always
 		Tooltip: ""
+	}
+}
+
+HexDebugOptions: {
+	Tooltip: HexDebug options
+
+	MaxDebugThreads: {
+		Label: Max debug threads
+		Tooltip: How many hexes can be debugged at once after enlightenment (Quenched Debugger switches threads); 1 before.
 	}
 }

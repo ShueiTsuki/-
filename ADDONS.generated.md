@@ -5,7 +5,7 @@
 
 | 附属 | 上游版本 | 许可 | 开关 | 功能已做 |
 |---|---|---|---|---|
-| [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 5 / 15 |
+| [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 11 / 15 |
 | [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 18 |
 | [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 10 / 12 |
 
@@ -17,20 +17,20 @@
 
 | 功能 | 本模组文件 | 上游文件（相对 `Common/src/main/kotlin/gay/object/hexdebug/`） |
 |---|---|---|
-| 入口与开关 | `Game/HexDebugAddon.cs` | `HexDebug.kt`<br>`config/HexDebugServerConfig.kt`<br>`config/HexDebugClientConfig.kt` |
+| 入口与开关 | `Game/HexDebugAddon.cs`<br>`Game/HexDebugOptions.cs`<br>`Game/HexDebugText.cs` | `HexDebug.kt`<br>`config/HexDebugServerConfig.kt`<br>`config/HexDebugClientConfig.kt` |
 | 步进核心（单步进入 / 跳过 / 跳出、继续、重启、停止、调用栈） | `Core/DebugTypes.cs`<br>`Core/HexDebugger.cs`<br>`Core/DebugEnvironment.cs`<br>`Core/IotaText.cs` | `debugger/HexDebugger.kt`<br>`debugger/DebugStepResult.kt`<br>`debugger/Enums.kt`<br>`debugger/IotaMetadata.kt`<br>`debugger/SharedDebugState.kt`<br>`debugger/allocators/Allocator.kt`<br>`debugger/allocators/SourceAllocator.kt`<br>`debugger/allocators/VariablesAllocator.kt` |
-| 调试杖 / 淬灵调试杖 | （待做） | `items/DebuggerItem.kt`<br>`items/base/ShiftScrollable.kt`<br>`items/base/ItemPredicateProvider.kt`<br>`casting/eval/DebuggerCastEnv.kt` |
-| 运行杖 / 淬灵运行杖 | （待做） | `items/EvaluatorItem.kt`<br>`casting/eval/FakeCastEnv.kt` |
+| 调试杖 / 淬灵调试杖 | `Game/HexDebugItems.cs`<br>`Game/HexDebugSessions.cs` | `items/DebuggerItem.kt`<br>`items/base/ShiftScrollable.kt`<br>`items/base/ItemPredicateProvider.kt`<br>`casting/eval/DebuggerCastEnv.kt` |
+| 运行杖 / 淬灵运行杖 | `Game/HexDebugItems.cs`<br>`Game/HexDebugClient.cs` | `items/EvaluatorItem.kt`<br>`casting/eval/FakeCastEnv.kt` |
 | 断点 | `Core/FrameBreakpoint.cs`<br>`Core/HexDebugActions.cs` | `casting/actions/OpBreakpoint.kt`<br>`casting/eval/FrameBreakpoint.kt`<br>`registry/HexDebugContinuationTypes.kt` |
-| 游戏内调试面板（偏差：上游在外部编辑器里看） | （待做） | `adapter/DebugAdapter.kt` |
+| 游戏内调试面板（偏差：上游在外部编辑器里看） | `Game/HexDebugPanel.cs`<br>`Game/HexDebugView.cs` | `adapter/DebugAdapter.kt` |
 | 图案 x22 | `Core/HexDebugPatterns.cs` | `registry/HexDebugActions.kt`<br>`casting/actions/OpIsDebugging.kt`<br>`casting/actions/splicing/` |
 | 认知危害 iota | `Core/HexDebugActions.cs` | `casting/iotas/CognitohazardIota.kt`<br>`registry/HexDebugIotaTypes.kt` |
 | 剪接台 / 制念台 | （待做） | `blocks/splicing/`<br>`gui/splicing/`<br>`splicing/`<br>`casting/eval/SplicingTableCastEnv.kt`<br>`networking/msg/MsgSplicingTable*`<br>`resources/splicing/SplicingTableIotasResourceReloadListener.kt`<br>`api/client/splicing/`<br>`api/splicing/` |
 | 核心框架 | （待做） | `blocks/focusholder/`<br>`items/FocusHolderBlockItem.kt`<br>`recipes/FocusHolderFillingShapedRecipe.kt` |
 | 调试法术环 | （待做） | `debugger/circles/`<br>`mixin/MixinBlockEntityAbstractImpetus.java`<br>`mixin/MixinCircleExecutionState.java` |
-| 联机消息（调试状态、运行杖） | （待做） | `networking/HexDebugNetworking.kt`<br>`networking/handler/`<br>`networking/msg/MsgDebuggerStateS2C.kt`<br>`networking/msg/MsgEvaluatorClientInfoS2C.kt`<br>`networking/msg/MsgEvaluatorStateS2C.kt`<br>`networking/msg/MsgPrintDebuggerStatusS2C.kt` |
-| 配方 | （待做） | `datagen/recipes/`<br>`recipes/FlyswatterQuenchingShapedRecipe.kt` |
-| 书：调试 / 剪接台 / 核心框架条目 | （待做） | `assets/hexcasting/patchouli_books/thehexbook`<br>`assets/hexdebug/lang/zh_cn.flatten.json5` |
+| 联机消息（调试状态、运行杖） | `Game/HexDebugNet.cs` | `networking/HexDebugNetworking.kt`<br>`networking/handler/`<br>`networking/msg/MsgDebuggerStateS2C.kt`<br>`networking/msg/MsgEvaluatorClientInfoS2C.kt`<br>`networking/msg/MsgEvaluatorStateS2C.kt`<br>`networking/msg/MsgPrintDebuggerStatusS2C.kt` |
+| 配方 | `Game/HexDebugItems.cs` | `datagen/recipes/`<br>`recipes/FlyswatterQuenchingShapedRecipe.kt` |
+| 书：调试 / 剪接台 / 核心框架条目 | `Core/HexDebugBook.Generated.cs` | `assets/hexcasting/patchouli_books/thehexbook`<br>`assets/hexdebug/lang/zh_cn.flatten.json5` |
 | 外部调试 DAP 服务器（最后做，默认关） | （待做） | `adapter/DebugAdapterManager.kt`<br>`adapter/IHexDebugLauncher.kt`<br>`adapter/LaunchArgs.kt`<br>`adapter/proxy/`<br>`networking/msg/MsgDebugAdapterProxy.kt` |
 
 <a id="hexparse"></a>

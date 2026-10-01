@@ -74,7 +74,7 @@ public sealed class ItemStateArt : GlobalItem
                 return k.Stored is null
                     ? null
                     : new[] { new Layer("ThoughtKnot", 0, 0, Color.White), new Layer("ThoughtKnot", 1, 0, IotaColor(k.Stored)) };
-            case ItemPackagedSpell p:
+            case ItemPackagedSpell { UsesStateArt: true } p:
             {
                 string sheet = p switch
                 {

@@ -557,6 +557,15 @@ foreach ($f in (AllCs $mod)) {
 }
 Check "界面层不从列表里删（用 Active = false 停用）" ($rm.Count -eq 0) ($rm -join ', ')
 
+# ── 本地化文件：不加引号的值不能以 { [ , : 开头（Hjson 会当成对象 / 数组，整个语言文件加载失败、全部退回键名；只有专用服务器测试才看得出来）──
+$badHjson = New-Object System.Collections.Generic.List[string]
+foreach ($f in (Get-ChildItem (Join-Path $mod 'Localization') -Filter *.hjson)) {
+    foreach ($h in (Select-String -LiteralPath $f.FullName -Pattern '^\s*[\w.@-]+:\s+([\[,:]|\{\s*\S)' -Encoding UTF8)) {
+        $badHjson.Add($f.Name + ':' + $h.LineNumber)
+    }
+}
+Check "本地化：不加引号的值不以 { [ , : 开头" ($badHjson.Count -eq 0) ($badHjson -join ', ')
+
 # ─────────────────────────────────────────────────────────────────────
 Write-Host ''
 Write-Host "================ 架构断言：通过 $script:passed / 失败 $script:failed ================" `

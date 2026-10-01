@@ -69,6 +69,9 @@ public static class HexCanvasState
         Canvas.Close(clearPatterns: false);
         Canvas.Overlays.Clear();
         foreach (var ext in CanvasExtensions.All) ext.OnClose();
+        PatternSink = null;
+        HudStackOverride = null;
+        Closed?.Invoke();
     }
 
     /// <summary>
@@ -76,6 +79,18 @@ public static class HexCanvasState
     /// （上游 KeyDocsScreenMixin.returnToStaff：关书时换回原来的施法界面）。null = 没有要回去的画布。
     /// </summary>
     public static int? ReturnToCanvasSlot { get; set; }
+
+    /// <summary>
+    /// 画好的图案交给谁（附属：HexDebug 运行杖把图案送进调试会话）。返回 true = 它接手了，本体不求值。null = 本体照常求值。
+    /// 画布关闭时清空。
+    /// </summary>
+    public static System.Func<UI.ResolvedPattern, bool>? PatternSink { get; set; }
+
+    /// <summary>附属接管画布时，HUD 上的「VM 栈」显示这些行（栈顶在前）；null = 显示本体的栈。画布关闭时清空。</summary>
+    public static System.Collections.Generic.IReadOnlyList<string>? HudStackOverride { get; set; }
+
+    /// <summary>画布关闭时通知（附属在这里换回自己的图案快照等）。</summary>
+    public static event System.Action? Closed;
 
     /// <summary>每帧递减保护计数。</summary>
     public static void TickGuard()

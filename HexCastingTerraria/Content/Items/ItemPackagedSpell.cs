@@ -59,6 +59,15 @@ public abstract class ItemPackagedSpell : ModItem, IHexVariantItem
 
     public abstract PackagedSpellKind Kind { get; }
 
+    /// <summary>
+    /// 哪个「制作」图案能往里封咒术：本体三种就是种类名；附属的打包物品（HexDebug 调试杖）用自己的键，
+    /// 本体的 craft/cypher 等不会装进去，附属的制作图案也只认自己的键。
+    /// </summary>
+    public virtual string CraftKey => Kind.ToString();
+
+    /// <summary>背包里按本体的状态图集画（变体 × 空 / 已封）。附属物品画自己的贴图时关掉。</summary>
+    public virtual bool UsesStateArt => true;
+
     /// <summary>施放后是否消失。源项目 `breakAfterDepletion()`。</summary>
     public virtual bool BreakAfterDepletion => Kind == PackagedSpellKind.Cypher;
 

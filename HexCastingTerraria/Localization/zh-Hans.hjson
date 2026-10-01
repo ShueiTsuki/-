@@ -7,6 +7,58 @@ Mods: {
 		}
 
 		// Hexcessible 附属（上游 lang 文件的官方译文）
+		// HexDebug 附属（消息是上游 lang 文件的官方译文；调试面板的标签是移植版自己的）
+		HexDebug: {
+			NoSession: 线程{0}的调试会话未在运行。
+			NotPaused: 线程{0}的调试会话未被暂停。
+			DebuggerStopped: 下一个Iota：[{0}] {1}
+			IllegalThread: 物品不知怎的失效了……是我还要再提升自己的技术吗？
+			OutOfRange: 调试员已离开连接范围。
+			ThreadInactive: 线程 {0}
+			ThreadActive: 线程 {0}（{1}）
+
+			StepMode: {
+				Continue: 模式：继续
+				Over: 模式：逐过程
+				In: 模式：单步调试
+				Out: 模式：单步跳出
+				Restart: 模式：重启
+				Stop: 模式：停止
+			}
+
+			Panel: {
+				Because: （{0}）
+				Source: 源码 #{0}
+				Empty: （空）
+				Stack: 栈（{0}）
+				More: 还有 {0} 项
+				Ravenmind: 渡鸦之思：{0}
+				State3: 已执行操作 {0} · 转义下一个 {1} · 括号层数 {2}
+				Yes: 是
+				No: 否
+				Frames: 调用栈
+				Output: 输出
+				Hint: 点源码的行设置或取消断点
+
+				State: {
+					Running: 运行中
+					Pausing: 正在暂停
+					Paused: 已暂停
+					CaughtMishap: 捕获到事故
+					Terminated: 已结束
+				}
+
+				Reason: {
+					Step: 单步
+					Pause: 暂停
+					Breakpoint: 断点
+					Exception: 事故
+					Started: 开始
+					Terminated: 结束
+				}
+			}
+		}
+
 		Hexcessible: {
 			StartTypingAlias: 为此图案起名……
 			StartTyping: 输入名称……
@@ -46,6 +98,18 @@ Mods: {
 		}
 
 		Items: {
+			Debugger: {
+				DisplayName: 调试杖
+			}
+			QuenchedDebugger: {
+				DisplayName: 淬灵调试杖
+			}
+			Evaluator: {
+				DisplayName: 运行杖
+			}
+			QuenchedEvaluator: {
+				DisplayName: 淬灵运行杖
+			}
 			EdifiedDoorItem: {
 				DisplayName: 启迪木门
 			}

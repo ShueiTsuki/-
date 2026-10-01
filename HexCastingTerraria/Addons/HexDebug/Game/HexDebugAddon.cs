@@ -36,12 +36,23 @@ public sealed class HexDebugAddon : HexAddon
             ["hexdebug:const/debugging"] = new OpIsDebugging(),
             ["hexdebug:breakpoint/before"] = new OpBreakpoint(true),
             ["hexdebug:breakpoint/after"] = new OpBreakpoint(false),
+            // 上游 OpMakePackagedSpell(调试杖, 10 * CRYSTAL_UNIT)：手上要有空的那种调试杖
+            ["hexdebug:craft/debugger"] = new global::HexCastingTerraria.Core.Casting.Actions.OpMakePackagedSpell(
+                "hexdebug:debugger", 10 * global::HexCastingTerraria.Core.Media.MediaConstants.CrystalUnit, "一根空的调试杖"),
+            ["hexdebug:craft/quenched_debugger"] = new global::HexCastingTerraria.Core.Casting.Actions.OpMakePackagedSpell(
+                "hexdebug:quenched_debugger", 10 * global::HexCastingTerraria.Core.Media.MediaConstants.CrystalUnit, "一根空的淬灵调试杖"),
         };
         foreach (var (id, action) in actions) PatternRegistry.RegisterAction(id, action);
     }
 
+    public override void AddBookContent(global::HexCastingTerraria.Core.Ui.BookDocument book) => HexDebugBook.AddTo(book);
+
+    public override void HandlePacket(System.IO.BinaryReader reader, int whoAmI) => HexDebugNet.Handle(reader, whoAmI);
+
     public override void OnUnload()
     {
+        HexDebugSessions.Clear();
+        HexDebugClient.Clear();
         IotaSerializer.UnregisterKind(CognitohazardIota.KindTag);
         foreach (var id in HexDebugPatterns.Names.Keys) PatternDisplay.UnregisterAddonName(id);
     }

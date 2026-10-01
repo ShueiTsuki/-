@@ -242,6 +242,9 @@ public abstract class CastingEnvironment
     /// </summary>
     public virtual PackagedSpellKind? HeldEmptyPackagedSpell => null;
 
+    /// <summary>手上（另一只手优先）第一件空的打包物品的制作键（见 ItemPackagedSpell.CraftKey）；没有为 null。</summary>
+    public virtual string? HeldEmptyPackagedKey => HeldEmptyPackagedSpell?.ToString();
+
     /// <summary>手上（两个位置之一）第一个「空瓶」的堆叠数；没有 → 0。对应源项目 `PHIAL_BASE` 标签 + `count != 1` 检查。</summary>
     public virtual int HeldPhialCount() => 0;
 

@@ -97,10 +97,10 @@ def recipe_item(recipe):
     """配方 id（hexcasting:focus / hexcasting:staff/oak …）→ 产物物品键。"""
     if not recipe:
         return ''
-    path = recipe.split(':', 1)[-1]
+    ns, path = recipe.split(':', 1) if ':' in recipe else ('hexcasting', recipe)
     if path.startswith('brainsweep/') or path.startswith('decompose_'):
         return ''
-    return item_key('hexcasting:' + path)
+    return item_key(ns + ':' + path)
 
 
 def load_lang():

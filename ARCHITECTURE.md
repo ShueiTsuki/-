@@ -172,6 +172,7 @@
 | `Items/HexRecipeGroups.cs` | 建材族的**配方组**。 |
 | `Items/HexSlateItem.cs` | 石板（物品形态）。对应源项目 `hexcasting:slate`。 |
 | `Items/HexStaff.cs` | 法杖基类。移植自源项目 `common/items/ItemStaff.java`。 |
+| `Items/IShiftScrollable.cs` | 手上的物品接「潜行 + 滚轮」（上游 HexDebug items/base/ShiftScrollable：调试杖换步进模式、淬灵的再加 Ctrl 换线程）。 |
 | `Items/ItemIotaStorage.cs` | 「数据载体」物品的基类：能存一个 iota。 |
 | `Items/ItemPackagedSpell.cs` | 打包法术物品的基类：把一串图案与一份媒质封在里面，右键即可施放。 |
 | `Items/ItemScroll.cs` | 卷轴。移植自源项目 `common/items/storage/ItemScroll.java`。 |
@@ -263,10 +264,19 @@
 | `HexDebug/Core/DebugTypes.cs` | 上游 debugger/Enums.kt DebuggerState。</summary> |
 | `HexDebug/Core/FrameBreakpoint.cs` | 断点帧（上游 casting/eval/FrameBreakpoint.kt）：不调试时什么都不做；调试器看到它就停。 |
 | `HexDebug/Core/HexDebugActions.cs` | 认知危害 iota（上游 casting/iotas/CognitohazardIota.kt）：被调试器登记到就结束调试；平时求值什么都不做。 |
+| `HexDebug/Core/HexDebugBook.Generated.cs` | 本文件由 _tools/gen_addon_book.py 生成，**不要手改**：改生成器，然后重新跑脚本。 |
 | `HexDebug/Core/HexDebugger.cs` | 调用栈里的一帧（上游 DAP StackFrame）：帧名、指向的源码位置；虚拟帧是尾调用省掉的 FrameFinishEval。</summary> |
 | `HexDebug/Core/HexDebugPatterns.cs` | HexDebug 的 22 个图案（上游 registry/HexDebugActions.kt，形状照抄）。开关关着也要登记形状（本世界大法术笔顺不许和它们撞）； |
 | `HexDebug/Core/IotaText.cs` | iota 转成文字（上游 utils/Extensions.kt 的 displayWithPatternName / toHexpatternSource / getI18nOrNull / simpleString）。 |
 | `HexDebug/Game/HexDebugAddon.cs` | HexDebug 附属的入口：调试杖逐步执行咒术、剪接台编辑咒术（object-Object，MIT）。 |
+| `HexDebug/Game/HexDebugClient.cs` | 客户端这边的调试状态：每个线程最新的样子（调试面板画它）、输出记录、运行杖的画布。 |
+| `HexDebug/Game/HexDebugItems.cs` | 贴图（上游 jar 里的 16×16 放大两倍，_tools/gen_hexdebug_art.py 生成）。</summary> |
+| `HexDebug/Game/HexDebugNet.cs` | HexDebug 的联机消息。调试在服务端（单机就是本地）跑，客户端只发请求、收调试面板要显示的东西。 |
+| `HexDebug/Game/HexDebugOptions.cs` | HexDebug 的服务端配置项，挂在「附属兼容」页的 HexDebug 开关下面（上游 HexDebugServerConfig，默认值照搬）。 |
+| `HexDebug/Game/HexDebugPanel.cs` | 游戏内调试面板（偏差：上游把这些交给外部编辑器 VS Code 通过 DAP 显示）。拿着调试杖 / 运行杖、或运行杖画布开着时显示： |
+| `HexDebug/Game/HexDebugSessions.cs` | 玩家用调试杖的调试来历（上游 core api SimplePlayerBasedDebugEnv）：跑完不接着跑；重启 = 用同一串 iota 重新开始。 |
+| `HexDebug/Game/HexDebugText.cs` | HexDebug 的文字（上游 lang 文件的官方译文；调试面板的标签是移植版自己的，跟随游戏语言）。</summary> |
+| `HexDebug/Game/HexDebugView.cs` | 一个调试线程此刻的样子，服务端算好发给本人客户端的游戏内调试面板。 |
 | `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |
 | `HexParse/Core/CodeParser.cs` | 代码 -> iota 列表（上游 parsers/ParserMain.java 的 ParseCode + str2nbt/* 全部符号解析器 + macro/MacroProcessor.java）。 |
 | `HexParse/Core/CommentIota.cs` | 注释 iota（上游 hooks/CommentIota.java + CommentIotaType.java）。 |

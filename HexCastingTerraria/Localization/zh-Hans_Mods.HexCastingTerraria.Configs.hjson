@@ -179,6 +179,11 @@ HexAddonsConfig: {
 		Label: HexDebug
 		Tooltip: 调试杖逐步执行咒术、剪接台编辑咒术（object-Object）。关着 = 没装。联机由开服的人决定，改了要重载模组。
 	}
+
+	HexDebugOptions: {
+		Label: HexDebug 设置
+		Tooltip: 开关打开后才有用。房主在游戏里随时能改，不用重载。
+	}
 }
 
 HexAddonsClientConfig: {
@@ -431,5 +436,14 @@ KeyDocsMode: {
 	Always: {
 		Label: 一直可以
 		Tooltip: ""
+	}
+}
+
+HexDebugOptions: {
+	Tooltip: HexDebug 设置
+
+	MaxDebugThreads: {
+		Label: 调试线程上限
+		Tooltip: 启蒙后能同时调试几段咒术（淬灵调试杖切换线程）；没启蒙只有 1 段。
 	}
 }

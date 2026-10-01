@@ -23,7 +23,9 @@
     {
       "name": "入口与开关",
       "files": [
-        "Game/HexDebugAddon.cs"
+        "Game/HexDebugAddon.cs",
+        "Game/HexDebugOptions.cs",
+        "Game/HexDebugText.cs"
       ],
       "upstream": [
         "HexDebug.kt",
@@ -52,7 +54,10 @@
     },
     {
       "name": "调试杖 / 淬灵调试杖",
-      "files": [],
+      "files": [
+        "Game/HexDebugItems.cs",
+        "Game/HexDebugSessions.cs"
+      ],
       "upstream": [
         "items/DebuggerItem.kt",
         "items/base/ShiftScrollable.kt",
@@ -62,7 +67,10 @@
     },
     {
       "name": "运行杖 / 淬灵运行杖",
-      "files": [],
+      "files": [
+        "Game/HexDebugItems.cs",
+        "Game/HexDebugClient.cs"
+      ],
       "upstream": [
         "items/EvaluatorItem.kt",
         "casting/eval/FakeCastEnv.kt"
@@ -82,7 +90,10 @@
     },
     {
       "name": "游戏内调试面板（偏差：上游在外部编辑器里看）",
-      "files": [],
+      "files": [
+        "Game/HexDebugPanel.cs",
+        "Game/HexDebugView.cs"
+      ],
       "upstream": [
         "adapter/DebugAdapter.kt"
       ]
@@ -142,7 +153,9 @@
     },
     {
       "name": "联机消息（调试状态、运行杖）",
-      "files": [],
+      "files": [
+        "Game/HexDebugNet.cs"
+      ],
       "upstream": [
         "networking/HexDebugNetworking.kt",
         "networking/handler/",
@@ -154,7 +167,9 @@
     },
     {
       "name": "配方",
-      "files": [],
+      "files": [
+        "Game/HexDebugItems.cs"
+      ],
       "upstream": [
         "datagen/recipes/",
         "recipes/FlyswatterQuenchingShapedRecipe.kt"
@@ -162,7 +177,9 @@
     },
     {
       "name": "书：调试 / 剪接台 / 核心框架条目",
-      "files": [],
+      "files": [
+        "Core/HexDebugBook.Generated.cs"
+      ],
       "upstream": [
         "assets/hexcasting/patchouli_books/thehexbook",
         "assets/hexdebug/lang/zh_cn.flatten.json5"

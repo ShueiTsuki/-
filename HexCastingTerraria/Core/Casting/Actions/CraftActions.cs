@@ -31,8 +31,24 @@ namespace HexCastingTerraria.Core.Casting.Actions;
 public sealed class OpMakePackagedSpell : SpellAction
 {
     private readonly PackagedSpellKind _kind;
+    private readonly string? _craftKey;
+    private readonly long _cost;
+    private readonly string? _emptyName;
 
-    public OpMakePackagedSpell(PackagedSpellKind kind) => _kind = kind;
+    public OpMakePackagedSpell(PackagedSpellKind kind)
+    {
+        _kind = kind;
+        _cost = CostFor(kind);
+    }
+
+    /// <summary>附属的打包物品（如 HexDebug 的调试杖）：按制作键找手上的空物品，消耗与物品名由附属给。</summary>
+    public OpMakePackagedSpell(string craftKey, long cost, string emptyName)
+    {
+        _kind = PackagedSpellKind.Artifact;
+        _craftKey = craftKey;
+        _cost = cost;
+        _emptyName = emptyName;
+    }
 
     public override int Argc => 2;
 
@@ -59,8 +75,9 @@ public sealed class OpMakePackagedSpell : SpellAction
 
         // 原版 args.getList(1)：任意 iota 的列表都收（writeHex 原样存下，放的时候整串入队）
 
-        if (env.HeldEmptyPackagedSpell != _kind)
+        if (_craftKey is not null ? env.HeldEmptyPackagedKey != _craftKey : env.HeldEmptyPackagedSpell != _kind)
         {
+            if (_emptyName is not null) throw new MishapBadHeldItem(_emptyName);
             // 原版：没有「空的这种物品」→ 报物品名（手上那件装过咒术的另报 iota.write，这里并成一句）
             throw new MishapBadHeldItem(_kind switch
             {
@@ -93,7 +110,7 @@ public sealed class OpMakePackagedSpell : SpellAction
                     env.FillHeldPackagedSpell(patterns, media);
                 }
             }),
-            CostFor(_kind),
+            _cost,
             new[] { ParticleSpray.Burst(world.FeetPosition(entity).X, world.FeetPosition(entity).Y, spread: 0.5f, count: 20) });
     }
 }

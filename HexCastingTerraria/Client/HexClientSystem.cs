@@ -311,6 +311,9 @@ public sealed class HexClientSystem : ModSystem
     /// </summary>
     public static void Submit(UI.ResolvedPattern result)
     {
+        // 附属接手（HexDebug 运行杖）：图案送进调试会话，本体不求值
+        if (HexCanvasState.PatternSink?.Invoke(result) == true) return;
+
         // 立即送进 VM 求值（对齐原作：每画完一条就求值一次，栈在图案间累积）
         HexVmState.EvaluatePattern(Main.LocalPlayer, result.Pattern);
 
@@ -637,6 +640,20 @@ public sealed class HexClientSystem : ModSystem
     /// </summary>
     private void DrawVmStack(SpriteBatch sb, float x, float y)
     {
+        if (HexCanvasState.HudStackOverride is { } lines)
+        {
+            y += 6f;
+            Terraria.Utils.DrawBorderString(sb, $"── VM 栈 ({lines.Count}) · 栈顶在上 ──", new Vector2(x, y), DebugColor, 0.75f);
+            y += 20f;
+            for (int i = 0; i < System.Math.Min(lines.Count, 8); i++)
+            {
+                Terraria.Utils.DrawBorderString(sb, lines[i], new Vector2(x, y), TextColor, 0.7f);
+                y += 17f;
+            }
+            if (lines.Count > 8) Terraria.Utils.DrawBorderString(sb, $"… 更深处还有 {lines.Count - 8} 项", new Vector2(x, y), new Color(170, 165, 190), 0.65f);
+            return;
+        }
+
         var stack = HexVmState.Stack;
         bool hasAny = stack.Count > 0 || HexVmState.ParenCount > 0 || HexVmState.EscapeNext;
         y += 6f;

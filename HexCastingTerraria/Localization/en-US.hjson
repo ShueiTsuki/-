@@ -10,6 +10,58 @@ Mods: {
 		}
 
 		// Hexcessible 附属（上游 lang 文件的官方译文）
+		// HexDebug 附属（消息是上游 lang 文件的官方译文；调试面板的标签是移植版自己的）
+		HexDebug: {
+			NoSession: Debug session is not running for thread {0}.
+			NotPaused: Debug session is not paused for thread {0}.
+			DebuggerStopped: "Next Iota: [{0}] {1}"
+			IllegalThread: The item failed, somehow... am I not skilled enough?
+			OutOfRange: Debuggee is out of range.
+			ThreadInactive: Thread {0}
+			ThreadActive: Thread {0} ({1})
+
+			StepMode: {
+				Continue: "Mode: Continue"
+				Over: "Mode: Step Over"
+				In: "Mode: Step In"
+				Out: "Mode: Step Out"
+				Restart: "Mode: Restart"
+				Stop: "Mode: Stop"
+			}
+
+			Panel: {
+				Because: " ({0})"
+				Source: Source #{0}
+				Empty: (empty)
+				Stack: Stack ({0})
+				More: "{0} more"
+				Ravenmind: Ravenmind: {0}
+				State3: OpsConsumed {0} · EscapeNext {1} · ParenCount {2}
+				Yes: true
+				No: false
+				Frames: Call stack
+				Output: Output
+				Hint: Click a source line to toggle a breakpoint
+
+				State: {
+					Running: Running
+					Pausing: Pausing
+					Paused: Paused
+					CaughtMishap: Caught mishap
+					Terminated: Terminated
+				}
+
+				Reason: {
+					Step: step
+					Pause: pause
+					Breakpoint: breakpoint
+					Exception: exception
+					Started: entry
+					Terminated: terminated
+				}
+			}
+		}
+
 		Hexcessible: {
 			StartTypingAlias: Name this pattern...
 			StartTyping: Start typing...
@@ -49,6 +101,18 @@ Mods: {
 		}
 
 		Items: {
+			Debugger: {
+				DisplayName: "Debugger"
+			}
+			QuenchedDebugger: {
+				DisplayName: "Quenched Debugger"
+			}
+			Evaluator: {
+				DisplayName: "Evaluator"
+			}
+			QuenchedEvaluator: {
+				DisplayName: "Quenched Evaluator"
+			}
 			EdifiedDoorItem: {
 				DisplayName: Edified Door
 			}

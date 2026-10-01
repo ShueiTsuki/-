@@ -427,6 +427,17 @@ public sealed class HexPlayer : ModPlayer
         }
         if (!canvas && (!ShiftHeld() || Main.playerInventory || Main.mapFullscreen)) return;
 
+        // 附属物品（HexDebug 调试杖 / 运行杖）：拿在手上时先给它
+        if (!canvas && Player.HeldItem?.ModItem is Items.IShiftScrollable ss && ss.CanShiftScroll(CtrlHeld()))
+        {
+            int d = Terraria.GameInput.PlayerInput.ScrollWheelDelta;
+            Terraria.GameInput.PlayerInput.ScrollWheelDelta = 0;
+            var msg = ss.ShiftScroll(Player, d < 0, CtrlHeld());
+            Player.HeldItem.NetStateChanged();
+            if (msg is not null) Client.HexCanvasState.SetMessage(msg);
+            return;
+        }
+
         static bool Scrollable(Item? it) => it is { IsAir: false, ModItem: Items.Spellbook or Items.Abacus };
         bool mainHand = Scrollable(Player.HeldItem);
         int sel = Player.selectedItem;

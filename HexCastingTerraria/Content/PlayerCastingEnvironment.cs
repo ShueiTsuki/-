@@ -124,7 +124,12 @@ public class PlayerCastingEnvironment : CastingEnvironment
     /// `craft/*` 只往空容器里封（原版 `!hexHolder.hasHex()`），否则会把存好的咒术覆盖掉。
     /// </summary>
     public override PackagedSpellKind? HeldEmptyPackagedSpell
-        => (HeldAt(i => i.ModItem is ItemPackagedSpell { IsEmpty: true })?.ModItem as ItemPackagedSpell)?.Kind;
+        => HeldAt(i => i.ModItem is ItemPackagedSpell { IsEmpty: true })?.ModItem is ItemPackagedSpell p && p.CraftKey == p.Kind.ToString()
+            ? p.Kind
+            : null;
+
+    public override string? HeldEmptyPackagedKey
+        => (HeldAt(i => i.ModItem is ItemPackagedSpell { IsEmpty: true })?.ModItem as ItemPackagedSpell)?.CraftKey;
 
     /// <summary>手上第一个空瓶的数量（原版 PHIAL_BASE；恰好 1 个的检查在图案里）。</summary>
     public override int HeldPhialCount()

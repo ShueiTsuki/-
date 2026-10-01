@@ -130,7 +130,9 @@
       "EdifiedDoorItem": "源 edified_door：启迪木板 ×6 → 3（木门配方，无门槛）→ 肉前",
       "EdifiedFenceItem": "源 edified_fence：启迪木板 → 泰拉栅栏墙（1 → 4，泰拉木栅栏的比例）",
       "EdifiedButtonItem": "源 edified_button：启迪木板 ×1 → 1",
-      "EdifiedPressurePlateItem": "源 edified_pressure_plate：启迪木板 ×2 → 1"
+      "EdifiedPressurePlateItem": "源 edified_pressure_plate：启迪木板 ×2 → 1",
+      "Debugger": "附属 HexDebug：上游 recipes/debugger.json，造物 + 充能紫水晶 ×3 + 金锭（无门槛；造物本身肉前）",
+      "Evaluator": "附属 HexDebug：上游 recipes/evaluator.json，板岩方块 ×2 + 充能紫水晶 ×3（无门槛）"
     },
     "肉后": {
       "QuenchedAllayItem": "淬灵块：原版只能脑叶切除（紫水晶块 + 悦灵）得到，敲掉掉 2~4 片碎片、精准采集才掉方块。泰拉没有精准采集：4 碎片合一块代替。碎片本身没有配方（脑叶切除小精灵 Pixie —— 神圣地肉后敌怪，用户定的进度 —— 要启蒙）",
@@ -141,7 +143,9 @@
       "Spellbook": "源 119-129：要求合唱果（末地特产）。泰拉无末地档，取中间阶段肉后；对应物 = 水晶碎块",
       "CherryStaff": "源 87 staffRecipe(樱花木)。泰拉没有樱花木，用珍珠木代替 —— 而珍珠木只长在肉后的神圣地，所以实际门槛是肉后",
       "SpookyStaff": "源 86 staffRecipe(红树)。泰拉用**阴森木**代替 —— 阴森木只在肉后的南瓜月掉落，门槛自带",
-      "PearlwoodStaff": "源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带"
+      "PearlwoodStaff": "源 82 staffRecipe(白桦)。泰拉用**珍珠木**代替 —— 珍珠木只长在肉后的神圣地，门槛自带",
+      "QuenchedDebugger": "附属 HexDebug：上游 flyswatter_quenching，调试杖 + 淬灵晶碎片 ×4（碎片肉后）",
+      "QuenchedEvaluator": "附属 HexDebug：同上，运行杖 + 淬灵晶碎片 ×4"
     },
     "肉后 · 启蒙": {
       "HexImpetusEmptyItem": "源 390-398：配方挂 enlightenment 门槛 → 泰拉：秘银砧 + 已启蒙；紫珀块（末地）→ 水晶碎块（同法术书）",
