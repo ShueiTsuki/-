@@ -12,7 +12,8 @@ namespace HexCastingTerraria.Content.Tiles;
 /// 晶洞母岩。对应 MC 的 `budding_amethyst`。
 ///
 /// 行为：
-///   - **不可挖取**（与原版一致：母岩只能靠后期手段获得，破坏性采掘拿不到）
+///   - **能挖坏，但什么都不掉**（原版 budding_amethyst：任何镐都能挖、炸药能炸，精准采集也不掉，所以没法搬走）。
+///     2026-10-01 之前移植版做成挖不动，用户定照原版改回来
 ///   - 每次随机刻有 <see cref="AmethystLoot.TickChanceDenominator"/> 分之一的概率
 ///     让**相邻的**一个晶簇生长一级（空 → 小芽 → 中芽 → 大芽 → 成熟晶簇）
 ///
@@ -36,20 +37,15 @@ public sealed class GeodeCore : ModTile
         Main.tileMergeDirt[Type] = false;
         Main.tileOreFinderPriority[Type] = 410;   //  spelunker 之类的探测优先级
 
-        MinPick = 1000;                            // 高到挖不动
-        MineResist = 5f;
+        MinPick = 0;                               // 原版硬度 1.5，和石头一样：任何镐都能挖
+        MineResist = 1f;
         DustType = DustID.PurpleTorch;
         HitSound = SoundID.Tink;
         AddMapEntry(new Color(126, 78, 178));
     }
 
-    /// <summary>
-    /// 母岩**不可获得**（源项目 `budding_amethyst` 挖掉什么都不掉）。
-    /// 直接在破坏阶段否决，比「掉了但掉空气」更清晰，也挡得住爆炸。
-    /// </summary>
-    public override bool CanKillTile(int i, int j, ref bool blockDamaged) => false;
-
-    public override bool CanExplode(int i, int j) => false;
+    /// <summary>原版 budding_amethyst 挖掉什么都不掉（精准采集也不掉）。</summary>
+    public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem) => noItem = true;
 
     /// <summary>
     /// 随机刻：尝试让一个相邻位置生长一级。
@@ -149,7 +145,11 @@ public abstract class AmethystGrowth : ModTile
         Main.tileLighted[Type] = true;
         Main.tileFrameImportant[Type] = false;
         Main.tileNoAttach[Type] = true;
-        Main.tileCut[Type] = true;      // 允许被任意方式打掉（不必用镐）
+        // 原版要对着晶簇本身挖（用镐掉得多）。之前用了泰拉「草」的机制（tileCut），挥一下就能隔着方块打掉，
+        // 没长成的芽也会被顺手打掉白等一轮 —— 2026-10-01 用户定照原版：要用镐挖它本身
+        Main.tileCut[Type] = false;
+        MinPick = 0;
+        MineResist = 0.5f;
 
         DustType = DustID.PurpleTorch;
         HitSound = SoundID.Shatter;
@@ -166,8 +166,59 @@ public abstract class AmethystGrowth : ModTile
     }
 
     /// <summary>
+    /// 原版：晶簇贴着长出它的那块方块，那块没了它就碎掉（按「没用对工具」掉落）。
+    /// 移植版不记朝向（贴图统一朝上），所以只要上下左右还有一块能长出它的方块就算贴着。
+    /// </summary>
+    public override bool TileFrame(int i, int j, ref bool resetFrame, ref bool noBreak)
+    {
+        if (!IsSupported(i, j))
+        {
+            _brokenBySupportLoss = true;
+            try { WorldGen.KillTile(i, j); }
+            finally { _brokenBySupportLoss = false; }
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>能长出晶簇的方块：母岩。</summary>
+    internal static bool IsGrower(int i, int j)
+        => WorldGen.InWorld(i, j) && Main.tile[i, j] is { HasTile: true } t && t.TileType == ModContent.TileType<GeodeCore>();
+
+    private static bool IsSupported(int i, int j)
+        => IsGrower(i, j + 1) || IsGrower(i, j - 1) || IsGrower(i - 1, j) || IsGrower(i + 1, j);
+
+    [System.ThreadStatic] private static bool _brokenBySupportLoss;
+
+    /// <summary>
+    /// 是谁拿着镐在挖这一格（原版的「工具合格」= 用镐挖它本身）。爆炸、法术、贴着的方块没了 → null（按没用对工具掉）。
+    /// 单机 / 本地客户端看本人瞄着的格子；服务端不知道别人瞄着哪儿，就找附近正在挥镐的玩家。
+    /// </summary>
+    private static Player? Miner(int i, int j)
+    {
+        if (_brokenBySupportLoss) return null;
+        var center = new Vector2(i * 16 + 8, j * 16 + 8);
+        if (Main.netMode != NetmodeID.Server)
+        {
+            var p = Main.LocalPlayer;
+            return p is { active: true, dead: false } && p.itemAnimation > 0 && IsPickaxe(p.HeldItem)
+                   && Player.tileTargetX == i && Player.tileTargetY == j ? p : null;
+        }
+        Player? best = null;
+        float bestD = 16f * 12f;
+        foreach (var p in Main.ActivePlayers)
+        {
+            if (p.dead || p.itemAnimation <= 0 || !IsPickaxe(p.HeldItem)) continue;
+            float d = Vector2.Distance(p.Center, center);
+            if (d < bestD) { best = p; bestD = d; }
+        }
+        return best;
+    }
+
+    /// <summary>
     /// 掉落。**芽阶段不掉任何东西** —— 提前敲掉就白等一轮生长。
     /// 成熟晶簇的掉落严格按 <see cref="AmethystLoot.RollCluster"/> 的四个池。
+    /// 掉落只在单机 / 服务端生成（联机客户端也会跑这个钩子，在那边生成会多掉一份）。
     /// </summary>
     public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem)
     {
@@ -177,20 +228,19 @@ public abstract class AmethystGrowth : ModTile
         }
 
         // 芽阶段：直接什么都不掉
-        if (!AmethystLoot.DropsLoot(Stage))
+        if (!AmethystLoot.DropsLoot(Stage) || Main.netMode == NetmodeID.MultiplayerClient)
         {
             noItem = true;
             return;
         }
 
-        var player = Main.LocalPlayer;
-
         // 泰拉没有「精准采集」，永远走非精准采集分支（见 TODO_PLAN.md 的说明）。
-        // 工具是否「合格」映射为：手上是否拿着镐类工具。
-        bool properTool = IsPickaxe(player.HeldItem);
+        // 工具是否「合格」= 有人拿着镐在挖它本身。
+        var miner = Miner(i, j);
+        bool properTool = miner is not null;
 
         int fortune = properTool
-            ? AmethystLoot.FortuneFromPickaxePower(player.HeldItem.pick)
+            ? AmethystLoot.FortuneFromPickaxePower(miner!.HeldItem.pick)
             : 0;
 
         var loot = AmethystLoot.RollCluster(
