@@ -70,6 +70,9 @@ public sealed class ItemStateArt : GlobalItem
                 int c = b.IsSealed ? 3 : 1;
                 return new[] { new Layer("Spellbook", c, b.Variant, Color.White), new Layer("Spellbook", c + 1, b.Variant, IotaColor(iota)) };
             }
+            case HexSlateItem s:
+                // 原版 slate_blank / slate_written：空白用默认贴图，有图案换第二格
+                return s.Pattern is null ? null : new[] { new Layer("HexSlate", 1, 0, Color.White) };
             case ThoughtKnot k:
                 return k.Stored is null
                     ? null

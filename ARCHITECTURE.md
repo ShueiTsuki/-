@@ -174,7 +174,7 @@
 | `Items/HexDirectrixItems.cs` | 导线的公共物品基类。对应源项目三根 `*Directrix` 的物品形态。 |
 | `Items/HexImpetusItem.cs` | 促动石（物品形态）的公共部分。对应源项目 `hexcasting:impetus/*`。 |
 | `Items/HexRecipeGroups.cs` | 建材族的**配方组**。 |
-| `Items/HexSlateItem.cs` | 石板（物品形态）。对应源项目 `hexcasting:slate`。 |
+| `Items/HexSlateItem.cs` | 石板（物品形态）。对应源项目 `hexcasting:slate`（ItemSlate）。 |
 | `Items/HexStaff.cs` | 法杖基类。移植自源项目 `common/items/ItemStaff.java`。 |
 | `Items/IShiftScrollable.cs` | 手上的物品接「潜行 + 滚轮」（上游 HexDebug items/base/ShiftScrollable：调试杖换步进模式、淬灵的再加 Ctrl 换线程）。 |
 | `Items/ItemIotaStorage.cs` | 「数据载体」物品的基类：能存一个 iota。 |

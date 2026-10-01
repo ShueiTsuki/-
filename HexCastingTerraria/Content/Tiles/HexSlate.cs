@@ -115,11 +115,26 @@ public sealed class HexSlate : ModTile
             (i * 31) ^ (j * 17));
     }
 
+    /// <summary>
+    /// 挖掉：刻着图案的石板掉「有图案的石板」（原版掉落表把方块里的图案复制到物品上），空的掉空白石板。
+    /// 掉落只在单机 / 服务端生成（联机客户端也跑这个钩子，在那边生成会多掉一份）。
+    /// </summary>
     public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem)
     {
         if (fail || effectOnly) return;
+        if (!noItem && Main.netMode != NetmodeID.MultiplayerClient && HexSlateEntity.FindAt(i, j)?.Pattern is { } pattern)
+        {
+            noItem = true;
+            int idx = Item.NewItem(new EntitySource_TileBreak(i, j), new Microsoft.Xna.Framework.Vector2(i * 16, j * 16),
+                new Microsoft.Xna.Framework.Vector2(16, 16), ModContent.ItemType<Items.HexSlateItem>(), 1, noBroadcast: true);
+            if (Main.item[idx].ModItem is Items.HexSlateItem slate) slate.ForceWrite(new PatternIota(pattern));
+            if (Main.netMode == NetmodeID.Server) NetMessage.SendData(MessageID.SyncItem, -1, -1, null, idx, 1f);
+        }
         ModContent.GetInstance<HexSlateEntity>().Kill(i, j);
     }
+
+    /// <summary>放下有图案的石板：图案跟着进方块（见 <see cref="Items.HexSlateItem.ApplyToPlaced"/>）。</summary>
+    public override void PlaceInWorld(int i, int j, Item item) => Items.HexSlateItem.ApplyToPlaced(i, j, item);
 
     /// <summary>
     /// 空手右键：把朝向**顺时针转 90°**。

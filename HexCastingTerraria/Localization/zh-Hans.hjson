@@ -696,7 +696,8 @@ Mods: {
 				Tooltip: 可以存下一个图案
 			}
 			HexSlateItem: {
-				DisplayName: 咒术石板
+				DisplayName: 空白石板
+				WrittenName: 有图案的石板
 				Tooltip:
 					'''
 					法术环的一块「指令」
@@ -944,7 +945,7 @@ Mods: {
 				MapEntry: 空白促动石
 			}
 			HexSlate: {
-				MapEntry: 咒术石板
+				MapEntry: 石板
 			}
 			GeodeCore: {
 				MapEntry: 晶洞母岩

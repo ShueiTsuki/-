@@ -224,9 +224,11 @@ sizes = ['small', 'medium', 'large', 'larger', 'largest']
 save(grid([x2(src(f'item/phial/phial_{s}_{f}')) for s in sizes for f in range(5)], 5), 'Items', 'States', 'MediaFlask.png')
 # 结念绳：[本体, 写入后的叠层]；石板：[空, 写了]
 save(grid([x2(src('item/thought_knot')), x2(src('item/thought_knot_overlay'))], 2), 'Items', 'States', 'ThoughtKnot.png')
+# 石板物品：[空白, 有图案]（原版 slate_blank / slate_written，见 Content/Items/HexSlateItem.cs）
+save(grid([x2(src('item/slate_blank')), x2(src('item/slate_written'))], 2), 'Items', 'States', 'HexSlate.png')
 
 # 卷轴提示框的底图（原版 gui/scroll.png、scroll_ancient.png，48 → ×2 = 96）
-for name, path in [('ScrollTooltip', 'gui/scroll'), ('ScrollTooltipAncient', 'gui/scroll_ancient')]:
+for name, path in [('ScrollTooltip', 'gui/scroll'), ('ScrollTooltipAncient', 'gui/scroll_ancient'), ('SlateTooltip', 'gui/slate')]:
     im = Image.open(os.path.join(JAR, path + '.png')).convert('RGBA')
     save(x2(im), 'Items', 'States', name + '.png')
 

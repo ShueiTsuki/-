@@ -709,7 +709,8 @@ Mods: {
 				Tooltip: Holds a single pattern
 			}
 			HexSlateItem: {
-				DisplayName: Hex Slate
+				DisplayName: Blank Slate
+				WrittenName: Patterned Slate
 				Tooltip:
 					'''
 					One instruction of a spell circle
