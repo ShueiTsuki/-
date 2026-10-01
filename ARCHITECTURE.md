@@ -111,6 +111,7 @@
 | `Casting/HexMathUtil.cs` | 数值安全工具。 |
 | `Casting/HexUnits.cs` | 单位换算常量。 |
 | `Casting/Iota/CompositeIotas.cs` | 列表 iota。源：ListIota。 |
+| `Casting/Iota/DisplayText.cs` | 上游 Minecraft Component（带颜色、可嵌套的文字）的最小替身。iota 的显示（上游 IotaType.display）都返回它。 |
 | `Casting/Iota/Iota.cs` | Iota 类型标签。对应源项目 IotaType 单例的集合（注册于 HexIotaTypes.java）。 |
 | `Casting/Iota/IotaSerializer.cs` | iota 的序列化与反序列化。 |
 | `Casting/Iota/PrimitiveIotas.cs` | 空值 iota。源：NullIota。单例。</summary> |
@@ -158,6 +159,7 @@
 | `HexGlobalProjectile.cs` | 为每个弹幕维护一个持久「视线方向」，即飞行方向。 |
 | `HexPlayer.cs` | 玩家侧咒术数据。 |
 | `HexSpaceWorld.cs` | 法术坐标 ↔ 泰拉坐标的**唯一**换算层（套在 <see cref="TerrariaCastingWorld"/> 外面）。 |
+| `IotaDisplaySetup.cs` | 给 Core 的 iota 显示接上游戏：实体叫什么（上游 EntityIota 显示实体名）、Shift 按没按着（HexParse 的注释按住 Shift 不显示）。 |
 | `Items/Abacus.cs` | 阿卡夏记录的**物品形态**。 |
 | `Items/AncientLoot.cs` | 远古卷轴（源项目 ItemScroll + TAG_OP_ID，「%s之远古卷轴」）：写着**本世界**某个大法术的笔顺。 |
 | `Items/CreativeUnlocker.cs` | 媒质立方（原版 ItemCreativeUnlocker，创造模式物品，没有配方）。 |
@@ -234,6 +236,7 @@
 | `UI/HexCanvas.cs` | 已画完的一条图案 + 注册表匹配结果（null = 未命中）+ 求值结果（决定颜色）。</summary> |
 | `UI/PatternArt.cs` | 按原版画法画静态图案（<see cref="StaticPatternArt"/>）的两个入口： |
 | `UI/PrimitiveBatch.cs` | 把 <see cref="PatternGeometry"/> 产出的三角形直接交给显卡。 |
+| `UI/RichText.cs` | 把 iota 的显示（<see cref="DisplayText"/>）画进泰拉： |
 | `UI/SpriteBatchBookCanvas.cs` | <see cref="IBookCanvas"/> 的游戏内实现：全部用 <c>Main.spriteBatch</c> 画（不切到图元绘制， |
 
 ### Addons/
@@ -299,6 +302,7 @@
 | `HexParse/Core/HexParseSettings.cs` | HexParse 的配置项（上游 config/HexParseConfig.java + fabric/HexParseConfigFabric.java 的默认值）。 |
 | `HexParse/Core/IHexParseHost.cs` | 消息的样式（上游用聊天颜色区分）。</summary> |
 | `HexParse/Core/IotaWriter.cs` | iota -> 代码（上游 ParserMain.ParseIotaNbt + nbt2str/* + misc/StringProcessors.java + parsers/meta/MetaHolder.java）。 |
+| `HexParse/Core/NestedDisplay.cs` | 上游 mixin/iota/* + mixin_interface/NestedCounter：显示 iota 时 |
 | `HexParse/Core/NumEvaluator.cs` | 数字 -> 数字之精思的笔画（上游 misc/NumEvaluatorBrute.java，逐行照搬），以及数字的最短文本写法。 |
 | `HexParse/Core/PatternNames.cs` | 图案名 -> 图案（上游 hooks/PatternMapper.java）。 |
 | `HexParse/Core/StringEscaper.cs` | 注释字符串的转义 / 反转义（上游 misc/StringEscaper.kt，逐行照搬）。</summary> |

@@ -31,4 +31,7 @@ public sealed class UnknownIota : Iota
     public override object? Serialize() => IotaSerializer.Envelope(KindTag, Payload);
 
     protected override string DescribeValue() => $"未加载的 iota（{KindTag}）";
+
+    /// <summary>上游 brokenIota 是灰色的「损坏的iota」；这里说明是哪种没加载（附属关着时会这样）。</summary>
+    public override DisplayText DisplayRich() => DisplayText.Literal(DescribeValue(), McColors.Gray);
 }

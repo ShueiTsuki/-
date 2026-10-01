@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HexCastingTerraria.Core.Casting.Arithmetic;
 using HexCastingTerraria.Core.Casting.Castables;
@@ -98,7 +98,8 @@ public sealed class OpPrint : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        env.PrintMessage(args[0].ToString());
+        // 上游 env.printMessage(datum.display())：带颜色、列表显示内容、图案是小图（聊天栏认这些标记）
+        env.PrintMessage(DisplayTags.Of(args[0]));
         return Array.Empty<Iota>();
     }
 }

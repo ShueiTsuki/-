@@ -32,4 +32,19 @@ public static class PatternDisplay
     public static void RegisterAddonName(string id, string name) => AddonNames[id] = name;
 
     public static void UnregisterAddonName(string id) => AddonNames.Remove(id);
+
+    /// <summary>
+    /// 一个图案叫什么（上游 Inline 图案的悬停名 InlinePatternData.getPatternName、HexDebug 的 getI18nOrNull）：
+    /// 普通图案和本世界的大法术用名字；数字和簿记员用特殊名（数字按上游 DOUBLE_FORMATTER「####.####」）；都不是返回 null。
+    /// </summary>
+    public static string? NameOf(Casting.Math.HexPattern pattern)
+    {
+        var def = PatternRegistry.Match(pattern);
+        if (def is not null) return def.DisplayName();
+        if (Casting.Math.SpecialPatterns.TryNumber(pattern.AnglesSignature(), out var n))
+            return "数字之精思：" + n.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        if (Casting.Math.SpecialPatterns.TryMask(pattern, out var mask))
+            return "簿记员之策略：" + new string(System.Array.ConvertAll(mask, k => k ? '-' : 'v'));
+        return null;
+    }
 }

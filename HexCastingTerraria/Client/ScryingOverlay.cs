@@ -62,7 +62,7 @@ internal static class ScryingOverlay
                 sb.Draw(tex, origin + new Vector2(0f, 2f), null, Color.White, 0f, Vector2.Zero, s, SpriteEffects.None, 0f);
                 tx = 20f;
             }
-            Terraria.Utils.DrawBorderString(sb, text, origin + new Vector2(tx, 0f), color, 0.8f);
+            UI.RichText.DrawTagged(sb, text, origin + new Vector2(tx, 0f), color, 0.8f, -1f);
             origin.Y += lineH;
         }
     }

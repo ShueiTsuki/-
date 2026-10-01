@@ -639,6 +639,9 @@ public sealed class HexClientSystem : ModSystem
     /// <summary>
     /// 显示 VM 栈内容 —— 这是「画图案 → 求值」闭环的可见证据。
     /// </summary>
+    /// <summary>栈每行最宽多少（原版施法界面左边留给栈的宽度，放不下就截断加「...」）。</summary>
+    private const float StackLineWidth = 380f;
+
     private void DrawVmStack(SpriteBatch sb, float x, float y)
     {
         if (HexCanvasState.HudStackOverride is { } lines)
@@ -648,7 +651,7 @@ public sealed class HexClientSystem : ModSystem
             y += 20f;
             for (int i = 0; i < System.Math.Min(lines.Count, 8); i++)
             {
-                Terraria.Utils.DrawBorderString(sb, lines[i], new Vector2(x, y), TextColor, 0.7f);
+                UI.RichText.DrawTagged(sb, lines[i], new Vector2(x, y), TextColor, 0.7f, StackLineWidth);
                 y += 17f;
             }
             if (lines.Count > 8) Terraria.Utils.DrawBorderString(sb, $"… 更深处还有 {lines.Count - 8} 项", new Vector2(x, y), new Color(170, 165, 190), 0.65f);
@@ -674,8 +677,7 @@ public sealed class HexClientSystem : ModSystem
         int show = System.Math.Min(stack.Count, 8);
         for (int i = stack.Count - 1; i >= stack.Count - show; i--)
         {
-            Terraria.Utils.DrawBorderString(sb, HexVmState.Describe(stack[i]),
-                new Vector2(x, y), TextColor, 0.7f);
+            UI.RichText.DrawLine(sb, stack[i].DisplayRich(), new Vector2(x, y), 0.7f, StackLineWidth);
             y += 17f;
         }
         if (stack.Count > show)

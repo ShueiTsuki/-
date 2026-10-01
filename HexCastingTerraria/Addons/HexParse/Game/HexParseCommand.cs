@@ -98,7 +98,7 @@ public sealed class HexParseCommand : AddonCommand
         var iota = HexParseIO.HeldIO(player)?.Read();
         if (code == null || iota == null) return;
         // 上游「%s分享了：%s （点击复制）」；泰拉聊天不能点，代码直接附在后面
-        string text = $"{player.name}分享了：{iota.Display()} （{code}）";
+        string text = $"{player.name}分享了：{DisplayTags.Of(iota)} （{code}）";
         if (Main.netMode == NetmodeID.MultiplayerClient) HexParseNet.SendShare(text);
         else Say(text);
     }
@@ -334,7 +334,7 @@ public sealed class HexParseCommand : AddonCommand
             case HexParseNet.Op.Learn:
             {
                 var learned = HexParseActions.LearnFromHeld(player);
-                result = new ListIota(learned).Display();
+                result = DisplayTags.Of(new ListIota(learned));
                 break;
             }
             case HexParseNet.Op.UnlockAll: result = $"解锁了{HexParseWorld.UnlockAll()}种卓越图案"; break;

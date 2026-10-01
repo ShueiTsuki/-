@@ -51,14 +51,7 @@ public static class IotaText
     }
 
     /// <summary>上游 getI18nOrNull：普通图案、本世界大法术、特殊图案（数字 / 簿记员）的名字；都不是返回 null。</summary>
-    public static string? PatternName(HexPattern pattern)
-    {
-        var def = PatternRegistry.Match(pattern);
-        if (def is not null) return def.DisplayName();
-        if (SpecialPatterns.TryNumber(pattern.AnglesSignature(), out var n)) return "数字之精思：" + new DoubleIota(n).Display();
-        if (SpecialPatterns.TryMask(pattern, out var mask)) return "簿记员之策略：" + new string(mask.Select(k => k ? '-' : 'v').ToArray());
-        return null;
-    }
+    public static string? PatternName(HexPattern pattern) => PatternDisplay.NameOf(pattern);
 
     /// <summary>上游 simpleString：「起笔方向 签名」，如 EAST、NORTH_WEST aqwed。</summary>
     public static string SimpleString(HexPattern p)

@@ -315,7 +315,7 @@ internal static class HexDebugSessions
         => HexDebugNet.ToClient(player.whoAmI, HexDebugNet.Msg.Status, w => w.Write(text));
 
     private static List<string> StackLines(CastingImage image)
-        => image.Stack.Reverse().Select(IotaText.Display).ToList();
+        => image.Stack.Reverse().Select(DisplayTags.Of).ToList();
 
     private static void SendView(int who, HexDebugger dbg)
     {
@@ -333,7 +333,7 @@ internal static class HexDebugSessions
             CurrentLine = pos?.LineIndex ?? -1,
             BreakpointLines = src is not null && s.Shared.Breakpoints.TryGetValue(src.Reference, out var bps) ? bps.Keys.OrderBy(x => x).ToList() : new List<int>(),
             Stack = StackLines(dbg.Image),
-            Ravenmind = dbg.Image.UserData.Ravenmind is { } rm ? IotaText.Display(rm) : "null",
+            Ravenmind = DisplayTags.Of(dbg.Image.UserData.Ravenmind ?? NullIota.Instance),
             OpsConsumed = dbg.Image.OpsConsumed,
             EscapeNext = dbg.Image.EscapeNext,
             ParenCount = dbg.Image.ParenCount,

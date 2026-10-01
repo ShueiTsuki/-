@@ -5699,6 +5699,8 @@ static class Program
             }
         }
 
+        DisplayTests.Run();
+
         // 附属的离线用例（tests/vmtest/Addons/*Tests.cs）
         Addons.HexParseTests.Run();
         Addons.HexcessibleTests.Run();

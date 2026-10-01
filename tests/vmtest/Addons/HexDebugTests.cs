@@ -42,7 +42,15 @@ static class HexDebugTests
         return new PatternIota(p!);
     }
 
-    static string Stack(CastingImage img) => "[" + string.Join(", ", img.Stack.Select(IotaText.Display)) + "]";
+    // 只比值：数字写成 1、布尔写成 true（不用显示文字 —— 显示照上游是「1.00」「True」）
+    static string Stack(CastingImage img) => "[" + string.Join(", ", img.Stack.Select(V)) + "]";
+
+    static string V(Iota i) => i switch
+    {
+        DoubleIota d => d.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        BooleanIota b => b.Value ? "true" : "false",
+        _ => IotaText.Display(i),
+    };
 
     static (HexDebugger Dbg, TestDebugEnv DebugEnv, SharedDebugState Shared) New()
     {

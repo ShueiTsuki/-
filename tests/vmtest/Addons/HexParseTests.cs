@@ -50,6 +50,7 @@ static class HexParseTests
         Console.WriteLine("=== 附属 HexParse：分词 / 解析 / 反向输出 ===");
         IotaSerializer.RegisterKind(CommentIota.KindTag, CommentIota.Read);
 
+        NestedColors();
         Tokenizer();
         Parsing();
         Macros();
@@ -216,5 +217,49 @@ static class HexParseTests
         Check(".hexpattern：内省 / 加法 / 数字 / 簿记员 / 向量 / 签名 / 反思 全部认出",
             dotParsed.Count == 7 && Id(dotParsed.Items[0]) == "hexcasting:open_paren" && Id(dotParsed.Items[1]) == "hexcasting:add"
             && dotParsed.Items[4] is VectorIota { X: 1, Y: 2, Z: 3 } && Id(dotParsed.Items[6]) == "hexcasting:close_paren", dot + " => " + Ids(dotParsed));
+    }
+
+    /// <summary>
+    /// 上游 mixin/iota/*：列表按深度换色（深紫、金、深蓝……），列表里的内省 / 反思按配对深度换色（青、浅紫、绿……），
+    /// 列表外的括号不改；注释旁边不加逗号。
+    /// </summary>
+    static void NestedColors()
+    {
+        var deco = new NestedDisplay();
+        IotaDisplay.Decorators.Add(deco);
+        try
+        {
+            HexPattern Pat(string sig) { HexPattern.TryFromAnglesUnchecked(sig, HexDir.East, out var p, out _); return p!; }
+            var open = new PatternIota(Pat("qqq"));
+            var close = new PatternIota(Pat("eee"));
+            var nested = new ListIota(new ListIota(new DoubleIota(1)), new DoubleIota(2));
+            var spans = nested.DisplayRich().Spans(McColors.White);
+            Check("彩色：外层列表深紫，里层金色，数字仍是绿色",
+                spans[0].Text == "[" && spans[0].Color == McColors.DarkPurple && spans[1].Text == "[" && spans[1].Color == McColors.Gold
+                && spans[2].Color == McColors.Green && spans[^1].Text == "]" && spans[^1].Color == McColors.DarkPurple,
+                string.Join(" | ", spans.Select(x => (x.Text ?? "<p>") + ":" + x.Color.ToString("X6"))));
+
+            var parens = new ListIota(open, new DoubleIota(1), open, close, close);
+            var glyphs = parens.DisplayRich().Spans(McColors.White).Where(x => x.Pattern is not null).Select(x => x.Color).ToList();
+            Check("彩色：列表里成对的括号同色，里层换下一个颜色",
+                glyphs.SequenceEqual(new[] { McColors.Aqua, McColors.LightPurple, McColors.LightPurple, McColors.Aqua }),
+                string.Join(",", glyphs.Select(c => c.ToString("X6"))));
+            var again = parens.DisplayRich().Spans(McColors.White).Where(x => x.Pattern is not null).Select(x => x.Color).ToList();
+            Check("彩色：显示完计数归零，再显示一次颜色一样", again.SequenceEqual(glyphs));
+            Check("彩色：不在列表里的括号不改颜色", open.DisplayRich().Spans(McColors.White).Single().Color == McColors.White);
+
+            var commented = new ListIota(new CommentIota("note"), new DoubleIota(1), new DoubleIota(2));
+            Check("注释旁边不加逗号，其他照常", commented.Display() == "[note1.00, 2.00]", commented.Display());
+
+            HexParseSettings.Current.ShowColorfulNested = false;
+            var plain = nested.DisplayRich().Spans(McColors.White);
+            Check("彩色关掉：里层列表也是深紫", plain[1].Color == McColors.DarkPurple);
+            Check("彩色关掉：注释旁边照样不加逗号", commented.Display() == "[note1.00, 2.00]");
+        }
+        finally
+        {
+            HexParseSettings.Current.ShowColorfulNested = true;
+            IotaDisplay.Decorators.Remove(deco);
+        }
     }
 }

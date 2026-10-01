@@ -57,6 +57,66 @@ public sealed class CommentIota : Iota
         return Comment;
     }
 
+    /// <summary>
+    /// 上游 CommentIotaType.display：注释深绿（代码注释去掉两边引号，按住 Shift 时不显示）；
+    /// 大法术占位用图案的金色，每隔一阵从左到右滚过一遍随机的大法术名（浅紫），提示「这里有个没解锁的大法术」。
+    /// </summary>
+    public override DisplayText DisplayRich()
+    {
+        string raw = Comment;
+        if (!IsGreatPlaceholder(raw))
+        {
+            if (IotaDisplay.ShiftDown?.Invoke() == true) return DisplayText.Empty();
+            return DisplayText.Literal(DescribeValue(), McColors.DarkGreen);
+        }
+        int len = raw.Length;
+        int loopSize = (int)System.Math.Floor(len * System.Math.PI * 2);
+        long ticker = IotaDisplay.Millis() / 20;
+        int looper = (int)(ticker % loopSize);
+        if (looper >= len * 2) return DisplayText.Literal(raw, McColors.Gold);
+        ticker -= looper;
+        string filled = MakeGreatPlaceholder(RandomGreatKey(ticker, len - GreatPlaceholderPrefix.Length - GreatPlaceholderPostfix.Length));
+        if (looper <= len)
+        {
+            return DisplayText.Empty().Append(DisplayText.Literal(filled.Substring(0, looper), McColors.LightPurple))
+                .Append(DisplayText.Literal(raw.Substring(looper), McColors.Gold));
+        }
+        looper -= len;
+        return DisplayText.Empty().Append(DisplayText.Literal(raw.Substring(0, looper), McColors.Gold))
+            .Append(DisplayText.Literal(filled.Substring(looper), McColors.LightPurple));
+    }
+
+    private static string? _greatKeys;
+
+    /// <summary>上游 pickRandomGreatPatternKey：所有大法术 id 的路径各放三份、打乱、用「---」连起来，从 from 处截 size 个字（循环）。</summary>
+    private static string RandomGreatKey(long from, int size)
+    {
+        if (_greatKeys is null)
+        {
+            var keys = new System.Collections.Generic.List<string>();
+            foreach (var def in global::HexCastingTerraria.Core.Registry.PatternRegistry.All)
+            {
+                if (!global::HexCastingTerraria.Core.Registry.PatternRegistry.IsPerWorld(def)) continue;
+                string path = def.Id.Substring(def.Id.IndexOf(':') + 1);
+                for (int i = 0; i < 3; i++) keys.Add(path);
+            }
+            var rng = new System.Random();
+            for (int i = keys.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                (keys[i], keys[j]) = (keys[j], keys[i]);
+            }
+            _greatKeys = string.Concat(keys.ConvertAll(k => k + "---"));
+            if (_greatKeys.Length == 0) _greatKeys = "---";
+        }
+        var all = _greatKeys;
+        size = System.Math.Max(0, size);
+        var sb = new System.Text.StringBuilder(size);
+        int start = (int)(from % all.Length);
+        for (int i = 0; i < size; i++) sb.Append(all[(start + i) % all.Length]);
+        return sb.ToString();
+    }
+
     /// <summary>上游 execute：什么都不做，结果 Escaped，没有声音。</summary>
     public override CastResult Execute(CastingVM vm, SpellContinuation continuation)
         => new(this, continuation, null, System.Array.Empty<OperatorSideEffect>(), ResolvedPatternType.Escaped, EvalSound.Nothing);

@@ -80,6 +80,30 @@ public sealed class ListIota : Iota
     }
 
     protected override string DescribeValue() => $"{Count} 项";
+
+    /// <summary>
+    /// 上游 ListIota.display：「[%s]」深紫，元素逐个显示；只有相邻两个里至少一个要逗号时才加「, 」
+    /// （图案不要逗号；客户端设置 alwaysShowListCommas 打开时都加）。附属的显示挂钩在这里生效。
+    /// </summary>
+    public override DisplayText DisplayRich()
+    {
+        foreach (var d in IotaDisplay.Decorators) d.BeforeList(this);
+        var inner = DisplayText.Empty();
+        for (int i = 0; i < _items.Count; i++)
+        {
+            inner.Append(_items[i].DisplayRich());
+            if (i < _items.Count - 1)
+            {
+                var a = _items[i];
+                var b = _items[i + 1];
+                if ((a.UsesListCommas || b.UsesListCommas || IotaDisplay.AlwaysShowListCommas) && !IotaDisplay.DropsComma(a, b))
+                    inner.Append(", ");
+            }
+        }
+        var shown = DisplayText.Empty().Append("[").Append(inner).Append("]").WithColor(McColors.DarkPurple);
+        foreach (var d in IotaDisplay.Decorators) d.AfterList(this, shown);
+        return shown;
+    }
 }
 
 /// <summary>
@@ -129,6 +153,16 @@ public sealed class PatternIota : Iota
             new List<object?> { AnglesSignature, (double)StartDir });
 
     protected override string DescribeValue() => $"{StartDir} {AnglesSignature}";
+
+    /// <summary>上游 PatternIota.display：Inline 的内嵌小图案，白色。</summary>
+    public override DisplayText DisplayRich()
+    {
+        var shown = DisplayText.Glyph(Pattern, McColors.White);
+        foreach (var d in IotaDisplay.Decorators) d.AfterPattern(this, shown);
+        return shown;
+    }
+
+    public override bool UsesListCommas => false;
 
     public override CastResult Execute(CastingVM vm, SpellContinuation continuation)
         => LookupAndOperate(vm, continuation, inParens: false);
@@ -424,4 +458,7 @@ public sealed class ContinuationIota : Iota
     }
 
     protected override string DescribeValue() => "跳转目标";
+
+    /// <summary>上游 hexcasting.tooltip.jump_iota「[Jump]」，红色。</summary>
+    public override DisplayText DisplayRich() => DisplayText.Literal("[Jump]", McColors.Red);
 }

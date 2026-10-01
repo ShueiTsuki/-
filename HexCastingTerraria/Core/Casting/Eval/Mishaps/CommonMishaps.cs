@@ -107,8 +107,9 @@ public sealed class MishapUnescapedValue : Mishap
         // 源项目此处为 TODO（不修改栈）
     }
 
+    /// <summary>上游 hexcasting.mishap.unescaped 官方中文。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"值 {Perpetrator.TypeName} 未被转义";
+        => $"本应运行一个图案，而实际运行了{DisplayTags.Of(Perpetrator)}";
 }
 
 /// <summary>栈过大（序列化上限）。清空栈并放入一个垃圾 iota。</summary>
@@ -259,7 +260,7 @@ public sealed class MishapInvalidOperatorArgs : Mishap
     {
         if (Perpetrators.Count == 0) { return $"运算符「{Op}」不支持这些操作数类型：{ArgTypes}"; }
         var values = new string[Perpetrators.Count];
-        for (int i = 0; i < values.Length; i++) { values[i] = Perpetrators[i].Display(); }
+        for (int i = 0; i < values.Length; i++) { values[i] = DisplayTags.Of(Perpetrators[i]); }
         return Perpetrators.Count == 1
             ? $"在栈下标为0处获取到意外iota：{values[0]}"
             : $"在栈下标为0到{Perpetrators.Count - 1}处获取到{Perpetrators.Count}个意外iota：{string.Join(", ", values)}";
@@ -297,14 +298,36 @@ public sealed class MishapInvalidIota : Mishap
     {
         // 源项目：stack[size - 1 - reverseIdx] = GarbageIota() —— 把出错的那个参数换成垃圾值
         int idx = ReverseIdx ?? LocateFromTop(stack, Perpetrator);
+        _located = idx;
         if (idx >= 0 && idx < stack.Count)
         {
             stack[stack.Count - 1 - idx] = GarbageIota.Instance;
         }
     }
 
+    private int _located = -1;
+
+    /// <summary>上游 hexcasting.mishap.invalid_value 官方中文「本应在栈下标为%2$s处接受%1$s，而实际接受了%3$s：%4$s」。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"此处需要 {Expected}，但收到 {Perpetrator.TypeName}";
+    {
+        int idx = ReverseIdx ?? System.Math.Max(_located, 0);
+        return $"本应在栈下标为{idx}处接受{Expected}，而实际接受了{KindDesc(Perpetrator)}：{DisplayTags.Of(Perpetrator)}";
+    }
+
+    /// <summary>上游 hexcasting.iota.&lt;种类&gt;.desc 官方中文；附属的种类没有就用类型名。</summary>
+    private static string KindDesc(Iota iota) => iota.Kind switch
+    {
+        IotaKind.Null => "一个空值",
+        IotaKind.Double => "一个数",
+        IotaKind.Boolean => "一个布尔值",
+        IotaKind.Entity => "一个实体",
+        IotaKind.List => "一个列表",
+        IotaKind.Pattern => "一个图案",
+        IotaKind.Garbage => "垃圾",
+        IotaKind.Vector => "一个向量",
+        IotaKind.Continuation => "一个跳转iota",
+        _ => iota.TypeName,
+    };
 }
 
 /// <summary>

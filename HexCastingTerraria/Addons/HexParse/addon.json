@@ -217,7 +217,10 @@
     },
     {
       "name": "嵌套列表 / 括号彩色显示",
-      "files": [],
+      "files": [
+        "Core/NestedDisplay.cs",
+        "Game/HexParseAddon.cs"
+      ],
       "upstream": [
         "mixin/iota/MixinListIotaDisplay.java",
         "mixin/iota/MixinPatternIota.java",

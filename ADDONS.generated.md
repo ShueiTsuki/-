@@ -6,7 +6,7 @@
 | 附属 | 上游版本 | 许可 | 开关 | 功能已做 |
 |---|---|---|---|---|
 | [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 16 |
-| [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 18 |
+| [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 16 / 18 |
 | [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 11 / 12 |
 
 <a id="hexdebug"></a>
@@ -56,7 +56,7 @@
 | 指令 /hexParse | `Game/HexParseCommand.cs`<br>`Game/HexParseIO.cs` | `hooks/HexParseCommands.java`<br>`commands/CommandWrite.java`<br>`commands/CommandRead.java`<br>`commands/CommandClipboard.java`<br>`commands/CommandMindStackIO.kt`<br>`commands/CommandMacro.java`<br>`commands/CommandConflictResolver.kt`<br>`commands/CommandLehmerHelper.java`<br>`commands/CommandDonate.kt`<br>`commands/CommandLearnGreat.kt`<br>`commands/CommandGreatPatternUnlock.java`<br>`commands/CommandPropertyIO.java`<br>`misc/IOMethod.kt` |
 | 剪贴板与显示同步（联机） | `Game/HexParseNet.cs` | `network/MsgPullClipboard.java`<br>`network/MsgPushClipboard.java`<br>`network/ClipboardMsgMode.java`<br>`network/MsgSyncDisplayMap.java`<br>`network/MsgHandlers.java`<br>`network/MsgHelpers.java`<br>`network/ISenderClient.java`<br>`network/ISenderServer.java` |
 | .hexpattern 格式 | `Core/DotHexPattern.cs` | `parsers/hexpattern/DotHexPatternMapper.kt`<br>`parsers/hexpattern/TriePrefixMap.kt` |
-| 嵌套列表 / 括号彩色显示 | （待做） | `mixin/iota/MixinListIotaDisplay.java`<br>`mixin/iota/MixinPatternIota.java`<br>`mixin_interface/NestedCounter.java` |
+| 嵌套列表 / 括号彩色显示 | `Core/NestedDisplay.cs`<br>`Game/HexParseAddon.cs` | `mixin/iota/MixinListIotaDisplay.java`<br>`mixin/iota/MixinPatternIota.java`<br>`mixin_interface/NestedCounter.java` |
 | 书：HexParse 指令分类 + 图案条目 | `Core/HexParseBook.Generated.cs` | `assets/hexcasting/patchouli_books/thehexbook`<br>`assets/hexparse/lang/zh_cn.json` |
 | 与 HexDebug 联动：剪接台里画注释 iota（代码在 HexDebug/Interop，被联动的一方） | （待做） | `compat/hexdebug/CommentRenderer.kt`<br>`compat/hexdebug/CommentRendererButIgnoresOverride.java` |
 | 其他附属的插件解析（那些附属移植后再接，现在不做） | （待做） | `parsers/str2nbt/plugins/PluginConstParsers.java`<br>`parsers/nbt2str/plugins/`<br>`parsers/PluginIotaFactory.java`<br>`parsers/str2nbt/unsafe/hexal/`<br>`parsers/nbt2str/unsafe/hexal/` |

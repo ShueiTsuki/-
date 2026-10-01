@@ -20,6 +20,9 @@ public sealed class NullIota : Iota
     public override object? Serialize() => IotaSerializer.Envelope(IotaSerializer.KindNull, null);
 
     protected override string DescribeValue() => "null";
+
+    /// <summary>上游 hexcasting.tooltip.null_iota，灰色。</summary>
+    public override DisplayText DisplayRich() => DisplayText.Literal("Null", McColors.Gray);
 }
 
 /// <summary>布尔 iota。源：BooleanIota。</summary>
@@ -48,6 +51,10 @@ public sealed class BooleanIota : Iota
     public override bool AsBool() => Value;
 
     protected override string DescribeValue() => Value ? "true" : "false";
+
+    /// <summary>上游 hexcasting.tooltip.boolean_true / false：深绿 / 深红。</summary>
+    public override DisplayText DisplayRich()
+        => Value ? DisplayText.Literal("True", McColors.DarkGreen) : DisplayText.Literal("False", McColors.DarkRed);
 }
 
 /// <summary>
@@ -82,6 +89,9 @@ public sealed class DoubleIota : Iota
 
     protected override string DescribeValue()
         => Value.ToString("0.####", CultureInfo.InvariantCulture);
+
+    /// <summary>上游 String.format("%.2f")，绿色。</summary>
+    public override DisplayText DisplayRich() => DisplayText.Literal(IotaDisplay.Fixed2(Value), McColors.Green);
 }
 
 /// <summary>
@@ -129,6 +139,10 @@ public sealed class VectorIota : Iota
 
     protected override string DescribeValue()
         => string.Format(CultureInfo.InvariantCulture, "({0:0.##}, {1:0.##}, {2:0.##})", X, Y, Z);
+
+    /// <summary>上游 String.format("(%.2f, %.2f, %.2f)")，红色。</summary>
+    public override DisplayText DisplayRich()
+        => DisplayText.Literal($"({IotaDisplay.Fixed2(X)}, {IotaDisplay.Fixed2(Y)}, {IotaDisplay.Fixed2(Z)})", McColors.Red);
 }
 
 /// <summary>
@@ -178,6 +192,10 @@ public sealed class EntityIota : Iota
             new List<object?> { (double)Target, (double)Index });
 
     protected override string DescribeValue() => $"{Target}#{Index}";
+
+    /// <summary>上游：实体的名字，青色；找不到实体时是 hexcasting.spelldata.entity.whoknows。</summary>
+    public override DisplayText DisplayRich()
+        => DisplayText.Literal(IotaDisplay.EntityName?.Invoke(this) ?? "未知实体", McColors.Aqua);
 }
 
 /// <summary>
@@ -199,4 +217,17 @@ public sealed class GarbageIota : Iota
     public override object? Serialize() => IotaSerializer.Envelope(IotaSerializer.KindGarbage, null);
 
     protected override string DescribeValue() => "garbage";
+
+    private const string GarbageWord = "arimfexendrapuse";
+
+    /// <summary>
+    /// 上游：「arimfexendrapuse」，深灰、乱码字体（MC 的 obfuscated 每帧把每个字换成随机字）。
+    /// 泰拉没有乱码字体，就每次显示时随机换字母，HUD 每帧重画看起来也是一直在变。
+    /// </summary>
+    public override DisplayText DisplayRich()
+    {
+        var chars = new char[GarbageWord.Length];
+        for (int i = 0; i < chars.Length; i++) chars[i] = (char)('a' + Random.Shared.Next(26));
+        return DisplayText.Literal(new string(chars), McColors.DarkGray);
+    }
 }

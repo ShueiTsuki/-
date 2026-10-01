@@ -71,8 +71,17 @@ public abstract class Iota
 
     protected abstract string DescribeValue();
 
-    /// <summary>给玩家看的值（原版 Iota.display()，用在事故消息里）。</summary>
-    public string Display() => DescribeValue();
+    /// <summary>
+    /// 上游 IotaType.display：给玩家看的、带颜色的显示（揭示、物品说明、施法界面的栈、事故消息都用它）。
+    /// 没覆写的种类就显示 <see cref="DescribeValue"/>。
+    /// </summary>
+    public virtual DisplayText DisplayRich() => DisplayText.Literal(DescribeValue());
+
+    /// <summary>上游 display().getString()：显示的纯文字（图案写成 HexPattern[…]）。</summary>
+    public string Display() => DisplayRich().Plain();
+
+    /// <summary>上游 IotaType.usesListCommas：列表显示时和邻居之间加逗号（图案不加：它显示成小图，逗号不好看）。</summary>
+    public virtual bool UsesListCommas => true;
 
     // ---- 求值相关（移植自源项目 Iota.java 的 execute / executeInParens）----
 

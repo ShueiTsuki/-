@@ -151,18 +151,9 @@ public sealed class HexDebugPanel : AddonSystem
                     sb.Draw(px, new Rectangle((int)x + 7, (int)(ty + lineH / 2 - 3), 6, 6), BreakDot);
                 }
             }
-            Utils.DrawBorderString(sb, Fit(font, text, Width - 20f - indent), new Vector2(tx, ty), color, Scale);
+            global::HexCastingTerraria.Client.UI.RichText.DrawTagged(sb, text, new Vector2(tx, ty), color, Scale, Width - 20f - indent);
             ty += lineH;
         }
-    }
-
-    /// <summary>太长就截断加省略号。</summary>
-    private static string Fit(ReLogic.Graphics.DynamicSpriteFont font, string s, float width)
-    {
-        if (font.MeasureString(s).X * Scale <= width) return s;
-        int n = s.Length;
-        while (n > 1 && font.MeasureString(s[..n] + "…").X * Scale > width) n--;
-        return s[..n] + "…";
     }
 }
 

@@ -225,18 +225,4 @@ public static class HexVmState
             LastError = e.Message;
         }
     }
-
-    /// <summary>把 iota 渲染成 HUD 用的短文本。</summary>
-    public static string Describe(Iota iota) => iota switch
-    {
-        NullIota => "null",
-        BooleanIota b => b.Value ? "true" : "false",
-        DoubleIota d => d.Value.ToString("0.####"),
-        VectorIota v => $"vec({v.X:0.##}, {v.Y:0.##}, {v.Z:0.##})",
-        PatternIota p => "pattern",
-        ListIota l => $"list[{l.Count}]",
-        GarbageIota => "garbage",
-        ContinuationIota => "跳转目标",
-        _ => iota.TypeName,
-    };
 }

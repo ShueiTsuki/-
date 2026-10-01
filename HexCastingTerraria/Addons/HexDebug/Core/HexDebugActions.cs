@@ -33,6 +33,9 @@ public sealed class CognitohazardIota : Iota
     /// <summary>上游 hexdebug.tooltip.cognitohazard_iota。</summary>
     protected override string DescribeValue() => "认知危害";
 
+    /// <summary>上游 DISPLAY：黑色。</summary>
+    public override DisplayText DisplayRich() => DisplayText.Literal("认知危害", McColors.Black);
+
     public override CastResult Execute(CastingVM vm, SpellContinuation continuation)
         => new(this, continuation, null, Array.Empty<OperatorSideEffect>(), ResolvedPatternType.Evaluated, EvalSound.Nothing);
 }

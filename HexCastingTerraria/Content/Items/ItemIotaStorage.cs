@@ -119,7 +119,7 @@ public abstract class ItemIotaStorage : ModItem
         // 原版 IotaHolderItem.appendHoverText：有内容就显示内容，空就不写
         if (Read() is { } iota)
         {
-            tooltips.Add(new TooltipLine(Mod, "HexStored", $"存有：{iota}"));
+            tooltips.Add(new TooltipLine(Mod, "HexStored", "存有：" + DisplayTags.Of(iota)));
         }
     }
 

@@ -45,12 +45,17 @@ public sealed class HexParseAddon : HexAddon
         foreach (var (id, action) in actions) PatternRegistry.RegisterAction(id, action);
 
         HexAddonsConfig.Instance.HexParseOptions.Apply();
+        IotaDisplay.Decorators.Add(Display);
     }
+
+    /// <summary>嵌套列表 / 括号彩色显示、注释旁不加逗号（上游 mixin/iota/*）。</summary>
+    private static readonly NestedDisplay Display = new();
 
     public override void OnUnload()
     {
         IotaSerializer.UnregisterKind(CommentIota.KindTag);
         foreach (var id in HexParsePatterns.Names.Keys) PatternDisplay.UnregisterAddonName(id);
+        IotaDisplay.Decorators.Remove(Display);
     }
 
     public override void HandlePacket(System.IO.BinaryReader reader, int whoAmI) => HexParseNet.Handle(reader, whoAmI);
