@@ -71,6 +71,7 @@ public static class HexCanvasState
         foreach (var ext in CanvasExtensions.All) ext.OnClose();
         PatternSink = null;
         HudStackOverride = null;
+        TypingAllowed = true;
         Closed?.Invoke();
     }
 
@@ -88,6 +89,9 @@ public static class HexCanvasState
 
     /// <summary>附属接管画布时，HUD 上的「VM 栈」显示这些行（栈顶在前）；null = 显示本体的栈。画布关闭时清空。</summary>
     public static System.Collections.Generic.IReadOnlyList<string>? HudStackOverride { get; set; }
+
+    /// <summary>附属的画布扩展能不能接键盘输入（HexDebug 剪接台的画布里不能：上游 Hexcessible 在那里 disallowTyping）。画布关闭时恢复。</summary>
+    public static bool TypingAllowed { get; set; } = true;
 
     /// <summary>画布关闭时通知（附属在这里换回自己的图案快照等）。</summary>
     public static event System.Action? Closed;

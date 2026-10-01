@@ -5,9 +5,9 @@
 
 | 附属 | 上游版本 | 许可 | 开关 | 功能已做 |
 |---|---|---|---|---|
-| [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 14 / 15 |
+| [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 16 |
 | [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 18 |
-| [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 10 / 12 |
+| [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 11 / 12 |
 
 <a id="hexdebug"></a>
 ## HexDebug
@@ -32,6 +32,7 @@
 | 配方 | `Game/HexDebugItems.cs` | `datagen/recipes/`<br>`recipes/FlyswatterQuenchingShapedRecipe.kt` |
 | 书：调试 / 剪接台 / 核心框架条目 | `Core/HexDebugBook.Generated.cs` | `assets/hexcasting/patchouli_books/thehexbook`<br>`assets/hexdebug/lang/zh_cn.flatten.json5` |
 | 外部调试 DAP 服务器（最后做，默认关） | （待做） | `adapter/DebugAdapterManager.kt`<br>`adapter/IHexDebugLauncher.kt`<br>`adapter/LaunchArgs.kt`<br>`adapter/proxy/`<br>`networking/msg/MsgDebugAdapterProxy.kt` |
+| 联动：剪接台格子里画 HexParse 的注释 iota | `Interop/HexParseCommentRenderer.cs` | `(hexparse) compat/hexdebug/CommentRenderer.kt` |
 
 <a id="hexparse"></a>
 ## HexParse
@@ -57,7 +58,7 @@
 | .hexpattern 格式 | `Core/DotHexPattern.cs` | `parsers/hexpattern/DotHexPatternMapper.kt`<br>`parsers/hexpattern/TriePrefixMap.kt` |
 | 嵌套列表 / 括号彩色显示 | （待做） | `mixin/iota/MixinListIotaDisplay.java`<br>`mixin/iota/MixinPatternIota.java`<br>`mixin_interface/NestedCounter.java` |
 | 书：HexParse 指令分类 + 图案条目 | `Core/HexParseBook.Generated.cs` | `assets/hexcasting/patchouli_books/thehexbook`<br>`assets/hexparse/lang/zh_cn.json` |
-| 与 HexDebug 联动：剪接台里画注释 iota（HexDebug 做完后） | （待做） | `compat/hexdebug/CommentRenderer.kt`<br>`compat/hexdebug/CommentRendererButIgnoresOverride.java` |
+| 与 HexDebug 联动：剪接台里画注释 iota（代码在 HexDebug/Interop，被联动的一方） | （待做） | `compat/hexdebug/CommentRenderer.kt`<br>`compat/hexdebug/CommentRendererButIgnoresOverride.java` |
 | 其他附属的插件解析（那些附属移植后再接，现在不做） | （待做） | `parsers/str2nbt/plugins/PluginConstParsers.java`<br>`parsers/nbt2str/plugins/`<br>`parsers/PluginIotaFactory.java`<br>`parsers/str2nbt/unsafe/hexal/`<br>`parsers/nbt2str/unsafe/hexal/` |
 
 <a id="hexcessible"></a>
@@ -78,5 +79,5 @@
 | 按 N 查书 | `Game/HexcessibleCanvas.cs` | `mixin/KeyDocsScreenMixin.java`<br>`entries/BookEntries.java` |
 | 显示选项（变暗 / 全部格点 / 隐藏飘浮图案 / 大写签名 / 快捷键提示） | `Core/HexcessibleSettings.cs`<br>`Game/HexcessibleCanvas.cs` | `mixin/DimmedMixin.java`<br>`mixin/ShowAllDotsMixin.java`<br>`mixin/FloatiesMixin.java`<br>`mixin/RenderLibMixin.java` |
 | 每世界大法术：手持远古卷轴才补全 | `Core/KnownWorldPatterns.cs`<br>`Game/HexcessibleStore.cs`<br>`Game/HexcessibleCanvas.cs` | `mixin/PerWorldLearnMixin.java` |
-| 与 HexDebug 联动：剪接台小画布（HexDebug 做完后） | （待做） | `mixin/DrawStateHexdbgInteropMixin.java`<br>`mixin/DrawStateHexdbgInteropParentElemMixin.java` |
+| 与 HexDebug 联动：剪接台的施法界面里只显示提示、不能打字（上游 disallowTyping） | `Game/HexcessibleCanvas.cs` | `mixin/DrawStateHexdbgInteropMixin.java`<br>`mixin/DrawStateHexdbgInteropParentElemMixin.java` |
 | 其他附属的智能签名 / Hexical 相关（那些附属移植后再接，现在不做） | （待做） | `smartsig/ComplexhexLong.java`<br>`smartsig/HexicalMacro.java`<br>`smartsig/HexThingsIntrojection.java`<br>`smartsig/HexThingsPatience.java`<br>`smartsig/OverevalGeb.java`<br>`smartsig/OverevalNephthys.java`<br>`smartsig/OverevalNut.java`<br>`smartsig/OverevalSekhmet.java`<br>`mixin/NoHexicalEvokeMixin.java`<br>`mixin/NoHexicalWalkMixin.java` |

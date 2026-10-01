@@ -288,6 +288,7 @@
 | `HexDebug/Game/Splicing/SplicingTableCastEnv.cs` | 制念台施放融注咒术时的施法环境（上游 casting/eval/SplicingTableCastEnv.kt）：施法者还是按下按钮的玩家， |
 | `HexDebug/Game/Splicing/SplicingTableNet.cs` | 剪接台的请求（上游 MsgSplicingTableActionC2S / SelectIndexC2S / NewStaffPatternC2S、制念台的施法按钮； |
 | `HexDebug/Game/Splicing/SplicingTableUI.cs` | 剪接台的界面（上游 gui/splicing/SplicingTableScreen.kt）：像箱子一样，打开时背包也开着，用泰拉的物品格子放东西。 |
+| `HexDebug/Interop/HexParseCommentRenderer.cs` | 联动（HexParse 开着才会有注释 iota）：剪接台格子里画 HexParse 的注释（上游 hexparse compat/hexdebug/CommentRenderer.kt）—— |
 | `HexParse/Core/CodeCutter.cs` | 分词：把一段代码切成符号（上游 parsers/CodeCutter.kt，逐行照搬）。 |
 | `HexParse/Core/CodeParser.cs` | 代码 -> iota 列表（上游 parsers/ParserMain.java 的 ParseCode + str2nbt/* 全部符号解析器 + macro/MacroProcessor.java）。 |
 | `HexParse/Core/CommentIota.cs` | 注释 iota（上游 hooks/CommentIota.java + CommentIotaType.java）。 |

@@ -18,7 +18,13 @@
   "patterns": {
     "file": "Common/src/main/kotlin/gay/object/hexdebug/registry/HexDebugActions.kt"
   },
-  "requires": [],
+  "requires": [
+    {
+      "addon": "hexparse",
+      "optional": true,
+      "why": "剪接台格子里画 HexParse 的注释 iota（Interop/HexParseCommentRenderer.cs）"
+    }
+  ],
   "features": [
     {
       "name": "入口与开关",
@@ -208,6 +214,15 @@
         "adapter/LaunchArgs.kt",
         "adapter/proxy/",
         "networking/msg/MsgDebugAdapterProxy.kt"
+      ]
+    },
+    {
+      "name": "联动：剪接台格子里画 HexParse 的注释 iota",
+      "files": [
+        "Interop/HexParseCommentRenderer.cs"
+      ],
+      "upstream": [
+        "(hexparse) compat/hexdebug/CommentRenderer.kt"
       ]
     }
   ]

@@ -140,8 +140,10 @@
       ]
     },
     {
-      "name": "与 HexDebug 联动：剪接台小画布（HexDebug 做完后）",
-      "files": [],
+      "name": "与 HexDebug 联动：剪接台的施法界面里只显示提示、不能打字（上游 disallowTyping）",
+      "files": [
+        "Game/HexcessibleCanvas.cs"
+      ],
       "upstream": [
         "mixin/DrawStateHexdbgInteropMixin.java",
         "mixin/DrawStateHexdbgInteropParentElemMixin.java"

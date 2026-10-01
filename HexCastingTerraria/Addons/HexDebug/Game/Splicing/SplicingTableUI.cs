@@ -103,6 +103,8 @@ public sealed class SplicingTableUI : AddonSystem
         canvas.Reset();
         Content.Items.HexStaff.OpenCanvas();
         _drawing = true;
+        // 上游 Hexcessible 联动（DrawStateHexdbgInteropMixin）：剪接台的施法界面只显示 Hexcessible 的提示，不能打字
+        HexCanvasState.TypingAllowed = false;
         HexCanvasState.HudStackOverride = Array.Empty<string>();
         HexCanvasState.PatternSink = rp =>
         {
@@ -330,6 +332,8 @@ public sealed class SplicingTableUI : AddonSystem
 
     private static void DrawIota(SpriteBatch sb, Iota iota, Rectangle cell)
     {
+        // 联动：HexParse 的注释 iota
+        if (Interop.HexParseCommentRenderer.TryDraw(sb, iota, cell)) return;
         if (iota is PatternIota p)
         {
             PatternArt.DrawReadable(p.Pattern, new Vector2(cell.Center.X, cell.Center.Y), Cell * 0.8f);

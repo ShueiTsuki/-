@@ -75,6 +75,17 @@ public sealed class HexcessibleCanvas : ICanvasExtension
         bool mouseMoved = _lastMouse is { } last && last != f.Mouse;
         _lastMouse = f.Mouse;
 
+        // 上游联动：HexDebug 剪接台的施法界面里不能打字（disallowTyping，键盘处理也没接），只显示悬停与手画提示
+        if (!HexCanvasState.TypingAllowed)
+        {
+            _kbd = null;
+            _ac = null;
+            _alias = null;
+            if (f.Canvas.State == DrawState.BetweenPatterns) UpdateHover(f);
+            else ClearHover();
+            return false;
+        }
+
         // 上游 KeyDocsScreenMixin：按 N 查书（先于状态切换：手画中按也算）
         if (CanvasFrame.KeyPressed(Keys.N) && KeyDocsAllowed(f))
         {

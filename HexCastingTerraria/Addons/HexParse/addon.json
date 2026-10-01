@@ -235,7 +235,7 @@
       ]
     },
     {
-      "name": "与 HexDebug 联动：剪接台里画注释 iota（HexDebug 做完后）",
+      "name": "与 HexDebug 联动：剪接台里画注释 iota（代码在 HexDebug/Interop，被联动的一方）",
       "files": [],
       "upstream": [
         "compat/hexdebug/CommentRenderer.kt",

@@ -184,10 +184,11 @@ P0 只做三个附属都要用的（已完成的标「P0 已做」）；只有�
 
 | 联动 | 上游位置 | 何时做 |
 |---|---|---|
-| Hexcessible 键盘画图 / 自动补全用在 HexDebug 剪接台的小画布里 | hexcessible `DrawStateHexdbgInterop*Mixin` | HexDebug 剪接台之后 |
-| HexParse 读写剪接台选区（`/hexParse` 的 IO 方式加上「剪接台」） | hexparse IOMethod | HexDebug 剪接台之后 |
+| Hexcessible 在 HexDebug 剪接台的施法界面里：只显示悬停 / 手画提示，不能打字（上游 disallowTyping，键盘处理是注释掉的） | hexcessible `DrawStateHexdbgInterop*Mixin` | 已做 |
 | HexParse 的 `read_hexbug`（按 hexbug 格式读） | hexparse commands | 与 HexParse 一起 |
-| HexDebug 剪接台里画 HexParse 的注释 iota | hexparse `compat/hexdebug/CommentRenderer.kt` | HexDebug 剪接台之后 |
+| HexDebug 剪接台里画 HexParse 的注释 iota | hexparse `compat/hexdebug/CommentRenderer.kt` | 已做（HexDebug/Interop） |
+
+（2026-10-01 核对上游源码：HexParse 没有「读写剪接台」的 IO 方式，原表那一行是计划时的误记，已删。）
 
 联动代码放在**被联动的那个附属**目录里（`Addons/HexDebug/Interop/Hexcessible*.cs`），`addon.json` 的 `requires` 里写明「可选依赖」，框架保证两边都加载才注册。
 
