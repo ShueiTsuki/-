@@ -28,19 +28,15 @@ public sealed class OpOpenNParens : IAction
             return OperationResult.Fail(new MishapNotEnoughArgs(1, 0), image);
         }
 
+        // 源项目 getPositiveInt
         int layers;
         try
         {
-            layers = CastingEnvironment.RequireIndex(stack[stack.Count - 1]);
+            layers = CastingEnvironment.RequirePositiveInt(stack[stack.Count - 1]);
         }
         catch (Mishap m)
         {
             return OperationResult.Fail(m, image);
-        }
-
-        if (layers < 0)
-        {
-            return OperationResult.Fail(new MishapInvalidIota(stack[^1], "非负整数"), image);
         }
 
         stack.RemoveAt(stack.Count - 1);
@@ -126,8 +122,7 @@ public sealed class OpDuplicateN : ConstMediaAction
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         // 源项目 getPositiveInt：负数是 MishapInvalidIota（这里曾经当成 0 处理）
-        int count = CastingEnvironment.RequireIndex(args[1]);
-        if (count < 0) throw new MishapInvalidIota(args[1], "非负整数");
+        int count = CastingEnvironment.RequirePositiveInt(args[1]);
 
         // 截断而不是报错 —— 理由见类型注释
         if (count > MaxCount) count = MaxCount;
@@ -154,7 +149,7 @@ public sealed class OpUnique : ConstMediaAction
     {
         if (args[0] is not ListIota list)
         {
-            throw new MishapInvalidIota(args[0], "列表");
+            throw new MishapInvalidIota(args[0], InvalidValue.List);
         }
 
         var output = new List<Iota>();
@@ -232,22 +227,16 @@ public sealed class OpFisherman : IAction
             return OperationResult.Fail(new MishapNotEnoughArgs(2, stack.Count), image);
         }
 
+        // 源项目 getIntBetween(-maxIdx, maxIdx)：弹出 depth 之后还剩 count-1 项，能取的最大深度就是 count-2
+        int maxIdx = stack.Count - 2;
         int depth;
         try
         {
-            depth = CastingEnvironment.RequireIndex(stack[stack.Count - 1]);
+            depth = CastingEnvironment.RequireIntBetween(stack[stack.Count - 1], -maxIdx, maxIdx);
         }
         catch (Mishap m)
         {
             return OperationResult.Fail(m, image);
-        }
-
-        // 弹出 depth 之后还剩 count-1 项，能取的最大深度就是 count-2
-        int maxIdx = stack.Count - 2;
-        if (depth < -maxIdx || depth > maxIdx)
-        {
-            return OperationResult.Fail(
-                new MishapInvalidIota(stack[stack.Count - 1], $"[-{maxIdx}, {maxIdx}] 之间的整数"), image);
         }
 
         stack.RemoveAt(stack.Count - 1);

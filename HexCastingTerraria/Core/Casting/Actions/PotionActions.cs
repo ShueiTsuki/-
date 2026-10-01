@@ -69,21 +69,17 @@ public sealed class OpPotionEffect : SpellAction
         // 源项目用 getLivingEntityButNotArmorStand —— 泰拉的对应物是玩家或 NPC
         if (target.Target is not (EntityIota.EntityKind.Player or EntityIota.EntityKind.Npc))
         {
-            throw new MishapInvalidIota(args[0], "活物（玩家或 NPC）");
+            throw new MishapInvalidIota(args[0], InvalidValue.EntityLiving);
         }
 
         // 源项目 getPositiveDouble：含 0（0 秒 = 不上 buff、也不花钱）
-        double duration = CastingEnvironment.RequirePositiveDouble(args[1], "非负持续时间");
+        double duration = CastingEnvironment.RequirePositiveDouble(args[1]);
 
         double potency = 1.0;
         if (_allowPotency)
         {
-            potency = CastingEnvironment.RequireDouble(args[2], "效力");
             // 源项目 getDoubleBetween(1.0, 127.0)
-            if (potency < 1.0 || potency > 127.0 || double.IsNaN(potency))
-            {
-                throw new MishapInvalidIota(args[2], "1 到 127 之间的效力");
-            }
+            potency = CastingEnvironment.RequireDoubleBetween(args[2], 1.0, 127.0);
         }
 
         // 消耗 = 基础 × 持续 × 效力²（或 ³）

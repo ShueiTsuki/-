@@ -39,8 +39,8 @@ internal static class RaycastCommon
     public static void ReadArgs(IReadOnlyList<Iota> args, CastingEnvironment env,
                                 out double ox, out double oy, out double lx, out double ly, out double distance)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "射线起点");
-        var (dx, dy, dz) = CastingEnvironment.RequireVec3(args[1], "射线方向");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
+        var (dx, dy, dz) = CastingEnvironment.RequireVec3(args[1]);
         env.AssertVecInRange(x, y, z);
         (ox, oy, lx, ly) = (x, y, dx, dy);
         double len3 = System.Math.Sqrt(dx * dx + dy * dy + dz * dz);

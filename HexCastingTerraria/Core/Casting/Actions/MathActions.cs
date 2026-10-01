@@ -32,7 +32,9 @@ public sealed class OperationAction : IAction
         int arity = ArithmeticEngine.ArityOf(Op);
         if (arity <= 0)
         {
-            return OperationResult.Fail(new MishapInvalidOperatorArgs(Op, "（无算术实现支持该运算符）"), image);
+            // 上游 ArithmeticEngine.run：没有这个运算符 → InvalidOperatorException（模组漏洞，变成「抛出异常」事故）
+            return OperationResult.Fail(
+                new MishapInternalException(new InvalidOperationException($"the pattern {Op} is not an operator.")), image);
         }
 
         var stack = new List<Iota>(image.Stack);
@@ -60,6 +62,8 @@ public sealed class OperationAction : IAction
 /// <summary>
 /// 向量之提整 / 向量之拆解（源项目 Vec3Arithmetic 的 PACK / UNPACK）：三个数字 ↔ 一个向量。
 /// 注意：这里曾经是两个分量（「泰拉只有二维」）—— 原版是三个，向量现在也是三维的。
+/// 原版它们是运算符：参数类型不对时没有算术接得住，报 MishapInvalidOperatorArgs（列出全部参数、全换成垃圾），
+/// 不是只报那一个参数的 MishapInvalidIota。
 /// </summary>
 public sealed class OpConstructVec : ConstMediaAction
 {
@@ -67,8 +71,11 @@ public sealed class OpConstructVec : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        double C(int i) => args[i] is DoubleIota d ? d.Value : throw new MishapInvalidIota(args[i], "数字");
-        return new Iota[] { new VectorIota(C(0), C(1), C(2)) };
+        if (args[0] is not DoubleIota x || args[1] is not DoubleIota y || args[2] is not DoubleIota z)
+        {
+            throw new MishapInvalidOperatorArgs("construct_vec", args);
+        }
+        return new Iota[] { new VectorIota(x.Value, y.Value, z.Value) };
     }
 }
 
@@ -80,7 +87,7 @@ public sealed class OpDeconstructVec : ConstMediaAction
     {
         if (args[0] is not VectorIota v)
         {
-            throw new MishapInvalidIota(args[0], "向量");
+            throw new MishapInvalidOperatorArgs("deconstruct_vec", args);
         }
         return new Iota[] { new DoubleIota(v.X), new DoubleIota(v.Y), new DoubleIota(v.Z) };
     }

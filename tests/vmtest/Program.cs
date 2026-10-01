@@ -189,6 +189,10 @@ sealed class TestEnv : CastingEnvironment
 
     public override bool HasHeldStorage() => EffectiveHasStorage;
 
+    /// <summary>手上那件载体是什么（事故消息「而实际放有1个[核心]」）；只在手上有载体时返回。</summary>
+    public ItemStackInfo? HeldStorageDesc { get; set; }
+    public override ItemStackInfo? HeldStorageItem() => EffectiveHasStorage ? HeldStorageDesc : null;
+
     public override bool IsHeldWritable() => EffectiveHasStorage && HeldWritable;
 
     public override int HeldEraseableCount() => HeldHasHex || CanWriteHeld(null) ? 1 : 0;
@@ -214,12 +218,24 @@ sealed class TestEnv : CastingEnvironment
 
     /// <summary>每次求值后记下 mishap 的上下文（图案 + 名字），验证聊天提示前缀。</summary>
     public List<HexCastingTerraria.Core.Casting.Eval.Mishaps.MishapContext> MishapContexts { get; } = new();
+
+    /// <summary>同时记下事故消息（和玩家环境一样在 PostExecution 里生成，带聊天标记；null = 这个事故没有消息）。</summary>
+    public List<string?> MishapMessages { get; } = new();
+
+    /// <summary>只发给施法者的系统消息（未启蒙的「法术没起效」）。</summary>
+    public List<string> CasterMessages { get; } = new();
+    public override void MessageCaster(string message) => CasterMessages.Add(message);
+
     public override void PostExecution(CastResult result)
     {
         base.PostExecution(result);
         foreach (var e in result.SideEffects)
         {
-            if (e is HexCastingTerraria.Core.Casting.Eval.SideEffects.DoMishapSideEffect d) MishapContexts.Add(d.ErrorCtx);
+            if (e is HexCastingTerraria.Core.Casting.Eval.SideEffects.DoMishapSideEffect d)
+            {
+                MishapContexts.Add(d.ErrorCtx);
+                MishapMessages.Add(d.Mishap.ErrorMessageWithName(this, d.ErrorCtx));
+            }
         }
     }
 
@@ -564,6 +580,14 @@ sealed class FakeWorld : ICastingWorld, IAkashicLibraryView
     public List<((EntityIota.EntityKind, int) Key, bool Kill)> Hurt { get; } = new();
     public bool HasPlaceableInHotbar() => Placeable;
     public bool IsTeleportImmune(EntityIota entity) => TeleportImmune.Contains(Key(entity));
+
+    // ---- 事故消息用的名字（不设 = 世界给不出，消息退回坐标 / 实体名）----
+
+    public Dictionary<(int X, int Y), string> BlockNames { get; } = new();
+    public string? BlockNameAt(double x, double y) => BlockNames.TryGetValue(FloorOf(x, y), out var n) ? n : null;
+
+    public Dictionary<int, ItemStackInfo> ItemStacks { get; } = new();
+    public ItemStackInfo? ItemStackOf(EntityIota item) => ItemStacks.TryGetValue(item.Index, out var st) ? st : null;
     public void MishapExplosion(double x, double y) => MishapExplosions.Add((x, y));
     public void MishapLaunchItem(EntityIota item) => Launched.Add(Key(item));
     public void MishapHurtEntity(EntityIota entity, bool kill) => Hurt.Add((Key(entity), kill));
@@ -3418,6 +3442,16 @@ static class Program
                 combined.Count >= 2 && combined[0] == "media" && combined[1] == "break",
                 string.Join(" -> ", combined));
         }
+        {
+            // 上游 OpBreakBlock：世界外报 location_out_of_world；挖不了的格子不在这里判断（施放时才看，不报事故）
+            var world = new FakeWorld { InWorld = false };
+            var env = new TestEnv(world: world, media: 1_000_000);
+            var img = new CastingImage(new Iota[] { new VectorIota(1.5, 1.5) });
+            var r = new CastingVM(img, env).QueueExecute(img, new Iota[] { P("hexcasting:break_block") });
+            Check("break_block：世界外 -> Errored，没扣媒质、没挖",
+                r.ResolutionType == ResolvedPatternType.Errored && !world.Trace.Contains("break") && !env.Trace.Contains("media"),
+                string.Join(",", env.Trace) + " / " + string.Join(",", world.Trace));
+        }
         // ==================== equals / type_equals / 小工具 ====================
         {
             // 【关键】equals 用**容差**比较：1.0 与 1.00005 应当相等。
@@ -5942,6 +5976,7 @@ static class Program
         }
 
         DisplayTests.Run();
+        MishapMessageTests.Run();
 
         // 附属的离线用例（tests/vmtest/Addons/*Tests.cs）
         Addons.HexParseTests.Run();

@@ -410,6 +410,7 @@ public sealed class HexDebugger
                 HandleIndent(castResult, vm.Image, newImage);
                 vm.SetImage(newImage);
             }
+            vm.LocateMishaps(castResult);
             vm.Env.PostExecution(castResult);
 
             var stepType = GetStepType(castResult, notDone, newContinuation);

@@ -101,7 +101,7 @@ public sealed class OpCoerceToAxial : ConstMediaAction
             }
 
             default:
-                throw new MishapInvalidIota(args[0], "数值或向量");
+                throw new MishapInvalidIota(args[0], InvalidValue.NumVec);
         }
     }
 }
@@ -125,26 +125,19 @@ public sealed class OpLastNToList : IAction
             return OperationResult.Fail(new MishapNotEnoughArgs(1, 0), image);
         }
 
-        // 栈顶是个数（必须是整数）
+        // 源项目 getPositiveIntUnderInclusive(0, stack.size - 1)：栈顶是个数，最多把它下面的都打包。
+        // 出错的是**个数那一项**（栈顶）—— 这里曾经把它下面那一项当成出错参数，惩罚会把错的那项换成垃圾值
         int n;
         try
         {
-            n = CastingEnvironment.RequireIndex(stack[stack.Count - 1]);
+            n = CastingEnvironment.RequirePositiveIntUnderInclusive(stack[stack.Count - 1], stack.Count - 1);
         }
         catch (Mishap m)
         {
             return OperationResult.Fail(m, image);
         }
 
-        var countIota = stack[stack.Count - 1];
         stack.RemoveAt(stack.Count - 1);
-
-        // 源项目 getPositiveIntUnderInclusive(0, stack.size - 1)。出错的是**个数那一项**（栈顶）——
-        // 这里曾经把它下面那一项当成出错参数，惩罚会把错的那项换成垃圾值
-        if (n < 0 || n > stack.Count)
-        {
-            return OperationResult.Fail(new MishapInvalidIota(countIota, $"0 到 {stack.Count} 之间的整数"), image);
-        }
 
         var output = new List<Iota>(n);
         for (int i = stack.Count - n; i < stack.Count; i++)
@@ -180,19 +173,15 @@ public sealed class OpSwizzle : IAction
             return OperationResult.Fail(new MishapNotEnoughArgs(1, 0), image);
         }
 
+        // 源项目 getPositiveLong：不是整数和是负数报的是同一句
         long code;
         try
         {
-            code = CastingEnvironment.RequireIndexLong(stack[stack.Count - 1]);
+            code = CastingEnvironment.RequirePositiveLong(stack[stack.Count - 1]);
         }
         catch (Mishap m)
         {
             return OperationResult.Fail(m, image);
-        }
-
-        if (code < 0)
-        {
-            return OperationResult.Fail(new MishapInvalidIota(stack[^1], "非负整数"), image);
         }
 
         stack.RemoveAt(stack.Count - 1);

@@ -39,7 +39,7 @@ public sealed class OpCreateSentinel : SpellAction
     {
         // 源项目：env.castingEntity !is ServerPlayer → MishapBadCaster（法术环里不能用哨卫）
         SentinelGuard.RequirePlayerCaster(env);
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
         env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
@@ -116,7 +116,7 @@ public sealed class OpGetSentinelWayfind : ConstMediaAction
     {
         // 源项目：env.castingEntity !is ServerPlayer → MishapBadCaster（法术环里不能用哨卫）
         SentinelGuard.RequirePlayerCaster(env);
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "起点");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
 
         if (env.Sentinel is not { } s)
         {

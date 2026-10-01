@@ -46,20 +46,12 @@ public sealed class OpBeep : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
         env.AssertVecInRange(x, y, z);
 
-        int instrument = CastingEnvironment.RequireIndex(args[1]);
-        if (instrument < 0 || instrument >= InstrumentCount)
-        {
-            throw new MishapInvalidIota(args[1], $"0 ~ {InstrumentCount - 1} 之间的乐器编号");
-        }
-
-        int note = CastingEnvironment.RequireIndex(args[2]);
-        if (note < 0 || note > MaxNote)
-        {
-            throw new MishapInvalidIota(args[2], $"0 ~ {MaxNote} 之间的音高");
-        }
+        // 源项目 getPositiveIntUnder(1, 乐器数) / getPositiveIntUnderInclusive(2, 24)
+        int instrument = CastingEnvironment.RequirePositiveIntUnder(args[1], InstrumentCount);
+        int note = CastingEnvironment.RequirePositiveIntUnderInclusive(args[2], MaxNote);
 
         return WorldSpell.Make(
             new WorldSpell.Simple(w => w.Beep(x, y, instrument, note)),
@@ -84,7 +76,7 @@ public sealed class OpCreateLava : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
         env.AssertVecInRange(x, y, z);
 
         return WorldSpell.Make(
@@ -113,13 +105,13 @@ public sealed class OpEdify : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
         env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
         if (!world.IsSaplingAt(x, y))
         {
-            throw new MishapBadBlock(x, y, "这里没有树苗");
+            throw new MishapBadBlock(x, y, Wanted.Sapling, z);
         }
 
         return WorldSpell.Make(
@@ -145,7 +137,7 @@ public sealed class OpPlaceBlock : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
         env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
@@ -153,11 +145,11 @@ public sealed class OpPlaceBlock : SpellAction
         //（这里曾经不检查：没东西可放时照扣媒质、什么也不放）
         if (!world.HasPlaceableInHotbar())
         {
-            throw new MishapLackingHotbarItem("可放置的方块");
+            throw new MishapLackingHotbarItem(Wanted.Placeable);
         }
         if (!world.IsReplaceable(x, y))
         {
-            throw new MishapBadBlock(x, y, "这一格不是可替换的");
+            throw new MishapBadBlock(x, y, Wanted.Replaceable, z);
         }
 
         // 放下去之后还要消耗背包里的物品 —— 由世界侧在**施放阶段**做，
@@ -184,9 +176,10 @@ public sealed class OpRecharge : SpellAction
         var entity = env.ResolveEntity(args[0]);
         var world = env.RequireWorld();
 
+        // 上游 getItemEntity
         if (entity.Target != EntityIota.EntityKind.Item)
         {
-            throw new MishapBadItem(entity, "装着媒质的掉落物");
+            throw new MishapInvalidIota(args[0], InvalidValue.EntityItem);
         }
 
         // 源项目：先找手上的可充能物品（还有空间的），找不到 → MishapBadOffhandItem("rechargable")
@@ -198,7 +191,7 @@ public sealed class OpRecharge : SpellAction
 
         if (world.ItemEntityMedia(entity, forBattery: false) <= 0)
         {
-            throw new MishapBadItem(entity, "装着媒质的掉落物");
+            throw new MishapBadItem(entity, Wanted.Media);
         }
 
         return WorldSpell.Make(

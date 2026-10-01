@@ -3,6 +3,9 @@ using HexCastingTerraria.Core.World;
 
 namespace HexCastingTerraria.Core.Casting.Eval;
 
+/// <summary>一堆物品：显示名 + 数量（事故消息里「而实际持有3个[玻璃瓶]」那一段）。</summary>
+public readonly record struct ItemStackInfo(string Name, int Count);
+
 /// <summary>
 /// 施法环境对「世界」的**只读**访问抽象。
 ///
@@ -226,6 +229,15 @@ public interface ICastingWorld
     /// <summary>MishapBadBrainsweep / MishapAlreadyBrainswept：伤害（kill=true 时直接杀死）那个生物。</summary>
     void MishapHurtEntity(EntityIota entity, bool kill) { }
 
+    /// <summary>
+    /// 该格方块的显示名（事故消息用：上游 Mishap.blockAtPos = getBlockState(pos).block.name；没有方块是「空气」）。
+    /// 默认 null = 给不出，事故消息退回那个位置的向量显示。
+    /// </summary>
+    string? BlockNameAt(double x, double y) => null;
+
+    /// <summary>掉落物这一堆是什么、有几个（上游 MishapBadItem 消息里的 item.count 与 item.displayName）。默认 null = 给不出。</summary>
+    ItemStackInfo? ItemStackOf(EntityIota item) => null;
+
     // ── 以下是方块操作（conjure/break/place）──────────────────────
 
     /// <summary>该格是否可以被替换（空气、草、水这类）。对应源项目 `canBeReplaced`。</summary>
@@ -243,25 +255,11 @@ public interface ICastingWorld
     /// </summary>
     bool IsCheapToBreak(double x, double y);
 
-    /// <summary>挖掉该格的方块。返回是否真的挖掉了。</summary>
-    bool BreakBlockAt(double x, double y);
-
     /// <summary>
-    /// 该格**现在**能不能被挖掉；不能时把原因写进 <paramref name="reason"/>。
-    ///
-    /// 为什么必须单独有这一条：<see cref="BreakBlockAt"/> 是在法术**真正施放时**才跑的，
-    /// 它返回的 false 没有任何人看 —— 玩家看到的是「施法成功」，
-    /// 然后方块纹丝不动，也拿不到任何提示。这正是「破坏魔法没反应」的成因。
-    /// 把判定提前到 `break_block` 的 execute 阶段，失败就能变成一条明确的 mishap。
-    ///
-    /// 给了默认实现只是为了不打断测试里的假世界（它们不关心可挖性）；
-    /// 真实世界必须覆写，否则等于把这条反馈又丢了。
+    /// 挖掉该格的方块。返回是否真的挖掉了。
+    /// 挖不动（空的、挖不了的）就什么都不做 —— 上游 OpBreakBlock 也是到施放时才判断，不报事故，媒质照扣。
     /// </summary>
-    bool CanBreakBlockAt(double x, double y, out string reason)
-    {
-        reason = string.Empty;
-        return true;
-    }
+    bool BreakBlockAt(double x, double y);
 
     // ── 以下是世界效果（天气/火/水/雷电/催熟）────────────────────
 

@@ -48,8 +48,8 @@ public sealed class OpBlockEquality : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x1, y1, z1) = CastingEnvironment.RequireVec3(args[0], "第一个位置");
-        var (x2, y2, z2) = CastingEnvironment.RequireVec3(args[1], "第二个位置");
+        var (x1, y1, z1) = CastingEnvironment.RequireVec3(args[0]);
+        var (x2, y2, z2) = CastingEnvironment.RequireVec3(args[1]);
 
         env.AssertVecInRange(x1, y1, z1);
         env.AssertVecInRange(x2, y2, z2);
@@ -76,9 +76,9 @@ public sealed class OpItemEquality : ConstMediaAction
         var world = env.RequireWorld();
         // 上游的顺序：先取第一个的物品（取不到就事故），再取第二个的
         var a = env.ResolveEntity(args[0]);
-        if (!world.HasHeldItem(a)) throw new MishapInvalidIota(args[0], "一个持有物品的实体");
+        if (!world.HasHeldItem(a)) throw new MishapInvalidIota(args[0], InvalidValue.EntityItemHolder);
         var b = env.ResolveEntity(args[1]);
-        if (!world.HasHeldItem(b)) throw new MishapInvalidIota(args[1], "一个持有物品的实体");
+        if (!world.HasHeldItem(b)) throw new MishapInvalidIota(args[1], InvalidValue.EntityItemHolder);
 
         return new Iota[] { BooleanIota.Of(world.CompareItems(a, b, _exact)) };
     }

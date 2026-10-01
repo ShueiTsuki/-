@@ -51,7 +51,7 @@ public sealed class ActionRemoveComments : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        if (args[0] is not ListIota list) throw new MishapInvalidIota(args[0], "列表");
+        if (args[0] is not ListIota list) throw new MishapInvalidIota(args[0], InvalidValue.List);
         return new Iota[] { Filter(list) };
     }
 
@@ -90,7 +90,7 @@ public sealed class ActionDonate : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        double dusts = System.Math.Abs(CastingEnvironment.RequireDouble(args[0], "数"));
+        double dusts = System.Math.Abs(CastingEnvironment.RequireDouble(args[0]));
         return new SpellResult { Effect = Nothing.Instance, Cost = (long)(dusts * MediaConstants.DustUnit) };
     }
 

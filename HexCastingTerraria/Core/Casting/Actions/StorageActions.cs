@@ -29,7 +29,7 @@ public sealed class OpReadIntoParens : IAction
         CastingEnvironment env, CastingImage image, SpellContinuation continuation, Iota thisIota)
     {
         // 源项目：readIota ?: emptyIota ?: mishap —— 原版没有哪个物品定义了 emptyIota，空载体同样报错
-        var datum = env.ReadHeldIota() ?? throw new MishapBadHeldItem(MishapBadHeldItem.Need.Read);
+        var datum = env.ReadHeldIota() ?? throw new MishapBadHeldItem(MishapBadHeldItem.Need.Read, actual: env.HeldStorageItem());
 
         var image2 = image.WithUsedOp().WithNewParenthesized(datum, escaped: true);
 

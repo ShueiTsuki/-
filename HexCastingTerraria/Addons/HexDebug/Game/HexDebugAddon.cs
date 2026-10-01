@@ -36,11 +36,11 @@ public sealed class HexDebugAddon : HexAddon
             ["hexdebug:const/debugging"] = new OpIsDebugging(),
             ["hexdebug:breakpoint/before"] = new OpBreakpoint(true),
             ["hexdebug:breakpoint/after"] = new OpBreakpoint(false),
-            // 上游 OpMakePackagedSpell(调试杖, 10 * CRYSTAL_UNIT)：手上要有空的那种调试杖
+            // 上游 OpMakePackagedSpell(调试杖, 10 * CRYSTAL_UNIT)：手上要有空的那种调试杖；找不到时事故报的是物品名（item.description）
             ["hexdebug:craft/debugger"] = new global::HexCastingTerraria.Core.Casting.Actions.OpMakePackagedSpell(
-                "hexdebug:debugger", 10 * global::HexCastingTerraria.Core.Media.MediaConstants.CrystalUnit, "一根空的调试杖"),
+                "hexdebug:debugger", 10 * global::HexCastingTerraria.Core.Media.MediaConstants.CrystalUnit, "调试杖"),
             ["hexdebug:craft/quenched_debugger"] = new global::HexCastingTerraria.Core.Casting.Actions.OpMakePackagedSpell(
-                "hexdebug:quenched_debugger", 10 * global::HexCastingTerraria.Core.Media.MediaConstants.CrystalUnit, "一根空的淬灵调试杖"),
+                "hexdebug:quenched_debugger", 10 * global::HexCastingTerraria.Core.Media.MediaConstants.CrystalUnit, "淬灵调试杖"),
         };
         foreach (var (id, action) in actions) PatternRegistry.RegisterAction(id, action);
         foreach (var (id, action) in Splicing.SplicingPatterns.All()) PatternRegistry.RegisterAction(id, action);

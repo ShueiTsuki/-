@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HexCastingTerraria.Core.Casting.Eval;
 using HexCastingTerraria.Core.Casting.Eval.Mishaps;
 using HexCastingTerraria.Core.Casting.Iotas;
 
@@ -40,39 +41,31 @@ public sealed class ListArithmetic : IArithmetic
     /// 源项目 nextInt：要求是「整数值的双精度」，容差 TOLERANCE，否则报 mishap。
     /// 注意与 Floor 的区别——3.7 不是合法索引，原版会报错而不是截断。
     /// </summary>
-    private static int NextInt(Iota iota)
-    {
-        if (iota is DoubleIota d)
-        {
-            double rounded = System.Math.Round(d.Value, System.MidpointRounding.AwayFromZero);
-            if (System.Math.Abs(d.Value - rounded) <= DoubleIota.Tolerance)
-            {
-                return (int)rounded;
-            }
-        }
-        throw new MishapInvalidIota(iota, "整数");
-    }
+    private static int NextInt(Iota iota) => CastingEnvironment.RequireIndex(iota);
 
-    /// <summary>源项目 nextPositiveIntUnder：必须是 [0, max) 内的整数。</summary>
+    /// <summary>
+    /// 源项目 nextPositiveIntUnder：必须是 [0, max) 内的整数。
+    /// 注意：上游这里报的说法是 int.positive.less.equal（「小于等于 max」），照抄。
+    /// </summary>
     private static int NextPositiveIntUnder(Iota iota, int max)
     {
-        int v = NextInt(iota);
-        if (v < 0 || v >= max) throw new MishapInvalidIota(iota, $"0 到 {max - 1} 之间的整数");
-        return v;
+        try
+        {
+            return CastingEnvironment.RequirePositiveIntUnder(iota, max);
+        }
+        catch (MishapInvalidIota)
+        {
+            throw new MishapInvalidIota(iota, InvalidValue.IntPositiveLessEqual(max));
+        }
     }
 
     /// <summary>源项目 nextPositiveIntUnderInclusive：必须是 [0, max] 内的整数（闭区间）。</summary>
-    private static int NextPositiveIntUnderInclusive(Iota iota, int max)
-    {
-        int v = NextInt(iota);
-        if (v < 0 || v > max) throw new MishapInvalidIota(iota, $"0 到 {max} 之间的整数");
-        return v;
-    }
+    private static int NextPositiveIntUnderInclusive(Iota iota, int max) => CastingEnvironment.RequirePositiveIntUnderInclusive(iota, max);
 
     private static ListIota RequireList(Iota iota)
     {
         if (iota is ListIota l) return l;
-        throw new MishapInvalidIota(iota, "列表");
+        throw new MishapInvalidIota(iota, InvalidValue.List);
     }
 
     public int Arity(string op) => op switch

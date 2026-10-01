@@ -93,9 +93,10 @@
 | `Casting/Eval/CastingEnvironment.cs` | 打包法术的种类。对应源项目的三个物品：cypher（符纸，一次性）、 |
 | `Casting/Eval/CastResult.cs` | 对施法 VM 做一次操作的结果。 |
 | `Casting/Eval/ICastDebugObserver.cs` | 附属调试器（HexDebug）在施法环境上的挂点。本体只在三处通知它（上游 HexDebug 用 mixin 注入的同样三处）： |
-| `Casting/Eval/ICastingWorld.cs` | 施法环境对「世界」的**只读**访问抽象。 |
+| `Casting/Eval/ICastingWorld.cs` | 一堆物品：显示名 + 数量（事故消息里「而实际持有3个[玻璃瓶]」那一段）。</summary> |
 | `Casting/Eval/Mishaps/CommonMishaps.cs` | 栈上的参数不够。惩罚：把缺的那几个补成垃圾值（源项目同）。</summary> |
 | `Casting/Eval/Mishaps/Mishap.cs` | mishap 的上下文：出错的图案与（可能的）图案名。 |
+| `Casting/Eval/Mishaps/MishapTexts.cs` | MishapInvalidIota 的「本应接受什么」：上游 hexcasting.mishap.invalid_value.* 的官方中文。 |
 | `Casting/Eval/OperationResult.cs` | 图案执行后的通用结果接口。 |
 | `Casting/Eval/ResolvedPatternType.cs` | 一条图案被求值后的解析状态。 |
 | `Casting/Eval/SideEffects/EvalSound.cs` | 求值音效种类。移植自 at.petrak.hexcasting.api.casting.eval.sideeffects.EvalSound。 |
@@ -218,6 +219,7 @@
 | `Tiles/QuenchedAllayDrops.cs` | 淬灵块的掉落（原版 loot_tables/blocks/quenched_allay.json）： |
 | `Tiles/TileEntityRepair.cs` | 补上缺的图格实体。 |
 | `Tiles/WallScroll.cs` | 壁挂卷轴。对应源项目的 `EntityWallScroll`。 |
+| `WorldDisplayNames.cs` | 事故消息里要报的世界上的名字：那一格方块叫什么（上游 Mishap.blockAtPos）、地上那堆物品是什么有几个（上游 MishapBadItem）。 |
 | `Worldgen/GeodeWorldGen.cs` | 紫水晶晶洞的世界生成。 |
 
 ### Client/

@@ -27,7 +27,7 @@ internal static class SplicingPatterns
     /// <summary>上游 getBlockPos + assertPosInRange：位置、范围、对应的图格。</summary>
     public static (double X, double Y, int TileX, int TileY) Pos(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
         env.AssertVecInRange(Math.Floor(x) + 0.5, Math.Floor(y) + 0.5, z);
         var (tx, ty) = HexSpaceWorld.TileOf(x, y);
         return (x, y, tx, ty);
@@ -335,7 +335,7 @@ internal static class SplicingPatterns
         public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
         {
             var (x, y, tx, ty) = Pos(args, env);
-            var hex = args[1] is ListIota l ? l.Items.ToList() : throw new MishapInvalidIota(args[1], "列表");
+            var hex = args[1] is ListIota l ? l.Items.ToList() : throw new MishapInvalidIota(args[1], InvalidValue.List);
             var table = Table(x, y, tx, ty);
             if (!table.Enlightened) throw new MishapBadBlock(x, y, M("Enlightened"));
             foreach (var iota in hex) MishapOthersName.ThrowIfTrueName(iota, null, allowSelf: false);

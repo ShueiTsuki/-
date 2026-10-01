@@ -63,10 +63,10 @@ public sealed class OpGetEntitiesBy : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "区域中心");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
 
         // 源项目 getPositiveDouble：0 <= x（**含 0**）
-        double radius = CastingEnvironment.RequirePositiveDouble(args[1], "非负半径");
+        double radius = CastingEnvironment.RequirePositiveDouble(args[1]);
 
         env.AssertVecInRange(x, y, z);
 

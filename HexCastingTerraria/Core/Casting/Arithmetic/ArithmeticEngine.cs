@@ -100,7 +100,7 @@ public sealed class DoubleArithmetic : IArithmetic
             case "mul": return One(D(args[0]) * D(args[1]));
 
             case "div":
-                if (D(args[1]) == 0.0) throw new MishapDivideByZero(D(args[0]), D(args[1]), "divisor");
+                if (D(args[1]) == 0.0) throw MishapDivideByZero.Of(D(args[0]), D(args[1]));
                 return One(D(args[0]) / D(args[1]));
 
             case "abs": return One(System.Math.Abs(D(args[0])));
@@ -111,7 +111,7 @@ public sealed class DoubleArithmetic : IArithmetic
                 // 源项目：负数开分数次幂视为除以零错误（如 sqrt(-1)）
                 if (a < 0 && !Tolerates(System.Math.Floor(b), b))
                 {
-                    throw new MishapDivideByZero(a, b, "exponent");
+                    throw MishapDivideByZero.Of(a, b, "exponent");
                 }
                 return One(System.Math.Pow(a, b));
             }
@@ -122,7 +122,7 @@ public sealed class DoubleArithmetic : IArithmetic
             case "cos": return One(System.Math.Cos(D(args[0])));
 
             case "tan":
-                if (System.Math.Cos(D(args[0])) == 0.0) throw new MishapDivideByZero(D(args[0]), 0.0, "tangent");
+                if (System.Math.Cos(D(args[0])) == 0.0) throw MishapDivideByZero.Tan(D(args[0]));
                 return One(System.Math.Tan(D(args[0])));
 
             // 源项目 asDoubleBetween(-1, 1)：定义域外是 MishapInvalidIota，**不是**夹取
@@ -137,7 +137,7 @@ public sealed class DoubleArithmetic : IArithmetic
             case "logarithm": return One(OperatorLog(D(args[0]), D(args[1])));
 
             case "modulo":
-                if (D(args[1]) == 0.0) throw new MishapDivideByZero(D(args[0]), D(args[1]), "divisor");
+                if (D(args[1]) == 0.0) throw MishapDivideByZero.Of(D(args[0]), D(args[1]));
                 return One(D(args[0]) % D(args[1]));
 
             default: return null;
@@ -154,7 +154,7 @@ public sealed class DoubleArithmetic : IArithmetic
     {
         double v = D(iota);
         if (v >= lo && v <= hi) return v;
-        throw new MishapInvalidIota(iota, $"{lo} 到 {hi} 之间的数");
+        throw new MishapInvalidIota(iota, InvalidValue.DoubleBetween(lo, hi));
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public sealed class DoubleArithmetic : IArithmetic
         if (value <= 0 || logBase <= 0 || logBase == 1)
         {
             // 定义域外：源项目会抛 MishapDivideByZero 系错误，这里走同样路径
-            throw new MishapDivideByZero(value, logBase, "logarithm");
+            throw MishapDivideByZero.Of(value, logBase, "logarithm");
         }
         return System.Math.Log(value) / System.Math.Log(logBase);
     }
@@ -275,14 +275,24 @@ public sealed class Vec3Arithmetic : IArithmetic
 
     private static IReadOnlyList<Iota> Vec(double x, double y, double z) => new Iota[] { new VectorIota(x, y, z) };
 
-    /// <summary>源项目 OperatorVec3Delegating 的 fallback：逐分量套数字算术（数字 triplicate）。</summary>
+    /// <summary>
+    /// 源项目 OperatorVec3Delegating 的 fallback：逐分量套数字算术（数字 triplicate）。
+    /// 某个分量除以零时，上游接住再抛一次，消息里换成**整个**向量 / 数（catch MishapDivideByZero → of(left, right, suffix)）。
+    /// </summary>
     private static IReadOnlyList<Iota> Componentwise(string op, Iota a, Iota b)
     {
         var (ax, ay, az) = V(a);
         var (bx, by, bz) = V(b);
         var scalar = new DoubleArithmetic();
         double C(double p, double q) => ((DoubleIota)scalar.Apply(op, new Iota[] { new DoubleIota(p), new DoubleIota(q) })![0]).Value;
-        return Vec(C(ax, bx), C(ay, by), C(az, bz));
+        try
+        {
+            return Vec(C(ax, bx), C(ay, by), C(az, bz));
+        }
+        catch (MishapDivideByZero e)
+        {
+            throw MishapDivideByZero.Of(a, b, e.Suffix);
+        }
     }
 
     public IReadOnlyList<Iota>? Apply(string op, IReadOnlyList<Iota> args)

@@ -22,7 +22,7 @@ public sealed class OpBoolIf : ConstMediaAction
     {
         if (args[0] is not BooleanIota cond)
         {
-            throw new MishapInvalidIota(args[0], "boolean");
+            throw new MishapInvalidIota(args[0], InvalidValue.Boolean);
         }
         return new[] { cond.Value ? args[1] : args[2] };
     }
@@ -66,7 +66,7 @@ public sealed class OpForEach : IAction
     {
         if (iota is not ListIota list)
         {
-            throw new MishapInvalidIota(iota, "list");
+            throw new MishapInvalidIota(iota, InvalidValue.List);
         }
         return new SpellList.LList(0, list.Items);
     }
@@ -168,7 +168,7 @@ public sealed class OpEval : IAction
         else
         {
             return OperationResult.Fail(
-                new MishapInvalidIota(iota, "可求值的值（图案 / 图案列表 / 跳转目标）"), image);
+                new MishapInvalidIota(iota, InvalidValue.Evaluatable), image);
         }
 
         // 源项目注释：「求值单条图案时不要制造断点」——否则 halt 的语义会变。

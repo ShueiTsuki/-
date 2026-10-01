@@ -62,7 +62,7 @@ public sealed class OpReadHeld : ConstMediaAction
     public override int Argc => 0;
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
-        => new Iota[] { env.ReadHeldIota() ?? throw new MishapBadHeldItem(MishapBadHeldItem.Need.Read) };
+        => new Iota[] { env.ReadHeldIota() ?? throw new MishapBadHeldItem(MishapBadHeldItem.Need.Read, actual: env.HeldStorageItem()) };
 }
 
 /// <summary>
@@ -92,11 +92,11 @@ public sealed class OpWriteHeld : SpellAction
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var value = args[0];
-        // 原版：先找肯收它的载体；没有 → 有载体就报「只读」，连载体都没有就报「需要可写入的地方」
+        // 原版：先找肯收它的载体；没有 → 有载体就报「只读」（连同那件载体），连载体都没有就报「需要可写入的地方」
         if (!env.CanWriteHeld(value))
         {
-            throw env.HasHeldStorage()
-                ? new MishapBadHeldItem(MishapBadHeldItem.Need.ReadOnly, value)
+            throw env.HeldStorageItem() is { } holder
+                ? new MishapBadHeldItem(MishapBadHeldItem.Need.ReadOnly, value, holder)
                 : new MishapBadHeldItem(MishapBadHeldItem.Need.Write);
         }
         // 源项目 OpWrite：不能把别的玩家写进物品（真名保护，联机防恶意）
@@ -160,7 +160,7 @@ public sealed class OpReadEntity : ConstMediaAction
         var world = env.RequireWorld();
         // 原版：readIota ?: emptyIota ?: mishap —— 空载体同样报错
         var datum = world.IsEntityIotaHolder(entity) ? world.ReadEntityIota(entity) : null;
-        return new Iota[] { datum ?? throw new MishapBadEntity(entity, "一个可以读出iota的地方") };
+        return new Iota[] { datum ?? throw MishapBadEntity.Of(entity, Wanted.IotaRead) };
     }
 }
 
@@ -194,7 +194,7 @@ public sealed class OpWriteEntity : SpellAction
         // 原版 writeIota(datum, simulate: true)：卷轴只收图案、念珠只收一次 —— 光看 writeable() 不够
         if (!world.IsEntityIotaHolder(entity) || !world.CanWriteEntityIota(entity, value))
         {
-            throw new MishapBadEntity(entity, "一个可以写入iota的地方");
+            throw MishapBadEntity.Of(entity, Wanted.IotaWrite);
         }
 
         // 源项目 OpTheCoolerWrite：getTrueNameFromDatum(datum, null) —— 连自己的名字也不能写进实体

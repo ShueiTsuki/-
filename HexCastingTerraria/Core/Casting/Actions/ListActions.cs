@@ -142,7 +142,7 @@ public sealed class OpSplat : ConstMediaAction
     {
         if (args[0] is not ListIota list)
         {
-            throw new MishapInvalidIota(args[0], "list");
+            throw new MishapInvalidIota(args[0], InvalidValue.List);
         }
 
         var outList = new List<Iota>(list.Count);

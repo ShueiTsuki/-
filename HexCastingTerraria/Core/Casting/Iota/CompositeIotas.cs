@@ -286,13 +286,9 @@ public sealed class PatternIota : Iota
 
     /// <summary>
     /// 源项目 PatternIota.execute：Mishap.Context(pattern, castedName) —— 聊天提示前缀「图案名：」。
-    /// 名字曾经一律传 null。
+    /// 名字曾经一律传 null；后来只认注册表里的图案，数字 / 簿记员的事故没有名字（上游有）。
     /// </summary>
-    private MishapContext MishapCtx()
-    {
-        var def = PatternRegistry.Match(Pattern);
-        return new MishapContext(Pattern, def is null ? null : PatternDisplay.DisplayName(def));
-    }
+    private MishapContext MishapCtx() => MishapContext.Of(Pattern);
 
     /// <summary>
     /// 构造一个 mishap 结果而不抛异常。

@@ -6,6 +6,10 @@ using HexCastingTerraria.Core.Casting.Math;
 
 namespace HexCastingTerraria.Core.Casting.Eval.Mishaps;
 
+// 每个 mishap 的消息都照上游 hexcasting.mishap.<键> 的官方中文（zh_cn.json），键写在各自的 ErrorMessage 上。
+// 上游把 iota / 实体 / 向量当成 Component 塞进翻译参数；这里用 DisplayTags 的聊天标记代替（颜色、内嵌小图案都在）。
+// 「另一只手」照泰拉的实际操作写成「快捷栏中手持物品右边一格」（2026-10-01 用户要求）。
+
 /// <summary>栈上的参数不够。惩罚：把缺的那几个补成垃圾值（源项目同）。</summary>
 public sealed class MishapNotEnoughArgs : Mishap
 {
@@ -25,8 +29,11 @@ public sealed class MishapNotEnoughArgs : Mishap
         for (int i = Got; i < Expected; i++) stack.Add(GarbageIota.Instance);
     }
 
+    /// <summary>上游 no_args「本应接受大于等于%s个参数，而实际为空栈」/ not_enough_args「本应接受大于等于%s个参数，而实际栈高度为%s」。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"需要 {Expected} 个参数，但栈上只有 {Got} 个";
+        => Got == 0
+            ? $"本应接受大于等于{Expected}个参数，而实际为空栈"
+            : $"本应接受大于等于{Expected}个参数，而实际栈高度为{Got}";
 }
 
 /// <summary>媒质不足且无法过载。栈不变。</summary>
@@ -45,8 +52,9 @@ public sealed class MishapNotEnoughMedia : Mishap
         env.ExtractMedia(Cost, simulate: false);
     }
 
+    /// <summary>上游用的是 hexcasting.message.cant_overcast。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "媒质不足，且无法过载";
+        => "这个咒术需求的媒质量比我有的还多……我应该再算几遍。";
 }
 
 /// <summary>画了一个不在注册表里的图案。解析状态为 INVALID。</summary>
@@ -68,28 +76,14 @@ public sealed class MishapInvalidPattern : Mishap
     }
 
     /// <summary>
-    /// 注意：这条文案要**告诉玩家画的是什么、该往哪改**。
-    ///
-    /// 只写「这不是一个有效的图案」，玩家能做的只有反复猜。
-    /// 所以这里报三件事：识别出的角度串（能对着书逐笔比对）、
-    /// 最接近的图案名、差几笔。
-    ///
-    /// 文案来自 <see cref="PatternSuggestion.Describe"/> —— 画布 HUD 用的是同一个函数，
-    /// 免得同一件事在两处说法不一致。
+    /// 上游 invalid_pattern「图案%s不对应任何操作」（%s = 内嵌的小图案），没有图案时 invalid_pattern_generic。
+    /// 注意：这里曾经自己加了角度串和「最接近的图案、差几笔」—— 那段提示画布 HUD 上一直有（PatternSuggestion.Describe），
+    /// 事故消息照原版只说这一句。
     /// </summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-    {
-        if (Pattern == null)
-        {
-            return "这不是一个有效的图案";
-        }
-
-        string signature = Pattern.AnglesSignature();
-        string head = $"这不是一个有效的图案（识别到 [{Pattern.StartDir} {signature}]）";
-
-        string? hint = PatternSuggestion.Describe(signature);
-        return hint == null ? head : $"{head}\n{hint}";
-    }
+        => Pattern == null
+            ? "该图案不对应任何操作"
+            : $"图案{DisplayTags.Of(new PatternIota(Pattern))}不对应任何操作";
 }
 
 /// <summary>未转义的裸 iota 被直接执行。栈不变（源项目此处是 TODO）。</summary>
@@ -107,7 +101,7 @@ public sealed class MishapUnescapedValue : Mishap
         // 源项目此处为 TODO（不修改栈）
     }
 
-    /// <summary>上游 hexcasting.mishap.unescaped 官方中文。</summary>
+    /// <summary>上游 unescaped「本应运行一个图案，而实际运行了%s」。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
         => $"本应运行一个图案，而实际运行了{DisplayTags.Of(Perpetrator)}";
 }
@@ -123,8 +117,9 @@ public sealed class MishapStackSize : Mishap
         stack.Add(GarbageIota.Instance);
     }
 
+    /// <summary>上游 stack_size。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "栈过大，已被清空";
+        => "超出了栈的大小上限";
 }
 
 /// <summary>求值步数超出上限（对应 EvalTooMuch）。</summary>
@@ -138,8 +133,9 @@ public sealed class MishapEvalTooMuch : Mishap
         env.MishapDrown();
     }
 
+    /// <summary>上游 eval_too_much。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "算力耗尽（求值步数超出上限）";
+        => "运行了过多图案";
 }
 
 /// <summary>内部异常被包装成 mishap。</summary>
@@ -157,8 +153,12 @@ public sealed class MishapInternalException : Mishap
         // 源项目：NO-OP
     }
 
+    /// <summary>
+    /// 上游 unknown「抛出异常（%s）。这是模组中的漏洞。」，%s 是 Java 的 Throwable.toString()（类名: 消息）。
+    /// 上游还把调用栈挂在悬停提示上；聊天栏没有悬停，调用栈在日志里。
+    /// </summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"内部错误：{Exception.Message}";
+        => $"抛出异常（{Exception.GetType().FullName}: {Exception.Message}）。这是模组中的漏洞。";
 }
 
 /// <summary>
@@ -167,6 +167,9 @@ public sealed class MishapInternalException : Mishap
 /// </summary>
 public sealed class MishapUnenlightened : Mishap
 {
+    /// <summary>原版文本 hexcasting.message.cant_great_spell（官方中文）。</summary>
+    public const string CantGreatSpell = "奇怪，法术没起效……也许我还不够熟练？";
+
     public MishapUnenlightened() : base("unenlightened") { }
 
     public override ResolvedPatternType ResolutionType(CastingEnvironment env) => ResolvedPatternType.Invalid;
@@ -174,30 +177,60 @@ public sealed class MishapUnenlightened : Mishap
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
         env.DropHeldItems();
+        // 上游：castingEntity?.sendSystemMessage(cant_great_spell) —— 直接发给施法者，不带图案名前缀
+        env.MessageCaster(CantGreatSpell);
         env.OnFailedGreatSpell();
     }
 
-    /// <summary>原版文本 hexcasting.message.cant_great_spell（官方中文）。</summary>
-    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "奇怪，法术没起效……也许我还不够熟练？";
+    /// <summary>上游 errorMessage 返回 null：这个事故没有事故消息（提示在 Execute 里单独发给施法者）。</summary>
+    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx) => null;
 }
 
 /// <summary>
 /// 除零（也用于负数开分数次幂、tan(π/2)、log 定义域外等情形）。
-/// 源项目里这类 mishap 会让施法者受到伤害；伤害效果等接世界层时再补。
+/// 惩罚：压一个垃圾、扣掉当前生命的一半（源项目同）。
 /// </summary>
 public sealed class MishapDivideByZero : Mishap
 {
-    public double A { get; }
-    public double B { get; }
-    public string Role { get; }
+    /// <summary>上游 suffix：divide / project / exponent / logarithm（决定用哪句消息）。</summary>
+    public string Suffix { get; }
 
-    public MishapDivideByZero(double a, double b, string role = "divisor") : base("divide_by_zero")
+    /// <summary>两个操作数的显示（已经是聊天标记，或「零」「零向量」这类说法）。</summary>
+    public string Operand1 { get; }
+    public string Operand2 { get; }
+
+    public MishapDivideByZero(string operand1, string operand2, string suffix = "divide") : base("divide_by_zero")
     {
-        A = a;
-        B = b;
-        Role = role;
+        Operand1 = operand1;
+        Operand2 = operand2;
+        Suffix = suffix;
     }
+
+    /// <summary>上游 MishapDivideByZero.of(Double, Double, suffix)。</summary>
+    public static MishapDivideByZero Of(double operand1, double operand2, string suffix = "divide")
+        => Of(new DoubleIota(operand1), new DoubleIota(operand2), suffix);
+
+    /// <summary>上游 MishapDivideByZero.of(Iota, Iota, suffix)：指数的第二个操作数用 powerOf，其余用 translate。</summary>
+    public static MishapDivideByZero Of(Iota operand1, Iota operand2, string suffix = "divide")
+        => new(Translate(operand1), suffix == "exponent" ? PowerOf(operand2) : Translate(operand2), suffix);
+
+    /// <summary>上游 MishapDivideByZero.tan：「试图用 x 的余弦除 x 的正弦」。</summary>
+    public static MishapDivideByZero Tan(double angle)
+    {
+        string a = Translate(new DoubleIota(angle));
+        return new MishapDivideByZero($"{a}的正弦", $"{a}的余弦");
+    }
+
+    /// <summary>上游 translate：0 → divide_by_zero.zero「零」，零向量 → zero.vec「零向量」，其余 iota.display()。</summary>
+    private static string Translate(Iota datum) => datum switch
+    {
+        DoubleIota { Value: 0.0 } => "零",
+        VectorIota { X: 0.0, Y: 0.0, Z: 0.0 } => "零向量",
+        _ => DisplayTags.Of(datum),
+    };
+
+    /// <summary>上游 powerOf(Iota)：0 → zero.power「零次幂」，其余 iota.display()。</summary>
+    private static string PowerOf(Iota datum) => datum is DoubleIota { Value: 0.0 } ? "零次幂" : DisplayTags.Of(datum);
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
@@ -206,8 +239,14 @@ public sealed class MishapDivideByZero : Mishap
         env.MishapDamage(0.5);
     }
 
-    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"除以零（{Role}：{B:0.####}）";
+    /// <summary>上游 divide_by_zero.&lt;suffix&gt;。</summary>
+    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx) => Suffix switch
+    {
+        "project" => $"试图将{Operand1}投影至{Operand2}",
+        "exponent" => $"试图计算{Operand1}的{Operand2}",
+        "logarithm" => $"试图计算{Operand1}以{Operand2}为底的对数",
+        _ => $"试图用{Operand2}除{Operand1}",
+    };
 }
 
 /// <summary>
@@ -217,48 +256,31 @@ public sealed class MishapDivideByZero : Mishap
 public sealed class MishapInvalidOperatorArgs : Mishap
 {
     public string Op { get; }
-    public string ArgTypes { get; }
 
-    /// <summary>参与运算的参数（深 → 栈顶）；内部错误（没有算术实现）时为空。</summary>
+    /// <summary>参与运算的参数（深 → 栈顶）。</summary>
     public IReadOnlyList<Iota> Perpetrators { get; }
-
-    /// <summary>参与运算的参数个数（惩罚时从栈顶换掉这么多个）。</summary>
-    public int ArgCount { get; }
-
-    public MishapInvalidOperatorArgs(string op, string argTypes, int argCount = 0) : base("invalid_operator_args")
-    {
-        Op = op;
-        ArgTypes = argTypes;
-        ArgCount = argCount;
-        Perpetrators = System.Array.Empty<Iota>();
-    }
 
     public MishapInvalidOperatorArgs(string op, IReadOnlyList<Iota> perpetrators) : base("invalid_operator_args")
     {
         Op = op;
         Perpetrators = perpetrators;
-        ArgCount = perpetrators.Count;
-        var types = new string[perpetrators.Count];
-        for (int i = 0; i < types.Length; i++) { types[i] = perpetrators[i].TypeName; }
-        ArgTypes = string.Join(", ", types);
     }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
         // 源项目：把参与运算的每个参数都换成垃圾值（栈顶往下 perpetrators.size 个）
-        for (int i = 0; i < ArgCount && i < stack.Count; i++)
+        for (int i = 0; i < Perpetrators.Count && i < stack.Count; i++)
         {
             stack[stack.Count - 1 - i] = GarbageIota.Instance;
         }
     }
 
     /// <summary>
-    /// 原版官方中文：one「在栈下标为%d处获取到意外iota：%s」，many「在栈下标为%2$d到%3$d处获取到%1$s个意外iota：%4$s」
+    /// 上游 invalid_operator_args.one「在栈下标为%d处获取到意外iota：%s」，many「在栈下标为%2$d到%3$d处获取到%1$s个意外iota：%4$s」
     /// （下标 0 到 n-1，列出的是参数的**值**，按深 → 栈顶）。之前只列类型名，而且没说顺序，读起来像是「这个图案要这几个参数」。
     /// </summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
     {
-        if (Perpetrators.Count == 0) { return $"运算符「{Op}」不支持这些操作数类型：{ArgTypes}"; }
         var values = new string[Perpetrators.Count];
         for (int i = 0; i < values.Length; i++) { values[i] = DisplayTags.Of(Perpetrators[i]); }
         return Perpetrators.Count == 1
@@ -274,6 +296,8 @@ public sealed class MishapInvalidOperatorArgs : Mishap
 public sealed class MishapInvalidIota : Mishap
 {
     public Iota Perpetrator { get; }
+
+    /// <summary>「本应接受什么」：上游 hexcasting.mishap.invalid_value.* 的说法，从 <see cref="InvalidValue"/> 取。</summary>
     public string Expected { get; }
 
     public MishapInvalidIota(Iota perpetrator, string expected) : base("invalid_iota")
@@ -285,7 +309,10 @@ public sealed class MishapInvalidIota : Mishap
     /// <summary>出错参数离栈顶多远（0 = 栈顶）。不给时按引用在栈上找（参数就是栈上那个对象）。</summary>
     public int? ReverseIdx { get; init; }
 
-    private static int LocateFromTop(List<Iota> stack, Iota target)
+    /// <summary>按引用在栈上找到的位置（离栈顶多远）；-1 = 不在栈上；null = 还没找过。</summary>
+    private int? _located;
+
+    private static int LocateFromTop(IReadOnlyList<Iota> stack, Iota target)
     {
         for (int i = stack.Count - 1; i >= 0; i--)
         {
@@ -294,10 +321,19 @@ public sealed class MishapInvalidIota : Mishap
         return -1;
     }
 
+    /// <summary>
+    /// 上游在抛出时就给定 reverseIdx；这里按引用在栈上找。必须在出消息之前找 ——
+    /// 上游（和这里）都是先 postExecution 发消息、再执行副作用，以前只在 Execute 里找，消息里的下标永远是 0。
+    /// </summary>
+    public override void LocateIn(IReadOnlyList<Iota> stack)
+    {
+        if (ReverseIdx == null) _located = LocateFromTop(stack, Perpetrator);
+    }
+
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
         // 源项目：stack[size - 1 - reverseIdx] = GarbageIota() —— 把出错的那个参数换成垃圾值
-        int idx = ReverseIdx ?? LocateFromTop(stack, Perpetrator);
+        int idx = ReverseIdx ?? _located ?? LocateFromTop(stack, Perpetrator);
         _located = idx;
         if (idx >= 0 && idx < stack.Count)
         {
@@ -305,16 +341,17 @@ public sealed class MishapInvalidIota : Mishap
         }
     }
 
-    private int _located = -1;
-
-    /// <summary>上游 hexcasting.mishap.invalid_value 官方中文「本应在栈下标为%2$s处接受%1$s，而实际接受了%3$s：%4$s」。</summary>
+    /// <summary>上游 invalid_value「本应在栈下标为%2$s处接受%1$s，而实际接受了%3$s：%4$s」。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
     {
-        int idx = ReverseIdx ?? System.Math.Max(_located, 0);
+        int idx = ReverseIdx ?? System.Math.Max(_located ?? 0, 0);
         return $"本应在栈下标为{idx}处接受{Expected}，而实际接受了{KindDesc(Perpetrator)}：{DisplayTags.Of(Perpetrator)}";
     }
 
-    /// <summary>上游 hexcasting.iota.&lt;种类&gt;.desc 官方中文；附属的种类没有就用类型名。</summary>
+    /// <summary>
+    /// 上游 hexcasting.iota.&lt;种类&gt;.desc 官方中文。附属的种类上游没有 desc（MC 会直接露出翻译键），
+    /// 这里用 class.unknown 的说法，不露出内部类型名。
+    /// </summary>
     private static string KindDesc(Iota iota) => iota.Kind switch
     {
         IotaKind.Null => "一个空值",
@@ -326,7 +363,7 @@ public sealed class MishapInvalidIota : Mishap
         IotaKind.Garbage => "垃圾",
         IotaKind.Vector => "一个向量",
         IotaKind.Continuation => "一个跳转iota",
-        _ => iota.TypeName,
+        _ => InvalidValue.ClassUnknown,
     };
 }
 
@@ -352,8 +389,9 @@ public sealed class MishapNotImplemented : Mishap
         // 移植版特有（原版没有「未实现」）：不改栈
     }
 
+    /// <summary>移植版特有。图案名由前缀给出（上游 errorMessageWithName），这里不再露出图案 id。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"图案 {PatternId} 已识别，但其行为尚未实现（开发中）";
+        => "该图案尚未实现";
 }
 
 /// <summary>
@@ -370,8 +408,9 @@ public sealed class MishapNeedsParens : Mishap
         if (errorCtx.Pattern != null) stack.Add(new PatternIota(errorCtx.Pattern));
     }
 
+    /// <summary>上游 needs_parens。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "没有正在构建的列表，闭括号无处可关";
+        => "在绘制反思前未先绘制内省";
 }
 
 /// <summary>
@@ -391,17 +430,14 @@ public sealed class MishapNoWorld : Mishap
         // 移植版特有（离线环境没有世界）：不改栈
     }
 
+    /// <summary>移植版特有（只在没有世界的离线环境出现）。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
         => "当前施法环境不支持世界访问";
 }
 
 /// <summary>
 /// 目标实体超出施法范围。
-/// 移植自源项目 MishapEntityTooFarAway。
-///
-/// 原作效果是「把手中物品朝目标实体扔出去」（yeetHeldItemsTowards）——
-/// 那依赖 MC 的物品/NBT 体系。泰拉侧暂为空实现，
-/// 等 P2-3（iota 存储与手持物品体系）落地后再补等效表现。
+/// 移植自源项目 MishapEntityTooFarAway。惩罚：手持物品甩向那个实体。
 /// </summary>
 public sealed class MishapEntityTooFarAway : Mishap
 {
@@ -418,16 +454,14 @@ public sealed class MishapEntityTooFarAway : Mishap
         if (env.World is { } w) { var (x, y) = w.FeetPosition(_entity); env.YeetHeldItemsTowards(x, y); }
     }
 
-    /// <summary>实体描述（EntityIota.DescribeValue 是 protected，这里自己拼）。</summary>
-    public string EntityText => $"{_entity.Target}#{_entity.Index}";
-
+    /// <summary>上游 entity_too_far「%s超出影响范围」，%s = entity.displayName（不上色）。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"目标实体 {EntityText} 超出施法范围";
+        => $"{EntityNameText(_entity)}超出影响范围";
 }
 
 /// <summary>
 /// 目标**坐标**超出施法范围。
-/// 移植自源项目 MishapLocationTooFarAway（`assertVecInRange` 抛出的那个）。
+/// 移植自源项目 MishapLocationTooFarAway（`assertVecInRange` 抛出的那个；1.20 里是 MishapBadLocation "too_far"）。
 ///
 /// 与 <see cref="MishapEntityTooFarAway"/> 的区别：
 /// 前者校验「一个点」（射线起点、法术落点），后者校验「一个实体」。
@@ -437,42 +471,13 @@ public sealed class MishapLocationTooFarAway : Mishap
 {
     private readonly double _x;
     private readonly double _y;
+    private readonly double _z;
 
-    public MishapLocationTooFarAway(double x, double y) : base("location_too_far")
+    public MishapLocationTooFarAway(double x, double y, double z = 0.0) : base("location_too_far")
     {
         _x = x;
         _y = y;
-    }
-
-    public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
-    {
-        // 源项目（1.20 里是 MishapBadLocation "too_far"）：yeetHeldItemsTowards(location)
-        env.YeetHeldItemsTowards(_x, _y);
-    }
-
-    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"坐标 ({_x:0.##}, {_y:0.##}) 超出施法范围";
-}
-
-/// <summary>
-/// 目标位置不可用（世界外、维度不允许传送等）。
-/// 移植自源项目 MishapBadLocation。
-///
-/// 与 <see cref="MishapLocationTooFarAway"/> 的区别：
-/// 后者是「超出施法范围」（可能只是站远了），
-/// 这个是「这个位置根本不能去」（世界外 / 会掉出地图），语义完全不同，不要合并。
-/// </summary>
-public sealed class MishapBadLocation : Mishap
-{
-    private readonly double _x;
-    private readonly double _y;
-    private readonly string _reason;
-
-    public MishapBadLocation(double x, double y, string reason) : base("bad_location")
-    {
-        _x = x;
-        _y = y;
-        _reason = reason;
+        _z = z;
     }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
@@ -481,33 +486,104 @@ public sealed class MishapBadLocation : Mishap
         env.YeetHeldItemsTowards(_x, _y);
     }
 
+    /// <summary>上游 location_too_far「%s超出影响范围」，%s = Vec3Iota.display(位置)。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"({_x:0.##}, {_y:0.##}) 这个位置不能去：{_reason}";
+        => $"{VecText(_x, _y, _z)}超出影响范围";
+}
+
+/// <summary>
+/// 目标位置不可用（世界外、太靠近世界边界、不许改动等）。
+/// 移植自源项目 MishapBadLocation(location, type)。
+///
+/// 与 <see cref="MishapLocationTooFarAway"/> 的区别：
+/// 后者是「超出施法范围」（可能只是站远了），
+/// 这个是「这个位置根本不能去」（世界外 / 会掉出地图），语义完全不同，不要合并。
+/// </summary>
+public sealed class MishapBadLocation : Mishap
+{
+    /// <summary>上游 type：location_&lt;type&gt; 的后缀。</summary>
+    public const string TooFar = "too_far";
+    public const string OutOfWorld = "out_of_world";
+    public const string TooCloseToOut = "too_close_to_out";
+    public const string Forbidden = "forbidden";
+    public const string BadDimension = "bad_dimension";
+
+    private readonly double _x;
+    private readonly double _y;
+    private readonly double _z;
+
+    public string Type { get; }
+
+    public MishapBadLocation(double x, double y, string type = TooFar, double z = 0.0) : base("bad_location")
+    {
+        _x = x;
+        _y = y;
+        _z = z;
+        Type = type;
+    }
+
+    public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
+    {
+        // 源项目：yeetHeldItemsTowards(location)
+        env.YeetHeldItemsTowards(_x, _y);
+    }
+
+    /// <summary>上游 location_&lt;type&gt;，%s = Vec3Iota.display(位置)。</summary>
+    protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
+    {
+        string where = VecText(_x, _y, _z);
+        return Type switch
+        {
+            OutOfWorld => $"{where}不在此世界内",
+            TooCloseToOut => $"{where}离世界边界太近了",
+            Forbidden => $"{where}并未对你开放",
+            BadDimension => "无法在此维度内执行此操作",
+            _ => $"{where}超出影响范围",
+        };
+    }
 }
 
 /// <summary>
 /// 「另一只手」里没有需要的东西。移植自源项目 `MishapBadOffhandItem`。
 ///
 /// 泰拉没有副手：「另一只手」= 快捷栏里施法物品右边那一格（见 PlayerCastingEnvironment.PrimarySlots），
-/// 其次才是手上拿着的。「需要什么」照原版各 key 的中文；「另一只手」按泰拉的实际操作写成「快捷栏中手持物品右边一格」（2026-10-01 用户要求）。
+/// 其次才是手上拿着的。「需要什么」照原版各 key 的中文（<see cref="Wanted"/>）。
+/// 上游手上有东西但不合用时，消息后半句报出那件东西（「而实际持有1个[核心]」），没有时报「而实际无对应物品」。
 /// </summary>
 public sealed class MishapBadHeldItem : Mishap
 {
     /// <summary>原版 MishapBadOffhandItem 的 wanted key。</summary>
     public enum Need { Storage, Read, Write, ReadOnly, Eraseable, Colorizer, Variant, Bottle, OnlyOne, Rechargeable }
 
-    private readonly Need? _need;
-    private readonly Iota? _datum;
-    private readonly string? _desc;
+    private readonly string _wanted;
+    private readonly ItemStackInfo? _actual;
 
-    public MishapBadHeldItem(Need need, Iota? datum = null) : base("bad_held_item")
+    /// <param name="need">要什么（bad_item.*）。</param>
+    /// <param name="datum">ReadOnly 时要写的那个 iota（「一个能够接受%s的地方」）。</param>
+    /// <param name="actual">手上那件不合用的东西；null = 手上没有对应的物品。</param>
+    public MishapBadHeldItem(Need need, Iota? datum = null, ItemStackInfo? actual = null)
+        : this(WantedOf(need, datum), actual) { }
+
+    /// <summary>直接给出「需要什么」（原版 craft/* 用物品名，例如「杂件」）。</summary>
+    public MishapBadHeldItem(string wanted, ItemStackInfo? actual = null) : base("bad_held_item")
     {
-        _need = need;
-        _datum = datum;
+        _wanted = wanted;
+        _actual = actual;
     }
 
-    /// <summary>直接给出「需要什么」（原版 craft/* 用物品名，例如「一张空的符纸」）。</summary>
-    public MishapBadHeldItem(string wanted) : base("bad_held_item") => _desc = wanted;
+    private static string WantedOf(Need need, Iota? datum) => need switch
+    {
+        Need.Read => Wanted.IotaRead,
+        Need.Write => Wanted.IotaWrite,
+        Need.ReadOnly => Wanted.IotaReadonly(datum is null ? "" : DisplayTags.Of(datum)),
+        Need.Eraseable => Wanted.Eraseable,
+        Need.Colorizer => Wanted.Colorizer,
+        Need.Variant => Wanted.Variant,
+        Need.Bottle => Wanted.Bottle,
+        Need.OnlyOne => Wanted.OnlyOne,
+        Need.Rechargeable => Wanted.Rechargeable,
+        _ => Wanted.IotaHolder,
+    };
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
@@ -515,42 +591,37 @@ public sealed class MishapBadHeldItem : Mishap
         env.DropHeldItems();
     }
 
-    private string Wanted => _desc ?? _need switch
-    {
-        Need.Read => "一个可以读出iota的地方",
-        Need.Write => "一个可以写入iota的地方",
-        Need.ReadOnly => $"一个能够接受{_datum}的地方",
-        Need.Eraseable => "一个可清除的物品",
-        Need.Colorizer => "一个染色剂",
-        Need.Variant => "一个有变种的物品",
-        Need.Bottle => "一个玻璃瓶",
-        Need.OnlyOne => "仅一个物品",
-        Need.Rechargeable => "一个可重新充能的物品",
-        _ => "一个可以存储iota的地方",
-    };
-
+    /// <summary>
+    /// 上游 bad_item.offhand「需要在另一只手里持有%s，而实际持有%d个%s」/ no_item.offhand「需要在另一只手里持有%s，而实际无对应物品」，
+    /// 「在另一只手里持有」写成「在快捷栏中手持物品右边一格放有」。
+    /// </summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"需要在快捷栏中手持物品右边一格放有{Wanted}";
+        => _actual is { Count: > 0 } a
+            ? $"需要在快捷栏中手持物品右边一格放有{_wanted}，而实际放有{a.Count}个{ItemNameText(a.Name)}"
+            : $"需要在快捷栏中手持物品右边一格放有{_wanted}，而实际无对应物品";
 }
 
 /// <summary>
 /// 目标实体身上没有需要的那种数据载体。
 /// 移植自源项目 `MishapBadEntity`（`read/entity` / `write/entity` 用）。
-///
-/// 消息里必须写清「这个实体不是载体」而不是「实体无效」——
-/// 玩家指着一只史莱姆说「读它」，需要知道的是「史莱姆不存东西」。
+/// 掉落物要用 <see cref="Of"/>：上游 MishapBadEntity.of 遇到掉落物换成 MishapBadItem（消息报那堆物品，惩罚是把它弹起来）。
 /// </summary>
 public sealed class MishapBadEntity : Mishap
 {
     private readonly EntityIota _entity;
 
-    public MishapBadEntity(EntityIota entity, string expected) : base("bad_entity")
+    public MishapBadEntity(EntityIota entity, string wanted) : base("bad_entity")
     {
         _entity = entity;
-        Expected = expected;
+        Expected = wanted;
     }
 
+    /// <summary>「需要什么」（上游 bad_item.*，见 Wanted）。</summary>
     public string Expected { get; }
+
+    /// <summary>上游 MishapBadEntity.of(entity, stub)：掉落物 → MishapBadItem，其他实体 → MishapBadEntity。</summary>
+    public static Mishap Of(EntityIota entity, string wanted)
+        => entity.Target == EntityIota.EntityKind.Item ? new MishapBadItem(entity, wanted) : new MishapBadEntity(entity, wanted);
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
@@ -558,8 +629,9 @@ public sealed class MishapBadEntity : Mishap
         if (env.World is { } w) { var (x, y) = w.FeetPosition(_entity); env.YeetHeldItemsTowards(x, y); }
     }
 
+    /// <summary>上游 bad_entity「需要%s，而实际接受了%s」，实体名青色。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"实体 {_entity.Target}#{_entity.Index} 不是{Expected}";
+        => $"需要{Expected}，而实际接受了{EntityNameAqua(_entity)}";
 }
 
 /// <summary>
@@ -570,12 +642,13 @@ public sealed class MishapBadItem : Mishap
 {
     private readonly EntityIota _entity;
 
-    public MishapBadItem(EntityIota entity, string expected) : base("bad_item")
+    public MishapBadItem(EntityIota entity, string wanted) : base("bad_item")
     {
         _entity = entity;
-        Expected = expected;
+        Expected = wanted;
     }
 
+    /// <summary>「需要什么」（上游 bad_item.*，见 Wanted）。</summary>
     public string Expected { get; }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
@@ -584,28 +657,36 @@ public sealed class MishapBadItem : Mishap
         env.World?.MishapLaunchItem(_entity);
     }
 
+    /// <summary>
+    /// 上游 bad_item「需要%s，而实际持有%d个%s」（那堆物品的数量与名字），物品是空的时 no_item「需要%s，而实际无对应物品」。
+    /// 世界给不出这堆物品（离线测试）时按 1 个、用实体名。
+    /// </summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"掉落物 {_entity.Index} 不是{Expected}";
+    {
+        var stack = env.World?.ItemStackOf(_entity) ?? new ItemStackInfo(EntityNameText(_entity), 1);
+        return stack.Count <= 0
+            ? $"需要{Expected}，而实际无对应物品"
+            : $"需要{Expected}，而实际持有{stack.Count}个{ItemNameText(stack.Name)}";
+    }
 }
 
 /// <summary>
-/// 脑叶切除失败：这个生物配不上这个方块。
+/// 脑叶切除失败：这个生物配不上这个方块（或这个生物根本不能切）。
 /// 移植自源项目 `MishapBadBrainsweep`。
-///
-/// 消息里必须同时给出「哪只」与「哪种方块」—— 因为失败的原因永远是**组合不对**，
-/// 只说「不能切除」的话玩家会去换生物、换方块，试很多次才发现是配对的问题。
 /// </summary>
 public sealed class MishapBadBrainsweep : Mishap
 {
     private readonly EntityIota _entity;
     private readonly double _x;
     private readonly double _y;
+    private readonly double _z;
 
-    public MishapBadBrainsweep(EntityIota entity, double x, double y) : base("bad_brainsweep")
+    public MishapBadBrainsweep(EntityIota entity, double x, double y, double z = 0.0) : base("bad_brainsweep")
     {
         _entity = entity;
         _x = x;
         _y = y;
+        _z = z;
     }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
@@ -614,8 +695,9 @@ public sealed class MishapBadBrainsweep : Mishap
         env.World?.MishapHurtEntity(_entity, kill: false);
     }
 
+    /// <summary>上游 bad_brainsweep「%s排斥此生物的意识」，%s = 那一格方块的名字（blockAtPos）。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"没法把 {_entity.Target}#{_entity.Index} 切在 ({_x:0.##}, {_y:0.##}) 这块方块上";
+        => $"{BlockNameText(env, _x, _y, _z)}排斥此生物的意识";
 }
 
 /// <summary>
@@ -639,26 +721,26 @@ public sealed class MishapAlreadyBrainswept : Mishap
         env.World?.MishapHurtEntity(_entity, kill: true);
     }
 
+    /// <summary>上游 already_brainswept。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"{_entity.Target}#{_entity.Index} 已经被切除过了";
+        => "此意识已被使用";
 }
 
 /// <summary>
 /// 目标位置不是阿卡夏记录方块。
 /// 移植自源项目 `MishapNoAkashicRecord`。
-///
-/// 消息里带上坐标很重要 —— 玩家常常是「记错了位置」而不是「不知道要用记录方块」，
-/// 报出坐标能让 TA 一眼看出自己指到哪去了。
 /// </summary>
 public sealed class MishapNoAkashicRecord : Mishap
 {
     private readonly double _x;
     private readonly double _y;
+    private readonly double _z;
 
-    public MishapNoAkashicRecord(double x, double y) : base("no_akashic_record")
+    public MishapNoAkashicRecord(double x, double y, double z = 0.0) : base("no_akashic_record")
     {
         _x = x;
         _y = y;
+        _z = z;
     }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
@@ -667,8 +749,9 @@ public sealed class MishapNoAkashicRecord : Mishap
         env.MishapRemoveXp(100);
     }
 
+    /// <summary>上游 no_akashic_record「%s处无阿卡夏记录」，%s = pos.toShortString()。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"({_x:0.##}, {_y:0.##}) 这里没有阿卡夏记录方块";
+        => $"{BlockPosText(_x, _y, _z)}处无阿卡夏记录";
 }
 
 /// <summary>
@@ -688,29 +771,31 @@ public sealed class MishapNoSpellCircle : Mishap
         env.MishapDropInventory();
     }
 
+    /// <summary>上游 no_spell_circle。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "这个图案只能在法术环里使用";
+        => "需在法术环上执行";
 }
 
 /// <summary>
-/// 目标方块不满足条件（不可替换 / 不可挖等）。
+/// 目标方块不满足条件（不可替换 / 不是树苗等）。
 /// 移植自源项目 `MishapBadBlock`。
-///
-/// 消息里带坐标与原因：玩家指着一个位置施法失败时，
-/// 最需要知道的就是「为什么这一格不行」。
 /// </summary>
 public sealed class MishapBadBlock : Mishap
 {
     private readonly double _x;
     private readonly double _y;
-    private readonly string _reason;
+    private readonly double _z;
 
-    public MishapBadBlock(double x, double y, string reason) : base("bad_block")
+    /// <param name="expected">要什么样的方块（上游 bad_block.*，见 <see cref="Wanted"/>）。</param>
+    public MishapBadBlock(double x, double y, string expected, double z = 0.0) : base("bad_block")
     {
         _x = x;
         _y = y;
-        _reason = reason;
+        _z = z;
+        Expected = expected;
     }
+
+    public string Expected { get; }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
     {
@@ -718,8 +803,9 @@ public sealed class MishapBadBlock : Mishap
         env.World?.MishapExplosion(System.Math.Floor(_x) + 0.5, System.Math.Floor(_y) + 0.5);
     }
 
+    /// <summary>上游 bad_block「本应在%2$s处接受%1$s，而实际接受了%3$s」：位置 pos.toShortString()，最后是那一格方块的名字。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"({_x:0.##}, {_y:0.##}) 这一格不行：{_reason}";
+        => $"本应在{BlockPosText(_x, _y, _z)}处接受{Expected}，而实际接受了{BlockNameText(env, _x, _y, _z)}";
 }
 
 /// <summary>
@@ -741,25 +827,31 @@ public sealed class MishapImmuneEntity : Mishap
         if (env.World is { } w) { var (x, y) = w.FeetPosition(_entity); env.YeetHeldItemsTowards(x, y); }
     }
 
+    /// <summary>上游 immune_entity「无法影响到%s」，实体名青色。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"{_entity.Target}#{_entity.Index} 不受这个法术影响";
+        => $"无法影响到{EntityNameAqua(_entity)}";
 }
 
 /// <summary>
-/// 试图把**别的玩家**的实体引用写进物品 / 阿卡夏 / 打包法术（原版 MishapOthersName —— 保护「真名」）。
-/// 惩罚：失明，写的是自己 5 秒，别人 60 秒。
+/// 试图把**玩家**的实体引用写进物品 / 阿卡夏 / 打包法术 / 实体（原版 MishapOthersName —— 保护「真名」）。
+/// 惩罚：失明，写的是施法者自己 5 秒，别人 60 秒。
 /// </summary>
 public sealed class MishapOthersName : Mishap
 {
-    public bool IsSelf { get; }
+    /// <summary>名字被写进去的那个玩家（上游 confidant）。</summary>
+    public EntityIota Confidant { get; }
 
-    public MishapOthersName(bool isSelf) : base("others_name")
+    public MishapOthersName(EntityIota confidant) : base("others_name")
     {
-        IsSelf = isSelf;
+        Confidant = confidant;
     }
 
+    /// <summary>上游 `confidant == env.castingEntity`：在执行 / 出消息时按环境判断，而不是看抛出时传了谁当施法者。</summary>
+    private bool IsSelf(CastingEnvironment env)
+        => env.World?.Caster is { Target: EntityIota.EntityKind.Player } c && c.Index == Confidant.Index;
+
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
-        => env.MishapBlind((IsSelf ? 5 : 60) * 20);
+        => env.MishapBlind((IsSelf(env) ? 5 : 60) * 20);
 
     /// <summary>
     /// 源项目 getTrueNameFromDatum：在 datum（含嵌套列表）里找**玩家**实体引用。
@@ -778,7 +870,7 @@ public sealed class MishapOthersName : Mishap
                 bool self = caster is { Target: EntityIota.EntityKind.Player } c && c.Index == e.Index;
                 if (!(allowSelf && self))
                 {
-                    throw new MishapOthersName(self);
+                    throw new MishapOthersName(e);
                 }
             }
             if (d is ListIota list)
@@ -788,25 +880,28 @@ public sealed class MishapOthersName : Mishap
         }
     }
 
+    /// <summary>上游 others_name「试图侵犯%s的灵魂的隐私」（%s = 玩家名）/ others_name.self。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => IsSelf ? "不能这样写下自己的真名" : "不能写下别人的真名";
+        => IsSelf(env) ? "试图随意泄露我自己真名的秘密" : $"试图侵犯{EntityNameText(Confidant)}的灵魂的隐私";
 }
 
 /// <summary>快捷栏里没有需要的物品（原版 MishapLackingHotbarItem，放置方块时）。惩罚：丢下手持物品。</summary>
 public sealed class MishapLackingHotbarItem : Mishap
 {
-    private readonly string _what;
+    private readonly string _wanted;
 
-    public MishapLackingHotbarItem(string what) : base("lacking_hotbar_item")
+    /// <param name="wanted">要什么（上游 bad_item.*，见 <see cref="Wanted"/>）。</param>
+    public MishapLackingHotbarItem(string wanted) : base("lacking_hotbar_item")
     {
-        _what = what;
+        _wanted = wanted;
     }
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack)
         => env.DropHeldItems();
 
+    /// <summary>上游 bad_item.hotbar「需要在快捷栏里放有%s」。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => $"快捷栏里没有{_what}";
+        => $"需要在快捷栏里放有{_wanted}";
 }
 
 /// <summary>
@@ -824,6 +919,7 @@ public sealed class MishapDisallowedSpell : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack) { }
 
+    /// <summary>上游 disallowed「%s已被服务器管理员禁用」/ disallowed_generic。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
         => _actionName == null ? "该图案已被服务器管理员禁用" : $"{_actionName}已被服务器管理员禁用";
 }
@@ -835,6 +931,7 @@ public sealed class MishapBadCaster : Mishap
 
     public override void Execute(CastingEnvironment env, MishapContext errorCtx, List<Iota> stack) { }
 
+    /// <summary>上游 bad_caster。</summary>
     protected override string? ErrorMessage(CastingEnvironment env, MishapContext errorCtx)
-        => "这个图案需要由玩家施放";
+        => "试图运行的图案需要强大的意识才能承受";
 }

@@ -101,6 +101,7 @@ public sealed class CastingVM
                 Image = result.NewData;
             }
 
+            LocateMishaps(result);
             Env.PostExecution(result);
             continuation = result.Continuation;
             lastResolutionType = result.ResolutionType;
@@ -223,12 +224,19 @@ public sealed class CastingVM
 
     private static MishapContext ContextFor(Iota iota)
     {
-        if (iota is PatternIota p)
+        return iota is PatternIota p ? MishapContext.Of(p.Pattern) : new MishapContext(null, null);
+    }
+
+    /// <summary>
+    /// 本次结果里的 mishap 先看一眼当前的栈（它们稍后就作用在这个栈上）。
+    /// 必须在 <see cref="CastingEnvironment.PostExecution"/> 之前调：事故消息在那里生成，而副作用在它之后才执行。
+    /// </summary>
+    public void LocateMishaps(CastResult result)
+    {
+        foreach (var effect in result.SideEffects)
         {
-            var def = Registry.PatternRegistry.Match(p.Pattern);
-            return new MishapContext(p.Pattern, def is null ? null : Registry.PatternDisplay.DisplayName(def));
+            if (effect is DoMishapSideEffect d) d.Mishap.LocateIn(Image.Stack);
         }
-        return new MishapContext(null, null);
     }
 
     /// <summary>依次执行副作用。</summary>

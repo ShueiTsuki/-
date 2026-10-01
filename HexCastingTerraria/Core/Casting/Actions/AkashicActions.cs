@@ -29,17 +29,17 @@ public sealed class OpAkashicRead : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "坐标");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
 
         if (args[1] is not PatternIota key)
         {
-            throw new MishapInvalidIota(args[1], "图案");
+            throw new MishapInvalidIota(args[1], InvalidValue.Pattern);
         }
 
         var world = env.RequireWorld();
         if (!world.IsAkashicRecord(x, y))
         {
-            throw new MishapNoAkashicRecord(x, y);
+            throw new MishapNoAkashicRecord(x, y, z);
         }
 
         var datum = world.LookupAkashic(x, y, key.Pattern);
@@ -60,11 +60,11 @@ public sealed class OpAkashicWrite : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "坐标");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
 
         if (args[1] is not PatternIota key)
         {
-            throw new MishapInvalidIota(args[1], "图案");
+            throw new MishapInvalidIota(args[1], InvalidValue.Pattern);
         }
 
         var datum = args[2];
@@ -77,7 +77,7 @@ public sealed class OpAkashicWrite : SpellAction
         var world = env.RequireWorld();
         if (!world.IsAkashicRecord(x, y))
         {
-            throw new MishapNoAkashicRecord(x, y);
+            throw new MishapNoAkashicRecord(x, y, z);
         }
 
         return new SpellResult

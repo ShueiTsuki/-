@@ -29,7 +29,12 @@ public sealed class OpBrainsweep : SpellAction
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var target = env.ResolveEntity(args[0]);
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[1], "位置");
+        // 上游 getMob：只有生物能切（泰拉：NPC）；玩家、掉落物这些是参数不对，不是「排斥此生物的意识」
+        if (target.Target != EntityIota.EntityKind.Npc)
+        {
+            throw new MishapInvalidIota(args[0], InvalidValue.EntityMob);
+        }
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[1]);
         env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
@@ -37,13 +42,13 @@ public sealed class OpBrainsweep : SpellAction
         // ① 位置：世界内、可编辑
         if (!world.CanEditAt(x, y))
         {
-            throw new MishapBadLocation(x, y, "这里不能动");
+            throw new MishapBadLocation(x, y, MishapBadLocation.Forbidden, z);
         }
 
         // ② 生物：得是「可以切」的那类
         if (!world.IsBrainsweepable(target))
         {
-            throw new MishapBadBrainsweep(target, x, y);
+            throw new MishapBadBrainsweep(target, x, y, z);
         }
 
         // ③ 不能切第二次
@@ -57,7 +62,7 @@ public sealed class OpBrainsweep : SpellAction
         int species = world.EntitySpeciesOf(target);
         if (!BrainsweepRules.TryFind(tile, species, out var recipe))
         {
-            throw new MishapBadBrainsweep(target, x, y);
+            throw new MishapBadBrainsweep(target, x, y, z);
         }
 
         return WorldSpell.Make(

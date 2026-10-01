@@ -92,6 +92,9 @@ public sealed class CircleCastingEnvironment : CastingEnvironment
     /// <summary>原版 printMessage → impetus.postPrint。</summary>
     public override void PrintMessage(string message) => _display(message, false);
 
+    /// <summary>原版 castingEntity.sendSystemMessage：环的 castingEntity 是施法者，没有就谁也不发。</summary>
+    public override void MessageCaster(string message) => _caster?.MessageCaster(message);
+
     /// <summary>原版 postExecution：本次结果里的 mishap 显示到原动力上（postMishap）。</summary>
     public override void PostExecution(CastResult result)
     {
@@ -110,6 +113,7 @@ public sealed class CircleCastingEnvironment : CastingEnvironment
 
     public override Iota? ReadHeldIota() => _caster?.ReadHeldIota();
     public override bool HasHeldStorage() => _caster?.HasHeldStorage() ?? false;
+    public override ItemStackInfo? HeldStorageItem() => _caster?.HeldStorageItem();
     public override bool IsHeldWritable() => _caster?.IsHeldWritable() ?? false;
     public override bool CanWriteHeld(Iota? datum) => _caster?.CanWriteHeld(datum) ?? false;
     public override bool WriteHeldIota(Iota value) => _caster?.WriteHeldIota(value) ?? false;
@@ -117,6 +121,7 @@ public sealed class CircleCastingEnvironment : CastingEnvironment
     public override void EraseHeld() => _caster?.EraseHeld();
     public override PackagedSpellKind? HeldEmptyPackagedSpell => _caster?.HeldEmptyPackagedSpell;
     public override int HeldPhialCount() => _caster?.HeldPhialCount() ?? 0;
+    public override ItemStackInfo? HeldPhialItem() => _caster?.HeldPhialItem();
     public override bool FillHeldPackagedSpell(IReadOnlyList<Iota> patterns, long media)
         => _caster?.FillHeldPackagedSpell(patterns, media) ?? false;
     public override bool CraftBatteryHeld(long media) => _caster?.CraftBatteryHeld(media) ?? false;

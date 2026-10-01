@@ -63,14 +63,15 @@ public sealed class OpMakePackagedSpell : SpellAction
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var entity = env.ResolveEntity(args[0]);
+        // 上游 getItemEntity：不是掉落物是参数不对（「一个物品实体」），不是 MishapBadItem
         if (entity.Target != EntityIota.EntityKind.Item)
         {
-            throw new MishapBadItem(entity, "装着媒质的掉落物");
+            throw new MishapInvalidIota(args[0], InvalidValue.EntityItem);
         }
 
         if (args[1] is not ListIota list)
         {
-            throw new MishapInvalidIota(args[1], "图案列表");
+            throw new MishapInvalidIota(args[1], InvalidValue.List);
         }
 
         // 原版 args.getList(1)：任意 iota 的列表都收（writeHex 原样存下，放的时候整串入队）
@@ -78,12 +79,13 @@ public sealed class OpMakePackagedSpell : SpellAction
         if (_craftKey is not null ? env.HeldEmptyPackagedKey != _craftKey : env.HeldEmptyPackagedSpell != _kind)
         {
             if (_emptyName is not null) throw new MishapBadHeldItem(_emptyName);
-            // 原版：没有「空的这种物品」→ 报物品名（手上那件装过咒术的另报 iota.write，这里并成一句）
+            // 原版：找不到「空的这种物品」→ MishapBadOffhandItem(EMPTY, itemType.description)，报的是物品名
+            //（官方中文：杂件 / 缀品 / 造物）。这里曾经写成「一张空的符纸」，物品名都不对。
             throw new MishapBadHeldItem(_kind switch
             {
-                PackagedSpellKind.Cypher => "一张空的符纸",
-                PackagedSpellKind.Trinket => "一个空的饰品",
-                _ => "一件空的法器",
+                PackagedSpellKind.Cypher => "杂件",
+                PackagedSpellKind.Trinket => "缀品",
+                _ => "造物",
             });
         }
 
@@ -91,7 +93,7 @@ public sealed class OpMakePackagedSpell : SpellAction
         // 源项目：isMediaItem && extractMedia(entity.item, drainForBatteries = true, simulate = true) > 0
         if (world.ItemEntityMedia(entity, forBattery: true) <= 0)
         {
-            throw new MishapBadItem(entity, "装着媒质的掉落物");
+            throw new MishapBadItem(entity, Wanted.MediaForBattery);
         }
 
         var patterns = list.Items;
@@ -130,9 +132,10 @@ public sealed class OpMakeBattery : SpellAction
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var entity = env.ResolveEntity(args[0]);
+        // 上游 getItemEntity
         if (entity.Target != EntityIota.EntityKind.Item)
         {
-            throw new MishapBadItem(entity, "装着媒质的掉落物");
+            throw new MishapInvalidIota(args[0], InvalidValue.EntityItem);
         }
 
         // 原版：先找玻璃瓶（泰拉：空瓶），再要求恰好 1 个
@@ -143,13 +146,14 @@ public sealed class OpMakeBattery : SpellAction
         }
         if (bottles != 1)
         {
-            throw new MishapBadHeldItem(MishapBadHeldItem.Need.OnlyOne);
+            // 上游报出手上那一叠瓶子（「而实际持有3个[玻璃瓶]」）
+            throw new MishapBadHeldItem(MishapBadHeldItem.Need.OnlyOne, actual: env.HeldPhialItem());
         }
 
         var world = env.RequireWorld();
         if (world.ItemEntityMedia(entity, forBattery: true) <= 0)
         {
-            throw new MishapBadItem(entity, "装着媒质的掉落物");
+            throw new MishapBadItem(entity, Wanted.MediaForBattery);
         }
 
         // 源项目：整堆抽干，做出「存量 = 上限 = 抽到的量」的媒质瓶

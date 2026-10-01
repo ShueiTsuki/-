@@ -29,7 +29,7 @@ public sealed class OpConjureBlock : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
         env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
@@ -37,7 +37,7 @@ public sealed class OpConjureBlock : SpellAction
         // 目标必须是空气（源项目要求 canBeReplaced）
         if (!world.IsReplaceable(x, y))
         {
-            throw new MishapBadBlock(x, y, "这里已经有东西了");
+            throw new MishapBadBlock(x, y, Wanted.Replaceable, z);
         }
 
         return new SpellResult
@@ -90,19 +90,17 @@ public sealed class OpBreakBlock : SpellAction
 
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var (x, y, z) = CastingEnvironment.RequireVec3(args[0], "位置");
+        var (x, y, z) = CastingEnvironment.RequireVec3(args[0]);
         env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
 
-        // 先问清楚「这一格到底能不能挖」**再收费**。
-        //
-        // 不问的话，法术会走到「成功」然后被世界侧悄悄拒绝：玩家扣了媒质、
-        // 方块没动、也没有任何提示 —— 属于最难自查的一类问题
-        // （现实案例：对着木板放 break_block，提示成功，木板纹丝不动）。
-        if (!world.CanBreakBlockAt(x, y, out string refusal))
+        // 上游 assertPosInRangeForEditing：世界外报 location_out_of_world。
+        // 挖不了的格子（空的、挖不动的）上游**不报事故**：媒质照扣，Spell.cast 里判断挖不动就什么都不做。
+        // 这里曾经报 bad_block（还带小爆炸惩罚），是移植版自己加的，2026-10-01 照原版去掉。
+        if (!world.IsVecInWorld(x, y))
         {
-            throw new MishapBadBlock(x, y, refusal);
+            throw new MishapBadLocation(x, y, MishapBadLocation.OutOfWorld, z);
         }
 
         bool cheap = world.IsCheapToBreak(x, y);

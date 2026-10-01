@@ -120,6 +120,12 @@ public abstract class CastingEnvironment
     /// </summary>
     public virtual void PrintMessage(string message) { }
 
+    /// <summary>
+    /// 只发给施法者本人的系统消息（上游 castingEntity?.sendSystemMessage）：不进事故消息、不进调试器输出。
+    /// MishapUnenlightened 的「法术没起效」走这里。没有施法者的环境什么都不做。
+    /// </summary>
+    public virtual void MessageCaster(string message) { }
+
     /// <summary>附属调试器（HexDebug）：正在调试这次施法时不为 null，见 <see cref="ICastDebugObserver"/>。</summary>
     public ICastDebugObserver? DebugObserver { get; set; }
 
@@ -152,12 +158,13 @@ public abstract class CastingEnvironment
 
         if (iota is not EntityIota entity)
         {
-            throw new MishapInvalidIota(iota, "实体");
+            throw new MishapInvalidIota(iota, InvalidValue.Entity);
         }
 
+        // 索引指向的实体已经不在了：上游的实体 iota 这时显示「未知实体」，说法仍是「一个实体」
         if (!world.IsAlive(entity))
         {
-            throw new MishapInvalidIota(iota, "仍存活的实体");
+            throw new MishapInvalidIota(iota, InvalidValue.Entity);
         }
 
         if (!world.IsInRange(entity))
@@ -180,7 +187,7 @@ public abstract class CastingEnvironment
         // 世界是 z = 0 的平面：z 不为 0 的点与施法者的距离要把 z 算进去（原版就是三维距离）
         if (!RequireWorld().IsVecInRange(x, y, z))
         {
-            throw new MishapLocationTooFarAway(x, y);
+            throw new MishapLocationTooFarAway(x, y, z);
         }
     }
 
@@ -197,6 +204,12 @@ public abstract class CastingEnvironment
 
     /// <summary>`read`：第一个**读得出东西**的载体里的 iota。都读不出 → null（调用方报 mishap）。</summary>
     public virtual Iota? ReadHeldIota() => null;
+
+    /// <summary>
+    /// 手上第一个数据载体是什么、有几个（不管空不空、可不可写）。没有 → null。
+    /// 事故消息「而实际持有1个[核心]」用：上游 OpRead / OpWrite 找不到合用的载体时，退而找「随便一个载体」来报。
+    /// </summary>
+    public virtual ItemStackInfo? HeldStorageItem() => null;
 
     /// <summary>手上（两个位置之一）有没有数据载体，不管空不空。</summary>
     public virtual bool HasHeldStorage() => false;
@@ -247,6 +260,9 @@ public abstract class CastingEnvironment
 
     /// <summary>手上（两个位置之一）第一个「空瓶」的堆叠数；没有 → 0。对应源项目 `PHIAL_BASE` 标签 + `count != 1` 检查。</summary>
     public virtual int HeldPhialCount() => 0;
+
+    /// <summary>那个空瓶是什么、有几个（事故 only_one「而实际持有3个[玻璃瓶]」用）。没有 → null。</summary>
+    public virtual ItemStackInfo? HeldPhialItem() => null;
 
     /// <summary>把图案与媒质装进手持的打包法术物品。返回是否成功。</summary>
     public virtual bool FillHeldPackagedSpell(System.Collections.Generic.IReadOnlyList<Iota> patterns, long media)
@@ -306,93 +322,109 @@ public abstract class CastingEnvironment
         double dy = y - s.Y;
         return dx * dx + dy * dy <= SentinelRadiusTiles * SentinelRadiusTiles + 1e-10;
     }
-    /// <summary>
-    /// 从参数里取一个向量分量。对应源项目的 `args.getVec3(idx, argc)`。
-    /// 参数不是向量时报 MishapInvalidIota，而不是静默当成零向量。
-    /// </summary>
-    public static (double X, double Y) RequireVec(Iota iota, string what)
+
+    // ── 取参数（上游 OperatorUtils 的 getVec3 / getInt / getPositiveDouble …）──────────────
+    //
+    // 取不到时报 MishapInvalidIota，「本应接受什么」用上游同一个 helper 的说法（见 InvalidValue）——
+    // 所以这里**不再让调用方自己写说法**：以前每处都手写一句（「位置」「非负半径」「0 ~ 13 之间的乐器编号」），
+    // 和原版对不上，同一个 helper 在不同图案里说法还不一样。
+
+    /// <summary>上游 `getVec3`：取一个向量（x, y）。参数不是向量时报 MishapInvalidIota，而不是静默当成零向量。</summary>
+    public static (double X, double Y) RequireVec(Iota iota)
     {
         if (iota is not VectorIota v)
         {
-            throw new MishapInvalidIota(iota, what);
+            throw new MishapInvalidIota(iota, InvalidValue.Vector);
         }
         return (v.X, v.Y);
     }
 
-    /// <summary>同上，带 z（源项目的向量是三维的；作为位置时 z 参与范围判定）。</summary>
-    public static (double X, double Y, double Z) RequireVec3(Iota iota, string what)
+    /// <summary>同上，带 z（源项目的向量是三维的；作为位置时 z 参与范围判定）。上游 `getVec3` / `getBlockPos`。</summary>
+    public static (double X, double Y, double Z) RequireVec3(Iota iota)
     {
         if (iota is not VectorIota v)
         {
-            throw new MishapInvalidIota(iota, what);
+            throw new MishapInvalidIota(iota, InvalidValue.Vector);
         }
         return (v.X, v.Y, v.Z);
     }
 
-    /// <summary>
-    /// 取一个整数（容差判定）。对应源项目 `getPositiveInt` / `getPositiveIntUnder` 系列。
-    /// **要求是整数值的双精度** —— `3.7` 报错而不是截断。
-    /// </summary>
-    public static int RequireIndex(Iota iota)
+    /// <summary>容差判定的整数（上游 roundToInt / roundToLong + `abs(x - rounded) <= TOLERANCE`）。不是整数 → null。</summary>
+    private static long? AsInteger(Iota iota, long min, long max)
     {
         if (iota is DoubleIota d)
         {
             double rounded = System.Math.Round(d.Value, System.MidpointRounding.AwayFromZero);
-            if (System.Math.Abs(d.Value - rounded) <= DoubleIota.Tolerance
-                && rounded >= int.MinValue && rounded <= int.MaxValue)
-            {
-                return (int)rounded;
-            }
-        }
-        throw new MishapInvalidIota(iota, "整数");
-    }
-
-    /// <summary>同上，但返回 long（`swizzle` 的 Lehmer 码可能很大）。</summary>
-    public static long RequireIndexLong(Iota iota)
-    {
-        if (iota is DoubleIota d)
-        {
-            double rounded = System.Math.Round(d.Value, System.MidpointRounding.AwayFromZero);
-            if (System.Math.Abs(d.Value - rounded) <= DoubleIota.Tolerance
-                && rounded >= long.MinValue && rounded <= long.MaxValue)
+            if (System.Math.Abs(d.Value - rounded) <= DoubleIota.Tolerance && rounded >= min && rounded <= max)
             {
                 return (long)rounded;
             }
         }
-        throw new MishapInvalidIota(iota, "整数");
+        return null;
     }
+
+    /// <summary>
+    /// 上游 `getInt`：取一个整数（容差判定）。
+    /// **要求是整数值的双精度** —— `3.7` 报错而不是截断。
+    /// </summary>
+    public static int RequireIndex(Iota iota)
+        => (int)(AsInteger(iota, int.MinValue, int.MaxValue) ?? throw new MishapInvalidIota(iota, InvalidValue.Int));
+
+    /// <summary>上游 `getLong`：同上，但返回 long。</summary>
+    public static long RequireIndexLong(Iota iota)
+        => AsInteger(iota, long.MinValue, long.MaxValue) ?? throw new MishapInvalidIota(iota, InvalidValue.Int);
+
+    /// <summary>上游 `getPositiveInt`：非负整数（原版的「正」含 0）。不是整数和是负数报的是同一句。</summary>
+    public static int RequirePositiveInt(Iota iota)
+        => (int)(AsInteger(iota, 0, int.MaxValue) ?? throw new MishapInvalidIota(iota, InvalidValue.IntPositive));
+
+    /// <summary>上游 `getPositiveLong`：同上，返回 long（`swizzle` 的 Lehmer 码可能很大）。</summary>
+    public static long RequirePositiveLong(Iota iota)
+        => AsInteger(iota, 0, long.MaxValue) ?? throw new MishapInvalidIota(iota, InvalidValue.IntPositive);
+
+    /// <summary>上游 `getPositiveIntUnder`：`0 <= x < max` 的整数。</summary>
+    public static int RequirePositiveIntUnder(Iota iota, int max)
+        => (int)(AsInteger(iota, 0, (long)max - 1) ?? throw new MishapInvalidIota(iota, InvalidValue.IntPositiveLess(max)));
+
+    /// <summary>上游 `getPositiveIntUnderInclusive`：`0 <= x <= max` 的整数。</summary>
+    public static int RequirePositiveIntUnderInclusive(Iota iota, int max)
+        => (int)(AsInteger(iota, 0, max) ?? throw new MishapInvalidIota(iota, InvalidValue.IntPositiveLessEqual(max)));
+
+    /// <summary>上游 `getIntBetween`：`min <= x <= max` 的整数。</summary>
+    public static int RequireIntBetween(Iota iota, int min, int max)
+        => (int)(AsInteger(iota, min, max) ?? throw new MishapInvalidIota(iota, InvalidValue.IntBetween(min, max)));
 
     /// <summary>
     /// 源项目 `getPositiveDouble`：`0 <= x`。注意：原版的「positive」**包含 0** ——
     /// 这里曾在多处手写成 `x <= 0` 报错（爆炸威力、药水时长、区域半径、飞行参数），把 0 错杀了。
     /// </summary>
-    public static double RequirePositiveDouble(Iota iota, string what)
+    public static double RequirePositiveDouble(Iota iota)
     {
         if (iota is DoubleIota d && d.Value >= 0)
         {
             return d.Value;
         }
-        throw new MishapInvalidIota(iota, what);
+        throw new MishapInvalidIota(iota, InvalidValue.DoublePositive);
     }
 
     /// <summary>源项目 `getPositiveDoubleUnderInclusive`：`0 <= x <= max`（闭区间）。</summary>
-    public static double RequirePositiveDoubleUnderInclusive(Iota iota, double max, string what)
+    public static double RequirePositiveDoubleUnderInclusive(Iota iota, double max)
     {
         if (iota is DoubleIota d && d.Value >= 0 && d.Value <= max)
         {
             return d.Value;
         }
-        throw new MishapInvalidIota(iota, what);
+        throw new MishapInvalidIota(iota, InvalidValue.DoublePositiveLessEqual(max));
     }
 
     /// <summary>源项目 `getDoubleBetween`：`min <= x <= max`（闭区间）。</summary>
-    public static double RequireDoubleBetween(Iota iota, double min, double max, string what)
+    public static double RequireDoubleBetween(Iota iota, double min, double max)
     {
         if (iota is DoubleIota d && d.Value >= min && d.Value <= max)
         {
             return d.Value;
         }
-        throw new MishapInvalidIota(iota, what);
+        throw new MishapInvalidIota(iota, InvalidValue.DoubleBetween(min, max));
     }
 
     /// <summary>
@@ -400,11 +432,11 @@ public abstract class CastingEnvironment
     /// **注意**：与列表索引不同，这里不要求「整数值」——
     /// 距离、倍率一类参数本来就允许小数。
     /// </summary>
-    public static double RequireDouble(Iota iota, string what)
+    public static double RequireDouble(Iota iota)
     {
         if (iota is not DoubleIota d)
         {
-            throw new MishapInvalidIota(iota, what);
+            throw new MishapInvalidIota(iota, InvalidValue.Double);
         }
         return d.Value;
     }

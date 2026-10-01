@@ -74,6 +74,11 @@ public class PlayerCastingEnvironment : CastingEnvironment
 
     public override bool HasHeldStorage() => FindHeld(i => i.ModItem is ItemIotaStorage) >= 0;
 
+    /// <summary>原版 OpRead / OpWrite 的退路 getHeldItemToOperateOn { findDataHolder != null }：事故消息报的那件载体。</summary>
+    public override ItemStackInfo? HeldStorageItem() => Describe(HeldAt(i => i.ModItem is ItemIotaStorage));
+
+    private static ItemStackInfo? Describe(Item? item) => item is null ? null : new ItemStackInfo(item.Name, item.stack);
+
     public override bool IsHeldWritable()
         => HeldAt(i => i.ModItem is ItemIotaStorage)?.ModItem is ItemIotaStorage { Writeable: true };
 
@@ -134,6 +139,8 @@ public class PlayerCastingEnvironment : CastingEnvironment
     /// <summary>手上第一个空瓶的数量（原版 PHIAL_BASE；恰好 1 个的检查在图案里）。</summary>
     public override int HeldPhialCount()
         => HeldAt(i => i.type == Terraria.ID.ItemID.Bottle)?.stack ?? 0;
+
+    public override ItemStackInfo? HeldPhialItem() => Describe(HeldAt(i => i.type == Terraria.ID.ItemID.Bottle));
 
     public override bool FillHeldPackagedSpell(
         System.Collections.Generic.IReadOnlyList<Core.Casting.Iotas.Iota> patterns, long media)
@@ -400,6 +407,9 @@ public class PlayerCastingEnvironment : CastingEnvironment
         DebugObserver?.OnPrint(message);
         Deliver(message);
     }
+
+    /// <summary>源项目 castingEntity.sendSystemMessage：只进聊天框，不进调试器输出。</summary>
+    public override void MessageCaster(string message) => Deliver(message);
 
     private static void Deliver(string message)
     {

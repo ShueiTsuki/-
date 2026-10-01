@@ -132,6 +132,15 @@ public sealed class HexSpaceWorld : ICastingWorld
 
     public void MishapHurtEntity(EntityIota entity, bool kill) => _inner.MishapHurtEntity(entity, kill);
 
+    /// <summary>事故消息用的方块名（见 WorldDisplayNames）：法术坐标先换成泰拉图格。</summary>
+    public string? BlockNameAt(double x, double y)
+    {
+        var (tx, ty) = TileOf(x, y);
+        return WorldDisplayNames.BlockName(tx, ty);
+    }
+
+    public ItemStackInfo? ItemStackOf(EntityIota item) => WorldDisplayNames.ItemStack(item);
+
     public bool IsReplaceable(double x, double y) => _inner.IsReplaceable(x, InY(y));
 
     public void ConjureBlock(double x, double y, bool light) => _inner.ConjureBlock(x, InY(y), light);
@@ -139,8 +148,6 @@ public sealed class HexSpaceWorld : ICastingWorld
     public bool IsCheapToBreak(double x, double y) => _inner.IsCheapToBreak(x, InY(y));
 
     public bool BreakBlockAt(double x, double y) => _inner.BreakBlockAt(x, InY(y));
-
-    public bool CanBreakBlockAt(double x, double y, out string reason) => _inner.CanBreakBlockAt(x, InY(y), out reason);
 
     public void SetRain(bool rain, int minMinutes, int maxMinutes) => _inner.SetRain(rain, minMinutes, maxMinutes);
 

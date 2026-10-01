@@ -31,13 +31,13 @@ Mods: {
 			FocusHolderItemIs: 物品：{0}
 
 			BadBlock: {
-				SplicingTable: 需要一个剪接台
-				Enlightened: 需要一个制念台
-				ClipboardRead: 需要放有可读副物品的剪接台
-				ClipboardWrite: 需要放有可写副物品的剪接台
-				ClipboardSpellbook: 需要副物品槽中有非空法术书的剪接台
-				TableOrHolder: 需要一个剪接台或核心框架
-				TableOrHolderSpellbook: 需要主物品槽中有非空法术书的剪接台或核心框架
+				SplicingTable: 一个剪接台
+				Enlightened: 一个制念台
+				ClipboardRead: 放有可读副物品的剪接台
+				ClipboardWrite: 放有可写副物品的剪接台
+				ClipboardSpellbook: 副物品槽中有非空法术书的剪接台
+				TableOrHolder: 一个剪接台或核心框架
+				TableOrHolderSpellbook: 主物品槽中有非空法术书的剪接台或核心框架
 				PositiveOrNull: 一个正整数或Null
 				PositiveInt: 一个正整数
 				IntBetween: 一个介于{0}和{1}之间的整数

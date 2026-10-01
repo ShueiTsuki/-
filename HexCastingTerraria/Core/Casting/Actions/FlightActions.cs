@@ -96,7 +96,7 @@ public sealed class OpAltiora : SpellAction
         var target = env.ResolveEntity(args[0]);
         if (target.Target != EntityIota.EntityKind.Player)
         {
-            throw new MishapInvalidIota(args[0], "玩家");
+            throw new MishapInvalidIota(args[0], InvalidValue.EntityPlayer);
         }
 
         return WorldSpell.Make(
@@ -141,14 +141,14 @@ public sealed class OpFlight : SpellAction
         var target = env.ResolveEntity(args[0]);
         if (target.Target != EntityIota.EntityKind.Player)
         {
-            throw new MishapInvalidIota(args[0], "玩家");
+            throw new MishapInvalidIota(args[0], InvalidValue.EntityPlayer);
         }
 
         // 源项目 getPositiveDouble：含 0
-        double amount = CastingEnvironment.RequirePositiveDouble(args[1], "非负的半径 / 秒数");
+        double amount = CastingEnvironment.RequirePositiveDouble(args[1]);
         if (double.IsInfinity(amount))
         {
-            throw new MishapInvalidIota(args[1], "正数");
+            throw new MishapInvalidIota(args[1], InvalidValue.DoublePositive);
         }
 
         long cost = (long)System.Math.Round(amount * CostPerUnit);
@@ -192,6 +192,11 @@ public sealed class OpCanEntityHexFly : ConstMediaAction
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var target = env.ResolveEntity(args[0]);
+        // 上游 getPlayer：不是玩家是参数不对（这里曾经对别的实体直接返回 False）
+        if (target.Target != EntityIota.EntityKind.Player)
+        {
+            throw new MishapInvalidIota(args[0], InvalidValue.EntityPlayer);
+        }
         return new Iota[] { BooleanIota.Of(env.RequireWorld().HasHexFlight(target)) };
     }
 }

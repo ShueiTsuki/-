@@ -258,6 +258,7 @@ public enum ImpetusDisplay : byte
     Mishap,     // 唱片 11（postMishap）
     NoExit,     // 告示牌
     NoClosure,  // 拴绳
+    ManyExits,  // 指南针
 }
 
 /// <summary>促动石的数据：媒质、出口方向、走环状态、显示、牧师绑定。</summary>
@@ -442,7 +443,8 @@ public sealed class HexImpetusEntity : ModTileEntity
     }
 
     /// <summary>坐标按法术坐标显示（+Y 朝上），和法术里拿到的一致。</summary>
-    private static string Pos(int x, int y) => $"({x}, {HexSpaceWorld.BlockY(y)})";
+    /// <summary>上游 Component.literal(pos.toShortString()).withStyle(RED)：红色的「x, y, z」（世界是 z = 0 的平面）。</summary>
+    private static string Pos(int x, int y) => DisplayTags.Of(DisplayText.Literal($"{x}, {HexSpaceWorld.BlockY(y)}, 0", McColors.Red));
 
     // ── 启动 ───────────────────────────────────────────────────────
 
@@ -638,7 +640,7 @@ public sealed class HexImpetusEntity : ModTileEntity
         }
         if (validCount > 1)
         {
-            Fail($"{Pos(CurrentX, CurrentY)}处的媒质流的可选去路过多", ImpetusDisplay.NoExit);
+            Fail($"{Pos(CurrentX, CurrentY)}处的媒质流的可选去路过多", ImpetusDisplay.ManyExits);
             return;
         }
 
@@ -687,9 +689,13 @@ public sealed class HexImpetusEntity : ModTileEntity
         var stack = new List<Iota>(_vm.Image.Stack);
         if (stack.Count == 0 || stack[^1] is not BooleanIota b)
         {
+            // 上游 MishapBoolDirectrixEmptyStack / NotBool（circle.bool_directrix.*），经 fakeThrowMishap 显示：
+            // 前缀是「方块名 (坐标)」，坐标是 pos.toShortString()，值用 iota 的显示
+            string pos = $"{CurrentX}, {HexSpaceWorld.BlockY(CurrentY)}, 0";
+            string name = Lang.GetItemNameValue(ModContent.ItemType<Items.HexDirectrixBooleanItem>());
             string msg = stack.Count == 0
-                ? $"{Pos(CurrentX, CurrentY)}处的栈为空栈"
-                : $"{Pos(CurrentX, CurrentY)}处的iota实际为{stack[^1]}，而非布尔值";
+                ? $"{name} ({pos})：{pos}处的栈为空栈"
+                : $"{name} ({pos})：{pos}处的iota实际为{DisplayTags.Of(stack[^1])}，而非布尔值";
             BreakDirectrix();
             Fail(msg, ImpetusDisplay.Mishap);
             shouldStop = true;

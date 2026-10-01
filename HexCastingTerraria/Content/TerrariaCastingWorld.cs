@@ -1787,11 +1787,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         return !Main.tileSolid[tile.TileType];
     }
 
-    /// <summary>
-    /// 该格现在能不能挖。不能时给出**人话原因** ——
-    /// 这条原因会直接出现在施法失败的提示里，是「破坏魔法没反应」唯一的排查线索。
-    /// </summary>
-    public bool CanBreakBlockAt(double x, double y, out string reason)
+    /// <summary>该格现在能不能挖（<see cref="BreakBlockAt"/> 用；原因只用来排查，不进事故消息）。</summary>
+    private bool CanBreakBlockAt(double x, double y, out string reason)
     {
         int tx = (int)System.Math.Floor(x);
         int ty = (int)System.Math.Floor(y);

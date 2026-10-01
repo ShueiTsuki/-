@@ -34,7 +34,7 @@ public sealed class OpAddMotion : SpellAction
         IReadOnlyList<Iota> args, CastingEnvironment env, CastUserData userData)
     {
         var target = env.ResolveEntity(args[0]);
-        var (mx, my, mz) = CastingEnvironment.RequireVec3(args[1], "推力");
+        var (mx, my, mz) = CastingEnvironment.RequireVec3(args[1]);
 
         // 计价用的是**原始** motion 的长度平方（三维，源项目 motion.lengthSqr()），不是被截断后的。
         // z 分量在二维世界里推不动任何东西，但原版照样按它收费。
@@ -117,7 +117,7 @@ public sealed class OpBlink : SpellAction
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var target = env.ResolveEntity(args[0]);
-        var delta = CastingEnvironment.RequireDouble(args[1], "距离");
+        var delta = CastingEnvironment.RequireDouble(args[1]);
 
         var world = env.RequireWorld();
         if (world.IsTeleportImmune(target))
@@ -139,7 +139,7 @@ public sealed class OpBlink : SpellAction
 
         if (!env.World!.IsVecInWorld(fx + dvecX, fy + dvecY))
         {
-            throw new MishapBadLocation(fx + dvecX, fy + dvecY, "太靠近世界边界");
+            throw new MishapBadLocation(fx + dvecX, fy + dvecY, MishapBadLocation.TooCloseToOut);
         }
 
         return new SpellResult
@@ -199,7 +199,7 @@ public sealed class OpTeleport : SpellAction
     public override SpellResult Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var teleportee = env.ResolveEntity(args[0]);
-        var (dx, dy) = CastingEnvironment.RequireVec(args[1], "位移");
+        var (dx, dy, dz) = CastingEnvironment.RequireVec3(args[1]);
 
         var world = env.RequireWorld();
         if (world.IsTeleportImmune(teleportee))
@@ -214,7 +214,8 @@ public sealed class OpTeleport : SpellAction
         // 目标点必须在世界内
         if (!world.IsVecInWorld(targetX, targetY))
         {
-            throw new MishapBadLocation(targetX, targetY, "在世界之外");
+            // 上游 assertVecInWorld；消息里的位置带上 z（上游 targetPos = position + delta）
+            throw new MishapBadLocation(targetX, targetY, MishapBadLocation.OutOfWorld, dz);
         }
 
         // 目标点的**正下方一格**也必须在世界内 ——
@@ -222,7 +223,7 @@ public sealed class OpTeleport : SpellAction
         // 再也回不来（源项目同样检查这一条，理由写在 "too_close_to_out" 里）
         if (!world.IsVecInWorld(targetX, targetY - 1.0))
         {
-            throw new MishapBadLocation(targetX, targetY, "太靠近世界边界");
+            throw new MishapBadLocation(targetX, targetY, MishapBadLocation.TooCloseToOut, dz);
         }
 
         double distance = System.Math.Sqrt(dx * dx + dy * dy);

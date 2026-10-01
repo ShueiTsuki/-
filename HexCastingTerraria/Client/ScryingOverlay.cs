@@ -87,6 +87,7 @@ internal static class ScryingOverlay
                 ImpetusDisplay.Mishap => ItemID.MusicBox,      // 原版「唱片 11」
                 ImpetusDisplay.NoExit => ItemID.Sign,          // 原版告示牌
                 ImpetusDisplay.NoClosure => ItemID.Rope,       // 原版拴绳
+                ImpetusDisplay.ManyExits => ItemID.Compass,    // 原版指南针
                 _ => 0,
             };
             lines.Add((icon, msg, e.DisplayIcon == ImpetusDisplay.Print ? Color.White : new Color(255, 120, 120)));
