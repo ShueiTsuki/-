@@ -163,7 +163,8 @@
         "smartsig/OverevalSekhmet.java",
         "mixin/NoHexicalEvokeMixin.java",
         "mixin/NoHexicalWalkMixin.java"
-      ]
+      ],
+      "skip": "依赖的附属（Hexical、HexThings、Overevaluate 等）不在移植范围内"
     }
   ]
 }

@@ -21,9 +21,8 @@ namespace HexCastingTerraria.Content.Tiles;
 ///   - `akashic/write` 把一个 iota 写在某个图案名下
 ///   - `akashic/read` 再按同一个图案取回来
 ///
-/// 原版的深层用途是「每个世界可以有自己发明的图案」——
-/// 静态注册表里没有的图案，可以靠世界里的记录解析。
-/// 那部分（逐世界图案解析）尚未实现，见 TODO_PLAN.md。
+/// 结构和原版不同：原版是「记录方块 + 一圈书架、每个书架存一条」，移植版是记录方块自己存全部条目
+/// （见 AUDIT_VS_ORIGINAL.md「待审」，等用户定）。
 /// </summary>
 public sealed class AkashicRecord : ModTile
 {

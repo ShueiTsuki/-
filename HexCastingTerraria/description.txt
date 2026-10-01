@@ -19,4 +19,4 @@
 原项目：https://github.com/FallingColors/HexMod (MIT License)
 Copyright (c) 2021 gamma-delta and contributors
 书本界面移植自 Patchouli（Vazkii，CC BY-NC-SA 3.0）。
-本模组为非官方移植，免费发布，以 CC BY-NC-SA 3.0 授权，详见 NOTICE.txt。
+本模组为非官方移植，免费发布，以 CC BY-NC-SA 3.0 授权；许可全文与致谢见源码仓库的 LICENSE 和 CREDITS.md。

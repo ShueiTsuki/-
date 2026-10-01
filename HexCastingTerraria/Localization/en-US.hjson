@@ -951,9 +951,6 @@ Mods: {
 			GeodeCore: {
 				MapEntry: "Geode Core"
 			}
-			GiveDevKit: {
-				MapEntry: "Developer Kit"
-			}
 			ConjuredBlock: {
 				MapEntry: Conjured Block
 			}
@@ -983,6 +980,9 @@ Mods: {
 			}
 		}
 		Keybinds: {
+			GiveDevKit: {
+				DisplayName: Give developer kit
+			}
 			ToggleInfiniteMedia: {
 				DisplayName: Toggle infinite media
 			}

@@ -243,7 +243,8 @@
       "upstream": [
         "compat/hexdebug/CommentRenderer.kt",
         "compat/hexdebug/CommentRendererButIgnoresOverride.java"
-      ]
+      ],
+      "elsewhere": "HexDebug/Interop/HexParseCommentRenderer.cs"
     },
     {
       "name": "其他附属的插件解析（那些附属移植后再接，现在不做）",
@@ -254,7 +255,8 @@
         "parsers/PluginIotaFactory.java",
         "parsers/str2nbt/unsafe/hexal/",
         "parsers/nbt2str/unsafe/hexal/"
-      ]
+      ],
+      "skip": "依赖的附属（Hexal、MoreIotas 等）不在移植范围内"
     }
   ]
 }

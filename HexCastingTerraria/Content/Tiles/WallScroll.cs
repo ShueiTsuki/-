@@ -33,8 +33,8 @@ namespace HexCastingTerraria.Content.Tiles;
 ///   ③ 空手右键 → 把卷轴取回来（带着图案的卷轴物品）
 ///
 /// 为什么不照抄一步到位：泰拉的「放置时携带数据」没有官方钩子
-/// （1.4.5 的 `ModTile` 已经没有 `PlaceInWorld`，`HookPostPlaceMyPlayer` 也拿不到
-/// 客户端手上的物品内容，联机时更是只有服务端在跑）。两段式能用现有的、
+/// （当初照 1.4.5-dev 写，那时 `ModTile` 没有 `PlaceInWorld`；1.4.4 有了，但只在放置的那个客户端调用，
+/// `HookPostPlaceMyPlayer` 也拿不到手上的物品内容）。两段式能用现有的、
 /// 已经被石板验证过的「写 TileEntity + 上报服务端」路径，代价是多一个合成物品。
 ///
 /// ## 当实体

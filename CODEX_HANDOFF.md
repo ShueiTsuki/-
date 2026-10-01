@@ -169,7 +169,7 @@ get_caster → entity_pos/eye → const/vec/ny → add_motion
 
 - 每个 action 可声明 `ActionTypes`（消耗什么类型 / 产出什么类型）；
 - `drawtest` 据此做轻量**类型推断**，栈上带类型标签、逐条比对；
-- 已标注 **32 条图案**，覆盖常用法术链（`get_caster`、`entity_pos/*`、`get_entity_look`、
+- 已给 **32 个图案**标注类型契约，覆盖常用法术链（`get_caster`、`entity_pos/*`、`get_entity_look`、
   `raycast`、`add_motion`、`blink`、`const/*`、`print`、`break_block`、`conjure_block`、栈重排类）；
 - 对**未标注**的图案按"未知"跳过，并在 trace 里显式标出「这是假设」——
   绝不因为"有人忘了标注"就报假错（假错会让断言变成噪音，最后被关掉）。

@@ -19,6 +19,11 @@ SWITCH = {
 }
 
 
+
+def is_done(feature):
+    """列了本模组的文件，或者代码在别的附属里（elsewhere）。"""
+    return bool(feature.get('files')) or bool(feature.get('elsewhere'))
+
 def main():
     manifests = []
     for name in sorted(os.listdir(ADDONS)):
@@ -31,14 +36,14 @@ def main():
         '# 附属一览（自动生成，勿手改）',
         '',
         '由 `_tools/gen_addons_index.py` 从各附属的 `addon.json` 生成。规矩与计划见 [ADDONS.md](ADDONS.md)。',
-        '「已做」= 功能表里列了本模组的文件；没列文件的功能还没做。',
+        '「已做」= 功能表里列了本模组的文件，或者代码在别的附属里（`elsewhere`）；`skip` = 定了不做（写着理由）；其余还没做。',
         '',
         '| 附属 | 上游版本 | 许可 | 开关 | 功能已做 |',
         '|---|---|---|---|---|',
     ]
     for name, m in manifests:
         feats = m.get('features', [])
-        done = sum(1 for x in feats if x.get('files'))
+        done = sum(1 for x in feats if is_done(x))
         up = m['upstream']
         lines.append(f"| [{m['name']}](#{m['id']}) | {up['version']} | {up['license']} | {SWITCH.get(m['side'], m['side'])} | {done} / {len(feats)} |")
 
@@ -56,7 +61,9 @@ def main():
             '|---|---|---|',
         ]
         for x in m.get('features', []):
-            files = '<br>'.join(f'`{f}`' for f in x.get('files', [])) or '（待做）'
+            files = '<br>'.join(f'`{f}`' for f in x.get('files', []))
+            if not files:
+                files = f"（代码在 `Addons/{x['elsewhere']}`）" if x.get('elsewhere') else f"（不做：{x['skip']}）" if x.get('skip') else '（待做）'
             ups = '<br>'.join(f'`{f}`' for f in x.get('upstream', []))
             lines.append(f"| {x['name']} | {files} | {ups} |")
 
@@ -64,8 +71,9 @@ def main():
     with open(OUT, 'w', encoding='utf-8', newline='\n') as f:
         f.write(text)
     total = sum(len(m.get('features', [])) for _, m in manifests)
-    done = sum(1 for _, m in manifests for x in m.get('features', []) if x.get('files'))
-    print(f'已写出 ADDONS.generated.md：{len(manifests)} 个附属，功能 {done} / {total} 已做')
+    done = sum(1 for _, m in manifests for x in m.get('features', []) if is_done(x))
+    skipped = sum(1 for _, m in manifests for x in m.get('features', []) if x.get('skip') and not is_done(x))
+    print(f'已写出 ADDONS.generated.md：{len(manifests)} 个附属，功能 {done} / {total} 已做，{skipped} 项定了不做')
     return 0
 
 

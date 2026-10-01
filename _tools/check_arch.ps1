@@ -177,6 +177,11 @@ Write-Host "`n②b 脚本编码（PS 5.1 把无 BOM 的 UTF-8 当 ANSI 读）"
 # ─────────────────────────────────────────────────────────────────────
 Write-Host "`n③ 文档↔代码一致性：会过期的数字只许出现在一份文件里"
 # ─────────────────────────────────────────────────────────────────────
+# 要查的文档：仓库里纳入版本管理的全部 .md（本地 gitignore 掉的不算 —— 别人拿到的仓库里没有它们）。
+# 2026-10-01 之前这里没给 $allDocs 赋值，下面三条规则一直在空列表上跑、从没查过任何文档（文档整理子代理发现）。
+$repoRoot = Split-Path -Parent $mod
+$allDocs = @(git -C $repoRoot ls-files -- '*.md' | ForEach-Object { Get-Item -LiteralPath (Join-Path $repoRoot $_) })
+Check "要查的文档不为空（$($allDocs.Count) 篇）" ($allDocs.Count -gt 0) ''
 $statusPath = Join-Path (Split-Path -Parent $mod) 'STATUS.generated.md'
 Check "STATUS.generated.md 存在（唯一权威状态表）" (Test-Path $statusPath) $statusPath
 
@@ -194,9 +199,15 @@ if (Test-Path (Join-Path $tools 'measured.json')) {
 }
 
 $patternClaimPattern = '(\d+)\s*条\s*图案|图案\s*(\d+)\s*条|(\d+)\s*/\s*(\d+)\s*图案|图案\s*(\d+)\s*/\s*(\d+)'
+# 历史快照可以写当时的图案数（必须登记并写明理由）
+$historyAllowPatternCounts = @{
+    'HEXCASTING_PORT_PLAN.md'  = 'Phase 0 计划（顶部已注明是历史快照），写的是当时提取的图案数'
+    'INTERFACE_CONTRACT_v1.md' = 'Phase 0 接口草案（顶部已注明是历史快照）'
+}
 $wrongClaims = New-Object System.Collections.Generic.List[string]
 foreach ($d in $allDocs) {
     if ($d.Name -eq 'STATUS.generated.md') { continue }
+    if ($historyAllowPatternCounts.ContainsKey($d.Name)) { continue }
     $text = Get-Content -LiteralPath $d.FullName -Raw -Encoding UTF8
     foreach ($m in [regex]::Matches($text, $patternClaimPattern)) {
         foreach ($g in $m.Groups) {
@@ -526,6 +537,8 @@ Write-Host "`n⑫ 附属：每个功能都能找到文件、开关放对地方�
                      Where-Object { $listed -notcontains $_ })
         $missing = @($listed | Where-Object { -not (Test-Path (Join-Path $d.FullName $_)) })
         Check "[$n] 每个 .cs 都在功能表里（孤儿 $($orphans.Count)）" ($orphans.Count -eq 0) ($orphans -join ', ')
+        $missing += @($m.features | Where-Object { $_.elsewhere } | ForEach-Object { $_.elsewhere } |
+                      Where-Object { -not (Test-Path (Join-Path (Split-Path -Parent $d.FullName) $_)) })
         Check "[$n] 功能表列出的文件都存在（缺 $($missing.Count)）" ($missing.Count -eq 0) ($missing -join ', ')
 
         # 3. Core 纯逻辑（测试工程也编译 Addons/*/Core，引用了泰拉会直接编译失败，这里给出更清楚的位置）

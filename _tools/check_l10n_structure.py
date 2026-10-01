@@ -63,7 +63,23 @@ def check(name):
             problems.append(f'{name}:{n} ' + '.'.join(path) + ' 不在 Tiles 块里')
     if stack:
         problems.append(f'{name}: 结尾还有 {len(stack)} 个块没关：' + '.'.join(stack))
+    # 代码里登记的快捷键都要有文字（曾经英文的 GiveDevKit 被写成了 Tiles 下的 MapEntry，快捷键设置里显示键名）
+    for kb in registered_keybinds():
+        if ('Mods', 'HexCastingTerraria', 'Keybinds', kb, 'DisplayName') not in seen:
+            problems.append(f'{name}: 快捷键 {kb} 没有 Keybinds.{kb}.DisplayName')
     return problems
+
+
+def registered_keybinds():
+    names = set()
+    mod = os.path.join(ROOT, 'HexCastingTerraria')
+    for dirpath, dirs, files in os.walk(mod):
+        dirs[:] = [d for d in dirs if d not in ('obj', 'bin')]
+        for f in files:
+            if f.endswith('.cs'):
+                text = open(os.path.join(dirpath, f), encoding='utf-8-sig').read()
+                names.update(re.findall(r'RegisterKeybind\(\s*this\s*,\s*"(\w+)"', text))
+    return sorted(names)
 
 
 def main():

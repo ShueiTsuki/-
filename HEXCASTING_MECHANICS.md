@@ -273,7 +273,7 @@ scaleVariance(p) = min(1.0, 8 * (0.5 - abs(0.5 - p)))   // 段内两端小、中
 - 匹配：`signature → action` 的哈希表做 **O(1) 查找**（键是 `entry.prototype().getAngles()`）
 - 三类匹配结果：`Normal` / `PerWorld`（本世界专属随机图案）/ `Special`（SpecialHandler，如数字字面量）
 - 重复签名会打 warning 并覆盖
-- **本项目已提取 188 条**，见 `PATTERN_CATALOG.json`，严格校验 188/188 通过
+- **本项目已提取 188 条**，见 `PATTERN_CATALOG.json`，严格校验全部通过（当前数字见 STATUS.generated.md）
 
 ---
 
