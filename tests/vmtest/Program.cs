@@ -1,4 +1,5 @@
 using HexCastingTerraria.Core.Casting.Actions;
+using HexCastingTerraria.Core.Casting.Akashic;
 using HexCastingTerraria.Core.Casting.Castables;
 using HexCastingTerraria.Core.Casting.Eval;
 using HexCastingTerraria.Core.Casting.Eval.Vm;
@@ -236,7 +237,7 @@ sealed class TestEnv : CastingEnvironment
 /// 假世界：离线验证世界图案的**分支逻辑**（存活 / 范围 / 坐标语义）。
 /// 数值以「图格」为单位，与 ICastingWorld 的约定一致。
 /// </summary>
-sealed class FakeWorld : ICastingWorld
+sealed class FakeWorld : ICastingWorld, IAkashicLibraryView
 {
     public EntityIota? Caster { get; set; }
     public HashSet<(EntityIota.EntityKind, int)> Dead { get; } = new();
@@ -315,26 +316,42 @@ sealed class FakeWorld : ICastingWorld
         Trace.Add("teleport");
     }
 
-    // ---- 阿卡夏记录 ----
+    // ---- 阿卡夏图书馆（和游戏里同一套查找规则：Core/Casting/Akashic/AkashicLibrary）----
 
-    /// <summary>哪些坐标放了记录方块（图格坐标）。</summary>
-    public HashSet<(int X, int Y)> AkashicBlocks { get; } = new();
+    /// <summary>图书馆的方块：坐标 -> 记录 / 书架 / 桥接块。</summary>
+    public Dictionary<(int X, int Y), AkashicBlock> AkashicGrid { get; } = new();
 
-    /// <summary>记录内容：(x, y, 图案签名) -> iota。</summary>
-    public Dictionary<(int X, int Y, string Sig), Iota> AkashicEntries { get; } = new();
+    /// <summary>书架上存的条目（游戏里是书架的图格实体）。</summary>
+    public Dictionary<(int X, int Y), (HexPattern Key, Iota Value)> AkashicShelves { get; } = new();
+
+    /// <summary>写入挑空书架时的随机数。默认 0.95（大于 0.9，不跳过）= 广度优先遇到的第一个空书架。</summary>
+    public System.Func<float> AkashicRandom { get; set; } = () => 0.95f;
+
+    /// <summary>放一块记录，右边紧挨着一排 n 个空书架。</summary>
+    public void AddAkashicLibrary(int x, int y, int shelves = 4)
+    {
+        AkashicGrid[(x, y)] = AkashicBlock.Record;
+        for (int i = 1; i <= shelves; i++) AkashicGrid[(x + i, y)] = AkashicBlock.Bookshelf;
+    }
+
+    public AkashicBlock BlockAt(int x, int y) => AkashicGrid.TryGetValue((x, y), out var b) ? b : AkashicBlock.None;
+
+    public HexPattern? KeyAt(int x, int y) => AkashicShelves.TryGetValue((x, y), out var e) ? e.Key : null;
 
     public bool IsAkashicRecord(double x, double y)
-        => AkashicBlocks.Contains(((int)System.Math.Floor(x), (int)System.Math.Floor(y)));
+        => BlockAt((int)System.Math.Floor(x), (int)System.Math.Floor(y)) == AkashicBlock.Record;
 
     public Iota? LookupAkashic(double x, double y, HexPattern key)
-        => AkashicEntries.TryGetValue(((int)System.Math.Floor(x), (int)System.Math.Floor(y), key.AnglesSignature()), out var v)
-            ? v : null;
+        => AkashicLibrary.FindKey((int)System.Math.Floor(x), (int)System.Math.Floor(y), this, key) is { } at
+            ? AkashicShelves[at].Value : null;
 
     public void WriteAkashic(double x, double y, HexPattern key, Iota value)
     {
-        var k = ((int)System.Math.Floor(x), (int)System.Math.Floor(y), key.AnglesSignature());
-        AkashicEntries[k] = value;
         Trace.Add("akashic-write");
+        if (AkashicLibrary.FindWriteSlot((int)System.Math.Floor(x), (int)System.Math.Floor(y), this, key, AkashicRandom) is { } at)
+        {
+            AkashicShelves[at] = (key, value);
+        }
     }
 
     // ---- 区域查询 ----
@@ -2884,7 +2901,7 @@ static class Program
         {
             // 写入后能按同一个图案读回来
             var world = new FakeWorld();
-            world.AkashicBlocks.Add((10, 20));
+            world.AddAkashicLibrary(10, 20);
             var env = new TestEnv(world: world, media: 1_000_000);
             var key = P("hexcasting:eval");
 
@@ -2926,7 +2943,7 @@ static class Program
             // 记录本来就是慢慢写的，查不到是正常情况。
             // 与「指错位置」合并成一种结果会让玩家分不清两者。
             var world = new FakeWorld();
-            world.AkashicBlocks.Add((10, 20));
+            world.AddAkashicLibrary(10, 20);
             var env = new TestEnv(world: world, media: 1_000_000);
             var img = new CastingImage(new Iota[]
             {
@@ -2940,7 +2957,7 @@ static class Program
         {
             // 不同图案键互不干扰
             var world = new FakeWorld();
-            world.AkashicBlocks.Add((10, 20));
+            world.AddAkashicLibrary(10, 20);
             var env = new TestEnv(world: world, media: 1_000_000);
             var k1 = P("hexcasting:eval");
             var k2 = P("hexcasting:add");
@@ -2961,7 +2978,7 @@ static class Program
             // 【设计要点】akashic/write 是 SpellAction：必须先扣媒质、再改世界。
             // 顺序反了就能白嫖写入 —— 媒质不足时记录已经被改了。
             var world = new FakeWorld();
-            world.AkashicBlocks.Add((10, 20));
+            world.AddAkashicLibrary(10, 20);
             var env = new TestEnv(world: world, media: 1_000_000);
             var img = new CastingImage(new Iota[]
             {
@@ -2977,7 +2994,7 @@ static class Program
         {
             // 媒质不足 -> 中止且**没有**任何世界改动
             var world = new FakeWorld();
-            world.AkashicBlocks.Add((10, 20));
+            world.AddAkashicLibrary(10, 20);
             var env = new TestEnv(world: world, media: 5);   // 不够 1 粉尘（10000）
             var img = new CastingImage(new Iota[]
             {
@@ -2989,9 +3006,10 @@ static class Program
                 "轨迹: " + string.Join(",", world.Trace));
         }
         {
-            // 坐标超范围 -> mishap（读与写都要查）
+            // 坐标超范围：写入报错，读取不查（原版 OpAkashicRead 没有 assertPosInRange；书上写「没有读取距离限制」）
             var world = new FakeWorld { RangeCheck = (x, y) => false };
-            world.AkashicBlocks.Add((10, 20));
+            world.AddAkashicLibrary(10, 20);
+            world.AkashicShelves[(11, 20)] = (P("hexcasting:eval").Pattern, new DoubleIota(5));
             var env = new TestEnv(world: world, media: 1_000_000);
 
             var rimg = new CastingImage(new Iota[] { new VectorIota(10.5, 20.5), P("hexcasting:eval") });
@@ -2999,18 +3017,100 @@ static class Program
 
             var wimg = new CastingImage(new Iota[]
             {
-                new VectorIota(10.5, 20.5), P("hexcasting:eval"), new DoubleIota(1),
+                new VectorIota(10.5, 20.5), P("hexcasting:add"), new DoubleIota(1),
             });
             var wr = new CastingVM(wimg, env).QueueExecute(wimg, new Iota[] { P("hexcasting:akashic/write") });
 
-            Check("阿卡夏：坐标超范围 -> 读与写都 Errored",
-                rr.ResolutionType == ResolvedPatternType.Errored
+            Check("阿卡夏：坐标超范围 -> 写入 Errored，读取照样读到（原版读取不限距离）",
+                rr.ResolutionType == ResolvedPatternType.Evaluated && rr.Image.Stack.Count == 1 && rr.Image.Stack[0] is DoubleIota { Value: 5 }
                 && wr.ResolutionType == ResolvedPatternType.Errored, Sig(rr.Image) + " / " + Sig(wr.Image));
+        }
+        {
+            // 原版 addNewDatum「Will never clobber anything」：同一个键再写一次什么都不变，媒质照扣、不报错
+            var world = new FakeWorld();
+            world.AddAkashicLibrary(10, 20);
+            var env = new TestEnv(world: world, media: 1_000_000);
+            var key = P("hexcasting:eval");
+            var w1 = new CastingImage(new Iota[] { new VectorIota(10.5, 20.5), key, new DoubleIota(1) });
+            new CastingVM(w1, env).QueueExecute(w1, new Iota[] { P("hexcasting:akashic/write") });
+            var w2 = new CastingImage(new Iota[] { new VectorIota(10.5, 20.5), key, new DoubleIota(2) });
+            var r2 = new CastingVM(w2, env).QueueExecute(w2, new Iota[] { P("hexcasting:akashic/write") });
+            var ri = new CastingImage(new Iota[] { new VectorIota(10.5, 20.5), key });
+            var rr = new CastingVM(ri, env).QueueExecute(ri, new Iota[] { P("hexcasting:akashic/read") });
+            Check("阿卡夏：同一个键写第二次不覆盖（读到的还是 1），第二次不报错、只占一个书架",
+                r2.ResolutionType == ResolvedPatternType.Evaluated && rr.Image.Stack.Count == 1 && rr.Image.Stack[0] is DoubleIota { Value: 1 }
+                && world.AkashicShelves.Count == 1 && world.Trace.Count(t => t == "akashic-write") == 2,
+                Sig(rr.Image) + " / " + string.Join(",", world.Trace));
+        }
+        {
+            // 键只比角度序列：换个起笔方向画同一个形状，照样是同一个键
+            var world = new FakeWorld();
+            world.AddAkashicLibrary(10, 20);
+            var east = P("hexcasting:eval").Pattern;
+            HexPattern.TryFromAngles(east.AnglesSignature(), HexDir.NorthWest, out var turned, out _);
+            world.AkashicShelves[(12, 20)] = (east, new DoubleIota(9));
+            Check("阿卡夏：查找只比角度序列，不比起笔方向（原版 sigsEqual）",
+                turned != null && world.LookupAkashic(10, 20, turned) is DoubleIota { Value: 9 }, turned?.ToString());
+        }
+        {
+            // 网络：桥接块传导、记录不传导、断开的书架不算、最远 128 格
+            var w = new FakeWorld();
+            w.AkashicGrid[(0, 0)] = AkashicBlock.Record;
+            for (int x = 1; x <= 127; x++) w.AkashicGrid[(x, 0)] = AkashicBlock.Ligature;
+            w.AkashicGrid[(128, 0)] = AkashicBlock.Bookshelf;     // 正好 128 格：算
+            w.AkashicGrid[(0, 1)] = AkashicBlock.Record;          // 另一块记录挡在中间
+            w.AkashicGrid[(0, 2)] = AkashicBlock.Bookshelf;       // 只挨着另一块记录：连不上
+            w.AkashicGrid[(-2, 0)] = AkashicBlock.Bookshelf;      // 中间空一格：连不上
+            var key = P("hexcasting:eval").Pattern;
+            var first = AkashicLibrary.FindWriteSlot(0, 0, w, key, () => 0.95f);
+            w.AkashicGrid[(128, 0)] = AkashicBlock.Ligature;
+            w.AkashicGrid[(129, 0)] = AkashicBlock.Bookshelf;     // 129 格：超出
+            var second = AkashicLibrary.FindWriteSlot(0, 0, w, key, () => 0.95f);
+            Check("阿卡夏网络：桥接块一路连到 128 格处的书架能写；记录不传导、断开的书架不算、129 格外不算",
+                first == (128, 0) && second == null, first + " / " + second);
+        }
+        {
+            // 没有空书架：静默不写、不报错（原版 addNewDatum 返回 null，OpAkashicWrite 不管）
+            var world = new FakeWorld();
+            world.AddAkashicLibrary(10, 20, shelves: 1);
+            var env = new TestEnv(world: world, media: 1_000_000);
+            var w1 = new CastingImage(new Iota[] { new VectorIota(10.5, 20.5), P("hexcasting:eval"), new DoubleIota(1) });
+            new CastingVM(w1, env).QueueExecute(w1, new Iota[] { P("hexcasting:akashic/write") });
+            var w2 = new CastingImage(new Iota[] { new VectorIota(10.5, 20.5), P("hexcasting:add"), new DoubleIota(2) });
+            var r2 = new CastingVM(w2, env).QueueExecute(w2, new Iota[] { P("hexcasting:akashic/write") });
+            var ri = new CastingImage(new Iota[] { new VectorIota(10.5, 20.5), P("hexcasting:add") });
+            var rr = new CastingVM(ri, env).QueueExecute(ri, new Iota[] { P("hexcasting:akashic/read") });
+            Check("阿卡夏：书架满了 -> 写入不报错也不写，读到 null",
+                r2.ResolutionType == ResolvedPatternType.Evaluated && rr.Image.Stack.Count == 1 && rr.Image.Stack[0] is NullIota
+                && world.AkashicShelves.Count == 1, Sig(rr.Image));
+        }
+        {
+            // 挑空书架：每个空书架 90% 跳过（nextFloat() > 0.9 才要）；全跳过了就用第一个跳过的
+            var w = new FakeWorld();
+            w.AddAkashicLibrary(0, 0, shelves: 3);
+            var key = P("hexcasting:eval").Pattern;
+            var rolls = new System.Collections.Generic.Queue<float>(new[] { 0.5f, 0.9f, 0.95f });
+            var third = AkashicLibrary.FindWriteSlot(0, 0, w, key, () => rolls.Dequeue());
+            var allSkipped = AkashicLibrary.FindWriteSlot(0, 0, w, key, () => 0.5f);
+            Check("阿卡夏：写入时空书架 90% 跳过（0.5、0.9 跳过，0.95 要第三个）；全跳过就用第一个",
+                third == (3, 0) && allSkipped == (1, 0), third + " / " + allSkipped);
+        }
+        {
+            // 挖掉记录，书架上的东西还在：在网络另一头放一块新记录照样读得到
+            var world = new FakeWorld();
+            world.AddAkashicLibrary(10, 20);
+            var env = new TestEnv(world: world, media: 1_000_000);
+            var w1 = new CastingImage(new Iota[] { new VectorIota(10.5, 20.5), P("hexcasting:eval"), new DoubleIota(4) });
+            new CastingVM(w1, env).QueueExecute(w1, new Iota[] { P("hexcasting:akashic/write") });
+            world.AkashicGrid.Remove((10, 20));
+            world.AkashicGrid[(15, 20)] = AkashicBlock.Record;
+            Check("阿卡夏：挖掉记录、在另一头放新记录，书架上的条目照样读得到",
+                world.LookupAkashic(15, 20, P("hexcasting:eval").Pattern) is DoubleIota { Value: 4 });
         }
         {
             // 第二个参数不是图案 -> mishap（不能拿数字当键）
             var world = new FakeWorld();
-            world.AkashicBlocks.Add((10, 20));
+            world.AddAkashicLibrary(10, 20);
             var env = new TestEnv(world: world, media: 1_000_000);
             var img = new CastingImage(new Iota[]
             {

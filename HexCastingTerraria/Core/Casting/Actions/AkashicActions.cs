@@ -18,6 +18,7 @@ namespace HexCastingTerraria.Core.Casting.Actions;
 ///
 /// 参数是 (坐标, 图案)。查不到时吐 **NullIota**（缺失是正常情况，不是错误）；
 /// 该位置根本不是记录方块才报 MishapNoAkashicRecord。
+/// 原版读取**不查施法范围**（OpAkashicRead 没有 assertPosInRange，只有写入查），多远的图书馆都能读。
 /// </summary>
 public sealed class OpAkashicRead : ConstMediaAction
 {
@@ -34,8 +35,6 @@ public sealed class OpAkashicRead : ConstMediaAction
         {
             throw new MishapInvalidIota(args[1], "图案");
         }
-
-        env.AssertVecInRange(x, y, z);
 
         var world = env.RequireWorld();
         if (!world.IsAkashicRecord(x, y))

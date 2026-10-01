@@ -430,7 +430,7 @@ Mods: {
 				DisplayName: 阿卡夏书架
 			}
 			AkashicLigatureItem: {
-				DisplayName: 阿卡夏系带
+				DisplayName: 阿卡夏桥接块
 			}
 			AmethystSconceItem: {
 				DisplayName: 紫晶烛台
@@ -797,7 +797,7 @@ Mods: {
 				MapEntry: 阿卡夏书架
 			}
 			AkashicLigature: {
-				MapEntry: 阿卡夏系带
+				MapEntry: 阿卡夏桥接块
 			}
 			AmethystDustBlock: {
 				MapEntry: 紫水晶粉块

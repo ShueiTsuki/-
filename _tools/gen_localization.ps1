@@ -41,7 +41,7 @@ $manualTiles = [ordered]@{
     'AmethystSconce'             = '紫晶烛台'
     'AkashicRecord'              = '阿卡夏记录'
     'AkashicBookshelf'           = '阿卡夏书架'
-    'AkashicLigature'            = '阿卡夏系带'
+    'AkashicLigature'            = '阿卡夏桥接块'
     'ScrollPaper'                = '卷轴纸'
     'ScrollPaperLantern'         = '卷轴纸灯笼'
     'AncientScrollPaper'         = '远古卷轴纸'
@@ -76,7 +76,7 @@ $manualItems = [ordered]@{
     'AncientScrollPaperLanternItem'   = '远古卷轴纸灯笼'
     # ── 阿卡夏家具 ──
     'AkashicBookshelfItem'   = '阿卡夏书架'
-    'AkashicLigatureItem'    = '阿卡夏系带'
+    'AkashicLigatureItem'    = '阿卡夏桥接块'
     'AmethystSconceItem'     = '紫晶烛台'
 }
 

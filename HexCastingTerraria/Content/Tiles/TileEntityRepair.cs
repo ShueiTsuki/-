@@ -10,7 +10,7 @@ namespace HexCastingTerraria.Content.Tiles;
 /// 补上缺的图格实体。
 ///
 /// tML 1.4.4 的 <c>ModTileEntity.Hook_AfterPlacement</c> 默认什么都不放（直接返回 -1，1.4.5-dev 时代不是这样），
-/// 而石板、促动石、导向石、阿卡夏记录、挂轴框的放置钩子之前接的就是它 —— 在 1.4.4.9 上放下去的这些方块都没有图格实体：
+/// 而石板、促动石、导向石、挂轴框的放置钩子之前接的就是它 —— 在 1.4.4.9 上放下去的这些方块都没有图格实体：
 /// 法术环走不动，图案存不进去。放置钩子已经改成 <c>Generic_HookPostPlaceMyPlayer</c>；
 /// 已经放在世界里的，进世界时（单机 / 服务端）补一遍。补出来的是空的：原来就没有图格实体，也就没有可找回的内容。
 /// </summary>
@@ -27,7 +27,6 @@ public sealed class TileEntityRepair : ModSystem
             owner[type] = TileLoader.GetTile(type) switch
             {
                 HexSlate => ModContent.GetInstance<HexSlateEntity>(),
-                AkashicRecord => ModContent.GetInstance<AkashicRecordEntity>(),
                 HexDirectrixBase => ModContent.GetInstance<HexDirectrixEntity>(),
                 HexImpetusBase => ModContent.GetInstance<HexImpetusEntity>(),
                 WallScrollTile => ModContent.GetInstance<WallScrollEntity>(),

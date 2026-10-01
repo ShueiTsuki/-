@@ -38,7 +38,7 @@ public sealed class ItemStateArt : GlobalItem
     }
 
     /// <summary>原版各 iota 类型的 color()。</summary>
-    private static Color IotaColor(Iota? iota) => iota switch
+    internal static Color IotaColor(Iota? iota) => iota switch
     {
         PatternIota => new Color(0xff, 0xaa, 0x00),
         DoubleIota => new Color(0x55, 0xff, 0x55),

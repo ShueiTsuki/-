@@ -107,7 +107,7 @@ public sealed class AkashicBookshelfItem : HexDecoBlockItem
     }
 }
 
-/// <summary>阿卡夏系带（物品）。</summary>
+/// <summary>阿卡夏桥接块（物品）。</summary>
 public sealed class AkashicLigatureItem : HexDecoBlockItem
 {
     public override int TileType => ModContent.TileType<AkashicLigature>();

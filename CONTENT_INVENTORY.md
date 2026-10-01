@@ -399,9 +399,9 @@ Item
 
 | 方块 | 内部 ID | 实现类 | 机制 |
 |---|---|---|---|
-| 阿卡夏档案 | `akashic_record` | `BlockAkashicRecord` | 以**图案为键**存取 iota：`addNewDatum(pos, level, HexPattern key, Iota datum)` / `lookupPattern(pos, key, level)`。对应图案 `akashic/read`、`akashic/write` |
-| 阿卡夏连线 | `akashic_connector` | `BlockAkashicLigature`（实现 `AkashicFloodfiller`） | 把多个档案**连成一张网**，使它们共享同一存储空间 |
-| 阿卡夏书架 | `akashic_bookshelf` | `BlockAkashicBookshelf`（实现 `AkashicFloodfiller`） | 用卷轴右键可把书架上的图案**抄写**到卷轴上（`scroll.writeDatum(stack, new PatternIota(shelf.getPattern()))`）；有附魔之力与红石输出 |
+| 阿卡夏记录 | `akashic_record` | `BlockAkashicRecord` | 图书馆的入口，**自己不存东西、不传导**：`addNewDatum` / `lookupPattern` 从它出发泛洪找书架。对应图案 `akashic/read`、`akashic/write` |
+| 阿卡夏桥接块 | `akashic_connector` | `BlockAkashicLigature`（实现 `AkashicFloodfiller`） | 不存东西，只传导，把书架连得更远 |
+| 阿卡夏书架 | `akashic_bookshelf` | `BlockAkashicBookshelf`（实现 `AkashicFloodfiller`） | **每格存一条**「图案 → iota」（BlockEntityAkashicBookshelf）；卷轴右键抄键、潜行空手右键清空；有附魔之力与比较器输出 |
 
 `AkashicFloodfiller`（`common/blocks/akashic/AkashicFloodfiller.java`）是"网络扩散"接口，定义哪些方块参与同一个阿卡夏网络。
 

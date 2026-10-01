@@ -107,33 +107,11 @@ public sealed class AmethystSconce : WallDeco
 }
 
 /// <summary>
-/// 阿卡夏书架。对应源项目 `hexcasting:akashic_bookshelf`。
+/// 阿卡夏桥接块。对应源项目 `hexcasting:akashic_connector`。
 ///
-/// 源项目里它是「能存阿卡夏记录的书架」（挨着记录方块会一起参与存储）。
-/// 泰拉侧的记录方块已经有完整的键值存储，书架目前只承担**装饰**功能 ——
-/// 这一点在计划里记为「与源项目的功能差异」，不是遗漏。
-/// </summary>
-public sealed class AkashicBookshelf : ModTile
-{
-    public override void SetStaticDefaults()
-    {
-        Main.tileSolid[Type] = true;
-        Main.tileBlockLight[Type] = true;
-        Main.tileMergeDirt[Type] = false;
-
-        MinPick = 0;
-        DustType = DustID.WoodFurniture;
-        HitSound = SoundID.Tink;
-        AddMapEntry(new Color(96, 74, 108));
-    }
-}
-
-/// <summary>
-/// 阿卡夏系带。对应源项目 `hexcasting:akashic_connector`。
-///
-/// 它是**脑叶切除的原料**：`阿卡夏系带 + 巫师 → 阿卡夏记录方块`。
-/// 泰拉侧因为「粉块」更贴近我们的晶洞体系，配方改用了粉块当原料，
-/// 但这个方块本身作为装饰保留 —— 同时也是「将来要接成配方原料」的占位。
+/// 图书馆里只传导、不存东西的方块：把书架连得更远（见 <see cref="Core.Casting.Akashic.AkashicLibrary"/>）。
+/// 也是脑叶切除的原料：放在世界里的桥接块 + 巫师（原版 5 级图书管理员）→ 阿卡夏记录。
+/// 原版亮度 4。阿卡夏书架在 AkashicBookshelf.cs。
 /// </summary>
 public sealed class AkashicLigature : ModTile
 {
@@ -146,7 +124,7 @@ public sealed class AkashicLigature : ModTile
 
         MinPick = 0;
         DustType = DustID.PurpleTorch;
-        HitSound = SoundID.Tink;
+        HitSound = SoundID.Dig;
         AddMapEntry(new Color(150, 120, 196));
     }
 

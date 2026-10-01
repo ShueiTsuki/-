@@ -79,6 +79,7 @@
 | `Casting/Actions/WorldActions.cs` | `get_caster`：把施法者自身压上栈。 |
 | `Casting/Actions/WorldEffectActions.cs` | 世界效果类图案的公共部分。</summary> |
 | `Casting/Actions/ZoneActions.cs` | 区域查询的筛选种类。对应源项目 `OpGetEntitiesBy` 的五个谓词。</summary> |
+| `Casting/Akashic/AkashicLibrary.cs` | 阿卡夏图书馆的查找规则（源项目 blocks/akashic/AkashicFloodfiller.java + BlockAkashicRecord.java），纯逻辑，离线可测。 |
 | `Casting/Arithmetic/ArithmeticEngine.cs` | 一种算术实现（对应源项目 Arithmetic 接口）。 |
 | `Casting/Arithmetic/ListArithmetic.cs` | 列表算术。对应源项目 ListArithmetic.kt。 |
 | `Casting/Castables/Action.cs` | 一条图案的行为。 |
@@ -200,7 +201,8 @@
 | `SpellSounds.cs` | 咒法学的音效层。 |
 | `SpellVisuals.cs` | 法术粒子的表现层：把 Core 算出来的 <see cref="ParticleSpray"/> 变成真正的 dust。 |
 | `TerrariaCastingWorld.cs` | <see cref="ICastingWorld"/> 的泰拉瑞亚实现。 |
-| `Tiles/AkashicRecord.cs` | 阿卡夏记录方块。对应源项目 `hexcasting:akashic_record`。 |
+| `Tiles/AkashicBookshelf.cs` | 阿卡夏书架。对应源项目 `hexcasting:akashic_bookshelf`（BlockAkashicBookshelf + BlockEntityAkashicBookshelf）。 |
+| `Tiles/AkashicRecord.cs` | 阿卡夏记录。对应源项目 `hexcasting:akashic_record`（BlockAkashicRecord）。 |
 | `Tiles/AmethystDustBlock.cs` | 紫水晶粉块。对应源项目 `hexcasting:amethyst_dust_block`（装饰方块）。 |
 | `Tiles/AmethystGeode.cs` | 晶洞母岩。对应 MC 的 `budding_amethyst`。 |
 | `Tiles/AmethystPlanter.cs` | 紫水晶种植盆。**移植版新增，原版没有**（2026-10-01 用户要的）。 |

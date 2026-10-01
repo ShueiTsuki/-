@@ -123,6 +123,7 @@ namespace HexCastingTerraria
             int redstoneDirectrix = ModContent.TileType<Content.Tiles.HexDirectrixRedstone>();
             int booleanDirectrix = ModContent.TileType<Content.Tiles.HexDirectrixBoolean>();
             int akashicRecord = ModContent.TileType<Content.Tiles.AkashicRecord>();
+            int akashicLigature = ModContent.TileType<Content.Tiles.AkashicLigature>();
             int emptyImpetus = ModContent.TileType<Content.Tiles.HexImpetusEmpty>();
             int quenchedAllay = ModContent.TileType<Content.Tiles.QuenchedAllay>();
 
@@ -152,8 +153,8 @@ namespace HexCastingTerraria
                     Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.Nurse),
                     ModContent.TileType<Content.Tiles.HexImpetusRedstone>(), none, crystal10),
 
-                // 原版：阿卡夏系带 + 图书管理员 → 记录方块（泰拉没有「系带」，改用粉块）
-                new Core.Casting.Actions.BrainsweepRecipe(dustBlock, wizard, akashicRecord, none, crystal10),
+                // 原版：阿卡夏桥接块 + 5 级图书管理员 → 记录方块（泰拉没有图书管理员，对应巫师）
+                new Core.Casting.Actions.BrainsweepRecipe(akashicLigature, wizard, akashicRecord, none, crystal10),
 
                 // 原版：紫水晶块 + 悦灵 → **淬灵块**（方块，敲掉掉 2~4 片碎片），1 晶体。
                 // 泰拉的悦灵 = **小精灵（Pixie）**：神圣地的精灵，肉后才有 —— 用户按进度特意定的，淬灵线整条落在肉后
@@ -300,6 +301,11 @@ namespace HexCastingTerraria
                 case Content.Net.HexMessage.ImpetusAction:
                     if (Main.netMode != NetmodeID.Server) return;
                     Content.Tiles.HexImpetusEntity.Handle(reader, whoAmI);
+                    break;
+
+                case Content.Net.HexMessage.AkashicShelfClear:
+                    if (Main.netMode != NetmodeID.Server) return;
+                    Content.Tiles.AkashicBookshelfEntity.HandleClear(reader, whoAmI);
                     break;
 
                 case Content.Net.HexMessage.Addon:

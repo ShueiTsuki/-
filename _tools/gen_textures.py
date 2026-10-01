@@ -109,6 +109,7 @@ FRAMED = {
     'AmethystDustBlock': [src('block/amethyst_dust_block')],
     'AkashicBookshelf': [src('block/akashic_bookshelf')],
     'AkashicLigature': [src('block/akashic_ligature')],
+    'AkashicRecord': [src('block/akashic_record')],          # 原版是整块方块，不是摆件
 }
 # 自动选帧、但原版没有对应贴图（MC 原生方块 / 移植版自创）：保留旧图，改成图集
 FRAMED_KEEP = ['GeodeCore', 'AmethystBudSmall', 'AmethystBudMedium', 'AmethystBudLarge', 'AmethystCluster',
@@ -125,7 +126,6 @@ for name in FRAMED_KEEP:
 C = 'block/circle/'
 FIXED = {
     'HexSlate': [src('block/slate')],
-    'AkashicRecord': [src('block/akashic_record')],
     'ScrollPaper': [src('block/scroll_paper')],
     'AncientScrollPaper': [src('block/ancient_scroll_paper')],
     'ScrollPaperLantern': [src('block/scroll_paper_lantern_side')],
@@ -142,6 +142,8 @@ FIXED = {
 for name, faces in FIXED.items():
     save(frames(faces), 'Tiles', name + '.png')
     save(x2(faces[0]), 'Items', 'Blocks', name + '.png')
+# 阿卡夏书架「有书」的书脊叠层（原版 akashic_bookshelf_overlay_1..4，灰色，画的时候按 iota 类型着色）
+save(frames([src(f'block/akashic_bookshelf_overlay_{i}') for i in range(1, 5)]), 'Tiles', 'AkashicBookshelf_Books.png')
 save(x2(existing_face('Tiles', 'AmethystSconce.png')), 'Items', 'Blocks', 'AmethystSconce.png')
 # 促动石物品沿用各自类名的贴图路径
 for tile, item in [('HexImpetus', 'HexImpetusItem'), ('HexImpetusLook', 'HexImpetusLookItem'),

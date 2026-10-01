@@ -86,6 +86,9 @@ internal enum HexMessage : byte
     /// 附属不占用本体的消息编号，几十个附属也不会撞号。
     /// </summary>
     Addon = 21,
+
+    /// <summary>客户端 → 服务端：潜行空手右键清空某个阿卡夏书架。见 AkashicBookshelfEntity.HandleClear。</summary>
+    AkashicShelfClear = 22,
 }
 
 /// <summary>

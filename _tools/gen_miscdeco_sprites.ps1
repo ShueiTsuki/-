@@ -97,7 +97,7 @@ New-Texture "AkashicBookshelf.png" 96 74 108 {
     for ($y = 0; $y -le 15; $y++) { for ($x = 0; $x -le 15; $x++) { $mask["$x,$y"] = $true } }
 } 106
 
-# 阿卡夏系带：细长的符带
+# 阿卡夏桥接块：细长的符带
 New-Texture "AkashicLigature.png" 150 120 196 {
     for ($y = 1; $y -le 14; $y++) { for ($x = 6; $x -le 9; $x++) { $mask["$x,$y"] = $true } }
 } 107

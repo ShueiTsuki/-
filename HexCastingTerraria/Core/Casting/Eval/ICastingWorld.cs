@@ -148,10 +148,13 @@ public interface ICastingWorld
     /// </summary>
     bool IsAkashicRecord(double x, double y);
 
-    /// <summary>按图案查记录。返回 null 表示没有该键。</summary>
+    /// <summary>从这块记录出发，在相连的书架里按图案查。返回 null 表示没有该键。</summary>
     Iota? LookupAkashic(double x, double y, Math.HexPattern key);
 
-    /// <summary>按图案写入记录。位置不是记录方块时静默忽略。</summary>
+    /// <summary>
+    /// 从这块记录出发写进一个空书架（原版 addNewDatum）。**不覆盖**：网络里已有这个键就不写；
+    /// 没有空书架也不写；位置不是记录方块时同样静默忽略。都不报错。
+    /// </summary>
     void WriteAkashic(double x, double y, Math.HexPattern key, Iota value);
 
     // ── 以下是区域查询（`zone_entity` 等图案需要）────────────────

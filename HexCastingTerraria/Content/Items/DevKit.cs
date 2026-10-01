@@ -83,8 +83,10 @@ internal static class DevKit
         yield return ModContent.ItemType<HexDirectrixBooleanItem>();
         yield return ModContent.ItemType<HexDirectrixRedstoneItem>();
 
-        // 阿卡夏记录（用它测 storage 类图案）
+        // 阿卡夏图书馆：记录 + 书架 + 桥接块（测 akashic 图案，见 TESTING_CHECKLIST 第 13 节）
         yield return ModContent.ItemType<AkashicRecordItem>();
+        yield return ModContent.ItemType<AkashicBookshelfItem>();
+        yield return ModContent.ItemType<AkashicLigatureItem>();
 
         // 建材与装饰各一份（测放置、油漆兼容、壁挂卷轴流程）
         yield return ModContent.ItemType<SlateBlockItem>();
@@ -128,6 +130,9 @@ internal static class DevKit
             var t when t == ModContent.ItemType<AmethystDust>() => 100,
             var t when t == ModContent.ItemType<HexSlateItem>() => 30,
             var t when t == ModContent.ItemType<HexImpetusItem>() => 4,
+            var t when t == ModContent.ItemType<AkashicRecordItem>() => 2,
+            var t when t == ModContent.ItemType<AkashicBookshelfItem>() => 8,
+            var t when t == ModContent.ItemType<AkashicLigatureItem>() => 10,
             _ => 1,
         };
 

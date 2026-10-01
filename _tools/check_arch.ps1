@@ -74,7 +74,7 @@ $contentClientBaseline = @(
     'Content\Items\HexStaff.cs',
     'Content\Items\MediaFlask.cs',
     'Content\Items\MediaMaterials.cs',
-    'Content\Tiles\AkashicRecord.cs',
+    'Content\Tiles\AkashicBookshelf.cs',
     'Content\Tiles\HexSlate.cs',
     'Content\Tiles\WallScroll.cs'
 )

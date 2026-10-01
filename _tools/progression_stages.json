@@ -158,7 +158,6 @@
       "HexDirectrixRedstoneItem": "同 HexDirectrixItemBase",
       "AkashicBookshelfItem": "源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment → 秘银砧 + 已启蒙",
       "AkashicLigatureItem": "源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment → 秘银砧 + 已启蒙",
-      "AkashicRecordItem": "源 497-501 brainsweep(阿卡夏系带 + 图书管理员)：启蒙大战法术 → 秘银砧 + 已启蒙",
       "MindspliceStaff": "源 91：这一把的「W」槽是 MINDFLAYED_CIRCLE_COMPONENTS，即脑叶切除产物"
     }
   }

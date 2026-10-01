@@ -407,6 +407,13 @@ public sealed class HexPlayer : ModPlayer
         {
             Player.controlTorch = false;
         }
+        // 空手对着阿卡夏书架按 Shift 是原版的「潜行空手右键清空」，同样不让泰拉换成镐子
+        if (Player.whoAmI == Main.myPlayer && Player.HeldItem is { IsAir: true }
+            && Main.MouseWorld.ToTileCoordinates() is var mt && WorldGen.InWorld(mt.X, mt.Y)
+            && Main.tile[mt.X, mt.Y] is { HasTile: true } mtile && mtile.TileType == ModContent.TileType<Tiles.AkashicBookshelf>())
+        {
+            Player.controlTorch = false;
+        }
 
         if (Player.whoAmI != Main.myPlayer || Terraria.GameInput.PlayerInput.ScrollWheelDelta == 0) return;
         bool canvas = Client.HexCanvasState.Canvas.IsOpen;

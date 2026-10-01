@@ -8,7 +8,7 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **129** 个可合成物品。
+共 **128** 个可合成物品。
 
 ## 肉前（108 项）
 
@@ -163,7 +163,7 @@
 | `QuenchedDebugger` | 1 | QuenchedAllayShard×4 | WorkBenches | 附属 HexDebug：上游 flyswatter_quenching，调试杖 + 淬灵晶碎片 ×4（碎片肉后） |
 | `QuenchedEvaluator` | 1 | QuenchedAllayShard×4 | WorkBenches | 附属 HexDebug：同上，运行杖 + 淬灵晶碎片 ×4 |
 
-## 肉后 · 启蒙（9 项）
+## 肉后 · 启蒙（8 项）
 
 源项目挂「启蒙」门槛的那一族：原动力、导线、阿卡夏三件、剖念法杖。启蒙 = 一次过载用掉 ≥80% 生命、只剩不到半颗心（按原版实现）；泰拉侧再要求肉后的秘银砧/山铜砧。
 
@@ -176,7 +176,6 @@
 | `HexDirectrixRedstoneItem` | 1 | HexDirectrixEmptyItem×1 | MythrilAnvil + 已启蒙 | 同 HexDirectrixItemBase |
 | `AkashicBookshelfItem` | 1 | EdifiedPlanksItem×2 + Book×3 + 〔HexRecipeGroups.EdifiedLogs〕×4 | MythrilAnvil + 已启蒙 | 源 410-417：启迪原木 + 启迪木板 + 书，挂 enlightenment → 秘银砧 + 已启蒙 |
 | `AkashicLigatureItem` | 4 | EdifiedPlanksItem×2 + AmethystDust×1 + AmethystShard×1 + ChargedAmethyst×1 + 〔HexRecipeGroups.EdifiedLogs〕×4 | MythrilAnvil + 已启蒙 | 源 419-428：启迪原木 + 启迪木板 + 三种紫水晶料 ×4，挂 enlightenment → 秘银砧 + 已启蒙 |
-| `AkashicRecordItem` | 1 | AkashicLigatureItem×1 + Book×3 | MythrilAnvil + 已启蒙 | 源 497-501 brainsweep(阿卡夏系带 + 图书管理员)：启蒙大战法术 → 秘银砧 + 已启蒙 |
 | `MindspliceStaff` | 1 | HexDirectrixRedstoneItem×1 + ChargedAmethyst×1 + 〔RecipeGroupID.Wood〕×3 | WorkBenches | 源 91：这一把的「W」槽是 MINDFLAYED_CIRCLE_COMPONENTS，即脑叶切除产物 |
 
 ## 与源项目的阶段差异（有意为之）

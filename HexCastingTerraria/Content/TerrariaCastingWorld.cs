@@ -1691,6 +1691,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             tile.TileType = (ushort)recipe.ResultTile;
             tile.TileFrameX = 0;
             tile.TileFrameY = 0;
+            // 自动选帧的实心方块（阿卡夏记录、母岩、淬灵块）要重新算一次帧，否则和四周接不上
+            if (!Main.tileFrameImportant[recipe.ResultTile]) WorldGen.SquareTileFrame(tx, ty);
 
             if (Main.netMode == Terraria.ID.NetmodeID.Server)
             {
@@ -2149,29 +2151,19 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         return tile.TileType == Terraria.ModLoader.ModContent.TileType<AkashicRecord>();
     }
 
-    /// <summary>按图案查记录。没有该键返回 null。</summary>
+    /// <summary>从这块记录出发，在相连的书架里按图案查（原版 lookupPattern）。没有该键返回 null。</summary>
     public Core.Casting.Iotas.Iota? LookupAkashic(double x, double y, Core.Casting.Math.HexPattern key)
-    {
-        int tx = (int)System.Math.Floor(x);
-        int ty = (int)System.Math.Floor(y);
-        return AkashicRecordEntity.FindAt(tx, ty)?.Lookup(key);
-    }
+        => AkashicNetwork.Lookup((int)System.Math.Floor(x), (int)System.Math.Floor(y), key);
 
-    /// <summary>按图案写记录。</summary>
+    /// <summary>
+    /// 从这块记录出发写进一个空书架（原版 addNewDatum + OpAkashicWrite.Spell.cast）：
+    /// 网络里已有这个键、或者没有空书架，都静默不写；不管写没写上都在记录那里响一声（原版 0.8 音高的书写声）。
+    /// </summary>
     public void WriteAkashic(double x, double y, Core.Casting.Math.HexPattern key, Core.Casting.Iotas.Iota value)
     {
         int tx = (int)System.Math.Floor(x);
         int ty = (int)System.Math.Floor(y);
-
-        var entity = AkashicRecordEntity.FindAt(tx, ty);
-        if (entity == null) return;
-
-        entity.Store(key, value);
-
-        // 联机：把变化同步出去，否则只有写入者的客户端能看到
-        if (Main.netMode == Terraria.ID.NetmodeID.Server)
-        {
-            Terraria.NetMessage.SendData(Terraria.ID.MessageID.TileEntitySharing, -1, -1, null, entity.ID, tx, ty);
-        }
+        AkashicNetwork.Write(tx, ty, key, value);
+        SpellSounds.PlayOrBroadcast("scroll.scribble", new Microsoft.Xna.Framework.Vector2(tx * 16f + 8f, ty * 16f + 8f));
     }
 }
