@@ -23,7 +23,7 @@ HexClientConfig: {
 
 	AlwaysEnlightened: {
 		Label: Always enlightened
-		Tooltip: Unlocks the 14 great spells (lightning, flight, create_lava, great teleport, great sentinel, weather, brainsweep, battery, 5 potions) without having to trigger an overcast first. Normally enlightenment requires a single cast costing at least 80% of your media capacity.
+		Tooltip: Counts you as enlightened. The 14 great spells no longer fail for lack of enlightenment, and enlightenment-gated recipes, Hex Book entries and the Wizard's Resonance Potion unlock as well. In normal play, as in the original, you must first fail a great spell to unlock overcasting; after that, a single overcast that spends at least 80% of your max health and leaves you alive with no more than a twentieth of it grants enlightenment.
 	}
 
 	NoOvercastDamage: {
