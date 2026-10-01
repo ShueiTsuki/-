@@ -9,6 +9,7 @@ Mods: {
 		// Hexcessible 附属（上游 lang 文件的官方译文）
 		// HexDebug 附属（消息是上游 lang 文件的官方译文；调试面板的标签是移植版自己的）
 		HexDebug: {
+			Connected: 调试客户端已连接！
 			NoSession: 线程{0}的调试会话未在运行。
 			NotPaused: 线程{0}的调试会话未被暂停。
 			DebuggerStopped: 下一个Iota：[{0}] {1}

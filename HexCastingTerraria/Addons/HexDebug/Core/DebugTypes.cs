@@ -103,6 +103,9 @@ public sealed class DebugSource
 
     public int ThreadId { get; }
 
+    /// <summary>上游 Source.name / path：「source编号.hexpattern」。</summary>
+    public string Name => $"source{Reference}.hexpattern";
+
     /// <summary>上游 Source.name：「线程 N · 第 M 段」由界面拼，这里只给编号。</summary>
     public IReadOnlyList<Iota> Iotas { get; }
 }
@@ -176,11 +179,75 @@ public sealed class SharedDebugState
 
     public IReadOnlyList<DebugSource> Sources => _sources;
 
+    /// <summary>
+    /// 上游 SourceAllocator.add：同一串 iota（同一批对象）再登记时沿用原来的编号 ——
+    /// 重新开始调试同一段咒术时，编辑器 / 面板里设在这段源码上的断点还在。
+    /// </summary>
     public DebugSource AddSource(int threadId, IReadOnlyList<Iota> iotas)
     {
+        foreach (var old in _sources)
+        {
+            if (old.Iotas.Count == iotas.Count && System.Linq.Enumerable.SequenceEqual(old.Iotas, iotas, ReferenceEqualityComparer.Instance))
+                return old;
+        }
         var s = new DebugSource(_nextReference++, threadId, iotas);
         _sources.Add(s);
         return s;
+    }
+
+    // ── 外部调试器（DAP）──────────────────────────────────────────
+
+    /// <summary>上游 initArgs.linesStartAt1 / columnsStartAt1（编辑器在 initialize 里说，默认都是 1 起）。</summary>
+    public bool LinesStartAt1 { get; set; } = true;
+
+    public bool ColumnsStartAt1 { get; set; } = true;
+
+    public int IndexToLine(int index) => index + (LinesStartAt1 ? 1 : 0);
+
+    public int LineToIndex(int line) => line - (LinesStartAt1 ? 1 : 0);
+
+    public int IndexToColumn(int index) => index + (ColumnsStartAt1 ? 1 : 0);
+
+    /// <summary>
+    /// 上游 setBreakpoints：编辑器每次发一整个源码的断点，先清掉这个源码原来的，再逐条验证。
+    /// 源码不认识 → 未验证（pending）；行号超出 → 未验证（failed）；模式不认识按「被求值时停」。
+    /// </summary>
+    public List<BreakpointResult> SetBreakpoints(int sourceReference, IEnumerable<(int Line, string? Mode)> requested)
+    {
+        if (!Breakpoints.TryGetValue(sourceReference, out var lines)) Breakpoints[sourceReference] = lines = new();
+        lines.Clear();
+        var source = FindSource(sourceReference);
+        var results = new List<BreakpointResult>();
+        foreach (var (line, mode) in requested)
+        {
+            if (source is null)
+            {
+                results.Add(new BreakpointResult(false, "Unknown source", "pending", null, null));
+            }
+            else if (line > IndexToLine(source.Iotas.Count - 1) || line < IndexToLine(0))
+            {
+                results.Add(new BreakpointResult(false, "Line number out of range", "failed", null, null));
+            }
+            else
+            {
+                lines[LineToIndex(line)] = DapNames.ParseMode(mode) ?? SourceBreakpointMode.Evaluated;
+                results.Add(new BreakpointResult(true, null, null, source, line));
+            }
+        }
+        return results;
+    }
+
+    /// <summary>
+    /// 上游 onDisconnect：启动参数、行号约定、断点回到默认（源码不清，编辑器重连还要用）。
+    /// 上游把「未捕获的事故」也清掉（没有编辑器就不停）；移植版有游戏内面板，没编辑器时也停，所以回到默认的「停」。
+    /// </summary>
+    public void OnDisconnect()
+    {
+        LaunchArgs = new LaunchArgs();
+        LinesStartAt1 = true;
+        ColumnsStartAt1 = true;
+        Breakpoints.Clear();
+        StopOnUncaughtMishaps = true;
     }
 
     public DebugSource? FindSource(int reference) => _sources.Find(s => s.Reference == reference);

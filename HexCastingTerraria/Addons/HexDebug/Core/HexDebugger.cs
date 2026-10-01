@@ -99,6 +99,7 @@ public sealed class HexDebugger
         if (unregistered.Count == 0) return null;
 
         var source = _shared.AddSource(ThreadId, unregistered);
+        _loadedSources.Add((source, true));
         for (int i = 0; i < unregistered.Count; i++)
         {
             // 认知危害：一登记进来调试就结束（上游 CognitohazardIota 的唯一作用）
@@ -205,6 +206,7 @@ public sealed class HexDebugger
     /// <summary>上游 evaluate：运行杖画的图案在调试器当前的栈上跑（第一次画时记下复原点）。</summary>
     public DebugStepResult? Evaluate(SpellList list)
     {
+        _variables.Clear();
         var vm = GetVM();
         if (vm is null) return null;
         vm.Env.DebugObserver = DebugEnv;
@@ -286,6 +288,7 @@ public sealed class HexDebugger
     /// <summary>上游 executeUntilStopped：继续（null）、逐过程、单步跳出、单步调试。</summary>
     public DebugStepResult ExecuteUntilStopped(RequestStepType? stepType = null)
     {
+        _variables.Clear();
         var vm = GetVM();
         if (vm is null) return new DebugStepResult(null, Skipped: true);
         var result = ExecuteUntilStopped(vm, stepType);
@@ -513,7 +516,11 @@ public sealed class HexDebugger
             // 列表闭合：括号里的 iota 都定下缩进了
             foreach (var p in oldImage.Parenthesized)
             {
-                if (MetadataOf(p.Iota) is { } m) m.NeedsReload = false;
+                if (MetadataOf(p.Iota) is { NeedsReload: true } m)
+                {
+                    m.NeedsReload = false;
+                    if (!_loadedSources.Exists(x => ReferenceEquals(x.Source, m.Source))) _loadedSources.Add((m.Source, false));
+                }
             }
         }
     }
@@ -575,6 +582,150 @@ public sealed class HexDebugger
             var cast = castResult.Cast;
             _frameInvocationMetadata[continuation] = () => (cast, MetadataOf(cast));
         }
+    }
+
+    // ==================== 外部调试器（DAP）====================
+
+    private readonly List<(DebugSource Source, bool IsNew)> _loadedSources = new();
+    private readonly VariablesAllocator _variables = new();
+
+    /// <summary>上游 DebugStepResult.loadedSources：上一步以来新登记的源码（true）和缩进变了的源码（false）。取走后清空。</summary>
+    public List<(DebugSource Source, bool IsNew)> TakeLoadedSources()
+    {
+        var list = new List<(DebugSource, bool)>(_loadedSources);
+        _loadedSources.Clear();
+        return list;
+    }
+
+    /// <summary>
+    /// 停下来时编辑器会重新要变量；变量编号只在这一次暂停里有效（DAP 的约定）。
+    /// 上游从不清（一直攒着）；这里每次接着跑之前清掉。
+    /// </summary>
+    public void ResetVariables() => _variables.Clear();
+
+    /// <summary>上游 getStackFrames：当前帧在前；真实帧从 1 起编号，虚拟帧从比帧数大的 10 的幂起。</summary>
+    public List<DapFrame> GetStackFrames()
+    {
+        var list = new List<DapFrame>();
+        int frameId = 1;
+        int virtualId = CeilToPow10(_callStack.Count + 1);
+        foreach (var c in _callStack)
+        {
+            list.Add(new DapFrame(frameId, $"[{frameId}] {c.Frame.GetType().Name}", GetFirstIotaMetadata(c)?.Meta, false));
+            frameId++;
+            if (_virtualFrames.TryGetValue(c, out var v))
+            {
+                foreach (var f in v) list.Add(new DapFrame(virtualId++, f.Name, f.Meta, true));
+            }
+        }
+        list.Reverse();
+        return list;
+    }
+
+    private static int CeilToPow10(int n)
+    {
+        int p = 1;
+        while (p < n) p *= 10;
+        return p;
+    }
+
+    /// <summary>上游 getScopes：Data（栈、渡鸦之思）、State（算力、转义、括号）、Frame（这一帧自己的变量）。</summary>
+    public List<DapScope> GetScopes(int frameId)
+    {
+        var scopes = new List<DapScope>
+        {
+            new("Data", _variables.Add(
+                ToVariable("Stack", _image.Stack.Reverse()),
+                ToVariable("Ravenmind", _image.UserData.Ravenmind ?? NullIota.Instance))),
+        };
+        var state = new List<DapVariable>
+        {
+            new("OpsConsumed", _image.OpsConsumed.ToString()),
+            new("EscapeNext", _image.EscapeNext ? "true" : "false"),
+            new("ParenCount", _image.ParenCount.ToString()),
+        };
+        if (_image.ParenCount > 0) state.Add(ToVariable("Parenthesized", _image.Parenthesized.Select(p => p.Iota)));
+        scopes.Add(new DapScope("State", _variables.Add(state)));
+
+        // 虚拟帧的编号在调用栈之外，这里自然找不到
+        if (frameId >= 1 && frameId <= _callStack.Count && GetFrameVariables(_callStack[frameId - 1]) is { } frameVars)
+        {
+            scopes.Add(new DapScope("Frame", _variables.Add(frameVars)));
+        }
+        return scopes;
+    }
+
+    public IReadOnlyList<DapVariable> GetVariables(int reference) => _variables.GetOrEmpty(reference);
+
+    /// <summary>上游 getSourceContents：一段源码的全文，一行一个 iota（带缩进）。</summary>
+    public string? GetSourceContents(int reference)
+        => _shared.FindSource(reference) is { } src ? string.Join("\n", SourceLines(src)) : null;
+
+    private List<DapVariable>? GetFrameVariables(SpellContinuation.NotDone continuation)
+    {
+        // 上游这里拿的是「(iota, 位置)」的 toString；写成「源码名:行」更好读
+        var meta = GetFirstIotaMetadata(continuation)?.Meta;
+        string sourceLine = meta is null ? "" : meta.Source.Name + ":" + _shared.IndexToLine(meta.LineIndex);
+        switch (continuation.Frame)
+        {
+            case FrameEvaluate fe:
+                return new List<DapVariable>
+                {
+                    ToVariable("Code", fe.List, sourceLine),
+                    new("IsMetacasting", fe.IsMetacasting ? "true" : "false"),
+                };
+            case FrameForEach ff:
+            {
+                var vars = new List<DapVariable> { ToVariable("Code", ff.Code, sourceLine), ToVariable("Data", (IEnumerable<Iota>)ff.Data) };
+                if (ff.BaseStack is { } bs) vars.Add(ToVariable("BaseStack", bs));
+                vars.Add(ToVariable("Result", ff.Acc));
+                return vars;
+            }
+            case FrameBreakpoint fb:
+                return new List<DapVariable>
+                {
+                    new("StopBefore", fb.StopBefore ? "true" : "false"),
+                    new("IsFatal", fb.IsFatal ? "true" : "false"),
+                };
+            default:
+                return sourceLine.Length > 0 ? new List<DapVariable> { new("Code", sourceLine) } : null;
+        }
+    }
+
+    /// <summary>上游 toVariable(name, iota)：列表可以展开（值写「(个数) 显示」）；续体展开成一串帧；其余是 iota 的显示（图案写名字）。</summary>
+    private DapVariable ToVariable(string name, Iota iota)
+    {
+        switch (iota)
+        {
+            case ListIota l:
+                return new DapVariable(name, $"({l.Count}) {IotaText.Display(l)}", nameof(ListIota))
+                {
+                    VariablesReference = AllocateVariables(l.Items),
+                    IndexedVariables = l.Count,
+                };
+            case ContinuationIota k:
+            {
+                var cont = ContinuationVariable(k.Continuation, "");
+                return new DapVariable(name, $"{IotaText.Display(k)} -> {cont.Value}", nameof(ContinuationIota)) { VariablesReference = cont.VariablesReference };
+            }
+            default:
+                return new DapVariable(name, IotaText.Display(iota), iota.GetType().Name);
+        }
+    }
+
+    /// <summary>上游 toVariable(name, iotas, value)：一串 iota，展开后按下标列出。</summary>
+    private DapVariable ToVariable(string name, IEnumerable<Iota> iotas, string value = "")
+        => new(name, value) { VariablesReference = AllocateVariables(iotas) };
+
+    private int AllocateVariables(IEnumerable<Iota> iotas) => _variables.Add(iotas.Select((it, i) => ToVariable(i.ToString(), it)).ToList());
+
+    /// <summary>上游 getContinuationVariable：Done，或 NotDone 下面挂着这一帧和下一个续体。</summary>
+    private DapVariable ContinuationVariable(SpellContinuation continuation, string name)
+    {
+        if (continuation is not SpellContinuation.NotDone nd) return new DapVariable(name, "Done");
+        var frame = new DapVariable("Frame", nd.Frame.GetType().Name);
+        if (GetFrameVariables(nd) is { } fv) frame.VariablesReference = _variables.Add(fv);
+        return new DapVariable(name, "NotDone") { VariablesReference = _variables.Add(frame, ContinuationVariable(nd.Next, "Next")) };
     }
 
     private sealed record EvaluatorResetData(SpellContinuation Continuation, CastingImage Image, ResolvedPatternType LastResolutionType, DebuggerState State);

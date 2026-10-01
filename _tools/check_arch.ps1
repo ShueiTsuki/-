@@ -551,7 +551,7 @@ Write-Host "`n⑫ 附属：每个功能都能找到文件、开关放对地方�
 # ── 界面层只停用不删除：别的模组按名字找原版层排序 / 插入，删掉会让它们抛异常、整帧界面画不出来（玩家日志里 ImproveGame 实际出过）──
 $rm = New-Object System.Collections.Generic.List[string]
 foreach ($f in (AllCs $mod)) {
-    foreach ($h in (Select-String -LiteralPath $f.FullName -Pattern 'layers\.(Remove|RemoveAt|RemoveAll|RemoveRange|Clear)\(')) {
+    foreach ($h in (Select-String -LiteralPath $f.FullName -Pattern '\blayers\.(Remove|RemoveAt|RemoveAll|RemoveRange|Clear)\(' -CaseSensitive)) {
         $rm.Add((Rel $f.FullName $mod) + ':' + $h.LineNumber)
     }
 }

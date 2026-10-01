@@ -12,6 +12,7 @@ Mods: {
 		// Hexcessible 附属（上游 lang 文件的官方译文）
 		// HexDebug 附属（消息是上游 lang 文件的官方译文；调试面板的标签是移植版自己的）
 		HexDebug: {
+			Connected: Debug client connected!
 			NoSession: Debug session is not running for thread {0}.
 			NotPaused: Debug session is not paused for thread {0}.
 			DebuggerStopped: "Next Iota: [{0}] {1}"

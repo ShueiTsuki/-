@@ -263,6 +263,8 @@
 | `Hexcessible/Game/HexcessibleOptions.cs` | Hexcessible 的配置项，挂在客户端「附属兼容」页的 Hexcessible 开关下面（上游 HexcessibleConfig，默认值照搬）。 |
 | `Hexcessible/Game/HexcessibleStore.cs` | Hexcessible 自己记的东西（上游放在配置文件里、界面上不显示的 patternAliases / knownWorldPatterns）： |
 | `Hexcessible/Game/TooltipBox.cs` | 画 Minecraft 样式的提示框（上游用 DrawContext.drawTooltip：深紫底、紫色渐变边框，贴在给定点右上方，出屏就往回挪）。 |
+| `HexDebug/Core/DapData.cs` | 外部调试器（DAP，上游 lsp4j 的 Variable / Scope / StackFrame）要的数据，由 <see cref="HexDebugger"/> 生成， |
+| `HexDebug/Core/DebugAdapter.cs` | 调试适配器要游戏做的事（上游 DebugAdapter 里直接调用的 ServerPlayer / DebugEnvironment / 网络消息）。 |
 | `HexDebug/Core/DebugEnvironment.cs` | 调试输出的类别（上游 OutputCategory：普通输出 / 错误）。</summary> |
 | `HexDebug/Core/DebugTypes.cs` | 上游 debugger/Enums.kt DebuggerState。</summary> |
 | `HexDebug/Core/FrameBreakpoint.cs` | 断点帧（上游 casting/eval/FrameBreakpoint.kt）：不调试时什么都不做；调试器看到它就停。 |
@@ -282,6 +284,7 @@
 | `HexDebug/Game/HexDebugNet.cs` | HexDebug 的联机消息。调试在服务端（单机就是本地）跑，客户端只发请求、收调试面板要显示的东西。 |
 | `HexDebug/Game/HexDebugOptions.cs` | HexDebug 的服务端配置项，挂在「附属兼容」页的 HexDebug 开关下面（上游 HexDebugServerConfig，默认值照搬）。 |
 | `HexDebug/Game/HexDebugPanel.cs` | 游戏内调试面板（偏差：上游把这些交给外部编辑器 VS Code 通过 DAP 显示）。拿着调试杖 / 运行杖、或运行杖画布开着时显示： |
+| `HexDebug/Game/HexDebugProxy.cs` | HexDebug 的客户端配置项（上游 HexDebugClientConfig 里外部调试器的两项），挂在客户端「附属兼容」页。 |
 | `HexDebug/Game/HexDebugSessions.cs` | 玩家用调试杖的调试来历（上游 core api SimplePlayerBasedDebugEnv）：跑完不接着跑；重启 = 用同一串 iota 重新开始。 |
 | `HexDebug/Game/HexDebugText.cs` | HexDebug 的文字（上游 lang 文件的官方译文；调试面板的标签是移植版自己的，跟随游戏语言）。</summary> |
 | `HexDebug/Game/HexDebugView.cs` | 一个调试线程此刻的样子，服务端算好发给本人客户端的游戏内调试面板。 |

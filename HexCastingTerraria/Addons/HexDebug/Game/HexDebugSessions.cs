@@ -44,8 +44,9 @@ internal sealed class PlayerDebugEnv : DebugEnvironment
 }
 
 /// <summary>
-/// 服务端（单机就是本地）的调试会话（上游 adapter/DebugAdapter.kt 去掉 DAP 的部分）：每个玩家一份，最多若干个线程。
+/// 服务端（单机就是本地）的调试会话（上游 adapter/DebugAdapter.kt 里管线程的部分）：每个玩家一份，最多若干个线程。
 /// 调试杖每用一次按步进模式走一步；运行杖在暂停的线程上画图案；调试面板点行设断点。
+/// 外部调试器（VSCode）的请求由 Core 的 <see cref="DebugAdapter"/> 处理，它通过 <see cref="AdapterHost"/> 回到这里。
 /// </summary>
 internal static class HexDebugSessions
 {
@@ -55,7 +56,57 @@ internal static class HexDebugSessions
         public readonly Dictionary<int, HexDebugger> Debuggers = new();
         public readonly HashSet<int> EvaluatorModified = new();
         public readonly Dictionary<int, StopReason?> LastReason = new();
+        public DebugAdapter? Adapter;
     }
+
+    /// <summary>调试适配器要游戏做的事（一个玩家一个）。</summary>
+    private sealed class AdapterHost : IDebugAdapterHost
+    {
+        private readonly int _who;
+
+        public AdapterHost(int who) => _who = who;
+
+        private Player Player => Main.player[_who];
+
+        public SharedDebugState Shared => Get(_who).Shared;
+
+        public IReadOnlyDictionary<int, HexDebugger> Debuggers => Get(_who).Debuggers;
+
+        public string PlayerKey => Player.name;
+
+        public void Step(int threadId, RequestStepType? type, bool sendContinued)
+        {
+            if (Debugger(_who, threadId) is { } dbg) Handle(Player, dbg, dbg.ExecuteUntilStopped(type), wasPaused: true, sendContinued);
+        }
+
+        public void Restart(IReadOnlyList<int> threadIds)
+        {
+            foreach (int t in threadIds) RestartThread(Player, t);
+        }
+
+        public void Terminate(IReadOnlyList<int> threadIds)
+        {
+            foreach (int t in threadIds) RemoveThread(_who, t, terminate: true);
+        }
+
+        public void Send(string json) => HexDebugNet.SendDap(_who, json);
+
+        public void Status(string key) => HexDebugSessions.Status(Player, HexDebugText.Get(key));
+
+        public void BreakpointsChanged()
+        {
+            foreach (var dbg in Get(_who).Debuggers.Values) SendView(_who, dbg);
+        }
+    }
+
+    private static DebugAdapter AdapterOf(int who)
+    {
+        var s = Get(who);
+        return s.Adapter ??= new DebugAdapter(new AdapterHost(who));
+    }
+
+    /// <summary>玩家电脑上的编辑器发来的一条 DAP 消息（客户端原样转过来的）。</summary>
+    public static void ReceiveDap(Player player, string json) => AdapterOf(player.whoAmI).Handle(json);
 
     private static readonly Dictionary<int, Session> Sessions = new();
 
@@ -163,14 +214,19 @@ internal static class HexDebugSessions
         if (threadId < 0 || threadId >= MaxThreads(player) || s.Debuggers.ContainsKey(threadId)) return false;
         debugEnv = makeEnv();
         var dbg = new HexDebugger(s.Shared, debugEnv, threadId);
-        debugEnv.Output = (text, cat, _) => HexDebugNet.ToClient(player.whoAmI, HexDebugNet.Msg.Output, w =>
+        debugEnv.Output = (text, cat, withSource) =>
         {
-            w.Write((byte)threadId);
-            w.Write(text);
-            w.Write((byte)cat);
-        });
+            HexDebugNet.ToClient(player.whoAmI, HexDebugNet.Msg.Output, w =>
+            {
+                w.Write((byte)threadId);
+                w.Write(text);
+                w.Write((byte)cat);
+            });
+            s.Adapter?.Output(dbg, text, cat, withSource);
+        };
         s.Debuggers[threadId] = dbg;
         s.EvaluatorModified.Remove(threadId);
+        s.Adapter?.ThreadStarted(threadId);
         SendView(player.whoAmI, dbg);
         return true;
     }
@@ -183,7 +239,7 @@ internal static class HexDebugSessions
         if (dbg is null) return false;
         var result = dbg.StartExecuting(env, iotas, image);
         if (result is null) return false;
-        Handle(player, dbg, result);
+        Handle(player, dbg, result, wasPaused: false);
         return true;
     }
 
@@ -196,10 +252,14 @@ internal static class HexDebugSessions
         dbg.DebugEnv.Restart(threadId);
     }
 
-    /// <summary>上游 handleDebuggerStep：结束了就移除线程；停下了就打印下一个 iota；把面板要的东西发给本人。</summary>
-    private static void Handle(Player player, HexDebugger dbg, DebugStepResult result)
+    /// <summary>
+    /// 上游 handleDebuggerStep：结束了就移除线程；停下了就打印下一个 iota；把面板要的东西发给本人；连着编辑器时发事件。
+    /// <paramref name="wasPaused"/> = 这一步之前是停着的（刚开始调试时不是）；<paramref name="sendContinued"/> = 接着跑时要不要告诉编辑器（「继续」请求自己会说）。
+    /// </summary>
+    private static void Handle(Player player, HexDebugger dbg, DebugStepResult result, bool wasPaused = true, bool sendContinued = true)
     {
         FlushEffects(player, dbg);
+        Get(player.whoAmI).Adapter?.OnStep(dbg, result, wasPaused, sendContinued);
         if (result.IsDone)
         {
             RemoveThread(player.whoAmI, dbg.ThreadId, terminate: true);
@@ -234,18 +294,27 @@ internal static class HexDebugSessions
         s.EvaluatorModified.Remove(threadId);
         s.LastReason.Remove(threadId);
         if (terminate) dbg.DebugEnv.Terminate();
+        s.Adapter?.ThreadExited(threadId, s.Debuggers.Count == 0);
         HexDebugNet.ToClient(who, HexDebugNet.Msg.RemoveThread, w => w.Write((byte)threadId));
     }
 
-    /// <summary>上游 onDeath / onRemove：死了或下线就结束这个玩家的全部调试。</summary>
-    public static void TerminateAll(int who)
+    /// <summary>
+    /// 上游 onDeath：死了就结束这个玩家的全部调试（编辑器的连接、断点留着）；
+    /// 上游 onRemove：下线时连会话一起丢掉（<paramref name="forget"/>）。
+    /// </summary>
+    public static void TerminateAll(int who, bool forget)
     {
         if (!Sessions.TryGetValue(who, out var s)) return;
         foreach (var id in s.Debuggers.Keys.ToList()) RemoveThread(who, id, terminate: true);
-        Sessions.Remove(who);
+        if (forget) Sessions.Remove(who);
     }
 
-    public static void Clear() => Sessions.Clear();
+    /// <summary>退出世界（单机就是关服）：全部丢掉；上游的 knownPlayers 也是开服期间才记得。</summary>
+    public static void Clear()
+    {
+        Sessions.Clear();
+        DebugAdapter.ForgetKnownPlayers();
+    }
 
     // ==================== 运行杖 ====================
 

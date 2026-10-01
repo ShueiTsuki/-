@@ -5,7 +5,7 @@
 
 | 附属 | 上游版本 | 许可 | 开关 | 功能已做 |
 |---|---|---|---|---|
-| [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 15 / 16 |
+| [HexDebug](#hexdebug) | 0.9.0+1.20.1 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 16 / 16 |
 | [HexParse](#hexparse) | 1.20.1-1.11.2 | MIT | 模组配置「咒法学 · 附属兼容（服务端）」，需要重载；联机由开服的人决定 | 16 / 18 |
 | [Hexcessible](#hexcessible) | 0.3.1 | The JSON License | 模组配置「咒法学 · 附属兼容（客户端）」，随时改；只影响自己 | 11 / 12 |
 
@@ -31,7 +31,7 @@
 | 联机消息（调试状态、运行杖） | `Game/HexDebugNet.cs` | `networking/HexDebugNetworking.kt`<br>`networking/handler/`<br>`networking/msg/MsgDebuggerStateS2C.kt`<br>`networking/msg/MsgEvaluatorClientInfoS2C.kt`<br>`networking/msg/MsgEvaluatorStateS2C.kt`<br>`networking/msg/MsgPrintDebuggerStatusS2C.kt` |
 | 配方 | `Game/HexDebugItems.cs` | `datagen/recipes/`<br>`recipes/FlyswatterQuenchingShapedRecipe.kt` |
 | 书：调试 / 剪接台 / 核心框架条目 | `Core/HexDebugBook.Generated.cs` | `assets/hexcasting/patchouli_books/thehexbook`<br>`assets/hexdebug/lang/zh_cn.flatten.json5` |
-| 外部调试 DAP 服务器（最后做，默认关） | （待做） | `adapter/DebugAdapterManager.kt`<br>`adapter/IHexDebugLauncher.kt`<br>`adapter/LaunchArgs.kt`<br>`adapter/proxy/`<br>`networking/msg/MsgDebugAdapterProxy.kt` |
+| 外部调试 DAP 服务器（编辑器连本机端口，默认关） | `Core/DebugAdapter.cs`<br>`Core/DapData.cs`<br>`Game/HexDebugProxy.cs`<br>`Game/HexDebugSessions.cs`<br>`Game/HexDebugNet.cs` | `adapter/DebugAdapterManager.kt`<br>`adapter/IHexDebugLauncher.kt`<br>`adapter/LaunchArgs.kt`<br>`adapter/proxy/`<br>`networking/msg/MsgDebugAdapterProxy.kt` |
 | 联动：剪接台格子里画 HexParse 的注释 iota | `Interop/HexParseCommentRenderer.cs` | `(hexparse) compat/hexdebug/CommentRenderer.kt` |
 
 <a id="hexparse"></a>

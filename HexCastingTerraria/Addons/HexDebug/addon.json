@@ -206,8 +206,14 @@
       ]
     },
     {
-      "name": "外部调试 DAP 服务器（最后做，默认关）",
-      "files": [],
+      "name": "外部调试 DAP 服务器（编辑器连本机端口，默认关）",
+      "files": [
+        "Core/DebugAdapter.cs",
+        "Core/DapData.cs",
+        "Game/HexDebugProxy.cs",
+        "Game/HexDebugSessions.cs",
+        "Game/HexDebugNet.cs"
+      ],
       "upstream": [
         "adapter/DebugAdapterManager.kt",
         "adapter/IHexDebugLauncher.kt",

@@ -171,7 +171,7 @@ P0 只做三个附属都要用的（已完成的标「P0 已做」）；只有�
 | 方块：剪接台、制念台（启迪版，多一个「咒术」槽，能用图案读写） | blocks/splicing/*, gui/splicing/SplicingTableScreen.kt, splicing/* | 照搬：放核心 / 法术书进去，界面里选中、移动、复制、删除、剪贴板槽、撤销、小画布画图案、媒质条；**泰拉适配**：界面用本体书的绘制工具重写 |
 | 方块：核心框架（放一个核心，给法术环读写用） | blocks/focusholder/*, items/FocusHolderBlockItem.kt | 照搬 |
 | 调试法术环（调试杖对着原动力用） | debugger/circles/* | 照搬（本体法术环已有） |
-| 外部调试：调试适配协议（DAP）服务器，VSCode 的 hex-casting 插件连上来单步、看变量 | adapter/*, adapter/proxy/* | **放最后、默认关**：游戏客户端要开一个本地端口（上游默认 4444）；游戏内调试面板先满足需求，DAP 做成额外的子开关 |
+| 外部调试：调试适配协议（DAP）服务器，VSCode 的 hex-casting 插件连上来单步、看变量 | adapter/*, adapter/proxy/* | 已做（2026-10-01）：客户端配置里的「开放调试端口」，默认关、只监听本机（上游默认开、4444）；游戏内调试面板照常可用 |
 | 配置：客户端（颜色列表、剪接台显示）、服务端（调试器范围等） | config/HexDebugClientConfig.kt, HexDebugServerConfig.kt | 照搬到两份附属配置 |
 | 书：HexDebug 分类（中文官方） | resources/…/patchouli_books, lang/zh_cn.flatten.json5 | 生成器读 |
 | 合成：调试杖 / 剪接台 / 核心框架的配方、「往核心框架里装核心」的特殊配方 | datagen/recipes/*, recipes/FocusHolderFillingShapedRecipe.kt | 照搬，材料按本体已有的对应规则换成泰拉物品 |

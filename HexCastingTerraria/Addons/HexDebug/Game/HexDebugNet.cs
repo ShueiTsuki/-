@@ -47,6 +47,62 @@ internal static class HexDebugNet
 
         // 剪接台（服务端 → 客户端）：画的图案上什么色
         SpliceDrawResult = 16,
+
+        // 外部调试器（上游 MsgDebugAdapterProxy，两个方向都是原样的 DAP 消息；太长就分几段）
+        DapIn = 18,
+        DapOut = 19,
+    }
+
+    /// <summary>一段最多多少字（UTF-8 最多 3 字节一个，泰拉一个包不能超过 64KB）。</summary>
+    private const int DapChunk = 16000;
+
+    private static readonly Dictionary<int, System.Text.StringBuilder> DapFromClients = new();
+    private static readonly System.Text.StringBuilder DapFromServer = new();
+
+    /// <summary>客户端 → 服务端：编辑器发来的一条 DAP 消息。</summary>
+    public static void SendDap(string json)
+    {
+        for (int i = 0; i < json.Length || i == 0; i += DapChunk)
+        {
+            string part = json.Substring(i, Math.Min(DapChunk, json.Length - i));
+            bool last = i + DapChunk >= json.Length;
+            ToServer(Msg.DapIn, w =>
+            {
+                w.Write(last);
+                w.Write(part);
+            });
+        }
+    }
+
+    /// <summary>服务端 → 某个客户端：适配器回的一条 DAP 消息。</summary>
+    public static void SendDap(int who, string json)
+    {
+        for (int i = 0; i < json.Length || i == 0; i += DapChunk)
+        {
+            string part = json.Substring(i, Math.Min(DapChunk, json.Length - i));
+            bool last = i + DapChunk >= json.Length;
+            ToClient(who, Msg.DapOut, w =>
+            {
+                w.Write(last);
+                w.Write(part);
+            });
+        }
+    }
+
+    private static string? Assemble(System.Text.StringBuilder sb, BinaryReader r)
+    {
+        bool last = r.ReadBoolean();
+        sb.Append(r.ReadString());
+        // 一条 DAP 消息不会有这么长；客户端乱发就丢掉，免得服务端的缓冲一直涨
+        if (sb.Length > 4_000_000)
+        {
+            sb.Clear();
+            return null;
+        }
+        if (!last) return null;
+        string json = sb.ToString();
+        sb.Clear();
+        return json;
     }
 
     private static HexAddon Addon => AddonRegistry.All.First(x => x.Id == "hexdebug");
@@ -132,6 +188,12 @@ internal static class HexDebugNet
             case Msg.ToggleBreakpoint:
                 HexDebugSessions.ToggleBreakpoint(player, r.ReadInt32(), r.ReadInt32());
                 break;
+            case Msg.DapIn:
+            {
+                if (!DapFromClients.TryGetValue(who, out var sb)) DapFromClients[who] = sb = new System.Text.StringBuilder();
+                if (Assemble(sb, r) is { } json) HexDebugSessions.ReceiveDap(player, json);
+                break;
+            }
             case Msg.SpliceSetSlot:
             case Msg.SpliceAction:
             case Msg.SpliceSelect:
@@ -168,6 +230,9 @@ internal static class HexDebugNet
             }
             case Msg.SpliceDrawResult:
                 Splicing.SplicingTableUI.DrawResult((ResolvedPatternType)r.ReadByte());
+                break;
+            case Msg.DapOut:
+                if (Assemble(DapFromServer, r) is { } json) HexDebugProxy.Deliver(json);
                 break;
             case Msg.EvalResult:
             {

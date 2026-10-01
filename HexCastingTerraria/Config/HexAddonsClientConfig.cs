@@ -21,5 +21,12 @@ public sealed class HexAddonsClientConfig : ModConfig
     /// <summary>Hexcessible 的配置项（上游 HexcessibleConfig）。</summary>
     public Addons.Hexcessible.Game.HexcessibleOptions HexcessibleOptions { get; set; } = new();
 
-    public override void OnChanged() => HexcessibleOptions.Apply();
+    /// <summary>HexDebug 的客户端配置项（上游 HexDebugClientConfig 的外部调试端口；HexDebug 开关在服务端那一页）。</summary>
+    public Addons.HexDebug.Game.HexDebugClientOptions HexDebugOptions { get; set; } = new();
+
+    public override void OnChanged()
+    {
+        HexcessibleOptions.Apply();
+        Addons.HexDebug.Game.HexDebugProxy.Reconfigure();
+    }
 }

@@ -194,6 +194,11 @@ HexAddonsClientConfig: {
 		Tooltip: 施法界面的无障碍操作：键盘画图、按名字搜索图案、别名、悬停说明（Ruby / tizu）。只影响自己，随时改。
 	}
 
+	HexDebugOptions: {
+		Label: HexDebug 设置
+		Tooltip: 外部调试器（VSCode 等）的端口。HexDebug 开关在服务端那一页。只影响自己，随时改。
+	}
+
 	HexcessibleOptions: {
 		Label: Hexcessible 设置
 		Tooltip: 开关打开后才有用。只影响自己，随时改。
@@ -470,5 +475,19 @@ HexDebugOptions: {
 	SplicingTableAmbit: {
 		Label: 制念台影响范围
 		Tooltip: 制念台的影响范围半径，以格计。
+	}
+}
+
+HexDebugClientOptions: {
+	Tooltip: HexDebug 的客户端配置项（上游 HexDebugClientConfig）
+
+	OpenDebugPort: {
+		Label: 开放调试端口
+		Tooltip: 是否开放端口，让外部调试器（如 VSCode）连进来。只在本机开放。上游默认开，这里默认关：游戏内的调试面板不需要它。
+	}
+
+	DebugPort: {
+		Label: 调试端口
+		Tooltip: 开放以连接至调试客户端（如VSCode）的端口号（1024-65535）。
 	}
 }

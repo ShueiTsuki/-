@@ -164,15 +164,19 @@ public sealed class HexDebugPlayer : AddonPlayer
 
     public override void Kill(double damage, int hitDirection, bool pvp, Terraria.DataStructures.PlayerDeathReason damageSource)
     {
-        if (Main.netMode != Terraria.ID.NetmodeID.MultiplayerClient) HexDebugSessions.TerminateAll(Player.whoAmI);
+        if (Main.netMode != Terraria.ID.NetmodeID.MultiplayerClient) HexDebugSessions.TerminateAll(Player.whoAmI, forget: false);
     }
 
     public override void PlayerDisconnect()
     {
-        if (Main.netMode == Terraria.ID.NetmodeID.Server) HexDebugSessions.TerminateAll(Player.whoAmI);
+        if (Main.netMode == Terraria.ID.NetmodeID.Server) HexDebugSessions.TerminateAll(Player.whoAmI, forget: true);
     }
 
-    public override void OnEnterWorld() => HexDebugClient.Clear();
+    public override void OnEnterWorld()
+    {
+        HexDebugClient.Clear();
+        HexDebugProxy.Reconfigure();   // 上游 CLIENT_PLAYER_JOIN 时打开端口
+    }
 }
 
 public sealed class HexDebugWorld : AddonSystem

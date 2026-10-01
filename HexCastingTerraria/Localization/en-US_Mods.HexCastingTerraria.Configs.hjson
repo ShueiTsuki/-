@@ -194,6 +194,11 @@ HexAddonsClientConfig: {
 		Tooltip: Accessibility for the casting screen: keyboard drawing, search patterns by name, aliases, hover info (Ruby / tizu). Only affects you; change any time.
 	}
 
+	HexDebugOptions: {
+		Label: HexDebug Settings
+		Tooltip: Port for an external debugger (VSCode etc.). The HexDebug switch is on the server page. Only affects you; change any time.
+	}
+
 	HexcessibleOptions: {
 		Label: Hexcessible options
 		Tooltip: Only used when the toggle is on. Affects only you; change any time.
@@ -470,5 +475,19 @@ HexDebugOptions: {
 	SplicingTableAmbit: {
 		Label: Mindsplice table ambit
 		Tooltip: Radius of the mindsplice table ambit, in blocks.
+	}
+}
+
+HexDebugClientOptions: {
+	Tooltip: HexDebug client options (upstream HexDebugClientConfig)
+
+	OpenDebugPort: {
+		Label: Open Debug Port
+		Tooltip: Whether to open a port for an external debugger (eg. VSCode) to connect to. Local machine only. On by default upstream, off here: the in-game debug panel does not need it.
+	}
+
+	DebugPort: {
+		Label: Debug Port
+		Tooltip: Port number (1024-65535) to open for the debug client (eg. VSCode) to connect to.
 	}
 }
