@@ -134,6 +134,16 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 return true;
             }
 
+            case EntityIota.EntityKind.WallScroll:
+            {
+                // 原版 EntityWallScroll（HangingEntity）：位置在卷轴正中、眼高 0、不会动；视线同物品框取 (1, 0)
+                if (ScrollOf(iota) is not { } s) return false;
+                var box = ScrollBox(s);
+                var c = box.Center.ToVector2();
+                reading = Make(c, c, Vector2.Zero, new Vector2(1f, 0f), box.Height, eyeFraction: 0f);
+                return true;
+            }
+
             case EntityIota.EntityKind.Item:
             {
                 if (iota.Index < 0 || iota.Index >= Main.maxItems) return false;
@@ -284,7 +294,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>
     /// 枚举区域内的实体判定箱（图格单位）。
     ///
-    /// 这里把三类实体都算上：玩家、NPC、弹幕。
+    /// 这里把玩家、NPC、弹幕，以及原版当实体、泰拉是方块的物品框和壁挂卷轴都算上。
     /// 源项目的 `getEntities` 同样涵盖所有 Entity，我们保持一致。
     /// 故意**不**做范围外过滤 —— 那句「命中者也要在范围内」的检查在 Core 里做，
     /// 免得两处判断标准不一致。
@@ -338,6 +348,9 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         // 物品框（原版物品展示框是实体，射线能打中它）
         foreach (var f in AllFrames()) Add(new EntityIota(EntityIota.EntityKind.ItemFrame, f.ID), FrameBox(f));
 
+        // 壁挂卷轴（原版 EntityWallScroll 是实体，射线能打中它）
+        foreach (var s in AllScrolls()) Add(new EntityIota(EntityIota.EntityKind.WallScroll, s.ID), ScrollBox(s));
+
         return list;
     }
 
@@ -380,6 +393,45 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         if (Main.netMode == Terraria.ID.NetmodeID.Server) NetMessage.SendTileSquare(-1, x, y, 2, 2);
     }
 
+    // ── 壁挂卷轴（原版的 EntityWallScroll 实体；泰拉是带图格实体的多格方块）────────────
+
+    /// <summary>编号是图格实体 ID；挂板没了、或者那里已经不是挂板 → null。</summary>
+    private static WallScrollEntity? ScrollOf(EntityIota e)
+        => e.Target == EntityIota.EntityKind.WallScroll ? WallScrollEntity.ById(e.Index) : null;
+
+    /// <summary>
+    /// 判定箱 = 挂板实际占的格子：小 / 中 / 大分别是 2×2、3×3、4×4 格（原版的判定箱是 blockSize 1 / 2 / 3 格见方）。
+    /// 图格实体在左上角。
+    /// </summary>
+    private static Rectangle ScrollBox(WallScrollEntity s)
+    {
+        int size = (s.ScrollTile?.ObjectSize ?? 1) * 16;
+        return new Rectangle(s.Position.X * 16, s.Position.Y * 16, size, size);
+    }
+
+    private static System.Collections.Generic.List<WallScrollEntity> AllScrolls()
+    {
+        var list = new System.Collections.Generic.List<WallScrollEntity>();
+        foreach (var te in TileEntity.ByID.Values)
+        {
+            if (te is WallScrollEntity s && s.ScrollTile is not null) list.Add(s);
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// 原版 HangingEntity.push → kill + dropItem：壁挂卷轴被推一下就掉下来，掉出卷轴本身（带着图案）。
+    /// 泰拉这边拆掉整块挂板：卷轴由 <see cref="WallScrollTile.KillMultiTile"/> 带着图案掉出来，挂轴框照常掉落。
+    /// </summary>
+    private static void BreakScroll(WallScrollEntity s)
+    {
+        if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) return;
+        int x = s.Position.X, y = s.Position.Y;
+        int size = s.ScrollTile?.ObjectSize ?? 1;
+        WorldGen.KillTile(x, y);
+        if (Main.netMode == Terraria.ID.NetmodeID.Server) NetMessage.SendTileSquare(-1, x, y, size, size);
+    }
+
     public (double X, double Y) FeetPosition(EntityIota entity)
         => TryRead(entity, out var r) ? (r.FeetTile.X, r.FeetTile.Y) : (0.0, 0.0);
 
@@ -413,10 +465,11 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>
     /// 施加推力。图格/帧 → 像素/帧。
     ///
-    /// 三类实体的处理：
+    /// 各类实体的处理：
     ///   - 玩家：直接改 velocity（泰拉玩家速度由自身逻辑接管，通常下一帧就衰减）
     ///   - NPC：改 velocity 并置 `netUpdate = true`，否则联机下客户端看不到
     ///   - 弹幕：直接改 velocity
+    ///   - 物品框、壁挂卷轴：原版是 HangingEntity，推一下就掉下来（拆掉方块）
     /// </summary>
     public void ApplyMotion(EntityIota entity, double mx, double my)
     {
@@ -471,6 +524,11 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             case EntityIota.EntityKind.ItemFrame:
                 // 原版 HangingEntity.push：只要推力不是零就掉下来
                 if ((mx != 0 || my != 0) && FrameOf(entity) is { } f) BreakFrame(f);
+                break;
+
+            case EntityIota.EntityKind.WallScroll:
+                // 同上：壁挂卷轴也是 HangingEntity
+                if ((mx != 0 || my != 0) && ScrollOf(entity) is { } s) BreakScroll(s);
                 break;
         }
     }
@@ -720,6 +778,12 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             {
                 Consider(new EntityIota(EntityIota.EntityKind.ItemFrame, f.ID), FrameBox(f).Center.ToVector2());
             }
+
+            // 壁挂卷轴：原版 EntityWallScroll 同上，不是生物、不是掉落物、不是玩家
+            foreach (var s in AllScrolls())
+            {
+                Consider(new EntityIota(EntityIota.EntityKind.WallScroll, s.ID), ScrollBox(s).Center.ToVector2());
+            }
         }
 
         // 按距离升序 —— 源项目的 `.sortedBy { it.distanceToSqr(pos) }`
@@ -790,6 +854,10 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             case EntityIota.EntityKind.ItemFrame:
                 return FrameOf(a) is not null && FrameOf(b) is not null;
 
+            case EntityIota.EntityKind.WallScroll:
+                // 原版三种尺寸是同一种实体（hexcasting:wall_scroll），尺寸只是数据
+                return ScrollOf(a) is not null && ScrollOf(b) is not null;
+
             default:
                 return false;
         }
@@ -827,6 +895,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>
     /// 原版 HexItemHolderHandlers：掉落物 = 它自己；物品展示框（泰拉：物品框）= 框里的东西；
     /// 玩家 = 主手，主手空了看副手（泰拉：手持物品，空了看快捷栏中它右边一格）。别的实体、或者是空的 → null。
+    /// 壁挂卷轴也是「别的实体」：原版 HexItemHolderHandlers 没有它，分拣员之馏化对它照样事故。
     /// </summary>
     private static Item? HeldItemOf(EntityIota e)
     {
@@ -878,6 +947,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     /// <summary>
     /// 取实体身上的 iota 载体（原版 ItemDelegatingEntityIotaHolder）：
     /// **掉在地上、本身就是载体的物品**（核心、念珠、卷轴），和**物品框里放着的载体**（原版 ToItemFrame）。
+    /// 壁挂卷轴不走这里（挂板上存的是图案、不是物品）：它对这个方法是 null，所以三个写入方法对它都不成立，
+    /// 正好就是原版 ToWallScroll 的 writeable() / writeIota 恒为 false；读见 <see cref="ReadEntityIota"/>。
     ///
     /// 注意：载体的状态挂在 <see cref="ModItem"/> 实例上（`ModItem` 是 per-Item 的），
     /// 所以必须从 `Main.item[i].ModItem` 取，不能自己 new 一个。
@@ -895,7 +966,8 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         return world.ModItem as Items.ItemIotaStorage;
     }
 
-    public bool IsEntityIotaHolder(EntityIota entity) => FindEntityStorage(entity) is not null;
+    /// <summary>原版 findDataHolder 不为空：掉落物 / 物品框里的载体，或者任何一块壁挂卷轴（原版每个壁挂卷轴都带着 ToWallScroll，空的也是）。</summary>
+    public bool IsEntityIotaHolder(EntityIota entity) => ScrollOf(entity) is not null || FindEntityStorage(entity) is not null;
 
     public bool IsEntityIotaWritable(EntityIota entity)
         => FindEntityStorage(entity) is { Writeable: true };
@@ -903,7 +975,11 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     public bool CanWriteEntityIota(EntityIota entity, Iota datum)
         => FindEntityStorage(entity)?.WriteIota(datum, simulate: true) ?? false;
 
-    public Iota? ReadEntityIota(EntityIota entity) => FindEntityStorage(entity)?.Read();
+    /// <summary>壁挂卷轴读出挂着的图案（原版 ToWallScroll 转给卷轴物品读）；空挂板读出 null，read/entity 照原版事故。</summary>
+    public Iota? ReadEntityIota(EntityIota entity)
+        => entity.Target == EntityIota.EntityKind.WallScroll
+            ? (ScrollOf(entity)?.Pattern is { } p ? new PatternIota(p) : null)
+            : FindEntityStorage(entity)?.Read();
 
     public bool WriteEntityIota(EntityIota entity, Iota value)
     {
@@ -1823,6 +1899,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
             Consider(new EntityIota(EntityIota.EntityKind.Item, i));
         }
         foreach (var f in AllFrames()) Consider(new EntityIota(EntityIota.EntityKind.ItemFrame, f.ID));
+        foreach (var s in AllScrolls()) Consider(new EntityIota(EntityIota.EntityKind.WallScroll, s.ID));
 
         return best;
     }

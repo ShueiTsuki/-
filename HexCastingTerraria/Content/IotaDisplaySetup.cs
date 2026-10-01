@@ -41,6 +41,11 @@ public sealed class IotaDisplaySetup : ModSystem
                 return Terraria.DataStructures.TileEntity.ByID.TryGetValue(i, out var te) && te is Terraria.GameContent.Tile_Entities.TEItemFrame
                     ? Terraria.Lang.GetItemNameValue(Terraria.ID.ItemID.ItemFrame)
                     : null;
+            case EntityIota.EntityKind.WallScroll:
+                // 按尺寸叫小型 / 中型 / 大型卷轴（挂上去的就是这种卷轴）
+                return Tiles.WallScrollEntity.ById(i)?.ScrollTile is { } scroll
+                    ? Terraria.Lang.GetItemNameValue(scroll.ScrollItemType)
+                    : null;
             default:
                 return null;
         }

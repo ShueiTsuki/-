@@ -36,6 +36,13 @@ namespace HexCastingTerraria.Content.Tiles;
 /// （1.4.5 的 `ModTile` 已经没有 `PlaceInWorld`，`HookPostPlaceMyPlayer` 也拿不到
 /// 客户端手上的物品内容，联机时更是只有服务端在跑）。两段式能用现有的、
 /// 已经被石板验证过的「写 TileEntity + 上报服务端」路径，代价是多一个合成物品。
+///
+/// ## 当实体
+///
+/// 原版的壁挂卷轴是实体：区域 / 射线 / 某处的实体都能找到它，编年史家之纯化能读出上面的图案。
+/// 这里对应 `EntityIota.EntityKind.WallScroll`（编号 = <see cref="WallScrollEntity"/> 的图格实体 ID），
+/// 落地在 TerrariaCastingWorld：只读（原版 ItemDelegatingEntityIotaHolder.ToWallScroll）、
+/// 推一下就掉（原版 HangingEntity.push），掉的时候卷轴带着图案一起掉（原版 EntityWallScroll.dropItem，见 <see cref="KillMultiTile"/>）。
 /// </summary>
 public abstract class WallScrollTile : ModTile
 {
@@ -81,8 +88,9 @@ public abstract class WallScrollTile : ModTile
                 break;
         }
 
-        TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(
-            ModContent.GetInstance<WallScrollEntity>().Hook_AfterPlacement, -1, 0, false);
+        // 图格实体放在多格方块的左上角。1.4.4 的 ModTileEntity.Hook_AfterPlacement 默认什么都不放（直接返回 -1），
+        // 所以用 Generic_HookPostPlaceMyPlayer；之前接的是前者，挂板放下去没有图格实体，图案挂不上、实体类图案也找不到它
+        TileObjectData.newTile.HookPostPlaceMyPlayer = ModContent.GetInstance<WallScrollEntity>().Generic_HookPostPlaceMyPlayer;
         TileObjectData.addTile(Type);
     }
 
@@ -96,9 +104,29 @@ public abstract class WallScrollTile : ModTile
         b = 0.28f;
     }
 
+    /// <summary>
+    /// 挂板被拆掉（挖掉，或者被驱动推了一下）：挂着的卷轴带着图案一起掉出来 —— 原版 EntityWallScroll.dropItem 掉的就是卷轴本身
+    /// （之前这里只清图格实体，挖掉挂板图案就没了）。挂轴框本身照常由 tML 按 createTile 掉落。
+    /// (i, j) 是左上角，图格实体就在那里；掉落物只在服务端 / 单机生成。
+    /// </summary>
     public override void KillMultiTile(int i, int j, int frameX, int frameY)
     {
+        if (Main.netMode != NetmodeID.MultiplayerClient && WallScrollEntity.FindAt(i, j)?.Pattern is { } pattern)
+        {
+            Item.NewItem(new EntitySource_TileBreak(i, j), i * 16, j * 16, ObjectSize * 16, ObjectSize * 16, MakeScroll(pattern));
+        }
         ModContent.GetInstance<WallScrollEntity>().Kill(i, j);
+    }
+
+    /// <summary>这种尺寸的卷轴物品，里面写着 <paramref name="pattern"/>（取回、拆掉时给的就是它）。</summary>
+    public Item MakeScroll(HexPattern pattern)
+    {
+        var scroll = new Item(ScrollItemType);
+        if (scroll.ModItem is Items.ItemIotaStorage target)
+        {
+            target.WriteIota(new PatternIota(pattern), simulate: false);
+        }
+        return scroll;
     }
 
     /// <summary>画图案只能靠 `SpecialDraw`（理由见 <see cref="AkashicRecord.DrawEffects"/>）。</summary>
@@ -161,7 +189,8 @@ public abstract class WallScrollTile : ModTile
     /// </summary>
     public override bool RightClick(int i, int j)
     {
-        var entity = WallScrollEntity.FindAt(i, j);
+        // 点到挂板的哪一格都行（图格实体在左上角）
+        var entity = WallScrollEntity.FindCovering(i, j);
         if (entity == null) return true;
 
         var held = Main.LocalPlayer.HeldItem;
@@ -185,11 +214,7 @@ public abstract class WallScrollTile : ModTile
         }
 
         // 取回：把图案带走，挂板留下
-        var scroll = new Item(ScrollItemType);
-        if (scroll.ModItem is Items.ItemIotaStorage target)
-        {
-            target.WriteIota(new PatternIota(entity.Pattern), simulate: false);
-        }
+        var scroll = MakeScroll(entity.Pattern);
 
         Main.LocalPlayer.QuickSpawnItem(
             Main.LocalPlayer.GetSource_Misc("HexWallScroll"), scroll);
@@ -236,7 +261,10 @@ public sealed class WallScrollLarge : WallScrollTile
     public override int ScrollItemType => ModContent.ItemType<Items.ScrollLarge>();
 }
 
-/// <summary>挂板上存的图案。三种尺寸共用一个 TileEntity 类型（尺寸由方块类型决定）。</summary>
+/// <summary>
+/// 挂板上存的图案。三种尺寸共用一个 TileEntity 类型（尺寸由方块类型决定），放在多格方块的左上角。
+/// 实体类图案看到的「壁挂卷轴」就是它（EntityIota.EntityKind.WallScroll，编号 = 图格实体 ID）。
+/// </summary>
 public sealed class WallScrollEntity : ModTileEntity
 {
     public HexPattern? Pattern { get; set; }
@@ -251,10 +279,31 @@ public sealed class WallScrollEntity : ModTileEntity
             || type == ModContent.TileType<WallScrollLarge>();
     }
 
-    /// <summary>按坐标找实体（避开基类的实例方法 `Find`）。</summary>
+    /// <summary>按坐标找实体（避开基类的实例方法 `Find`）。坐标要正好是左上角。</summary>
     public static WallScrollEntity? FindAt(int x, int y)
         => TileEntity.ByPosition.TryGetValue(new Point16(x, y), out var te)
             ? te as WallScrollEntity
+            : null;
+
+    /// <summary>挂板任意一格上的实体：先换算到多格方块的左上角再找。</summary>
+    public static WallScrollEntity? FindCovering(int x, int y)
+    {
+        if (!WorldGen.InWorld(x, y)) return null;
+        var topLeft = TileObjectData.TopLeft(x, y);
+        return FindAt(topLeft.X, topLeft.Y);
+    }
+
+    /// <summary>
+    /// 按图格实体 ID 找（壁挂卷轴当实体时 EntityIota 的编号就是它，见 EntityIota.EntityKind.WallScroll）。
+    /// 挂板已经被拆掉、或者那里已经不是挂板 → null。
+    /// </summary>
+    public static WallScrollEntity? ById(int id)
+        => TileEntity.ByID.TryGetValue(id, out var te) && te is WallScrollEntity s && s.ScrollTile is not null ? s : null;
+
+    /// <summary>挂板这块多格方块（决定尺寸、对应哪种卷轴）；方块已经不在了 → null。</summary>
+    public WallScrollTile? ScrollTile
+        => WorldGen.InWorld(Position.X, Position.Y) && IsTileValidForEntity(Position.X, Position.Y)
+            ? TileLoader.GetTile(Main.tile[Position.X, Position.Y].TileType) as WallScrollTile
             : null;
 
     public void Sync()

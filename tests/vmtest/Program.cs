@@ -293,6 +293,14 @@ sealed class FakeWorld : ICastingWorld
     {
         LastMotion = new Vector2D(mx, my);
         Trace.Add("motion");
+
+        // 原版 HangingEntity.push：壁挂卷轴推力不为零就掉下来，掉出带着图案的卷轴（真实世界见 TerrariaCastingWorld.BreakScroll）
+        if (entity.Target == EntityIota.EntityKind.WallScroll && (mx != 0 || my != 0)
+            && WallScrolls.Remove(entity.Index, out var hung))
+        {
+            BrokenWallScrolls.Add((entity.Index, hung));
+            Dead.Add(Key(entity));
+        }
     }
 
     public void ScatterInventory(EntityIota entity, double distanceTiles)
@@ -486,6 +494,7 @@ sealed class FakeWorld : ICastingWorld
     {
         if (e.Target == EntityIota.EntityKind.Item) return ItemSlots.TryGetValue(e.Index, out item);
         if (e.Target is EntityIota.EntityKind.Player or EntityIota.EntityKind.ItemFrame) return HeldBy.TryGetValue(Key(e), out item);
+        // 别的实体（包括壁挂卷轴：原版 HexItemHolderHandlers 没有它）都不算拿着物品
         item = default;
         return false;
     }
@@ -516,7 +525,19 @@ sealed class FakeWorld : ICastingWorld
     /// <summary>被写入过的记录，用于验证「写进去了什么」。</summary>
     public List<((EntityIota.EntityKind, int) Key, Iota Value)> EntityWriteLog { get; } = new();
 
-    public bool IsEntityIotaHolder(EntityIota entity) => EntityIotaHolders.ContainsKey(Key(entity));
+    /// <summary>
+    /// 壁挂卷轴：编号（图格实体 ID）-> 挂着的图案（null = 空挂板）。照真实世界：任何一块都是载体，
+    /// 只读（原版 ItemDelegatingEntityIotaHolder.ToWallScroll：writeable / writeIota 恒为 false）。
+    /// </summary>
+    public Dictionary<int, HexPattern?> WallScrolls { get; } = new();
+
+    /// <summary>被推掉的壁挂卷轴：(编号, 掉出来的卷轴上的图案)。</summary>
+    public List<(int Id, HexPattern? Dropped)> BrokenWallScrolls { get; } = new();
+
+    public bool IsEntityIotaHolder(EntityIota entity)
+        => entity.Target == EntityIota.EntityKind.WallScroll
+            ? WallScrolls.ContainsKey(entity.Index)
+            : EntityIotaHolders.ContainsKey(Key(entity));
 
     // ---- mishap 世界效果 / 免疫 / 快捷栏 ----
     public bool Placeable { get; set; } = true;
@@ -531,10 +552,13 @@ sealed class FakeWorld : ICastingWorld
     public void MishapHurtEntity(EntityIota entity, bool kill) => Hurt.Add((Key(entity), kill));
 
     public bool IsEntityIotaWritable(EntityIota entity)
-        => IsEntityIotaHolder(entity) && EntityIotaWritable.GetValueOrDefault(Key(entity), true);
+        => entity.Target != EntityIota.EntityKind.WallScroll
+            && IsEntityIotaHolder(entity) && EntityIotaWritable.GetValueOrDefault(Key(entity), true);
 
     public Iota? ReadEntityIota(EntityIota entity)
-        => EntityIotas.TryGetValue(Key(entity), out var v) ? v : null;
+        => entity.Target == EntityIota.EntityKind.WallScroll
+            ? (WallScrolls.TryGetValue(entity.Index, out var hung) && hung is not null ? new PatternIota(hung) : null)
+            : EntityIotas.TryGetValue(Key(entity), out var v) ? v : null;
 
     /// <summary>实体载体肯不肯收某个值（原版 canWrite）。不设 = 看可不可写。</summary>
     public Func<Iota, bool>? EntityCanWrite { get; set; }
@@ -4412,6 +4436,57 @@ static class Program
                 Check("write/entity：卷轴收不下数字 -> Errored（不是静默写失败）",
                     bad.ResolutionType == ResolvedPatternType.Errored, Sig(bad.Image));
                 world.EntityCanWrite = null;
+            }
+
+            // ── 壁挂卷轴当实体：原版 EntityWallScroll + ItemDelegatingEntityIotaHolder.ToWallScroll（只读）──
+            {
+                var world = new FakeWorld();
+                HexPattern.TryFromAngles("qaq", HexDir.East, out var hungPattern, out _);
+                var scroll = new EntityIota(EntityIota.EntityKind.WallScroll, 12);
+                var blankScroll = new EntityIota(EntityIota.EntityKind.WallScroll, 13);
+                world.WallScrolls[12] = hungPattern;
+                world.WallScrolls[13] = null;   // 空挂板（原版：挂了一张空白卷轴）
+                world.ItemSlots[0] = (Type: 75, Prefix: 0);
+                var env = new TestEnv(world: world);
+
+                Check("实体 iota：壁挂卷轴能存档读回",
+                    IotaSerializer.TryDeserialize(scroll.Serialize(), out var scrollBack)
+                    && scrollBack is EntityIota { Target: EntityIota.EntityKind.WallScroll, Index: 12 },
+                    scrollBack?.ToString() ?? "失败");
+
+                var read = Run(env, new CastingImage(new Iota[] { scroll }), P("hexcasting:read/entity"));
+                Check("read/entity：读出壁挂卷轴上挂的图案", Sig(read.Image) == "[pattern:qaq]", Sig(read.Image));
+
+                var readBlank = Run(env, new CastingImage(new Iota[] { blankScroll }), P("hexcasting:read/entity"));
+                var readableBlank = Run(env, new CastingImage(new Iota[] { blankScroll }), P("hexcasting:readable/entity"));
+                var readable = Run(env, new CastingImage(new Iota[] { scroll }), P("hexcasting:readable/entity"));
+                Check("壁挂卷轴：空的 read/entity -> Errored、readable/entity -> false；挂了图案的 readable -> true",
+                    readBlank.ResolutionType == ResolvedPatternType.Errored
+                    && Sig(readableBlank.Image) == "[false]" && Sig(readable.Image) == "[true]",
+                    $"{readBlank.ResolutionType} / {Sig(readableBlank.Image)} / {Sig(readable.Image)}");
+
+                var writable = Run(env, new CastingImage(new Iota[] { scroll }), P("hexcasting:writable/entity"));
+                Check("壁挂卷轴：writable/entity -> false（原版 ToWallScroll.writeable）", Sig(writable.Image) == "[false]", Sig(writable.Image));
+
+                var writeImg = new CastingImage(new Iota[] { scroll, P("hexcasting:add") });
+                var write = new CastingVM(writeImg, env).QueueExecute(writeImg, new Iota[] { P("hexcasting:write/entity") });
+                Check("壁挂卷轴：write/entity 连图案也写不进 -> Errored，图案没变",
+                    write.ResolutionType == ResolvedPatternType.Errored && world.EntityWriteLog.Count == 0
+                    && ReferenceEquals(world.WallScrolls[12], hungPattern),
+                    $"{write.ResolutionType} / 写入 {world.EntityWriteLog.Count} 次");
+
+                var cmp = Run2(env, scroll, new EntityIota(EntityIota.EntityKind.Item, 0), "hexcasting:compare_item/lenient");
+                Check("壁挂卷轴：compare_item -> 事故（原版 HexItemHolderHandlers 没有它）",
+                    cmp.ResolutionType == ResolvedPatternType.Errored, Sig(cmp.Image));
+
+                var pushImg = new CastingImage(new Iota[] { scroll, new VectorIota(0.1, 0) });
+                var push = new CastingVM(pushImg, env).QueueExecute(pushImg, new Iota[] { P("hexcasting:add_motion") });
+                Check("壁挂卷轴：驱动推一下就掉，掉出的卷轴带着图案（原版 HangingEntity.push）",
+                    push.ResolutionType == ResolvedPatternType.Evaluated
+                    && world.BrokenWallScrolls.Count == 1 && world.BrokenWallScrolls[0].Id == 12
+                    && ReferenceEquals(world.BrokenWallScrolls[0].Dropped, hungPattern)
+                    && !world.IsEntityIotaHolder(scroll),
+                    $"{push.ResolutionType} / 掉了 {world.BrokenWallScrolls.Count} 块");
             }
 
             // ── 本次施法的局部存储：read/local / write/local ──
