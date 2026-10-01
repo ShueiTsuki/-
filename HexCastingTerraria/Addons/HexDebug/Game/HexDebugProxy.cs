@@ -48,21 +48,27 @@ internal static class HexDebugProxy
     private static NetworkStream? _stream;
     private static int _port;
 
-    private static HexDebugClientOptions Options => global::HexCastingTerraria.Config.HexAddonsClientConfig.Instance.HexDebugOptions;
-
-    /// <summary>进世界、改了配置时调用：按配置开或关端口（端口号变了就重开）。</summary>
-    public static void Reconfigure()
+    /// <summary>
+    /// 进世界、改了配置时调用：按配置开或关端口（端口号变了就重开）。
+    /// 配置改动会在模组加载、配置还没全部加载时就调进来 —— 不在世界里（gameMenu）就只关端口，什么配置都不读。
+    /// </summary>
+    public static void Reconfigure(HexDebugClientOptions? options = null)
     {
         if (Main.dedServ) return;
-        bool want = AddonRegistry.IsEnabled("hexdebug") && !Main.gameMenu && Options.OpenDebugPort;
-        if (!want)
+        if (Main.gameMenu)
         {
             Stop();
             return;
         }
-        if (_listener is not null && _port == Options.DebugPort) return;
+        var o = options ?? global::HexCastingTerraria.Config.HexAddonsClientConfig.Instance?.HexDebugOptions;
+        if (o is not { OpenDebugPort: true } || !AddonRegistry.IsEnabled("hexdebug"))
+        {
+            Stop();
+            return;
+        }
+        if (_listener is not null && _port == o.DebugPort) return;
         Stop();
-        Start(Options.DebugPort);
+        Start(o.DebugPort);
     }
 
     private static void Start(int port)

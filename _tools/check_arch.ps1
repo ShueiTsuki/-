@@ -514,7 +514,7 @@ Write-Host "`n⑫ 附属：每个功能都能找到文件、开关放对地方�
         $wantCfg = if ($m.side -eq 'client') { 'HexAddonsClientConfig' } else { 'HexAddonsConfig' }
         Check "[$n] 在 AddonRegistry 登记" ($registry -match "new $n\.Game\.${n}Addon\(\)") ''
         Check "[$n] 入口的 Id / Side / 开关与清单一致（id=$($m.id)，side=$($m.side) -> $wantCfg）" `
-            ($entry -match "Id => `"$($m.id)`"" -and $entry -match "AddonSide\.$wantSide" -and $entry -match "IsEnabled => $wantCfg\.Instance\.") $entryPath
+            ($entry -match "Id => `"$($m.id)`"" -and $entry -match "AddonSide\.$wantSide" -and $entry -match "IsEnabled => $wantCfg\.Instance\??\.") $entryPath
 
         # 2. 没有孤儿文件：文件夹里每个 .cs 都出现在某个 feature 的 files 里，列出的都存在
         $listed = @($m.features | ForEach-Object { $_.files } | Where-Object { $_ })
@@ -556,6 +556,44 @@ foreach ($f in (AllCs $mod)) {
     }
 }
 Check "界面层不从列表里删（用 Active = false 停用）" ($rm.Count -eq 0) ($rm -join ', ')
+
+# ── 配置的 OnChanged 只许用自己的字段：tML 在加载配置的过程中就会调它，这时别的配置还没加载（GetInstance 是 null）。
+#    2026-10-01 客户端配置的 OnChanged 去读服务端的附属开关，空引用，整个模组加载失败；专用服务器测试走不到客户端这条路，没测出来 ──
+$badOnChanged = New-Object System.Collections.Generic.List[string]
+$configToken = '\.Instance\b|AddonRegistry|IsEnabled|GetInstance'
+function BraceBody([string]$text, [int]$from) {
+    $open = $text.IndexOf('{', $from)
+    if ($open -lt 0) { return '' }
+    $depth = 0
+    for ($k = $open; $k -lt $text.Length; $k++) {
+        if ($text[$k] -eq '{') { $depth++ }
+        elseif ($text[$k] -eq '}') { $depth--; if ($depth -eq 0) { return $text.Substring($open, $k - $open + 1) } }
+    }
+    return ''
+}
+$allSrc = @{}
+foreach ($f in (AllCs $mod)) { $allSrc[$f.FullName] = [System.IO.File]::ReadAllText($f.FullName, [System.Text.Encoding]::UTF8) }
+foreach ($f in (Get-ChildItem (Join-Path $mod 'Config') -Filter *.cs)) {
+    $text = $allSrc[$f.FullName]
+    $at = $text.IndexOf('override void OnChanged()')
+    if ($at -lt 0) { continue }
+    $arrow = [regex]::Match($text.Substring($at), '^override void OnChanged\(\)\s*=>([^;]*);')
+    $body = if ($arrow.Success) { $arrow.Groups[1].Value } else { BraceBody $text $at }
+    if ($body -match $configToken) { $badOnChanged.Add($f.Name); continue }
+    # 往下跟一层：OnChanged 调到的方法里，读别的配置之前必须先判断 Main.gameMenu（加载时它是 true）
+    foreach ($call in [regex]::Matches($body, '([A-Z]\w*)\(')) {
+        $name = $call.Groups[1].Value
+        foreach ($kv in $allSrc.GetEnumerator()) {
+            foreach ($def in [regex]::Matches($kv.Value, 'void\s+' + $name + '\s*\(')) {
+                $callee = BraceBody $kv.Value $def.Index
+                $hit = [regex]::Match($callee, $configToken)
+                $guard = $callee.IndexOf('gameMenu')
+                if ($hit.Success -and ($guard -lt 0 -or $hit.Index -lt $guard)) { $badOnChanged.Add($f.Name + ' -> ' + $name) }
+            }
+        }
+    }
+}
+Check "配置的 OnChanged（和它调到的方法）在加载途中不碰别的配置" ($badOnChanged.Count -eq 0) ($badOnChanged -join ', ')
 
 # ── 本地化文件：不加引号的值不能以 { [ , : 开头（Hjson 会当成对象 / 数组，整个语言文件加载失败、全部退回键名；只有专用服务器测试才看得出来）──
 $badHjson = New-Object System.Collections.Generic.List[string]

@@ -17,7 +17,7 @@ public sealed class HexcessibleAddon : HexAddon
 
     public override AddonSide Side => AddonSide.Client;
 
-    public override bool IsEnabled => HexAddonsClientConfig.Instance.Hexcessible;
+    public override bool IsEnabled => HexAddonsClientConfig.Instance?.Hexcessible == true;
 
     private HexcessibleCanvas? _canvas;
 

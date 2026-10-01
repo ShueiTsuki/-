@@ -20,7 +20,7 @@ public sealed class HexDebugAddon : HexAddon
 
     public override AddonSide Side => AddonSide.Both;
 
-    public override bool IsEnabled => HexAddonsConfig.Instance.HexDebug;
+    public override bool IsEnabled => HexAddonsConfig.Instance?.HexDebug == true;
 
     public override IEnumerable<PatternData> Patterns => HexDebugPatterns.All;
 

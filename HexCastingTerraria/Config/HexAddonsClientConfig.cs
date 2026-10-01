@@ -24,9 +24,13 @@ public sealed class HexAddonsClientConfig : ModConfig
     /// <summary>HexDebug 的客户端配置项（上游 HexDebugClientConfig 的外部调试端口；HexDebug 开关在服务端那一页）。</summary>
     public Addons.HexDebug.Game.HexDebugClientOptions HexDebugOptions { get; set; } = new();
 
+    /// <summary>
+    /// 注意：tML 在**加载配置的过程中**就会调这里（ConfigManager.Add），这时别的配置（包括服务端的附属开关）还没加载，
+    /// GetInstance 拿到的是 null。所以这里只许用自己的字段，别的配置一律不碰（2026-10-01 在客户端加载时空引用，整个模组被禁用）。
+    /// </summary>
     public override void OnChanged()
     {
         HexcessibleOptions.Apply();
-        Addons.HexDebug.Game.HexDebugProxy.Reconfigure();
+        Addons.HexDebug.Game.HexDebugProxy.Reconfigure(HexDebugOptions);
     }
 }

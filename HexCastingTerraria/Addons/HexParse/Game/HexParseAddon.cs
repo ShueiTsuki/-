@@ -21,7 +21,7 @@ public sealed class HexParseAddon : HexAddon
 
     public override AddonSide Side => AddonSide.Both;
 
-    public override bool IsEnabled => HexAddonsConfig.Instance.HexParse;
+    public override bool IsEnabled => HexAddonsConfig.Instance?.HexParse == true;
 
     public override IEnumerable<PatternData> Patterns => HexParsePatterns.All;
 
