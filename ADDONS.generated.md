@@ -79,5 +79,5 @@
 | 按 N 查书 | `Game/HexcessibleCanvas.cs` | `mixin/KeyDocsScreenMixin.java`<br>`entries/BookEntries.java` |
 | 显示选项（变暗 / 全部格点 / 隐藏飘浮图案 / 大写签名 / 快捷键提示） | `Core/HexcessibleSettings.cs`<br>`Game/HexcessibleCanvas.cs` | `mixin/DimmedMixin.java`<br>`mixin/ShowAllDotsMixin.java`<br>`mixin/FloatiesMixin.java`<br>`mixin/RenderLibMixin.java` |
 | 每世界大法术：手持远古卷轴才补全 | `Core/KnownWorldPatterns.cs`<br>`Game/HexcessibleStore.cs`<br>`Game/HexcessibleCanvas.cs` | `mixin/PerWorldLearnMixin.java` |
-| 与 HexDebug 联动：剪接台的施法界面里只显示提示、不能打字（上游 disallowTyping） | `Game/HexcessibleCanvas.cs` | `mixin/DrawStateHexdbgInteropMixin.java`<br>`mixin/DrawStateHexdbgInteropParentElemMixin.java` |
+| 与 HexDebug 联动：剪接台的施法界面里也能用（上游只显示提示、不能打字；按玩家反馈放开） | `Game/HexcessibleCanvas.cs` | `mixin/DrawStateHexdbgInteropMixin.java`<br>`mixin/DrawStateHexdbgInteropParentElemMixin.java` |
 | 其他附属的智能签名 / Hexical 相关（那些附属移植后再接，现在不做） | （待做） | `smartsig/ComplexhexLong.java`<br>`smartsig/HexicalMacro.java`<br>`smartsig/HexThingsIntrojection.java`<br>`smartsig/HexThingsPatience.java`<br>`smartsig/OverevalGeb.java`<br>`smartsig/OverevalNephthys.java`<br>`smartsig/OverevalNut.java`<br>`smartsig/OverevalSekhmet.java`<br>`mixin/NoHexicalEvokeMixin.java`<br>`mixin/NoHexicalWalkMixin.java` |

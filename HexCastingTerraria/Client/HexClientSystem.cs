@@ -104,6 +104,7 @@ public sealed class HexClientSystem : ModSystem
         }
 
         var canvas = HexCanvasState.Canvas;
+        HexCanvasState.ResetEsc();
         HexCanvasState.TickMessage();
         HexCanvasState.TickGuard();
 

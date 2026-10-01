@@ -759,9 +759,17 @@ public sealed class HexPlayer : ModPlayer
             canvasOpen = false;
         }
 
+        // 这一帧的 Esc 已经被界面用掉了（关书、关开发者面板、Hexcessible 退回空闲）：
+        // 泰拉刚因为同一下打开的物品栏关回去，画布也不关。
+        bool escUsed = Client.HexCanvasState.EscConsumed;
+        if (escUsed && Terraria.GameInput.PlayerInput.Triggers.JustPressed.Inventory)
+        {
+            Main.playerInventory = false;
+        }
+
         // Esc（泰拉的「物品栏」键）关画布 —— 原版施法界面是个普通 Screen，Esc 就是关。
         // 这里是本帧最后一个回调：泰拉刚因为这次按键打开了物品栏，顺手关回去，就不会「一按 Esc 弹背包」。
-        if (canvasOpen && Terraria.GameInput.PlayerInput.Triggers.JustPressed.Inventory)
+        if (canvasOpen && !escUsed && Terraria.GameInput.PlayerInput.Triggers.JustPressed.Inventory)
         {
             Main.playerInventory = false;
             Client.HexCanvasState.CloseCanvas();

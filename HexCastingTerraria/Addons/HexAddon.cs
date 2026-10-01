@@ -47,6 +47,9 @@ public abstract class HexAddon
     /// <summary>开着时，模组卸载阶段调用：撤掉 OnLoad 登记的东西。</summary>
     public virtual void OnUnload() { }
 
+    /// <summary>开着时，开发者测试包（K）里额外发的物品（每样一份）。只在开着时读 —— 关着时这些物品没加载。</summary>
+    public virtual IEnumerable<int> DevKitItems => System.Array.Empty<int>();
+
     /// <summary>开着时，建书的时候调用：把附属的分类 / 条目加进咒法学之书。</summary>
     public virtual void AddBookContent(BookDocument book) { }
 

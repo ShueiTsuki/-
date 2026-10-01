@@ -83,6 +83,7 @@ public sealed class DevPanel
                 && Main.oldKeyState.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.Escape))
             {
                 Close();
+                HexCanvasState.ConsumeEsc();   // 不然同一下 Esc 会让泰拉打开物品栏
                 return true;
             }
             if (_lastPanel.Contains((int)mouse.X, (int)mouse.Y))

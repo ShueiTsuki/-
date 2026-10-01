@@ -154,6 +154,7 @@ public sealed class HexBook
         if (Main.keyState.IsKeyDown(Keys.Escape) && Main.oldKeyState.IsKeyUp(Keys.Escape))
         {
             Close();
+            HexCanvasState.ConsumeEsc();   // 不然同一下 Esc 会让泰拉打开物品栏
             return;
         }
 

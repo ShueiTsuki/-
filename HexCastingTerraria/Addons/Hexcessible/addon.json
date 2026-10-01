@@ -140,7 +140,7 @@
       ]
     },
     {
-      "name": "与 HexDebug 联动：剪接台的施法界面里只显示提示、不能打字（上游 disallowTyping）",
+      "name": "与 HexDebug 联动：剪接台的施法界面里也能用（上游只显示提示、不能打字；按玩家反馈放开）",
       "files": [
         "Game/HexcessibleCanvas.cs"
       ],

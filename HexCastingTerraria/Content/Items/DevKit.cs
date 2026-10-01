@@ -101,6 +101,13 @@ internal static class DevKit
         yield return ItemID.Silk;
         yield return ItemID.Amethyst;
         yield return ItemID.Torch;
+
+        // 开着的附属：各自的代表物品
+        foreach (var addon in Addons.AddonRegistry.All)
+        {
+            if (!addon.IsEnabled) continue;
+            foreach (int type in addon.DevKitItems) yield return type;
+        }
     }
 
     /// <summary>

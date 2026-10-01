@@ -56,6 +56,14 @@ public sealed class HexDebugAddon : HexAddon
 
     private global::HexCastingTerraria.Core.Casting.Actions.BrainsweepRecipe? _enlighten;
 
+    public override IEnumerable<int> DevKitItems => new[]
+    {
+        ModContent.ItemType<Debugger>(),
+        ModContent.ItemType<Evaluator>(),
+        ModContent.ItemType<Splicing.SplicingTableItem>(),
+        ModContent.ItemType<Splicing.FocusHolderItem>(),
+    };
+
     public override void AddBookContent(global::HexCastingTerraria.Core.Ui.BookDocument book) => HexDebugBook.AddTo(book);
 
     public override void HandlePacket(System.IO.BinaryReader reader, int whoAmI) => HexDebugNet.Handle(reader, whoAmI);

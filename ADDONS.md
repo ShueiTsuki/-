@@ -184,7 +184,7 @@ P0 只做三个附属都要用的（已完成的标「P0 已做」）；只有�
 
 | 联动 | 上游位置 | 何时做 |
 |---|---|---|
-| Hexcessible 在 HexDebug 剪接台的施法界面里：只显示悬停 / 手画提示，不能打字（上游 disallowTyping，键盘处理是注释掉的） | hexcessible `DrawStateHexdbgInterop*Mixin` | 已做 |
+| Hexcessible 在 HexDebug 剪接台的施法界面里：照常能用（上游只显示悬停 / 手画提示、不能打字；按玩家反馈放开，见 Hexcessible README） | hexcessible `DrawStateHexdbgInterop*Mixin` | 已做 |
 | HexParse 的 `read_hexbug`（按 hexbug 格式读） | hexparse commands | 与 HexParse 一起 |
 | HexDebug 剪接台里画 HexParse 的注释 iota | hexparse `compat/hexdebug/CommentRenderer.kt` | 已做（HexDebug/Interop） |
 

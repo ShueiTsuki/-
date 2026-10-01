@@ -75,17 +75,6 @@ public sealed class HexcessibleCanvas : ICanvasExtension
         bool mouseMoved = _lastMouse is { } last && last != f.Mouse;
         _lastMouse = f.Mouse;
 
-        // 上游联动：HexDebug 剪接台的施法界面里不能打字（disallowTyping，键盘处理也没接），只显示悬停与手画提示
-        if (!HexCanvasState.TypingAllowed)
-        {
-            _kbd = null;
-            _ac = null;
-            _alias = null;
-            if (f.Canvas.State == DrawState.BetweenPatterns) UpdateHover(f);
-            else ClearHover();
-            return false;
-        }
-
         // 上游 KeyDocsScreenMixin：按 N 查书（先于状态切换：手画中按也算）
         if (CanvasFrame.KeyPressed(Keys.N) && KeyDocsAllowed(f))
         {
@@ -107,6 +96,18 @@ public sealed class HexcessibleCanvas : ICanvasExtension
                 ClearHover();
                 if (_ac is null && _alias is null) StartAutoComplete(f.Canvas.DrawStartCoord);
                 break;
+        }
+
+        // 上游 DrawStateScreenMixin：Esc 交给当前状态的 requestExit —— 改别名、自动补全退回空闲（不存别名、取消那一笔），
+        // 键盘绘制有排队的就接着画下一条、没有就回空闲。空闲和手画时不拦，交给本体关画布。
+        if (CanvasFrame.KeyPressed(Keys.Escape) && (_alias is not null || _ac is not null || _kbd is not null))
+        {
+            if (_alias is not null) _alias = null;
+            else if (_ac is not null) ExitAutoComplete(f);
+            else RequestExit(used);
+            HexCanvasState.ConsumeEsc();
+            if (_kbd is not null) AddOverlays(f);
+            return true;
         }
 
         if (_alias is not null) return UpdateAlias(f);
