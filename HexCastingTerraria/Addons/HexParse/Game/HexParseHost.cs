@@ -31,7 +31,8 @@ public sealed class HexParseHost : IHexParseHost
     public string? GetMacro(string key) => Main.netMode != NetmodeID.Server ? HexParseMacros.Get(key) : null;
 
     /// <summary>
-    /// 泰拉偏差：没有 UUID。写法 entity_player_编号 / entity_npc_编号 / entity_item_编号 / entity_projectile_编号。
+    /// 泰拉偏差：没有 UUID。写法 entity_player_编号 / entity_npc_编号 / entity_item_编号 / entity_projectile_编号 /
+    /// entity_itemframe_编号 / entity_wallscroll_编号（后两个的编号是图格实体 ID）。
     /// 别的玩家的真名 = 事故「他人之名」（上游 MishapOthersName，这里报错不写入）；找不到 / 已经没了 = null。
     /// </summary>
     public Iota? ResolveEntity(string node)
@@ -54,6 +55,10 @@ public sealed class HexParseHost : IHexParseHost
                 return Terraria.DataStructures.TileEntity.ByID.TryGetValue(index, out var te) && te is Terraria.GameContent.Tile_Entities.TEItemFrame
                     ? new EntityIota(EntityIota.EntityKind.ItemFrame, index)
                     : null;
+            case "wallscroll":
+                return global::HexCastingTerraria.Content.Tiles.WallScrollEntity.ById(index) is not null
+                    ? new EntityIota(EntityIota.EntityKind.WallScroll, index)
+                    : null;
             default:
                 return null;
         }
@@ -65,6 +70,7 @@ public sealed class HexParseHost : IHexParseHost
         EntityIota.EntityKind.Npc => "entity_npc_" + entity.Index,
         EntityIota.EntityKind.Item => "entity_item_" + entity.Index,
         EntityIota.EntityKind.ItemFrame => "entity_itemframe_" + entity.Index,
+        EntityIota.EntityKind.WallScroll => "entity_wallscroll_" + entity.Index,
         _ => "entity_projectile_" + entity.Index,
     };
 

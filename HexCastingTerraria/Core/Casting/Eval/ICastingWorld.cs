@@ -113,7 +113,7 @@ public interface ICastingWorld
 
     /// <summary>
     /// 给实体施加一次推力。单位：**图格/帧**（与 <see cref="Velocity"/> 一致）。
-    /// 对应源项目 `Entity.push`。
+    /// 对应源项目 `Entity.push`。物品框、壁挂卷轴在原版是 HangingEntity，推力不为零就掉下来（HangingEntity.push）。
     /// </summary>
     void ApplyMotion(EntityIota entity, double mx, double my);
 
@@ -305,7 +305,7 @@ public interface ICastingWorld
     /// <summary>
     /// 这个实体「拿着」一件物品吗（原版 HexItemHolderHandlers.applyHandlerFor 不为空）：
     /// 掉落物 = 它自己；物品框 = 框里的东西；玩家 = 手持物品，手上空着就看快捷栏中手持物品右边一格（原版主手、空了看副手）。
-    /// 其他实体、或者拿着的是空的 → false。
+    /// 其他实体（包括壁挂卷轴，原版 HexItemHolderHandlers 没有它）、或者拿着的是空的 → false。
     /// </summary>
     bool HasHeldItem(EntityIota entity);
 
@@ -321,11 +321,12 @@ public interface ICastingWorld
     /// 这个实体身上是否有一个 iota 载体。
     /// 对应源项目 `IXplatAbstractions.findDataHolder(entity) != null`。
     ///
-    /// 和原版一样两种：**掉在地上、本身就是载体的物品**（核心、念珠、卷轴），和**物品框里放着的载体**。
+    /// 和原版 ItemDelegatingEntityIotaHolder 一样三种：**掉在地上、本身就是载体的物品**（核心、念珠、卷轴）、
+    /// **物品框里放着的载体**，和**壁挂卷轴**（只读：读出挂着的图案，挂板是空的就读出 null；原版 ToWallScroll）。
     /// </summary>
     bool IsEntityIotaHolder(EntityIota entity);
 
-    /// <summary>该实体身上的载体是否可写。对应源项目 `dataHolder.writeable()`。</summary>
+    /// <summary>该实体身上的载体是否可写。对应源项目 `dataHolder.writeable()`。壁挂卷轴恒为 false（原版 ToWallScroll）。</summary>
     bool IsEntityIotaWritable(EntityIota entity);
 
     /// <summary>这个实体身上的载体肯不肯收 <paramref name="datum"/>（原版 writeIota(datum, simulate: true)）。</summary>

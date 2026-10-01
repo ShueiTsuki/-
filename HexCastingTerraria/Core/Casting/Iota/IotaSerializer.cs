@@ -144,7 +144,7 @@ public static class IotaSerializer
                     && ent[0] is double kindNum && ent[1] is double indexNum)
                 {
                     int k = (int)kindNum;
-                    if (k < 0 || k > (int)EntityIota.EntityKind.ItemFrame) return false;
+                    if (k < 0 || k > (int)EntityIota.EntityKind.WallScroll) return false;
                     iota = new EntityIota((EntityIota.EntityKind)k, (int)indexNum);
                     return true;
                 }

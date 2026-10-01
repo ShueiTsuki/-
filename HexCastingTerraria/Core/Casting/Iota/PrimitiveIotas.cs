@@ -170,6 +170,13 @@ public sealed class EntityIota : Iota
         /// 编号用它的图格实体 ID（TileEntity.ID）。和原版一样能被实体类图案找到、能比较里面的物品、能读写里面的载体。
         /// </summary>
         ItemFrame = 4,
+
+        /// <summary>
+        /// 壁挂卷轴。原版的壁挂卷轴（EntityWallScroll）是挂在墙上的实体，泰拉的是带图格实体的多格方块 ——
+        /// 编号用它的图格实体 ID（TileEntity.ID）。和原版一样能被实体类图案找到、能读出上面的图案但写不进去
+        /// （原版 ItemDelegatingEntityIotaHolder.ToWallScroll）、推一下就掉（原版 HangingEntity.push）。
+        /// </summary>
+        WallScroll = 5,
     }
 
     public EntityKind Target { get; }

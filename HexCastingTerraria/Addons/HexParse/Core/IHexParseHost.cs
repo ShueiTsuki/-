@@ -37,7 +37,7 @@ public interface IHexParseHost
     string? GetMacro(string key);
 
     /// <summary>
-    /// 解析 <c>entity_…</c>（泰拉偏差：没有 UUID，写法是 <c>entity_player_&lt;编号&gt;</c> / <c>entity_npc_&lt;编号&gt;</c> / <c>entity_item_&lt;编号&gt;</c>）。
+    /// 解析 <c>entity_…</c>（泰拉偏差：没有 UUID，写法是 <c>entity_player_&lt;编号&gt;</c> / <c>entity_npc_&lt;编号&gt;</c> / <c>entity_item_&lt;编号&gt;</c> / <c>entity_wallscroll_&lt;编号&gt;</c> 等，见 HexParseHost）。
     /// 别的玩家的真名要抛 <see cref="HexParseException"/>（上游 MishapOthersName）；认不出返回 null（上游变成 NullIota）。
     /// </summary>
     Iota? ResolveEntity(string node);

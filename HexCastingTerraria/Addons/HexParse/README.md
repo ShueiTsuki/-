@@ -19,7 +19,7 @@
 
 | 上游 | 泰拉侧 | 原因 |
 |---|---|---|
-| 实体写成 `entity_<UUID>` | `entity_player_编号` / `entity_npc_编号` / `entity_item_编号` / `entity_projectile_编号` | 泰拉的实体没有 UUID；编号跨存档不稳定（上游的 UUID 在别的世界也找不到，行为一样变成 null） |
+| 实体写成 `entity_<UUID>` | `entity_player_编号` / `entity_npc_编号` / `entity_item_编号` / `entity_projectile_编号` / `entity_itemframe_编号` / `entity_wallscroll_编号` | 泰拉的实体没有 UUID，物品框和壁挂卷轴的编号是图格实体 ID；编号跨存档不稳定（上游的 UUID 在别的世界也找不到，行为一样变成 null） |
 | 读出的代码点一下复制 | 直接写进剪贴板，并提示「已复制到剪贴板」 | 泰拉聊天不能点击复制 |
 | 彩色显示是客户端设置，各人看各人的 | 是「HexParse 设置」里的一项（房主定）；聊天栏里揭示、事故消息的颜色在生成消息的那一端定下 | 移植版的 HexParse 设置统一放在服务端配置里；消息是带颜色标记的文字，发出去以后不再重算 |
 | 重命名 = 改物品的名字 | 物品上存一个自定义名，显示在名字那一行（存档 / 联机都带着） | 泰拉的物品没有改名功能 |
