@@ -20,6 +20,7 @@ tmod/
 │   ├── Content/             游戏侧：物品、方块、玩家、联机同步、世界生成
 │   ├── Client/              客户端绘制：画布、书、HUD、哨卫、探知透镜
 │   ├── Config/              模组设置
+│   ├── Addons/              附属（HexParse、Hexcessible、HexDebug），各自单独开关，默认关，见 ADDONS.md
 │   └── Localization/        本地化（官方简体中文）
 ├── tests/
 │   ├── vmtest/              离线栈机测试（对照原版语义）
@@ -27,7 +28,7 @@ tmod/
 └── _tools/                  验证、生成器（贴图、书内容、状态表）
 ```
 
-分层规则：Core 不碰 Terraria；游戏相关的都在 Content / Client，通过接口接进 Core。
+分层规则：Core 不碰 Terraria（附属的 `Addons/*/Core/` 同样）；游戏相关的都在 Content / Client，通过接口接进 Core。
 这条由 `_tools/check_arch.ps1` 检查。
 
 ## 构建与验证
@@ -48,9 +49,13 @@ powershell -ExecutionPolicy Bypass -File _tools\run_all.ps1
 
 - [STATUS.generated.md](STATUS.generated.md)：当前状态（图案数、测试数、代码规模），自动生成，唯一权威
 - [AUDIT_VS_ORIGINAL.md](AUDIT_VS_ORIGINAL.md)：与原版的逐项对照和所有偏差
+- [ADDONS.md](ADDONS.md) / [ADDONS.generated.md](ADDONS.generated.md)：附属的规矩与计划 / 每个附属做了哪些功能、在哪个文件（后者自动生成）
+- [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)：游戏内验收清单
 - [PROGRESSION.generated.md](PROGRESSION.generated.md)：每个物品在哪个进度阶段出现、怎么合成
 - [ARCHITECTURE.md](ARCHITECTURE.md)：每个源文件是干什么的
 - [TERRARIA_RENDERING_NOTES.md](TERRARIA_RENDERING_NOTES.md)：泰拉渲染的坑
+
+根目录其余 .md 多是设计推导或某个阶段的记录（开头标了「历史」的以当时为准），现状以上面几份为准。
 
 ## 许可
 

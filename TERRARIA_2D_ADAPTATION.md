@@ -2,6 +2,9 @@
 
 > **2026-09-30 更正**：用户要求「一切以原版为基准」。下文里「全程用泰拉原生坐标」的方案已废弃，
 > 改为法术坐标与原版一致（见 §1.4 与 `AUDIT_VS_ORIGINAL.md` 的「3D → 2D 适配」一节）。
+> 同一天向量也按原版恢复了三维（`±Z` 常量、叉积得向量、三分量拆装，世界是 z = 0 的平面）：§1「向量 iota 的 2D 化」、§2 的叉积降阶、
+> §7 里「删除 `const/vec/pz` / `nz`」都已作废，现在只有 `interop/pehkui/*` 两条不适用（见 `STATUS.generated.md`）；
+> §7 其余要「重设计」的图案后来都实现了（见 `AUDIT_VS_ORIGINAL.md`）。
 
 > 本文只讲**「3D → 2D 怎么改」**。网格/画布/渲染见 `HEXCASTING_MECHANICS.md`，
 > VM 求值链路见 `CASTING_ENGINE_SPEC.md`，物品/方块清单见 `CONTENT_INVENTORY.md`。

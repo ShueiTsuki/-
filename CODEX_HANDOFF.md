@@ -4,6 +4,10 @@
 > **架构、分层、每个文件的职责**看 [ARCHITECTURE.md](ARCHITECTURE.md) —— 也是脚本生成。
 > 本文**只留不会过期的东西**：真实发生过的 bug、验证的能力边界、环境坑。
 > 这三分工由 `_tools/check_arch.ps1` 强制（本文再写状态数字会让断言失败）。
+>
+> **2026-10-01 加注**：本文主体写于 2026-09-14 ~ 09-29（DeepSeek 阶段到仓库基线前后）。第 1、4、7、10 节里几处当时的「现状」已经不对，
+> 已在原处改正或加注。2026-09-29 起所有「按原版改」的行为变化记在 [AUDIT_VS_ORIGINAL.md](AUDIT_VS_ORIGINAL.md)，
+> 附属进度看 [ADDONS.generated.md](ADDONS.generated.md)。第 3 节的 bug 表、第 5 / 8 / 9 节的踩坑仍然有效。
 
 ---
 
@@ -13,13 +17,13 @@
 |---|---|
 | 模组源码 | `D:\DeepSeekHarness\tmod\HexCastingTerraria` |
 | 构建同步目录 | `C:\Users\MSI-PC\Documents\My Games\Terraria\tModLoader\ModSources\HexCastingTerraria` |
-| 打包产物 | `C:\Users\MSI-PC\Documents\My Games\Terraria\tModLoader-dev\Mods\HexCastingTerraria.tmod` |
+| 打包产物 | `C:\Users\MSI-PC\Documents\My Games\Terraria\tModLoader\Mods\HexCastingTerraria.tmod`（1.4.4 stable 写这里；退回前的 1.4.5-dev 写 `tModLoader-dev`） |
 | 工具脚本 | `D:\DeepSeekHarness\tmod\_tools`（**不是** `HexCastingTerraria\_tools`） |
 | 离线 VM 测试工程 | `D:\DeepSeekHarness\tmod\tests\vmtest`（直接编译整个 `Core/**`，不复制） |
 | 拖拽/几何验证工程 | `D:\DeepSeekHarness\tmod\tests\drawtest`（同上） |
 | 原版参考源码 | `D:\DeepSeekHarness\hexsrc`（HexMod 的 Kotlin/Java，**权威依据**） |
 | 用户素材 | `D:\DeepSeekHarness\图案工具`、`D:\DeepSeekHarness\咒法学图案` |
-| tModLoader | `D:\steam\steamapps\common\tModLoader`（1.4.5-dev，随上游提交自动更新；验证时的 commit 见 STATUS.generated.md） |
+| tModLoader | `D:\steam\steamapps\common\tModLoader`（目标 1.4.4.9 stable；2026-10-01 从 1.4.5-dev 退回，见 `HexCastingTerraria/HexCastingTerraria.csproj`。Steam 更新 tML 后要重跑 run_all，验证时的 commit 见 STATUS.generated.md） |
 
 ---
 
@@ -63,8 +67,8 @@ cd D:\DeepSeekHarness\tmod;                    .\_tools\verify_server.ps1 # 专�
 | 5 | 挖了树却没挖到瞄准的方块 | **法术序列栈错**：`get_caster → entity_pos/eye → get_entity_look → raycast → break_block`。`entity_pos/eye` 把实体换成向量，后两步依次报错但**栈不变**，`break_block` 拿到残留的眼位向量 → 破坏了**玩家自己脚下那一格** | 已修（要取两次施法者）；`drawtest` 加了栈平衡检查并把这个错序列留作**反例** |
 | 6 | 13 把法杖图标一模一样 | 掩码杖身写成 `'++'`（= 次材料色），`-Body` 的木材色**从未生效** | 已修 |
 | 7 | 打包报 `warning : Image loading failed: unknown image type` | **未定因**。已排除：全部 PNG 可解码、全为 8 位非隔行、客户端加载 0 错 | 2026-09-29 用当天 tML 打包**未复现**，观察中 |
-| 8 | tML 自动更新后编译失败（4 错） | 1.4.5-dev 上游把 `Item.active` 移到 `WorldItem` 外壳上。顺带发现：`ExtractMediaFromItem` 对 `inner` 调 `TurnToAir()`，**地上的掉落物实体不会失活**（应对外壳调用） | 已修；run_all 现在会提示「tML 自上次全绿以来已更新」 |
-| 9 | 绘制手感/观感与原版差很多 | 逐项对照 `GuiSpellcasting.kt` / `RenderLib.kt`：① 线宽、节点、引导点按屏幕像素画，没换算原版的 GUI 单位（1080p 下原版线宽约为格距 0.3，这里细了 4 倍）；② 用旋转矩形拼线，拐角有缺口 → 改为移植原版三角化（扇形接头、圆头、逐顶点渐变）；③ 噪声换成了自制 value-noise，只好把抖动从 2.5 改到 0.55 凑观感 → 改为移植 MC `SimplexNoise(9001)`，参数原样；④ 动画时钟每帧 +1，电光流动快 3 倍；⑤ 引导点 `Lerp` 参数顺序写反，颜色不对；⑥ 已画图案按「注册表命中」染青/红，而不是按求值结果（蓝=已求值 黄=转义 红=出错 灰=等待）；⑦ 笔顺渐变常驻，原版只有按住 Ctrl 才显示；⑧ 第一笔和回退没有音效；⑨ 画布层用界面缩放坐标，界面缩放 ≠ 100% 时笔迹与光标错位；⑩ 调试面板和「已命中可以松手」等诊断文字默认开着 | 已修，**需人工确认观感**；状态机与线型已搬进 `Core/Canvas`，drawtest 直接测真代码（以前测的是手抄副本） |
+| 8 | tML 自动更新后编译失败（4 错） | 1.4.5-dev 上游把 `Item.active` 移到 `WorldItem` 外壳上。顺带发现：`ExtractMediaFromItem` 对 `inner` 调 `TurnToAir()`，**地上的掉落物实体不会失活**（应对外壳调用） | 已修；run_all 现在会提示「tML 自上次全绿以来已更新」（这是 1.4.5-dev 时的事；2026-10-01 起目标已退回 1.4.4.9） |
+| 9 | 绘制手感/观感与原版差很多 | 逐项对照 `GuiSpellcasting.kt` / `RenderLib.kt`：① 线宽、节点、引导点按屏幕像素画，没换算原版的 GUI 单位（1080p 下原版线宽约为格距 0.3，这里细了 4 倍）；② 用旋转矩形拼线，拐角有缺口 → 改为移植原版三角化（扇形接头、圆头、逐顶点渐变）；③ 噪声换成了自制 value-noise，只好把抖动从 2.5 改到 0.55 凑观感 → 改为移植 MC `SimplexNoise(9001)`，参数原样；④ 动画时钟每帧 +1，电光流动快 3 倍；⑤ 引导点 `Lerp` 参数顺序写反，颜色不对；⑥ 已画图案按「注册表命中」染青/红，而不是按求值结果（蓝=已求值 黄=转义 红=出错 灰=等待）；⑦ 笔顺渐变常驻，原版只有按住 Ctrl 才显示；⑧ 第一笔和回退没有音效；⑨ 画布层用界面缩放坐标，界面缩放 ≠ 100% 时笔迹与光标错位；⑩ 调试面板和「已命中可以松手」等诊断文字默认开着 | 已修，**需人工确认观感**（⑩ 的调试面板与诊断文字 2026-10-01 按用户要求整个删掉了）；状态机与线型已搬进 `Core/Canvas`，drawtest 直接测真代码（以前测的是手抄副本） |
 | 10 | 启蒙永远拿不到，15 个大法术只能靠调试开关 | 唯一授予启蒙的 `HexPlayer.TrySpendOrOvercast` 从没被调用；实际施法走 `PlayerCastingEnvironment.ExtractMediaEnvironment`，只记账不授予。另：过载汇率写成 1 血 = 1 充能紫水晶（比原版宽松 50 倍），启蒙条件写成「≥80% 媒质上限」 | 已按原版重做（`Core/Media/Overcast.cs`）：满血 = 2 充能紫水晶；先失败一次大法术才能过载；一次过载用掉 ≥80% 生命且只剩 ≤1/20 → 启蒙 |
 | 11 | 闪现没反应 / 骨粉把家具改坏 / 爆炸不破坏方块 / 放置方块放错东西 | 逐个对照原版与泰拉机制：闪现被挡静默取消；骨粉改任意非实心方块的帧；爆炸只做无衰减伤害；place_block 扫整个背包；液体不通知模拟；联机时推动/传送/buff 只改了服务端 | 已修，见提交 `Fix spell world effects…` |
 | 12 | 法术环、阿卡夏图书馆终局才能做 | 当初因「启蒙拿不到」把它们定在月后（远古操控器） | 用户决定改为「肉后 · 启蒙」：秘银砧 + 配方条件「已启蒙」；阶段表生成器会校验这两道门槛 |
@@ -110,7 +114,7 @@ cd D:\DeepSeekHarness\tmod;                    .\_tools\verify_server.ps1 # 专�
 | **输入链路** | 鼠标键盘 → 状态机（落笔/拖拽/收笔、开书关书、Esc、背包压制） |
 | **真实世界行为** | `WorldGen.*` 调用只在服务器加载时跑过，没在真实世界里执行过施法 |
 | **像素级回归** | 没有截图基线，改贴图不会有任何测试报警 |
-| 音频 / 联机双客户端 / 存档落盘 / 16 个配置开关 / 性能 | 全无覆盖 |
+| 音频 / 联机双客户端 / 存档落盘 / 各项配置开关 / 性能 | 全无覆盖 |
 
 ### 已经补上的（2026-09-14 那一轮审计之后）
 
@@ -255,7 +259,7 @@ potion:regeneration / night_vision / absorption / haste / strength
 | 无（`unlockedBy` 只是 `has_item` / `staves`） | 肉前 | 紫水晶在泰拉一开局就能挖到 |
 | 合唱果（末地特产） | 肉后 | 泰拉没有末地档，取中间阶段；对应物用肉后的水晶碎块 |
 | brainsweep（启蒙大战法术）→ 淬灵 | 肉后 | 泰拉侧对应物是**神圣地妖精**，只在肉后出现 —— 门槛由材料自带 |
-| enlightenment（原动力 / 导线 / 阿卡夏三件 / 剖念法杖） | 月后 | 泰拉没有过载机制，门槛落在终局；合成站 = 远古操控器 |
+| enlightenment（原动力 / 导线 / 阿卡夏三件 / 剖念法杖） | 肉后 · 启蒙 | 配方条件「已启蒙」+ 秘银砧 / 山铜砧。2026-09-29 由「月后 · 远古操控器」改来：当时以为泰拉侧拿不到启蒙，现在启蒙已按原版可获得（见第 3 节 #10、#12） |
 
 阶段表分两层：
 `_tools/progression_stages.json`（**人工**定的阶段，唯一真源）→
@@ -343,6 +347,10 @@ tModLoader 内嵌模板那份（同样 30x30 / 8bit / RGBA / 非隔行）能读�
 
 ### 还剩一个小口子：`Keybinds` 段
 
+> 2026-10-01 核对：`en-US.hjson` 现在有 `Keybinds` 段，但只有 `ToggleInfiniteMedia`、`DevPanel` 两项；
+> `GiveDevKit` 被错放进了 `Tiles` 段（写成 `MapEntry`），英文界面里「发放开发者套件」这个按键仍然没有词条。
+> 下面第 2 步说的「三个段的键集合必须相等」断言也还没加。
+
 补完 99 条物品/方块词条后，把两份文件的 3 缩进键对齐一比，**英文只差 `Keybinds` 这一整段**
 （`zh-Hans.hjson` 有，`en-US.hjson` 没有）。它的后果和物品词条一样但更隐蔽：
 **按键绑定界面里会显示原始键名**，而不是「绘制法阵」这种可读文本。
@@ -368,7 +376,7 @@ tModLoader 的另一个本地化分类。要补的话：
 
 后果与中文那边**同一类 bug 但方向相反**：tModLoader 找不到词条时**静默回退到类名**，
 所以英文环境里会看到 `AmethystDustBlockItem` 这种字样，而不是 "Amethyst Dust Block"。
-中文那边早先就是这个症状，已修（断言⑦ 现在只查中文，查不到这类英文缺口）。
+中文那边早先就是这个症状，已修（断言⑦ 当时只查中文，查不到这类英文缺口；后来已扩成双语，见本节开头）。
 
 ### 我已经查过的
 

@@ -1,58 +1,54 @@
 # 法术环实现进度
 
-> 关联：`SPELL_CIRCLE_MECHANICS.md`（机制）、`CIRCLE_PRECHECK.md`（实施前核查）
+> **2026-10-01 改写**：这份文件原来是 DeepSeek 阶段（2026-09-29 仓库基线之前）的进度日志，停在「步骤 4 是当前的缺口：
+> 走环只推进位置，还没有执行石板上的图案」。那之后环已经会执行石板；2026-09-29 / 09-30 又按原版重做了节拍、促动石、施法者、
+> 媒质、朝向和消息显示。旧日志里「环里无人施法（`CastingEntity = null`）」「朝向一律空手右键旋转」「每 tick 一格」等说法都已不成立。
+> 下面按现在的代码重写。
+>
+> 与原版的逐条对照和全部偏差：`AUDIT_VS_ORIGINAL.md`（第 25–27 条、「法术环」一节）。原版机制：`SPELL_CIRCLE_MECHANICS.md`。
+> 动手前的核查：`CIRCLE_PRECHECK.md`（历史记录）。测试数等数字只看 `STATUS.generated.md`。
 
 ## 已完成
 
-| 步骤 | 内容 | 状态 |
+| 步骤 | 内容 | 代码 |
 |---|---|---|
-| 1 | **石板方块 + TileEntity**（环的「指令」，存图案与朝向） | |
-| 2 | **原动力方块 + TileEntity**（环的「CPU」：媒质池 + 起始方向 + 走环驱动） | |
-| — | **Core 侧环遍历**（闭包校验 / 出口方向 / 加速曲线） | 纯逻辑，15 条离线用例 |
-| — | **双向网络同步**（右击在客户端 → 上报服务端落地） | |
+| 1 | **石板方块 + 方块实体**（环的「指令」）：存图案与朝向（`Normal`），方块上画出图案 | `Content/Tiles/HexSlate.cs` |
+| 2 | **促动石**（环的「CPU」）：工具匠（不潜行右键）/ 制箭师（被盯着 30 刻）/ 牧师（电线信号，可绑定玩家）三种 + 只传导的空白促动石；媒质、出口方向、走环状态、显示、绑定 | `Content/Tiles/HexImpetus.cs`、`Content/Tiles/FletcherGaze.cs` |
+| 3 | **4 个环图案**：`circle/impetus_pos`、`circle/impetus_dir`、`circle/bounds/min`、`circle/bounds/max` | `Core/Casting/Circles/CircleCastingEnvironment.cs`（`CircleActions`） |
+| 4 | **环里执行石板上的图案**：每走到一块石板就把它的图案交给栈机求值，栈随环往下传；出错就停，事故显示在促动石上；空石板直通 | `HexImpetusEntity.StepOnce` |
+| 5 | **导向石 3 种**：空白（随机出轴的一端）、牧羊人（弹栈顶布尔，真出反方向、假出正方向；栈顶不是布尔就把导向石打掉）、石匠（看电线信号）；牧师促动石接电线 | `Content/Tiles/HexDirectrix.cs`、`HexImpetusEntity.PickDirectrixExit` |
+| 6 | **表现**：执行游标（带 TTL，自己会消）、促动石运行时亮起来（贴图亮帧 + 发光）、出口小箭头；探知透镜看促动石的媒质 / 消息 / 绑定的人 | `Content/Tiles/CircleCursor.cs`、`Client/ScryingOverlay.cs` |
+| — | **Core 侧遍历**：闭包校验、出口方向、节拍，纯逻辑，离线用例在 `tests/vmtest` | `Core/Casting/Circles/CircleTraversal.cs`、`CircleComponent.cs` |
+| — | **施法环境**：媒质从促动石扣；范围 = 环的包围盒 + 施法者身边 + 他的大哨卫；施法者 = 启动它的人 / 牧师绑定的人，可以没有 | `CircleCastingEnvironment`、`TerrariaCastingWorld.ForCircle` |
+| — | **联机**：放置朝向、塞媒质、启动、绑定都由客户端发给服务端执行；走环只在服务端跑，状态随方块实体同步 | `HexImpetusEntity.Request` / `Handle`（`HexMessage.ImpetusAction`） |
+| — | 附属 HexDebug 的调试法术环（开着附属才有） | `Addons/HexDebug/Game/CircleDebugging.cs` |
 
 ## 关键实现点（都来自源码核对）
 
 | 点 | 实现 |
 |---|---|
-| 图案在**石板**上，不在原动力上 | 石板 TileEntity 存 `Pattern` |
-| **原动力的进入规则与普通部件不同** | `CircleComponent.ForbiddenEntry` 显式区分；原动力用起始方向 |
-| **不能原路返回** | `ExitDirections` 减去来路反方向 |
-| **不能往 normal 方向出去**，但**允许**往其反方向穿过 | 只 `remove(normal)`，不加 `remove(normal.Opposite())` |
-| **恰好 1 个出口** | 0 个 / 2+ 个都停下并报出坐标 |
+| 图案在**石板**上，不在促动石上 | 石板方块实体存 `Pattern` |
+| **促动石的进入规则与普通部件不同** | `CircleComponent` 用 `AllowedEntries` / `ExitMask` 两个掩码：石板不能从 `Normal` 的反方向进、不能往 `Normal` 出；促动石不能从出口的反方向进；导向石只能从垂直于轴的方向进、只从轴的两端出 |
+| **不能原路返回** | `CircleTraversal.ExitDirections` 减去来路的反方向 |
+| **石板 / 空白促动石恰好 1 个出口** | 0 个（找不到出口）/ 2 个以上（去路过多）都停下，并在促动石上报坐标 |
 | **长度上限** | `CircleTraversal.DefaultMaxLength = 1024`（原版默认值；曾误写 512） |
-| **走环越快** | `TickSpeed(n) = max(2, 10-(n-1)/3)` |
-| **每格重置算力** | 环每步新建执行状态；接 VM 求值时要在那里显式清零 |
-| **媒质负数 = 无限** | `ExtractMedia` 里 `if (Media < 0) return 0` |
-| 逐格驱动 | `ModTileEntity.PostGlobalUpdate`（对应 MC 的 `scheduleTick`） |
+| **走得越深越快** | `TickSpeed(n) = max(2, 10 - (n-1)/3)` 个 MC 刻，`TickSpeedFrames` ×3 换成泰拉帧（曾把 MC 刻直接当帧用，快了 3 倍） |
+| **每格重置算力** | 每块石板求值后 `WithOverriddenUsedOps(0)` |
+| **媒质负数 = 无限** | `ExtractMedia` 里 `if (Media < 0) return 0`；新放的促动石是 0 |
+| 逐格驱动 | `ModTileEntity.PostGlobalUpdate`（对应 MC 的 `scheduleTick`），只在服务端 / 单机跑 |
+| 走回促动石 = 环闭合 | 正常结束、熄灭，不发任何消息（原版促动石的 `acceptControlFlow` 返回 Stop） |
 
-## 与源项目的差异（有意为之，已写进代码注释与 tooltip）
+## 与原版的差异（都写在代码注释里；全部偏差以 `AUDIT_VS_ORIGINAL.md` 为准）
 
 | 差异 | 原因 |
 |---|---|
-| 朝向由**空手右键旋转**决定，而非 `AttachFace` 自动判定 | 泰拉图格不记录「贴在哪个面」，没有等价物 |
-| 只有 4 个控制流方向 | 2D 没有第三轴（源项目 6 向退化成 4 向） |
+| 只有 4 个控制流方向 | 2D 没有第三轴（原版 6 向退化成 4 向） |
+| 石板的朝向放下时默认朝上，**空手右键循环旋转**；促动石 / 导向石按放置时鼠标相对角色的方向定（潜行反过来，同原版），之后不能改 | 泰拉图格不记录「贴在哪个面」，石板没法像原版那样按贴的面自动定朝向 |
+| 没有漏斗：拿着媒质物品右键塞进促动石 | 泰拉没有漏斗 |
+| 牧师促动石接电线、按玩家名绑定 | 泰拉没有红石；也没有 GameProfile |
+| 制箭师的计数每个客户端各数各的 | 泰拉的「视线」是鼠标方向，只有本人客户端知道 |
+| 走环状态不存档 | 世界重载后控制流位置已无意义（原版会存，这里是有意简化） |
 
-## 尚未实现
+## 尚未做
 
-| 步骤 | 内容 | 依赖 |
-|---|---|---|
-| 3 | **3 个环图案**（`circle/impetus_pos` / `impetus_dir` / `bounds`） | 需要 `CircleCastingEnvironment` |
-| 4 | **环里真正执行石板上的图案** | 需要 `CircleCastingEnvironment` + 把 VM 接进走环 |
-| 5 | Directrix（3 种分流）+ 红石触发 | 步骤 3 之后 |
-| 6 | 充能渲染（逐格点亮、图案显示） | 表现层 |
-
-### 步骤 4 是当前的缺口
-
-现在走环**只推进位置**，还没有真正执行石板上的图案。
-要做到那一步需要 `CircleCastingEnvironment`：
-
-```
-媒质来源 = 原动力的媒质池（负数 = 无限）
-范围判定 = 环的包围盒（不是玩家的 32 格半径）
-CastingEntity = null（无人施法）
-```
-
-> 这三条都已在 `CircleCastEnv.java` 里核对过。
-> `CastingEntity = null` 正好用上早先 `get_caster` 特意保留的
-> 「无实体施法者 -> NullIota」分支。
+目前没有已知缺口。新发现的偏差记到 `AUDIT_VS_ORIGINAL.md`，不再记在这里。

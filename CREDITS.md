@@ -28,7 +28,7 @@
 - 本模组用到的部分：
   - 书本 GUI 的图集贴图（`book_*.png` / `crafting.png` / `page_filler.png` 等）
   - 页面模型与排版逻辑的移植（文字换行、翻页溢出、书签布局、页面类型系统）
-- 协议全文见 `LICENSE-Patchouli`（分发前需一并放入）
+- 协议全文见 `HexCastingTerraria/LICENSE-Patchouli.txt`
 
 ### 咒法学（Hex Casting / HexMod）—— MIT
 
@@ -36,7 +36,7 @@
 - 作者：**petrak@（gamma-delta）** 及贡献者（LICENSE 原文版权行：`Copyright © 2021 gamma-delta`）
 - 许可：**MIT**
 - 本模组用到：整个玩法体系、图案数据、材质与实现思路（本模组即其移植版）
-- MIT 要求保留版权声明与许可文本，见 `LICENSE-HexMod`（分发前需一并放入）
+- MIT 要求保留版权声明与许可文本，见 `HexCastingTerraria/LICENSE-HexMod.txt`
 
 ### 书本内容与贴图（2026-09-29 起）
 
@@ -58,9 +58,9 @@
 
 | 附属 | 作者 | 许可 | 许可全文 | 本模组用到 |
 |---|---|---|---|---|
-| [HexParse](https://github.com/YukkuriC/HexParseMod) 1.20.1-1.11.2 | YukkuriC | MIT（`Copyright (c) 2024 YukkuriC`） | `LICENSE-HexParse.txt` | 代码解析 / 反向输出、指令、图案、书页与官方中文（移植中） |
-| [Hexcessible](https://github.com/tizu69/hexcessible) 0.3.1 | Ruby（tizu）、ElNico56 | The JSON License（`Copyright (c) 2025 Ruby`，MIT 加「用于善、不用于恶」条款） | `LICENSE-Hexcessible.txt` | 施法界面的无障碍操作与官方中文（移植中） |
-| [HexDebug](https://github.com/object-Object/HexDebug) 0.9.0+1.20.1 | object-Object | MIT（`Copyright (c) 2024 [object Object]`） | `LICENSE-HexDebug.txt` | 调试杖、剪接台、核心框架、图案、贴图、书页与官方中文（移植中） |
+| [HexParse](https://github.com/YukkuriC/HexParseMod) 1.20.1-1.11.2 | YukkuriC | MIT（`Copyright (c) 2024 YukkuriC`） | `LICENSE-HexParse.txt` | 代码解析 / 反向输出、指令、图案、书页与官方中文 |
+| [Hexcessible](https://github.com/tizu69/hexcessible) 0.3.1 | Ruby（tizu）、ElNico56 | The JSON License（`Copyright (c) 2025 Ruby`，MIT 加「用于善、不用于恶」条款） | `LICENSE-Hexcessible.txt` | 施法界面的无障碍操作与官方中文 |
+| [HexDebug](https://github.com/object-Object/HexDebug) 0.9.0+1.20.1 | object-Object | MIT（`Copyright (c) 2024 [object Object]`） | `LICENSE-HexDebug.txt` | 调试杖、剪接台、核心框架、图案、贴图、书页与官方中文 |
 
 三者的许可都允许并入本模组（整体 CC BY-NC-SA 3.0），条件是保留上面的版权行与许可全文。附属的代码在 `HexCastingTerraria/Addons/<附属名>/`，逐项来源见各自的 `addon.json`。
 
@@ -83,10 +83,10 @@
 
 ## TODO（发布前必须完成）
 
-- [x] 添加 `LICENSE.txt`（CC BY-NC-SA 3.0 全文）
+- [x] 添加 CC BY-NC-SA 3.0 全文（2026-10-01 从模组目录的 `LICENSE.txt` 移到仓库根目录的 `LICENSE`）
 - [x] 添加 `LICENSE-Patchouli.txt`（CC BY-NC-SA 3.0 全文，随 Patchouli 分发要求）
 - [x] 添加 `LICENSE-HexMod.txt`（MIT 全文 + 原版权行 `Copyright © 2021 gamma-delta`）
 - [x] `description.txt` 里加上上面的署名
-- [x] 版权声明 `HexCastingTerraria/NOTICE.txt`（非官方移植声明、原作者版权、许可、异议联系）
-- [ ] NOTICE.txt 里的联系方式待填写
+- [x] 版权声明（非官方移植声明、原作者版权、许可、异议联系）：原来在 `HexCastingTerraria/NOTICE.txt`，2026-10-01 作者删除了该文件，现在写在 `README.md` 的「许可」一节（异议请在本仓库提 Issue）
+- [ ] `HexCastingTerraria/description.txt` 末尾还写着「详见 NOTICE.txt」，文件已删，要改成指向 README / LICENSE
 - [ ] 确认模组分发渠道（Steam Workshop / GitHub）都为免费

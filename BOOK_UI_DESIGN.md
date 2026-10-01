@@ -1,5 +1,9 @@
 # 书本 UI 改造设计（照原版 Patchouli，再优化）
 
+> **历史设计记录（2026-10-01 加注）**：本文写于 2026-09-14 前后，第 13 节的进度表、「两套皮肤」、「唯一还缺的内容：正文」都是当时的状态。
+> 之后书按原版 Patchouli 手册直接移植，只有一套界面（`Core/Ui/PatchouliRenderer.cs`、`Client/UI/HexBook.cs`），没有做双皮肤；
+> 正文用官方简体中文（`_tools/gen_book_content.py` 生成 `Core/Ui/BookContent.Generated.cs`）。来源与许可见 `CREDITS.md`。
+
 > 用户原话：「书本的 UI 丑爆了，抄原版的，或者抄完优化一下变成更好看（禁止土气）」。
 
 ---

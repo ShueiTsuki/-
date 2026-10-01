@@ -157,7 +157,7 @@ currentImage = cont.update.withOverriddenUsedOps(0);
 | 类别 | 数量 | 作用 |
 |---|---|---|
 | `BlockSlate` | 1 | **存图案**，环的「指令」 |
-| Impetus | 4 | `empty`（手动）/ `rightclick` / `looking`（注视）/ `redstone` —— CPU + 触发方式 |
+| Impetus | 4 | `empty`（空白：不会启动，只传导，是脑叶切除的原料）/ `rightclick` / `looking`（注视）/ `redstone` —— CPU + 触发方式 |
 | Directrix | 3 | `empty` / `boolean` / `redstone` —— 控制流分流 |
 
 ---
@@ -173,7 +173,7 @@ currentImage = cont.update.withOverriddenUsedOps(0);
 | 不能原路返回 | 出口集合减来路 |
 | 充能发光 | `ModifyLight` + 逐实例帧（`AnimateIndividualTile`） |
 | 触发 | 右击 / `HitWire`（复用泰拉红石）/ 注视 |
-| 执行环境 | `CircleCastEnv` → 泰拉侧新建，`CastingEntity` 为 **null**（无人施法） |
+| 执行环境 | `CircleCastEnv` → 泰拉侧 `CircleCastingEnvironment`。施法者 = 启动它的玩家 / 牧师促动石绑定的玩家，没有时为 **null**（2026-09-30 按原版改；这里早先写的是一律无人施法） |
 
 > 最后一条正好验证了早先实现 `get_caster` 时特意保留的分支：
-> **无实体施法者时返回 `NullIota` 而不是报错** —— 法术环就是那个场景。
+> **无实体施法者时返回 `NullIota` 而不是报错** —— 没有施法者的法术环（比如没人绑定的牧师促动石）就是那个场景。

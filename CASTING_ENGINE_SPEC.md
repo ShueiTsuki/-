@@ -458,6 +458,7 @@ return Nothing;
 类型检查发生在**执行阶段**，由各 Action 自己在 `operate` 里做（如 `ConstMediaAction` 用 `getList`、`getDouble` 等辅助函数抛 `MishapInvalidIota`）。
 
 > 这与本仓库 `PATTERN_CATALOG.json` 的匹配键口径需要统一：我们当前用「起始方向 + 角度签名」做键，比原项目**更严格**。若要与原版行为一致，应改为**只用角度签名**。
+> （2026-10-01 核对：已改。`PatternRegistry` 现在只按角度签名匹配，`HexPattern.MatchKey()` 就是 `AnglesSignature()`。）
 
 ---
 
