@@ -130,7 +130,9 @@ namespace HexCastingTerraria
             int AnyNpc = Core.Casting.Actions.BrainsweepRules.AnySpecies;
             int wizard = Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.Wizard);
             int demolitionist = Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.Demolitionist);
-            int dyeTrader = Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.DyeTrader);
+            // 牧羊人 → 动物学家（照看动物的人；NPCID 叫 BestiaryGirl）。曾经对应染料商（MC 的牧羊人卖染料），
+            // 用户觉得职业不沾边，2026-10-02 改成动物学家
+            int zoologist = Core.Casting.Actions.BrainsweepRules.TownNpcSpecies(NPCID.BestiaryGirl);
 
             Core.Casting.Actions.BrainsweepRules.Configure(new[]
             {
@@ -139,7 +141,7 @@ namespace HexCastingTerraria
 
                 // 原版：空导线 + 石匠/牧羊人 → 红石导线 / 布尔导线（职业已映射到泰拉的城镇 NPC）
                 new Core.Casting.Actions.BrainsweepRecipe(emptyDirectrix, demolitionist, redstoneDirectrix, none, crystal10),
-                new Core.Casting.Actions.BrainsweepRecipe(emptyDirectrix, dyeTrader, booleanDirectrix, none, crystal10),
+                new Core.Casting.Actions.BrainsweepRecipe(emptyDirectrix, zoologist, booleanDirectrix, none, crystal10),
 
                 // 原版：空白促动石 + 工具匠 / 制箭师 / 牧师 → 三种促动石（2 级村民，1000000 媒质）
                 // 泰拉：工具匠 → 哥布林工匠（修改工具的人）、制箭师 → 军火商（远程武器与弹药）、牧师 → 护士（治疗者）

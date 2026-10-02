@@ -93,7 +93,7 @@ public sealed class HexDirectrixBooleanItem : HexDirectrixItemBase
     public override int TileType => ModContent.TileType<HexDirectrixBoolean>();
     protected override string TextureName => "HexDirectrixBoolean";
 
-    // 没有合成配方：原版只能对放在世界里的空白导向石剥离意识（牧羊人，移植版对应染料商）得到，见 HexCastingTerraria.ConfigureBrainsweepRecipes。
+    // 没有合成配方：原版只能对放在世界里的空白导向石剥离意识（牧羊人，移植版对应动物学家）得到，见 HexCastingTerraria.ConfigureBrainsweepRecipes。
     // 这里曾经另给了「空白导向石 + 钻石」的合成，2026-10-01 照原版去掉。
 }
 

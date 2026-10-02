@@ -161,7 +161,7 @@
   },
   "brainsweepOnly": {
     "_comment": "原版只能剥离意识（脑叶切除，启蒙大战法术）得到、没有合成配方的东西。它们不进 entries（那里只放有配方的），但算「肉后 · 启蒙」这一档的材料；也不许有合成配方（检查会报错）。",
-    "HexDirectrixBooleanItem": "空白导向石 + 牧羊人（移植版：染料商）",
+    "HexDirectrixBooleanItem": "空白导向石 + 牧羊人（移植版：动物学家）",
     "HexDirectrixRedstoneItem": "空白导向石 + 石匠（移植版：爆破专家）",
     "HexImpetusItem": "空白促动石 + 工具匠（移植版：哥布林工匠）",
     "HexImpetusLookItem": "空白促动石 + 制箭师（移植版：军火商）",
