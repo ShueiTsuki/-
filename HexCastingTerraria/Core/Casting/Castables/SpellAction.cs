@@ -60,7 +60,7 @@ public abstract class SpellAction : IAction
             return OperationResult.Fail(new MishapNotEnoughArgs(Argc, stack.Count), image);
         }
 
-        var args = new List<Iota>(Argc);
+        var args = new ArgReads(Argc);
         for (int i = stack.Count - Argc; i < stack.Count; i++)
         {
             args.Add(stack[i]);
@@ -78,6 +78,11 @@ public abstract class SpellAction : IAction
         }
         catch (Mishap m)
         {
+            // 参数类型不对：指向最后读过的那个参数（见 ArgReads；法术这条入口曾经漏了，2026-10-02 和原版对拍时发现）
+            if (m is MishapInvalidIota { ReverseIdx: null } bad && args.LastReadIndexOf(bad.Perpetrator) is var i and >= 0)
+            {
+                m = bad.At(Argc - 1 - i);
+            }
             // 与 ConstMediaAction 一致：mishap 走结果通道，不抛到日志
             return OperationResult.Fail(m, image);
         }

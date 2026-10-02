@@ -18,7 +18,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.class_1297;
 import net.minecraft.class_1299;
 import net.minecraft.class_243;
 
@@ -27,14 +26,14 @@ import net.minecraft.class_243;
  *   {"t":"num","v":1.5}（NaN / 正负无穷写成字符串 "NaN" / "Infinity" / "-Infinity"）
  *   {"t":"bool","v":true}  {"t":"null"}  {"t":"garbage"}  {"t":"vec","v":[x,y,z]}
  *   {"t":"list","v":[...]}  {"t":"pat","dir":"EAST","angles":"qaq"}
- *   {"t":"entity","ref":"self"}（施法者本人）或 {"t":"entity","type":"minecraft:pig"}
+ *   {"t":"entity","ref":"self"}（施法者本人）、{"t":"entity","ref":"pig"}（测试场景里的实体，见 Scene）或 {"t":"entity","type":"minecraft:pig"}（别的实体）
  *   {"t":"other","class":"ContinuationIota","snbt":"..."}（只出现在输出里：其余类型照原版存档格式原样给出）
  */
 final class IotaJson {
     private IotaJson() {
     }
 
-    static Iota parse(JsonElement e, class_1297 caster) {
+    static Iota parse(JsonElement e, Scene scene) {
         JsonObject o = e.getAsJsonObject();
         String t = o.get("t").getAsString();
         switch (t) {
@@ -52,14 +51,13 @@ final class IotaJson {
             }
             case "list": {
                 List<Iota> items = new ArrayList<>();
-                for (JsonElement x : o.getAsJsonArray("v")) items.add(parse(x, caster));
+                for (JsonElement x : o.getAsJsonArray("v")) items.add(parse(x, scene));
                 return new ListIota(items);
             }
             case "pat":
                 return new PatternIota(pattern(o));
             case "entity":
-                if ("self".equals(o.has("ref") ? o.get("ref").getAsString() : "")) return new EntityIota(caster);
-                throw new IllegalArgumentException("只支持 ref=self 的实体");
+                return new EntityIota(scene.byName(o.get("ref").getAsString()));
             default:
                 throw new IllegalArgumentException("不认识的 iota 类型：" + t);
         }
@@ -69,7 +67,7 @@ final class IotaJson {
         return HexPattern.Companion.fromAngles(o.get("angles").getAsString(), HexDir.valueOf(o.get("dir").getAsString()));
     }
 
-    static JsonElement write(Iota i, class_1297 caster) {
+    static JsonElement write(Iota i, Scene scene) {
         JsonObject o = new JsonObject();
         if (i instanceof DoubleIota d) {
             o.addProperty("t", "num");
@@ -91,7 +89,7 @@ final class IotaJson {
             o.add("v", a);
         } else if (i instanceof ListIota l) {
             JsonArray a = new JsonArray();
-            for (Iota x : l.getList()) a.add(write(x, caster));
+            for (Iota x : l.getList()) a.add(write(x, scene));
             o.addProperty("t", "list");
             o.add("v", a);
         } else if (i instanceof PatternIota p) {
@@ -100,7 +98,8 @@ final class IotaJson {
             o.addProperty("angles", p.getPattern().anglesSignature());
         } else if (i instanceof EntityIota en) {
             o.addProperty("t", "entity");
-            if (en.getEntity().method_5667().equals(caster.method_5667())) o.addProperty("ref", "self");
+            String name = scene.nameOf(en.getEntity());
+            if (name != null) o.addProperty("ref", name);
             else o.addProperty("type", class_1299.method_5890(en.getEntity().method_5864()).toString());
         } else {
             o.addProperty("t", "other");
@@ -110,9 +109,9 @@ final class IotaJson {
         return o;
     }
 
-    static JsonArray writeAll(Iterable<Iota> iotas, class_1297 caster) {
+    static JsonArray writeAll(Iterable<Iota> iotas, Scene scene) {
         JsonArray a = new JsonArray();
-        for (Iota x : iotas) a.add(write(x, caster));
+        for (Iota x : iotas) a.add(write(x, scene));
         return a;
     }
 

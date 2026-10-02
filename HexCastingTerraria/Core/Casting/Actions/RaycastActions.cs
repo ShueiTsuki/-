@@ -126,9 +126,22 @@ public sealed class OpBlockAxisRaycast : ConstMediaAction
         var h = hit.Value;
         if (!world.IsVecInRange(h.TileX + 0.5, h.TileY + 0.5)) return RaycastCommon.Null();
 
+        // 起点就在实心格里（TileRaycast 给的法线是零）：MC VoxelShape.clip 这时给的面是
+        // Direction.getNearest(射线方向).getOpposite() —— 和射线方向最接近的轴的反方向（含 z）。
+        // 这里曾经返回零向量，和原版对拍时发现（2026-10-02）。
+        if (h.NormalX == 0 && h.NormalY == 0)
+        {
+            var (dx, dy, dz) = CastingEnvironment.RequireVec3(args[1]);
+            var (nx, ny, nz) = OpCoerceToAxial.NearestDirection(dx, dy, dz);
+            return new Iota[] { new VectorIota(Negate(nx), Negate(ny), Negate(nz)) };
+        }
+
         // 源项目：blockHitResult.direction.step() —— 面法线
         return new Iota[] { new VectorIota(h.NormalX, h.NormalY) };
     }
+
+    /// <summary>取反但不出 -0（原版的法线是整数方向，没有 -0；显示向量时 -0 会写成「-0」）。</summary>
+    private static double Negate(double v) => v == 0 ? 0 : -v;
 }
 
 /// <summary>

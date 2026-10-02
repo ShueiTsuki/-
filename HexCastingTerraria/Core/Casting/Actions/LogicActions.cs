@@ -86,23 +86,31 @@ public sealed class OpCoerceToAxial : ConstMediaAction
                     return new Iota[] { v };   // 源项目：vec == Vec3.ZERO 原样返回
                 }
 
-                // 源项目 Direction.getNearest(x, y, z)：按 DOWN, UP, NORTH(−z), SOUTH(+z), WEST(−x), EAST(+x)
-                // 的顺序取点积最大的方向，**平局取先出现的**（所以 (1,1,0) 得到的是「上」）。
-                // 注意：这里曾经只看 x/y、平局取 x 轴。
-                (double X, double Y, double Z)[] dirs = { (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1), (-1, 0, 0), (1, 0, 0) };
-                var best = (X: 0.0, Y: 0.0, Z: -1.0);   // NORTH（MC 的初值）
-                double bestDot = float.Epsilon;          // Float.MIN_VALUE
-                foreach (var d in dirs)
-                {
-                    double dot = (float)v.X * d.X + (float)v.Y * d.Y + (float)v.Z * d.Z;
-                    if (dot > bestDot) { bestDot = dot; best = d; }
-                }
-                return new Iota[] { new VectorIota(best.X, best.Y, best.Z) };
+                var (x, y, z) = NearestDirection(v.X, v.Y, v.Z);
+                return new Iota[] { new VectorIota(x, y, z) };
             }
 
             default:
                 throw new MishapInvalidIota(args[0], InvalidValue.NumVec);
         }
+    }
+
+    /// <summary>
+    /// 源项目 Direction.getNearest(x, y, z)：按 DOWN, UP, NORTH(−z), SOUTH(+z), WEST(−x), EAST(+x)
+    /// 的顺序取点积最大的方向，**平局取先出现的**（所以 (1,1,0) 得到的是「上」）；分量先转成单精度。
+    /// 注意：这里曾经只看 x/y、平局取 x 轴。射线起点在方块里时的法线也用它（OpBlockAxisRaycast）。
+    /// </summary>
+    internal static (double X, double Y, double Z) NearestDirection(double vx, double vy, double vz)
+    {
+        (double X, double Y, double Z)[] dirs = { (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1), (-1, 0, 0), (1, 0, 0) };
+        var best = (X: 0.0, Y: 0.0, Z: -1.0);   // NORTH（MC 的初值）
+        double bestDot = float.Epsilon;          // Float.MIN_VALUE
+        foreach (var d in dirs)
+        {
+            double dot = (float)vx * d.X + (float)vy * d.Y + (float)vz * d.Z;
+            if (dot > bestDot) { bestDot = dot; best = d; }
+        }
+        return best;
     }
 }
 

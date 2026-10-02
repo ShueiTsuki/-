@@ -111,31 +111,32 @@ public final class HexOracle implements ModInitializer {
         JsonArray results = new JsonArray();
         // 整轮只用一个假玩家：Fabric 按名片缓存假玩家、从不释放，每个用例新建一个，几千个以后内存就被吃光了
         FakePlayer player = FakePlayer.get(world, new GameProfile(UUID.nameUUIDFromBytes("hexoracle".getBytes(StandardCharsets.UTF_8)), "oracle"));
+        Scene scene = Scene.build(world.method_8503(), world, player);
         for (JsonElement c : doc.getAsJsonArray("cases")) {
             // 进度写进服务器日志：万一原版自己在哪个用例上崩了（比如内存溢出），能从日志最后一行看出是哪个
             System.out.println("[hexoracle] case " + c.getAsJsonObject().get("id").getAsString());
-            results.add(runCase(world, player, c.getAsJsonObject()));
+            results.add(runCase(world, scene, c.getAsJsonObject()));
         }
         return results;
     }
 
-    private static JsonObject runCase(class_3218 world, FakePlayer player, JsonObject c) {
+    private static JsonObject runCase(class_3218 world, Scene scene, JsonObject c) {
         String id = c.get("id").getAsString();
         JsonObject r = new JsonObject();
         r.addProperty("id", id);
         JsonArray steps = new JsonArray();
         r.add("steps", steps);
         try {
-            player.method_5814(0.5, -60.0, 0.5);
-            player.method_6033(player.method_6063());
+            FakePlayer player = scene.caster;
+            scene.reset();
             boolean enlightened = !c.has("enlightened") || c.get("enlightened").getAsBoolean();
 
             List<Iota> stack = new ArrayList<>();
-            for (JsonElement x : c.getAsJsonArray("stack")) stack.add(IotaJson.parse(x, player));
+            for (JsonElement x : c.getAsJsonArray("stack")) stack.add(IotaJson.parse(x, scene));
             CastingImage image = new CastingImage(stack, 0, List.of(), false, 0L, new class_2487());
 
             for (JsonElement p : c.getAsJsonArray("program")) {
-                Iota iota = IotaJson.parse(p, player);
+                Iota iota = IotaJson.parse(p, scene);
                 OracleEnv env = new OracleEnv(player, class_1268.field_5808, enlightened);
                 CastingVM vm = new CastingVM(image, env);
                 ExecutionClientView view = vm.queueExecuteAndWrapIota(iota, world);
@@ -143,7 +144,7 @@ public final class HexOracle implements ModInitializer {
 
                 JsonObject s = new JsonObject();
                 s.addProperty("res", view.getResolutionType().name());
-                s.add("stack", IotaJson.writeAll(image.getStack(), player));
+                s.add("stack", IotaJson.writeAll(image.getStack(), scene));
                 s.add("mishaps", env.mishaps);
                 s.add("msgs", env.messages);
                 s.addProperty("media", env.mediaSpent);
@@ -153,7 +154,7 @@ public final class HexOracle implements ModInitializer {
                 s.addProperty("clear", view.isStackClear());
                 class_2487 userData = image.getUserData();
                 if (userData.method_10545(HexAPI.RAVENMIND_USERDATA)) {
-                    s.add("raven", IotaJson.write(IotaType.deserialize(userData.method_10562(HexAPI.RAVENMIND_USERDATA), world), player));
+                    s.add("raven", IotaJson.write(IotaType.deserialize(userData.method_10562(HexAPI.RAVENMIND_USERDATA), world), scene));
                 }
                 steps.add(s);
                 if (view.isStackClear()) image = new CastingImage();

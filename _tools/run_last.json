@@ -1,5 +1,5 @@
 {
-    "at":  "2026-10-02 14:09:35",
+    "at":  "2026-10-02 14:29:24",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
@@ -10,10 +10,10 @@
                    "failed":  0
                },
     "oracle":  {
-                   "cases":  9193,
-                   "same":  8005,
+                   "cases":  19323,
+                   "same":  19323,
                    "diff":  0,
-                   "noWorld":  1188,
+                   "noWorld":  0,
                    "missing":  0
                },
     "drawtest":  {
@@ -26,7 +26,7 @@
                },
     "package":  {
                     "ok":  true,
-                    "bytes":  1081989
+                    "bytes":  1082473
                 },
     "server":  {
                    "ok":  true

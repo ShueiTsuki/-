@@ -28,14 +28,17 @@ static class Program
         }
         PatternRegistry.Load();
         HexActions.RegisterAll();
-        var cases = JsonNode.Parse(ReadText(args[0]))!["cases"]!.AsArray();
+        // 用例里有嵌套几百层的列表（deep-list），JSON 默认只许 64 层
+        var deep = new JsonDocumentOptions { MaxDepth = 4096 };
+        var cases = JsonNode.Parse(ReadText(args[0]), documentOptions: deep)!["cases"]!.AsArray();
         var golden = new Dictionary<string, JsonObject>();
-        foreach (var r in JsonNode.Parse(ReadText(args[1]))!["results"]!.AsArray())
+        foreach (var r in JsonNode.Parse(ReadText(args[1]), documentOptions: deep)!["results"]!.AsArray())
             golden[r!["id"]!.GetValue<string>()] = r.AsObject();
 
         int same = 0, diff = 0, noWorld = 0, missing = 0;
         var diffs = new JsonArray();
         var byAction = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        var noWorldByAction = new SortedDictionary<string, int>(StringComparer.Ordinal);
         foreach (var c in cases)
         {
             var id = c!["id"]!.GetValue<string>();
@@ -45,6 +48,13 @@ static class Program
                 continue;
             }
             var got = Run(c.AsObject());
+            // 随机数两边的值必然不同：只比「是个 0 ~ 1 之间的数」
+            if (c["action"]?.GetValue<string>() == "hexcasting:random")
+            {
+                MaskRandom(want);
+                MaskRandom(got);
+            }
+            KnownDeviations(c["action"]?.GetValue<string>(), want);
             var where = Compare(want, got);
             if (where is null)
             {
@@ -54,6 +64,8 @@ static class Program
             if (UsesNoWorld(got))
             {
                 noWorld++;
+                var a = c["action"]?.GetValue<string>() ?? "(program)";
+                noWorldByAction[a] = noWorldByAction.GetValueOrDefault(a) + 1;
                 continue;
             }
             diff++;
@@ -77,10 +89,11 @@ static class Program
             ["portHasNoWorld"] = noWorld,
             ["missingGolden"] = missing,
             ["diffByAction"] = new JsonObject(byAction.Select(kv => KeyValuePair.Create(kv.Key, (JsonNode?)kv.Value))),
+            ["portHasNoWorldByAction"] = new JsonObject(noWorldByAction.Select(kv => KeyValuePair.Create(kv.Key, (JsonNode?)kv.Value))),
             ["diffs"] = diffs,
         };
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(args[2]))!);
-        File.WriteAllText(args[2], report.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+        File.WriteAllText(args[2], report.ToJsonString(new JsonSerializerOptions { WriteIndented = true, MaxDepth = 4096, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
         Console.WriteLine($"用例 {cases.Count}：一致 {same}，不一致 {diff}，移植版缺世界 {noWorld}，原版没有结果 {missing}");
         foreach (var kv in byAction.OrderByDescending(kv => kv.Value).Take(40))
             Console.WriteLine($"  {kv.Key}: {kv.Value}");
@@ -105,6 +118,9 @@ static class Program
         public long Media;
 
         public OracleEnv(bool enlightened) => _enlightened = enlightened;
+
+        /// <summary>测试场景世界（照原版那边的场景布置，见 SceneWorld）。</summary>
+        public override ICastingWorld? World { get; } = new SceneWorld();
 
         protected override long ExtractMediaEnvironment(long cost, bool simulate)
         {
@@ -183,6 +199,8 @@ static class Program
     static readonly Dictionary<string, string> MishapAlias = new()
     {
         ["MishapBadHeldItem"] = "MishapBadOffhandItem",
+        // 原版 MishapBadLocation(位置, "too_far")；移植版把「超出影响范围」单独做成一个类，效果和消息都一样
+        ["MishapLocationTooFarAway"] = "MishapBadLocation",
     };
 
     // ---------------- iota 与 JSON（格式见 mc/src/hexoracle/IotaJson.java）----------------
@@ -199,6 +217,7 @@ static class Program
             "vec" => new VectorIota(Num(n["v"]![0]!), Num(n["v"]![1]!), Num(n["v"]![2]!)),
             "list" => new ListIota(n["v"]!.AsArray().Select(x => Parse(x!)).ToList()),
             "pat" => new PatternIota(Pattern(n)),
+            "entity" => SceneWorld.ByName(n["ref"]!.GetValue<string>()) ?? throw new InvalidDataException("场景里没有：" + n["ref"]),
             _ => throw new InvalidDataException("不支持的 iota 类型：" + t),
         };
     }
@@ -239,6 +258,7 @@ static class Program
         VectorIota v => new JsonObject { ["t"] = "vec", ["v"] = new JsonArray(Num(v.X), Num(v.Y), Num(v.Z)) },
         ListIota l => new JsonObject { ["t"] = "list", ["v"] = new JsonArray(l.Items.Select(Write).ToArray()) },
         PatternIota p => new JsonObject { ["t"] = "pat", ["dir"] = DirName(p.Pattern.StartDir), ["angles"] = p.Pattern.AnglesSignature() },
+        EntityIota e when SceneWorld.NameOf(e) is { } name => new JsonObject { ["t"] = "entity", ["ref"] = name },
         _ => new JsonObject { ["t"] = "other", ["class"] = i.GetType().Name },
     };
 
@@ -249,6 +269,38 @@ static class Program
         => double.IsNaN(d) ? "NaN" : double.IsPositiveInfinity(d) ? "Infinity" : double.IsNegativeInfinity(d) ? "-Infinity" : JsonValue.Create(d)!;
 
     // ---------------- 比对 ----------------
+
+    /// <summary>
+    /// 已经定下的取舍（AUDIT「3D → 2D 适配」A9：世界是 z = 0 的平面、方块沿 z 无限延伸），把原版的结果换成移植版约定的样子再比：
+    ///   - 射线打中方块：原版给方块中心，方块在 z = 0 那一格，中心 z = 0.5；移植版的方块没有 z 格子，中心取 z = 0。
+    /// </summary>
+    static void KnownDeviations(string? action, JsonObject original)
+    {
+        if (action != "hexcasting:raycast") return;
+        foreach (var s in original["steps"]!.AsArray())
+        {
+            var stack = s!["stack"]!.AsArray();
+            if (stack.Count > 0 && stack[^1]!["t"]!.GetValue<string>() == "vec" && stack[^1]!["v"]![2]!.ToJsonString() == "0.5")
+            {
+                stack[^1]!["v"]![2] = 0.0;
+            }
+        }
+    }
+
+    static void MaskRandom(JsonObject result)
+    {
+        foreach (var s in result["steps"]!.AsArray())
+        {
+            foreach (var i in s!["stack"]!.AsArray())
+            {
+                if (i!["t"]!.GetValue<string>() == "num" && i["v"]!.GetValueKind() == JsonValueKind.Number
+                    && double.Parse(i["v"]!.ToJsonString(), CultureInfo.InvariantCulture) is >= 0 and < 1)
+                {
+                    i["v"] = "random";
+                }
+            }
+        }
+    }
 
     /// <summary>一致返回 null；不一致返回第一个对不上的位置，如 "step 0 stack"。</summary>
     static string? Compare(JsonObject want, JsonObject got)

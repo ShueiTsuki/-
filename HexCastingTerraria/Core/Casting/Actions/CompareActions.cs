@@ -22,11 +22,28 @@ public sealed class OpEntityEquality : ConstMediaAction
 
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
-        var a = env.ResolveEntity(args[0]);
-        var b = env.ResolveEntity(args[1]);
+        // 原版 args.getEntity(0) / getEntity(1) 漏传了参数个数：类型不对时事故下标就是 0 / 1（见 EntityAt）
+        var a = EntityAt(env, args[0], 0);
+        var b = EntityAt(env, args[1], 1);
 
         // 同类判定要读泰拉的实体类型字段（NPC.netID 等），所以交给世界侧
         return new Iota[] { BooleanIota.Of(env.RequireWorld().IsSameEntityType(a, b)) };
+    }
+
+    /// <summary>
+    /// 原版比较实体 / 比较物品取实体时漏传了参数个数（args.getEntity(idx) 而不是 getEntity(idx, argc)），
+    /// 类型不对时事故下标就是 idx 本身，被换成垃圾的格子和出错的那个正好反过来；照搬（和原版对拍时发现，2026-10-02）。
+    /// </summary>
+    internal static EntityIota EntityAt(CastingEnvironment env, Iota iota, int reverseIdx)
+    {
+        try
+        {
+            return env.ResolveEntity(iota);
+        }
+        catch (MishapInvalidIota m) when (m.ReverseIdx is null)
+        {
+            throw m.At(reverseIdx);
+        }
     }
 }
 
@@ -88,11 +105,12 @@ public sealed class OpItemEquality : ConstMediaAction
     public override IReadOnlyList<Iota> Execute(IReadOnlyList<Iota> args, CastingEnvironment env)
     {
         var world = env.RequireWorld();
-        // 上游的顺序：先取第一个的物品（取不到就事故），再取第二个的
-        var a = env.ResolveEntity(args[0]);
-        if (!world.HasHeldItem(a)) throw new MishapInvalidIota(args[0], InvalidValue.EntityItemHolder);
-        var b = env.ResolveEntity(args[1]);
-        if (!world.HasHeldItem(b)) throw new MishapInvalidIota(args[1], InvalidValue.EntityItemHolder);
+        // 上游的顺序：先取第一个的物品（取不到就事故），再取第二个的。
+        // 下标照搬原版：取实体漏传了参数个数、「不是持有物品的实体」写的是 0 / 1 —— 都和出错的那个反过来（见 OpEntityEquality.EntityAt）
+        var a = OpEntityEquality.EntityAt(env, args[0], 0);
+        if (!world.HasHeldItem(a)) throw new MishapInvalidIota(args[0], InvalidValue.EntityItemHolder) { ReverseIdx = 0 };
+        var b = OpEntityEquality.EntityAt(env, args[1], 1);
+        if (!world.HasHeldItem(b)) throw new MishapInvalidIota(args[1], InvalidValue.EntityItemHolder) { ReverseIdx = 1 };
 
         return new Iota[] { BooleanIota.Of(world.CompareItems(a, b, _exact)) };
     }
