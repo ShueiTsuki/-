@@ -60,8 +60,8 @@ public abstract class HexStaff : ModItem
 
         // 把设置里的画布参数应用到画布上（用户可在 设置 → 模组配置 里改）
         var config = HexClientConfig.Instance;
-        // 原版 GRID_ZOOM：探知透镜（戴着 / 拿在任一只手）×1.33，网格变细
-        canvas.Zoom = config.GridZoom * (ScryingOverlay.HasSight(Main.LocalPlayer) ? ScryingOverlay.GridZoom : 1f);
+        // 原版 GRID_ZOOM：探知透镜 ×1.33、明晰 ×1.25、蒙翳 ×0.8（见 HexGridZoom；开着的时候每帧再算一次）
+        canvas.Zoom = config.GridZoom * HexGridZoom.Of(Main.LocalPlayer);
         canvas.SnapThreshold = config.GridSnapThreshold;
         canvas.StrokeScale = config.StrokeScale;
         canvas.WobbleScale = config.WobbleScale;

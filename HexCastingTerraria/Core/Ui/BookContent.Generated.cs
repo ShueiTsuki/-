@@ -313,11 +313,11 @@ public static partial class BookContent
         e.Pages.Add(p);
         p = new BookPage { Kind = BookPageKind.Crafting, Text = "这些古物用到的$(l:items/pigments)$(item)染色剂/$是独特的紫橙混色，和它们由铜还有紫水晶构成的外在表现很搭。可用上方的配方再现这种染色剂。", RecipeItem = "Mod:PigmentAncient" };
         e.Pages.Add(p);
-        e = new BookEntry { Id = "items/potions", CategoryId = "items", NameKey = "hexcasting.entry.potions", DisplayName = "咒术药水", IconItem = "Terraria:HealingPotion", SortNum = 8, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
+        e = new BookEntry { Id = "items/potions", CategoryId = "items", NameKey = "hexcasting.entry.potions", DisplayName = "咒术药水", IconItem = "Mod:EnlargeGridPotion", SortNum = 8, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
         c.Entries.Add(e);
         p = new BookPage { Kind = BookPageKind.Text, Text = "透过$(l:items/lens)$(item)探知透镜/$观察，就能在咒术网格里塞进更多图案。想让施法变得更紧凑？我想炼金术可能有方法。$(br2)向$(item)粗制的药水/$里放进一撮紫水晶粉，酿成的药水便能像透镜那样增大我的咒术网格。甚至还能两者一起使用，将网格推向极致！" };
         e.Pages.Add(p);
-        p = new BookPage { Kind = BookPageKind.Spotlight, Title = "明晰与蒙翳", Text = "明晰效果可延长，可增强，也可如同其他药水那样精制。$(br2)还可用$(item)发酵蛛眼/$腐化，以产生效果相反的药水。那些不怀好意的咒术师可以尝尝它的威力。", IconItem = "Terraria:HealingPotion" };
+        p = new BookPage { Kind = BookPageKind.Spotlight, Title = "明晰与蒙翳", Text = "明晰效果可延长，可增强，也可如同其他药水那样精制。$(br2)还可用$(item)发酵蛛眼/$腐化，以产生效果相反的药水。那些不怀好意的咒术师可以尝尝它的威力。", IconItem = "Mod:EnlargeGridPotion" };
         e.Pages.Add(p);
         e = new BookEntry { Id = "items/pigments", CategoryId = "items", NameKey = "hexcasting.entry.pigments", DisplayName = "染色剂", IconItem = "Mod:PigmentSoulglimmer", SortNum = 8, Advancement = "hexcasting:root", EntryColor = -1, Priority = false, Secret = false };
         c.Entries.Add(e);

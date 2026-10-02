@@ -186,10 +186,19 @@ def check_wording(table):
     print(f'  「另一只手」改写：{len(table)} 条，命中 {sum(_wording_hits.get(old, 0) for old, _ in table)} 处')
 
 
+# 药水在原版里靠 NBT 区分（minecraft:potion{Potion:"hexcasting:enlarge_grid"}）：原版的明晰 / 蒙翳药水对应本模组的两种药水。
+# 延长 / 加强的版本移植版没做，图标都用基础款。
+POTION_MAP = {'hexcasting:enlarge_grid': 'Mod:EnlargeGridPotion', 'hexcasting:shrink_grid': 'Mod:ShrinkGridPotion'}
+
+
 def item_key(src):
     if not src:
         return ''
-    base = src.split('{')[0].split(',')[0].strip()
+    first = src.split(',')[0].strip()
+    for potion, item in POTION_MAP.items():
+        if '"' + potion in first:
+            return item
+    base = first.split('{')[0].strip()
     return ITEM_MAP.get(base, '')
 
 
@@ -232,7 +241,7 @@ def main():
         for line in open(f, encoding='utf-8-sig'):
             if 'class ' in line:
                 mod_classes.add(line.split('class ', 1)[1].split()[0].split(':')[0].strip())
-    for v in ITEM_MAP.values():
+    for v in list(ITEM_MAP.values()) + list(POTION_MAP.values()):
         kind, name = v.split(':')
         ok = name in vanilla if kind == 'Terraria' else name in mod_classes
         if not ok:

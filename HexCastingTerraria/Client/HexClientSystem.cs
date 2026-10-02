@@ -112,6 +112,9 @@ public sealed class HexClientSystem : ModSystem
         // Main 每帧开头把它清成 null，然后调 PostUpdateInput，再检查 Enter —— 所以放在这里正好。
         if (canvas.IsOpen) Main.CurrentInputTextTakerOverride = canvas;
 
+        // 网格大小每帧按透镜和明晰 / 蒙翳重算（原版 hexSize 每帧读 GRID_ZOOM 属性：药效到期、摘下透镜，网格当场就变）
+        if (canvas.IsOpen) canvas.Zoom = Config.HexClientConfig.Instance.GridZoom * HexGridZoom.Of(Main.LocalPlayer);
+
         // 开发者面板（F7）与「点世界施放」：画布和书都没开的时候才接鼠标
         if (!canvas.IsOpen && !HexCanvasState.Book.IsOpen)
         {

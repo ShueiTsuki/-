@@ -80,9 +80,6 @@ public sealed class ResonancePotionShop : GlobalNPC
 /// </summary>
 public sealed class ResonanceArt : ModSystem
 {
-    /// <summary>泰拉药水贴图 20×30：第 14 行往下是瓶身，上面是瓶颈和瓶塞。</summary>
-    private const int BodyTop = 14;
-
     /// <summary>瓶身：把瓶身的亮度拉到 0 ~ 1，再在这几个色标之间取。</summary>
     private static readonly (float At, Color Color)[] Liquid =
     {
@@ -142,24 +139,7 @@ public sealed class ResonanceArt : ModSystem
         });
     }
 
-    private static void RecolorPotion(Color[] data, int width, int height)
-    {
-        float lo = 1f, hi = 0f;
-        for (int i = BodyTop * width; i < data.Length; i++)
-        {
-            if (data[i].A == 0) continue;
-            float l = VanillaRecolor.Luma(data[i]);
-            lo = System.Math.Min(lo, l);
-            hi = System.Math.Max(hi, l);
-        }
-        if (hi <= lo) return;
-        for (int i = BodyTop * width; i < data.Length; i++)
-        {
-            var c = data[i];
-            if (c.A == 0) continue;
-            data[i] = VanillaRecolor.Gradient(Liquid, (VanillaRecolor.Luma(c) - lo) / (hi - lo)) with { A = c.A };
-        }
-    }
+    private static void RecolorPotion(Color[] data, int width, int height) => VanillaRecolor.RecolorPotionBody(data, width, Liquid);
 
     /// <summary>金光是很亮的暖色（红 ≥ 绿 ≥ 蓝、最亮的通道 ≥ 240、红比蓝多 60 以上）；木柄暗，蓝框是冷色，都挑不中。</summary>
     private static void RecolorBuff(Color[] data, int width, int height)

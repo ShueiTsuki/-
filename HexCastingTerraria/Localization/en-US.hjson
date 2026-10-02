@@ -197,6 +197,14 @@ Mods: {
 				DisplayName: Resonance
 				Description: You can now harvest certain things without breaking them
 			}
+			EnlargeGrid: {
+				DisplayName: Clarity
+				Description: "+25% Casting Grid Size"
+			}
+			ShrinkGrid: {
+				DisplayName: Clouding
+				Description: "-20% Casting Grid Size"
+			}
 		}
 
 		Conditions: {
@@ -387,6 +395,14 @@ Mods: {
 			ResonancePotion: {
 				DisplayName: Resonance Potion
 				Tooltip: Lets you harvest certain things without breaking them
+			}
+			EnlargeGridPotion: {
+				DisplayName: Potion of Clarity
+				Tooltip: "+25% Casting Grid Size"
+			}
+			ShrinkGridPotion: {
+				DisplayName: Potion of Clouding
+				Tooltip: "-20% Casting Grid Size"
 			}
 			CreativeUnlocker: {
 				DisplayName: The Media Cube

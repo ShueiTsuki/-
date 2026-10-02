@@ -155,6 +155,7 @@
 
 | 文件 | 职责 |
 |---|---|
+| `Buffs/GridEffects.cs` | 明晰（原版 HexMobEffects.ENLARGE_GRID，有益）：咒术网格大小 ×1.25（MULTIPLY_TOTAL +0.25），网格变细、能画的地方更大。 |
 | `Buffs/Resonance.cs` | 「共振」增益（移植版新增，用户 2026-10-01 定）：喝共振药水（<see cref="Items.ResonancePotion"/>）得到，30 分钟。 |
 | `DevTextureDump.cs` | 开发用：把**原版泰拉的 UI 贴图**导出成 PNG，供离线比对。 |
 | `HexChestLoot.cs` | 往世界里的箱子塞原版的三种战利品（源项目 HexLootHandler）： |
@@ -170,6 +171,7 @@
 | `Items/DevKit.cs` | 开发者测试包：一次把每个子系统的代表性物品各发一份。 |
 | `Items/DevStaff.cs` | 开发者法杖（Dev Staff）。 |
 | `Items/EdifiedFurniture.cs` | 启迪木的家具。原版 HexBlocks 里有 8 种：楼梯、台阶、栅栏、栅栏门、门、活板门、按钮、压力板。 |
+| `Items/GridPotions.cs` | 明晰药水 / 蒙翳药水（原版 HexPotions.ENLARGE_GRID / SHRINK_GRID，官方中文名）：喝了得到明晰 / 蒙翳 3 分钟（原版 3600 刻）， |
 | `Items/HexBookItem.cs` | 咒法学之书。对应源项目的 `hexcasting:thehexbook`（Patchouli 写的那本引导书）。 |
 | `Items/HexConditions.cs` | 本模组的配方 / 商店条件。</summary> |
 | `Items/HexDecoBlockItem.cs` | 建材方块物品的公共实现（配合 <see cref="HexDecoBlock"/>）。 |
@@ -240,6 +242,7 @@
 | `HexClientSystem.cs` | 客户端系统：画布输入、画布绘制、HUD（媒质指示 + 图案识别反馈）。 |
 | `HexColors.cs` | 咒法学的表现层配色。 |
 | `HexDebugOverlay.cs` | 开发者调试叠加层：把「看不见但必须确认」的东西画出来。 |
+| `HexGridZoom.cs` | 原版的咒术网格大小属性（HexAttributes.GRID_ZOOM：基础 1.0，范围 0.5 ~ 4.0），照 MC 属性的算法叠加： |
 | `HexPigment.cs` | 法术配色（「颜料 / 染色剂」）的取色。 |
 | `HexPixel.cs` | 共享的 1×1 白色贴图，用于画线段与方块点。 |
 | `HexVec.cs` | `Core` 的 <see cref="Vec2f"/> ↔ XNA 的 <see cref="Vector2"/> 互转。 |

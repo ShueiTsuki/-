@@ -8,9 +8,9 @@
 
 阶段的依据来自源项目的真实门槛，见 `_tools/progression_stages.json` 顶部的说明。
 
-共 **124** 个可合成物品。
+共 **126** 个可合成物品。
 
-## 肉前（107 项）
+## 肉前（109 项）
 
 紫水晶 → 媒质 → 石板 → 法杖 → 工具与存储。源项目在这一段没有任何进度门槛。
 
@@ -126,6 +126,8 @@
 | `PigmentAncient` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×4 + 铜锭 |
 | `PigmentSoulglimmer` | 1 | AmethystShard×1 | WorkBenches | 同 PigmentItem：紫水晶粉 ×8 + 紫水晶碎片 |
 | `SubSandwich` | 1 | — | WorkBenches | 源 165-174 潜艇三明治：has_item(紫水晶碎片)，无门槛 → 肉前；熟牛肉 → 烤松鼠、面包 → 干草 |
+| `EnlargeGridPotion` | 1 | AmethystDust×1 + BottledWater×1 | Bottles | 原版 HexPotions：粗制的药水 + 紫水晶粉（酿造）→ 泰拉：瓶装水 + 紫水晶粉，放置的瓶子；无门槛 → 肉前 |
+| `ShrinkGridPotion` | 1 | EnlargeGridPotion×1 + 〔HexRecipeGroups.EvilChunks〕×1 | Bottles | 原版：明晰药水 + 发酵蛛眼 → 泰拉：明晰药水 + 腐肉或椎骨（顶替发酵蛛眼），放置的瓶子 → 肉前 |
 | `ResonancePotion` | 1 | AmethystShard×1 + BottledWater×1 + Blinkroot×1 + Moonglow×1 | Bottles | 移植版新增（用户 2026-10-01 定）：材料都是肉前的 → 肉前；只对淬灵晶块有用（肉后 · 启蒙才拿得到），巫师在玩家开悟后也卖 |
 | `EdifiedDoorItem` | 3 | EdifiedPlanksItem×6 | WorkBenches | 源 edified_door：启迪木板 ×6 → 3（木门配方，无门槛）→ 肉前 |
 | `EdifiedFenceItem` | 4 | — | WorkBenches | 源 edified_fence：启迪木板 → 泰拉栅栏墙（1 → 4，泰拉木栅栏的比例） |

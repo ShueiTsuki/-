@@ -15,7 +15,7 @@ namespace HexCastingTerraria.Client;
 ///   ① **看方块的信息**（HexAdditionalRenderers.tryRenderScryingLensOverlay + ScryingLensOverlays）：
 ///      准星对着的方块旁边列出几行「图标 + 文字」。原版登记的有：促动石（媒质、消息、牧师绑定的人）、
 ///      阿卡夏书架、音符盒、红石元件。泰拉没有后面三样；阿卡夏在移植版是另一套结构（待审），这里先做促动石。
-///   ② **咒术网格变细**：GRID_ZOOM ×1.33（在 HexStaff.OpenCanvas 里乘上去）
+///   ② **咒术网格变细**：GRID_ZOOM ×1.33（和明晰 / 蒙翳一起在 HexGridZoom 里算）
 ///
 /// 生效条件（原版 getDefaultAttributeModifiers）：戴在头上 / 拿在任意一只手 / 饰品栏（饰品模组）。
 /// 泰拉：饰品栏，或者拿在手上 / 「另一只手」（快捷栏里手上那格右边一格）。

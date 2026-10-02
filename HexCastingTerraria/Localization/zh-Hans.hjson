@@ -194,6 +194,14 @@ Mods: {
 				DisplayName: 共振
 				Description: 你现在可以采集某些东西而不破坏
 			}
+			EnlargeGrid: {
+				DisplayName: 明晰
+				Description: "+25% 咒术网格大小"
+			}
+			ShrinkGrid: {
+				DisplayName: 蒙翳
+				Description: "-20% 咒术网格大小"
+			}
 		}
 
 		Conditions: {
@@ -384,6 +392,14 @@ Mods: {
 			ResonancePotion: {
 				DisplayName: 共振药水
 				Tooltip: 可以采集某些东西而不破坏
+			}
+			EnlargeGridPotion: {
+				DisplayName: 明晰药水
+				Tooltip: "+25% 咒术网格大小"
+			}
+			ShrinkGridPotion: {
+				DisplayName: 蒙翳药水
+				Tooltip: "-20% 咒术网格大小"
 			}
 			CreativeUnlocker: {
 				DisplayName: 媒质立方

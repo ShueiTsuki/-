@@ -489,7 +489,8 @@ Write-Host "`n⑪ 不带 emoji（用户要求：仓库、发布说明、游戏�
            + (& $c 0xD83C) + '-' + (& $c 0xD83E) + '][' + (& $c 0xDC00) + '-' + (& $c 0xDFFF) + ']'
     $hits = New-Object System.Collections.Generic.List[string]
     foreach ($rel in (git -C $repo ls-files)) {
-        if ($rel -match '\.(png|raw|tmod|zip)$') { continue }
+        # 二进制文件按文本读会把随机字节凑成「表情」，跳过（.gz 是 tests/oracle 入库的标准答案）
+        if ($rel -match '\.(png|raw|tmod|zip|gz)$') { continue }
         $full = Join-Path $repo $rel
         if (-not (Test-Path $full)) { continue }
         $n = 0

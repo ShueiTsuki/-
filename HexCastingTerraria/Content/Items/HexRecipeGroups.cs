@@ -41,6 +41,12 @@ public sealed class HexRecipeGroups : ModSystem
     /// <summary>任意启迪原木（含 4 种彩色变体）。源项目对应 `HexTags.Items.EDIFIED_LOGS`。</summary>
     public const string EdifiedLogs = "HexCastingTerraria:EdifiedLogs";
 
+    /// <summary>
+    /// 腐肉或椎骨：蒙翳药水的料，顶替原版的发酵蛛眼（原版书：「还可用发酵蛛眼腐化，以产生效果相反的药水」）。
+    /// 泰拉没有发酵蛛眼，取腐化 / 猩红之地的这两样，照书里「腐化」的意思。
+    /// </summary>
+    public const string EvilChunks = "HexCastingTerraria:EvilChunks";
+
     public override void AddRecipeGroups()
     {
         RecipeGroup.RegisterGroup(SlateBlocks, new RecipeGroup(() => "任意板岩", new[]
@@ -76,6 +82,12 @@ public sealed class HexRecipeGroups : ModSystem
             ModContent.ItemType<EdifiedLogAventurineItem>(),
             ModContent.ItemType<EdifiedLogCitrineItem>(),
             ModContent.ItemType<EdifiedLogPurpleItem>(),
+        }));
+
+        RecipeGroup.RegisterGroup(EvilChunks, new RecipeGroup(() => "腐肉或椎骨", new int[]
+        {
+            Terraria.ID.ItemID.RottenChunk,
+            Terraria.ID.ItemID.Vertebrae,
         }));
     }
 }

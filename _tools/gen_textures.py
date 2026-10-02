@@ -363,4 +363,13 @@ pi = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
 plank_rect(pi, 1, 10, 14, 3)
 save(x2(pi), 'Items', 'EdifiedPressurePlateItem.png')
 
+# 增益：明晰 / 蒙翳（原版 mob_effect 图标，18×18）。泰拉的增益图标是 32×32、后面衬一个蓝框（减益是红框），
+# 那个框用游戏自带的空白底图 Images/Buff 在启动时拼上（Content/Items/GridPotions.cs 的 GridPotionArt），这里只放图标：
+# 原尺寸、居中，四周留给底框
+for effect, name in (('enlarge_grid', 'EnlargeGrid'), ('shrink_grid', 'ShrinkGrid')):
+    eye = Image.open(os.path.join(JAR, 'mob_effect', effect + '.png')).convert('RGBA')
+    buff = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
+    buff.alpha_composite(eye, ((32 - eye.width) // 2, (32 - eye.height) // 2))
+    save(buff, 'Buffs', name + '.png')
+
 print(f'写出 {len(written)} 张')

@@ -9,7 +9,7 @@ namespace HexCastingTerraria.Content;
 
 /// <summary>
 /// 把游戏自带的一张贴图读出来改色，做成本模组自己的贴图：深板岩（<see cref="Tiles.DeepslateArt"/>）、
-/// 共振药水与共振增益（<see cref="Items.ResonanceArt"/>）。只在内存里做，不存任何文件 —— 泰拉原版贴图不进公开仓库。
+/// 共振药水与共振增益（<see cref="Items.ResonanceArt"/>）、明晰 / 蒙翳药水与增益（<see cref="Items.GridPotionArt"/>）。只在内存里做，不存任何文件 —— 泰拉原版贴图不进公开仓库。
 /// 只能在客户端的主线程上调（要用显卡建贴图）。
 ///
 /// 泰拉贴图读出来是预乘过透明度的：这里先还原成直通透明度再交给改色函数；存成 PNG 读回来时泰拉会再预乘一次。
@@ -51,6 +51,57 @@ internal static class VanillaRecolor
             }
         }
         return stops[^1].Color;
+    }
+
+    /// <summary>读一张已经加载的贴图的像素（还原成直通透明度），拿来往改色的图上叠。</summary>
+    public static Color[] ReadPixels(Texture2D tex)
+    {
+        var data = new Color[tex.Width * tex.Height];
+        tex.GetData(data);
+        for (int i = 0; i < data.Length; i++) data[i] = Unpremultiply(data[i]);
+        return data;
+    }
+
+    /// <summary>把同尺寸的 <paramref name="top"/> 按透明度叠到 <paramref name="data"/> 上（都是直通透明度）。</summary>
+    public static void Overlay(Color[] data, Color[] top)
+    {
+        for (int i = 0; i < data.Length; i++)
+        {
+            float ta = top[i].A / 255f;
+            if (ta <= 0f) continue;
+            float ba = data[i].A / 255f;
+            float a = ta + ba * (1f - ta);
+            Color Mix(Color t, Color b) => new(
+                (int)System.Math.Round((t.R * ta + b.R * ba * (1f - ta)) / a),
+                (int)System.Math.Round((t.G * ta + b.G * ba * (1f - ta)) / a),
+                (int)System.Math.Round((t.B * ta + b.B * ba * (1f - ta)) / a),
+                (int)System.Math.Round(a * 255f));
+            data[i] = Mix(top[i], data[i]);
+        }
+    }
+
+    /// <summary>
+    /// 泰拉药水贴图（20×30）的瓶身改色：瓶颈和瓶塞（第 14 行以上）不动，瓶身先把亮度拉到 0 ~ 1，再在色标之间取。
+    /// 共振药水、明晰 / 蒙翳药水都用它。
+    /// </summary>
+    public static void RecolorPotionBody(Color[] data, int width, (float At, Color Color)[] stops)
+    {
+        const int bodyTop = 14;
+        float lo = 1f, hi = 0f;
+        for (int i = bodyTop * width; i < data.Length; i++)
+        {
+            if (data[i].A == 0) continue;
+            float l = Luma(data[i]);
+            lo = Math.Min(lo, l);
+            hi = Math.Max(hi, l);
+        }
+        if (hi <= lo) return;
+        for (int i = bodyTop * width; i < data.Length; i++)
+        {
+            var c = data[i];
+            if (c.A == 0) continue;
+            data[i] = Gradient(stops, (Luma(c) - lo) / (hi - lo)) with { A = c.A };
+        }
     }
 
     /// <summary>亮度（0 ~ 1），按人眼对红绿蓝的敏感程度加权。</summary>
