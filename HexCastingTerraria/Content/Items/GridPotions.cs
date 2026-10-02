@@ -17,12 +17,14 @@ namespace HexCastingTerraria.Content.Items;
 /// 泰拉没有酿造台，药水都在放置的瓶子旁边做：瓶装水 + 紫水晶粉 → 明晰药水；明晰药水 + 腐肉或椎骨（顶替发酵蛛眼）→ 蒙翳药水。
 /// 延长 / 加强的版本先不做（泰拉没有这种加料的做法）。
 ///
-/// 其余属性照泰拉的药水：使用时间 17、卖 2 银、蓝色稀有度。贴图借用泰拉的夜猫子药水瓶，瓶身换成原版效果的颜色
+/// 其余属性照泰拉的药水：使用时间 17、卖 2 银、蓝色稀有度。贴图借用泰拉小治疗药水的烧瓶，液体换成原版效果的颜色
 /// （MC 里这两种药水也是同一个瓶子、颜色不同），见 <see cref="GridPotionArt"/>。
+/// 这个烧瓶在泰拉只有红、蓝、粉三色，紫和黄绿不会和别的药水认混；曾经用过夜猫子药水的瓶子，
+/// 蒙翳的黄绿和夜猫子本身几乎一样（用户指出，2026-10-02 换掉，三个候选里用户选的这个）。
 /// </summary>
 public abstract class GridPotion : ModItem
 {
-    public override string Texture => $"Terraria/Images/Item_{ItemID.NightOwlPotion}";
+    public override string Texture => $"Terraria/Images/Item_{ItemID.LesserHealingPotion}";
 
     protected abstract int Buff { get; }
 
@@ -89,7 +91,7 @@ public sealed class ShrinkGridPotion : GridPotion
 
 /// <summary>
 /// 客户端：内容加载完以后，用游戏自带的贴图拼出明晰 / 蒙翳的药水和增益图标（<see cref="VanillaRecolor"/>），只在内存里做：
-///   - 药水：夜猫子药水的瓶子，瓶身按亮度换成原版效果的颜色；
+///   - 药水：小治疗药水的烧瓶，红色液体按亮度换成原版效果的颜色；
 ///   - 增益：泰拉自带的空白增益底图（Images/Buff，蓝框）上叠原版的效果图标（模组里的 Buffs/EnlargeGrid.png 等）；
 ///     蒙翳是减益，照泰拉减益图标的红框：把底图的四种蓝换成泰拉减益图标框上对应位置的红（对照中毒、黑暗的图标取的色）。
 /// </summary>
@@ -123,7 +125,7 @@ public sealed class GridPotionArt : ModSystem
         if (Main.dedServ) return;
         Main.QueueMainThreadAction(() =>
         {
-            // 拼图只是外观：万一失败，记日志、照用夜猫子药水和不带框的图标，不能让整个模组加载失败
+            // 拼图只是外观：万一失败，记日志、照用小治疗药水和不带框的图标，不能让整个模组加载失败
             try
             {
                 Build<EnlargeGridPotion, EnlargeGrid>(debuff: false);
@@ -131,7 +133,7 @@ public sealed class GridPotionArt : ModSystem
             }
             catch (System.Exception e)
             {
-                Mod.Logger.Error("[HexCasting] 明晰 / 蒙翳的贴图拼接失败，照用夜猫子药水和不带框的图标：" + e);
+                Mod.Logger.Error("[HexCasting] 明晰 / 蒙翳的贴图拼接失败，照用小治疗药水和不带框的图标：" + e);
             }
         });
     }
@@ -140,8 +142,8 @@ public sealed class GridPotionArt : ModSystem
     {
         var potion = ModContent.GetInstance<TPotion>();
         var liquid = Liquid(potion.EffectColor);
-        var potionArt = VanillaRecolor.Create($"Images/Item_{ItemID.NightOwlPotion}", potion.Name,
-            (data, width, _) => VanillaRecolor.RecolorPotionBody(data, width, liquid));
+        var potionArt = VanillaRecolor.Create($"Images/Item_{ItemID.LesserHealingPotion}", potion.Name,
+            (data, _, _) => VanillaRecolor.RecolorLiquid(data, liquid));
         Made.Add(potionArt);
         TextureAssets.Item[potion.Type] = potionArt;
 

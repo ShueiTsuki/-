@@ -80,28 +80,44 @@ internal static class VanillaRecolor
         }
     }
 
-    /// <summary>
-    /// 泰拉药水贴图（20×30）的瓶身改色：瓶颈和瓶塞（第 14 行以上）不动，瓶身先把亮度拉到 0 ~ 1，再在色标之间取。
-    /// 共振药水、明晰 / 蒙翳药水都用它。
-    /// </summary>
+    /// <summary>泰拉药水贴图（20×30）的瓶身改色：瓶颈和瓶塞（第 14 行以上）不动。共振药水用它。</summary>
     public static void RecolorPotionBody(Color[] data, int width, (float At, Color Color)[] stops)
+        => RecolorMasked(data, i => i >= 14 * width, stops);
+
+    /// <summary>
+    /// 只改液体：挑出饱和度够高的像素（药水里是有颜色的液体，玻璃和瓶塞是灰白的）。明晰 / 蒙翳药水用它（小治疗药水的烧瓶，液体是红的）。
+    /// </summary>
+    public static void RecolorLiquid(Color[] data, (float At, Color Color)[] stops)
     {
-        const int bodyTop = 14;
+        var original = (Color[])data.Clone();
+        RecolorMasked(data, i => Saturation(original[i]) > 0.35f, stops);
+    }
+
+    /// <summary>挑出来的那些像素先把亮度拉到 0 ~ 1，再在色标之间取，明暗关系保留；透明的不动。</summary>
+    private static void RecolorMasked(Color[] data, Func<int, bool> inMask, (float At, Color Color)[] stops)
+    {
+        var mask = new bool[data.Length];
         float lo = 1f, hi = 0f;
-        for (int i = bodyTop * width; i < data.Length; i++)
+        for (int i = 0; i < data.Length; i++)
         {
-            if (data[i].A == 0) continue;
+            if (data[i].A == 0 || !inMask(i)) continue;
+            mask[i] = true;
             float l = Luma(data[i]);
             lo = Math.Min(lo, l);
             hi = Math.Max(hi, l);
         }
         if (hi <= lo) return;
-        for (int i = bodyTop * width; i < data.Length; i++)
+        for (int i = 0; i < data.Length; i++)
         {
-            var c = data[i];
-            if (c.A == 0) continue;
-            data[i] = Gradient(stops, (Luma(c) - lo) / (hi - lo)) with { A = c.A };
+            if (!mask[i]) continue;
+            data[i] = Gradient(stops, (Luma(data[i]) - lo) / (hi - lo)) with { A = data[i].A };
         }
+    }
+
+    private static float Saturation(Color c)
+    {
+        int max = Math.Max(c.R, Math.Max(c.G, c.B)), min = Math.Min(c.R, Math.Min(c.G, c.B));
+        return max == 0 ? 0f : (max - min) / (float)max;
     }
 
     /// <summary>亮度（0 ~ 1），按人眼对红绿蓝的敏感程度加权。</summary>
