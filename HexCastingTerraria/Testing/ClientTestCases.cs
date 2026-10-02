@@ -66,6 +66,7 @@ internal static class ClientTestCases
             ("放方块", PlaceAll),
             ("施法", Spells),
             ("网格大小", GridZoom),
+            ("大法术石板", GreatSpellSlates),
             ("存档", SaveState),
         };
     }
@@ -264,6 +265,13 @@ internal static class ClientTestCases
         public int Y { get; set; }
     }
 
+    internal sealed class GreatSlate
+    {
+        public string Id { get; set; } = "";
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
+
     internal sealed class ArenaState
     {
         public int Left { get; set; }
@@ -279,6 +287,7 @@ internal static class ClientTestCases
         public int ScrollY { get; set; } = -1;
         public int OldScrollX { get; set; } = -1;
         public int OldScrollY { get; set; } = -1;
+        public List<GreatSlate> GreatSlates { get; set; } = new();
         public int FocusSlot { get; set; } = 2;
     }
 
@@ -778,6 +787,53 @@ internal static class ClientTestCases
         ClientTestSystem.MouseOffset = new Vector2(400, 0);
     }
 
+    // ── 大法术石板 ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 本世界的全部大法术（每个世界笔顺不同，PatternRegistry.PerWorldIds）各刻一块石板，排在场地顶上，放大拍一张。
+    /// 石板正面要真的画出图案；下一段读档后图案要和本世界的笔顺一样（本世界的笔顺跟着世界存档走）。
+    /// </summary>
+    private static IEnumerable<int> GreatSpellSlates(ClientTestRun run)
+    {
+        int slateType = ModContent.TileType<HexSlate>();
+        int y = _arena.Top - 1;
+        int x = _arena.Left + 3;
+        var blankRow = new List<int>();
+        foreach (string id in PatternRegistry.PerWorldIds.OrderBy(i => i))
+        {
+            var r = PlaceObject(slateType, 0, x, y, TileObjectData.GetTileData(slateType, 0));
+            var te = r.Ok ? HexSlateEntity.FindAt(r.X, r.Y) : null;
+            var def = PatternRegistry.FindById(id);
+            if (te == null || def == null)
+            {
+                run.Check($"大法术石板放得下：{id}", false);
+            }
+            else
+            {
+                te.Pattern = PatternRegistry.PatternInThisWorld(def);
+                _arena.GreatSlates.Add(new GreatSlate { Id = id, X = r.X, Y = r.Y });
+            }
+            x += 2;
+        }
+        run.Check($"本世界的大法术都刻上了石板（{_arena.GreatSlates.Count} 种）", _arena.GreatSlates.Count == PatternRegistry.PerWorldIds.Count);
+        run.Info("greatSlates", _arena.GreatSlates.Select(g => PatternRegistry.FindById(g.Id)!.DisplayName() + "：" + PatternRegistry.PatternInThisWorld(PatternRegistry.FindById(g.Id)!).AnglesSignature()).ToList());
+
+        if (_arena.GreatSlates.Count > 0)
+        {
+            Main.hideUI = true;
+            float zoom = Main.GameZoomTarget;
+            Main.GameZoomTarget = 2f;
+            var first = _arena.GreatSlates[0];
+            var last = _arena.GreatSlates[^1];
+            ClientTestSystem.Camera = new Vector2((first.X + last.X + 1) * 8f, first.Y * 16f + 8);
+            yield return 30;
+            foreach (int w in Shot("great-spells")) yield return w;
+            ClientTestSystem.Camera = null;
+            Main.GameZoomTarget = zoom;
+            Main.hideUI = false;
+        }
+    }
+
     // ── 存档（setup 写，verify 读回来比） ────────────────────────────────
 
     /// <summary>存进核心的数据：各种 iota 都来一个。</summary>
@@ -963,6 +1019,17 @@ internal static class ClientTestCases
         run.Check("读档后书架上的键图案一样", shelf?.Pattern != null && shelf.Pattern.SigsEqual(expected) && shelf.Pattern.StartDir == expected.StartDir,
             shelf?.Pattern?.ToString() ?? "书架上没有东西");
         run.Check("读档后书架上的数据一样", shelf?.Datum != null && shelf.Datum.ValueEquals(ShelfIota()), shelf?.Datum?.ToString() ?? "");
+
+        // 大法术石板：图案和本世界的笔顺一样（本世界的笔顺表跟着世界存档读回来）
+        var wrongGreat = new List<string>();
+        foreach (var g in _arena.GreatSlates)
+        {
+            var gte = HexSlateEntity.FindAt(g.X, g.Y);
+            var def = PatternRegistry.FindById(g.Id);
+            var want = def == null ? null : PatternRegistry.PatternInThisWorld(def);
+            if (gte?.Pattern == null || want == null || !gte.Pattern.SigsEqual(want) || gte.Pattern.StartDir != want.StartDir) wrongGreat.Add(g.Id);
+        }
+        run.Check($"读档后大法术石板上是本世界的笔顺（{_arena.GreatSlates.Count} 块）", _arena.GreatSlates.Count > 0 && wrongGreat.Count == 0, string.Join("、", wrongGreat));
 
         // 挂轴框上挂着的图案
         var scroll = WallScrollEntity.FindAt(_arena.ScrollX, _arena.ScrollY);
