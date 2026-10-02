@@ -27,8 +27,8 @@ internal static class HexNetSync
         packet.Send();
     }
 
-    /// <summary>请求把某块石板的朝向改成指定方向。</summary>
-    public static void RequestSlateNormal(int x, int y, byte normal)
+    /// <summary>请求把某块石板换成指定的贴法（锤子敲）。</summary>
+    public static void RequestSlateAttach(int x, int y, Tiles.SlateAttach attach)
     {
         var packet = HexCastingTerraria.Instance?.GetPacket();
         if (packet == null) return;
@@ -36,7 +36,7 @@ internal static class HexNetSync
         packet.Write((byte)HexMessage.SlateNormal);
         packet.Write((short)x);
         packet.Write((short)y);
-        packet.Write(normal);
+        packet.Write((byte)attach);
         packet.Send();
     }
 
@@ -114,20 +114,21 @@ internal static class HexNetSync
         entity.Sync();
     }
 
-    /// <summary>服务端处理：改朝向。</summary>
-    public static void HandleSlateNormal(System.IO.BinaryReader reader, int whoAmI)
+    /// <summary>服务端处理：换贴法。撑不住的贴法不认（客户端和服务端看到的邻格可能刚好不一样）。</summary>
+    public static void HandleSlateAttach(System.IO.BinaryReader reader, int whoAmI)
     {
         int x = reader.ReadInt16();
         int y = reader.ReadInt16();
-        byte normal = reader.ReadByte();
+        byte attach = reader.ReadByte();
 
         if (!WorldGen.InWorld(x, y, 1)) return;
-        if (normal > (byte)Core.Casting.Circles.CircleDir.Right) return;
+        if (attach > (byte)Tiles.SlateAttach.RightBlock) return;
+        if (!Tiles.HexSlate.Supported(x, y, (Tiles.SlateAttach)attach)) return;
 
         var entity = Tiles.HexSlateEntity.FindAt(x, y);
         if (entity == null) return;
 
-        entity.SetNormal((Core.Casting.Circles.CircleDir)normal);
+        entity.Attach = (Tiles.SlateAttach)attach;
         entity.Sync();
     }
 

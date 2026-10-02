@@ -70,23 +70,14 @@ public sealed class AkashicBookshelf : ModTile
         spriteBatch.Draw(tex, pos, new Rectangle(variant * 18, 0, 16, 16), tint);
     }
 
-    /// <summary>键图案要画在所有方块之上，只能走 SpecialDraw；书架是实心方块，计数类型用 CustomSolid（理由见 <see cref="HexSlate.DrawEffects"/>）。</summary>
-    public override void DrawEffects(int i, int j, SpriteBatch spriteBatch, ref TileDrawInfo drawData)
-    {
-        if (Main.dedServ) return;
-        if (AkashicBookshelfEntity.FindAt(i, j)?.Pattern == null) return;
-        Main.instance.TilesRenderer.AddSpecialPoint(i, j, Terraria.GameContent.Drawing.TileDrawing.TileCounterType.CustomSolid);
-    }
+    /// <summary>
+    /// 鼠标指着存了东西的书架：旁边弹出键图案和存的内容（照泰拉告示牌，离多远都看得到）。
+    /// 原版 renderPatternForAkashicBookshelf 把键图案画在书架正面；泰拉一格只有 16 像素看不清，用户定改成悬停时看（2026-10-02）。
+    /// 书脊照旧按 iota 类型着色。
+    /// </summary>
+    public override void MouseOver(int i, int j) => Client.UI.TileHoverPanel.Hover(i, j);
 
-    /// <summary>原版 renderPatternForAkashicBookshelf：键图案画在书架正面（WORLDLY，默认配色，种子取方块位置）。</summary>
-    public override void SpecialDraw(int i, int j, SpriteBatch spriteBatch)
-    {
-        if (Main.dedServ) return;
-        var pattern = AkashicBookshelfEntity.FindAt(i, j)?.Pattern;
-        if (pattern == null) return;
-        PatternArt.QueueWorld(pattern, new Vector2(i * 16f, j * 16f), 16f,
-            Core.Canvas.PatternStyle.Worldly, Core.Canvas.PatternPalette.Default, (i * 31) ^ (j * 17));
-    }
+    public override void MouseOverFar(int i, int j) => Client.UI.TileHoverPanel.Hover(i, j);
 
     /// <summary>
     /// 原版 BlockAkashicBookshelf.use：拿卷轴 → 把这格的键抄到卷轴上；潜行 + 空手 → 清空这一格。

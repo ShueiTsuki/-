@@ -223,7 +223,7 @@
 | `Tiles/FletcherGaze.cs` | 制箭师促动石的「被盯着」计数（原版 BlockEntityLookingImpetus.serverTick）： |
 | `Tiles/HexDirectrix.cs` | 导线的公共基类。对应源项目 `BlockEmptyDirectrix` / `BlockBooleanDirectrix` / |
 | `Tiles/HexImpetus.cs` | 法术环对泰拉世界的访问实现。 |
-| `Tiles/HexSlate.cs` | 石板。对应源项目 `hexcasting:slate` —— **法术环的「指令」**。 |
+| `Tiles/HexSlate.cs` | 石板贴在哪（原版 AttachFace + FACING）。原版石板是 1/16 格厚的薄板，贴在旁边某个方块的一个面上， |
 | `Tiles/MiscDeco.cs` | 贴在墙上的装饰/光源方块的公共实现。 |
 | `Tiles/QuenchedAllayGlobal.cs` | 淬灵晶系方块照原版（BlockQuenchedAllay 与掉落表 quenched_allay.json）。放在 GlobalTile 里是因为这几个类由脚本生成 |
 | `Tiles/TileEntityRepair.cs` | 补上缺的图格实体。 |
@@ -256,6 +256,7 @@
 | `UI/PrimitiveBatch.cs` | 把 <see cref="PatternGeometry"/> 产出的三角形直接交给显卡。 |
 | `UI/RichText.cs` | 把 iota 的显示（<see cref="DisplayText"/>）画进泰拉： |
 | `UI/SpriteBatchBookCanvas.cs` | <see cref="IBookCanvas"/> 的游戏内实现：全部用 <c>Main.spriteBatch</c> 画（不切到图元绘制， |
+| `UI/TileHoverPanel.cs` | 鼠标指着刻了图案的石板、存了东西的阿卡夏书架时，在鼠标旁弹出一个框，画出上面的图案（书架另外写出存的内容）。 |
 
 ### Addons/
 

@@ -209,7 +209,7 @@ namespace HexCastingTerraria
 
                 case Content.Net.HexMessage.SlateNormal:
                     if (Main.netMode != NetmodeID.Server) return;
-                    Content.Net.HexNetSync.HandleSlateNormal(reader, whoAmI);
+                    Content.Net.HexNetSync.HandleSlateAttach(reader, whoAmI);
                     break;
 
                 case Content.Net.HexMessage.ResetCast:

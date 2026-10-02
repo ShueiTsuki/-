@@ -24,7 +24,7 @@ internal enum HexMessage : byte
     /// <summary>客户端 → 服务端：请求把图案写进某块石板。</summary>
     SlatePattern = 5,
 
-    /// <summary>客户端 → 服务端：请求改某块石板的朝向。</summary>
+    /// <summary>客户端 → 服务端：请求改某块石板的贴法（锤子敲；名字沿用以前的「朝向」）。</summary>
     SlateNormal = 6,
 
     /// <summary>客户端 → 服务端：请求启动某个原动力的法术环。</summary>

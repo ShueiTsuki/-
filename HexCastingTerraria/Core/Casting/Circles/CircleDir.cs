@@ -78,6 +78,15 @@ public static class CircleDirs
         _ => CircleDir.Left,
     };
 
+    /// <summary>顺时针转 90°（屏幕上：上 → 右 → 下 → 左 → 上）。锤子敲促动石 / 导向石时用。</summary>
+    public static CircleDir Clockwise(this CircleDir dir) => dir switch
+    {
+        CircleDir.Up => CircleDir.Right,
+        CircleDir.Right => CircleDir.Down,
+        CircleDir.Down => CircleDir.Left,
+        _ => CircleDir.Up,
+    };
+
     /// <summary>沿该方向走一步。</summary>
     public static (int X, int Y) Offset(this CircleDir dir, int x, int y)
     {

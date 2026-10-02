@@ -67,6 +67,7 @@ internal static class ClientTestCases
             ("施法", Spells),
             ("网格大小", GridZoom),
             ("大法术石板", GreatSpellSlates),
+            ("法术环部件", CircleParts),
             ("存档", SaveState),
         };
     }
@@ -793,6 +794,123 @@ internal static class ClientTestCases
     /// 本世界的全部大法术（每个世界笔顺不同，PatternRegistry.PerWorldIds）各刻一块石板，排在场地顶上，放大拍一张。
     /// 石板正面要真的画出图案；下一段读档后图案要和本世界的笔顺一样（本世界的笔顺跟着世界存档走）。
     /// </summary>
+    /// <summary>鼠标指着 (tx, ty) 这一格（镜头对准它），等弹框画出来拍一张；弹框画的是不是这一格。</summary>
+    private static IEnumerable<int> HoverShot(ClientTestRun run, int tx, int ty, string name, string what)
+    {
+        Main.hideUI = false;
+        var p = Main.LocalPlayer;
+        var target = new Vector2(tx * 16 + 8, ty * 16 + 8);
+        ClientTestSystem.Camera = target;
+        ClientTestSystem.MouseOffset = target - p.Center;
+        yield return 10;
+        foreach (int w in Shot(name)) yield return w;
+        var shown = Client.UI.TileHoverPanel.LastShown;
+        run.Check(what, shown is { } s && s.X == tx && s.Y == ty, shown?.ToString() ?? "没有弹框");
+        ClientTestSystem.Camera = null;
+        ClientTestSystem.MouseOffset = new Vector2(400, 0);
+        yield return 2;
+    }
+
+    // ── 法术环部件 ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 石板的五种贴法、促动石 / 导向石的锤子转向和放置规则，最后在背景墙上搭一个闭合的环真的走一圈。
+    /// 原版：石板是贴在一个方块面上的薄板，撑着它的东西没了就掉；促动石、导向石是完整方块；贴在背景墙上的石板四个方向都通。
+    /// </summary>
+    private static IEnumerable<int> CircleParts(ClientTestRun run)
+    {
+        int slateType = ModContent.TileType<HexSlate>();
+        var slateData = TileObjectData.GetTileData(slateType, 0);
+        int floor = SpellFloor;
+        int left = _arena.Left;
+        var slateTile = ModContent.GetInstance<HexSlate>();
+
+        // 放置规则：半空中（没有背景墙、四周没方块）放不下；挨着方块或有背景墙就行
+        int fx = _arena.Left + 60, fy = _arena.Top - 3;
+        run.Check("石板不能浮空放", !slateTile.CanPlace(fx, fy) && !Main.tile[fx, fy].HasTile);
+        run.Check("促动石 / 导向石不能浮空放", !CircleFacing.CanPlaceBlock(fx, fy));
+        run.Check("促动石 / 导向石挨着方块就能放（不用下面有地面）", CircleFacing.CanPlaceBlock(fx, _arena.Top - 1));
+
+        // 背景墙被拆掉：贴墙的石板掉下来
+        int wx = left + 64, wy = floor - 6;
+        var r = PlaceObject(slateType, 0, wx, wy, slateData);
+        var wte = r.Ok ? HexSlateEntity.FindAt(wx, wy) : null;
+        run.Check("半空里贴着背景墙放了一块石板", wte?.ResolveAttach() == SlateAttach.Wall);
+        var before = ActiveItems();
+        WorldGen.KillWall(wx, wy);
+        run.Check("拆掉背景墙：贴墙的石板掉下来", !Main.tile[wx, wy].HasTile && NewItems(before).Any(i => Main.item[i].type == ModContent.ItemType<HexSlateItem>()),
+            Describe(NewItems(before)));
+        foreach (int i in NewItems(before)) Main.item[i].active = false;
+
+        // 促动石、导向石：锤子敲一下顺时针转 90°
+        var impetus = _arena.Placements.FirstOrDefault(pl => pl.Tile == nameof(HexImpetus) && pl.Placed);
+        var ie = impetus == null ? null : HexImpetusEntity.FindAt(impetus.X, impetus.Y);
+        if (ie != null)
+        {
+            var d0 = ie.StartDir;
+            TileLoader.Slope(impetus!.X, impetus.Y, ModContent.TileType<HexImpetus>());
+            run.Check("锤子敲促动石：出口顺时针转 90°", ie.StartDir == d0.Clockwise(), $"{d0} → {ie.StartDir}");
+        }
+        else run.Check("找到场地上的促动石", false);
+        var directrix = _arena.Placements.FirstOrDefault(pl => pl.Tile == nameof(HexDirectrixEmpty) && pl.Placed);
+        var de = directrix == null ? null : HexDirectrixEntity.FindAt(directrix.X, directrix.Y);
+        if (de != null)
+        {
+            var d0 = de.Facing;
+            TileLoader.Slope(directrix!.X, directrix.Y, ModContent.TileType<HexDirectrixEmpty>());
+            run.Check("锤子敲导向石：轴的朝向顺时针转 90°", de.Facing == d0.Clockwise(), $"{d0} → {de.Facing}");
+        }
+        else run.Check("找到场地上的导向石", false);
+
+        // 在施法区右边的背景墙上搭一个环：促动石出口朝右，石板绕一圈（上面一排、右边一列、下面一排、左边往上回到促动石）。
+        // 竖着的那两段要往上 / 往下走：贴墙的石板四个方向都通才走得通（以前的「默认朝上」在这里会断）
+        int ax = left + 44, ay = floor - 7;
+        var ring = new List<(int X, int Y)>();
+        for (int x = ax + 1; x <= ax + 4; x++) ring.Add((x, ay));
+        ring.Add((ax + 4, ay + 1));
+        for (int x = ax + 4; x >= ax; x--) ring.Add((x, ay + 2));
+        ring.Add((ax, ay + 1));
+        int impetusType = ModContent.TileType<HexImpetus>();
+        var ri = PlaceObject(impetusType, 0, ax, ay, TileObjectData.GetTileData(impetusType, 0));
+        var ringImpetus = ri.Ok ? HexImpetusEntity.FindAt(ax, ay) : null;
+        bool allSlates = true;
+        foreach (var (x, y) in ring)
+        {
+            allSlates &= PlaceObject(slateType, 0, x, y, slateData).Ok && HexSlateEntity.FindAt(x, y)?.ResolveAttach() == SlateAttach.Wall;
+        }
+        run.Check("在背景墙上搭好了一个环（促动石 + 一圈贴墙的石板）", ringImpetus != null && allSlates);
+        if (ringImpetus != null)
+        {
+            // 环上一块石板刻「意识之精思」，走到时压施法者（不费媒质）
+            HexSlateEntity.FindAt(ax + 2, ay)!.Pattern = Pat("get_caster");
+            HexImpetusEntity.Request(ax, ay, ImpetusAction.SetDir, (byte)CircleDir.Right);
+            HexImpetusEntity.Request(ax, ay, ImpetusAction.InsertMedia, 49);
+            HexImpetusEntity.Request(ax, ay, ImpetusAction.Start, 0);
+            run.Check("环启动了", ringImpetus.IsRunning, ringImpetus.DisplayMsg ?? "");
+            Main.hideUI = true;
+            ClientTestSystem.Camera = new Vector2((ax + 2) * 16 + 8, (ay + 1) * 16 + 8);
+            float zoom = Main.GameZoomTarget;
+            Main.GameZoomTarget = 2f;
+            int waited = 0;
+            bool shotTaken = false;
+            while (ringImpetus.IsRunning && waited < 600)
+            {
+                if (!shotTaken && waited >= 20)
+                {
+                    shotTaken = true;
+                    foreach (int w in Shot("ring-running")) yield return w;
+                }
+                waited++;
+                yield return 0;
+            }
+            Main.GameZoomTarget = zoom;
+            ClientTestSystem.Camera = null;
+            Main.hideUI = false;
+            run.Check("环走完一圈，回到促动石停下，没有报错", !ringImpetus.IsRunning && ringImpetus.DisplayMsg == null,
+                $"等了 {waited} 刻；{ringImpetus.DisplayMsg ?? "没有消息"}");
+        }
+    }
+
     private static IEnumerable<int> GreatSpellSlates(ClientTestRun run)
     {
         int slateType = ModContent.TileType<HexSlate>();
@@ -895,7 +1013,8 @@ internal static class ClientTestCases
         bool wrote = focus.ModItem is ItemIotaStorage storage && storage.WriteIota(PersistIota(), simulate: false);
         run.Check("核心写进了数据", wrote);
 
-        // 石板刻上图案、朝右；刻之前、刻之后各拍一张放大的，石板那一格的像素要变（图案真的画出来了）
+        // 石板刻上图案：刻之前、刻之后各拍一张放大的，石板换成「刻了图案」的样子（那一格的像素要变）；
+        // 鼠标指上去弹出图案；然后锤子敲一下换贴法（贴墙 → 贴地面），存档后看贴法还在
         var slate = _arena.Placements.FirstOrDefault(pl => pl.Tile == nameof(HexSlate) && pl.Placed);
         var te = slate == null ? null : HexSlateEntity.FindAt(slate.X, slate.Y);
         run.Check("找到场地上的石板", te != null);
@@ -907,10 +1026,17 @@ internal static class ClientTestCases
             foreach (int w in ZoomedShot(slate.X, slate.Y, "slate-blank")) yield return w;
             var blank = ClientTestSystem.LastShotPixels;
             te.Pattern = PersistPattern();
-            te.SetNormal(CircleDir.Right);
             foreach (int w in ZoomedShot(slate.X, slate.Y, "slate")) yield return w;
             int changed = ChangedAroundCenter(blank, ClientTestSystem.LastShotPixels);
-            run.Check("石板上画出了刻的图案", changed >= 20, $"石板那一格变了 {changed} 个像素");
+            run.Check("石板换成了刻了图案的样子", changed >= 20, $"石板那一格变了 {changed} 个像素");
+            foreach (int w in HoverShot(run, slate.X, slate.Y, "slate-hover", "鼠标指着石板弹出图案")) yield return w;
+
+            run.Check("场地上的石板贴在背景墙上（有墙先贴墙）", te.ResolveAttach() == SlateAttach.Wall, te.ResolveAttach().ToString());
+            TileLoader.Slope(slate.X, slate.Y, ModContent.TileType<HexSlate>());
+            run.Check("锤子敲一下：换成贴在下面的方块上", te.Attach == SlateAttach.Floor, te.Attach.ToString() ?? "");
+            TileLoader.Slope(slate.X, slate.Y, ModContent.TileType<HexSlate>());
+            run.Check("再敲一下：上下左右没有别的方块，回到贴墙", te.Attach == SlateAttach.Wall, te.Attach.ToString() ?? "");
+            TileLoader.Slope(slate.X, slate.Y, ModContent.TileType<HexSlate>());
         }
 
         // 阿卡夏书架：存一条（键图案 + 数据），键图案画在书架正面
@@ -926,7 +1052,8 @@ internal static class ClientTestCases
             run.Check("书架存进了一条", AkashicBookshelfEntity.FindAt(shelf.X, shelf.Y)?.Pattern != null);
             foreach (int w in ZoomedShot(shelf.X, shelf.Y, "shelf")) yield return w;
             int changed = ChangedAroundCenter(blank, ClientTestSystem.LastShotPixels);
-            run.Check("书架上画出了键图案", changed >= 20, $"书架那一格变了 {changed} 个像素");
+            run.Check("书架换成了有书的样子", changed >= 20, $"书架那一格变了 {changed} 个像素");
+            foreach (int w in HoverShot(run, shelf.X, shelf.Y, "shelf-hover", "鼠标指着书架弹出键图案和存的内容")) yield return w;
         }
 
         // 大型挂轴框（3×3，原版 blockSize 3）挂上图案：图案画满整张卷轴
@@ -1012,7 +1139,7 @@ internal static class ClientTestCases
         var expected = PersistPattern();
         run.Check("读档后石板上的图案一样", te?.Pattern != null && te.Pattern.SigsEqual(expected) && te.Pattern.StartDir == expected.StartDir,
             te?.Pattern?.ToString() ?? "石板没了或者是空的");
-        run.Check("读档后石板朝向一样", te?.Normal == CircleDir.Right, te?.Normal.ToString() ?? "");
+        run.Check("读档后石板的贴法一样（贴在下面的方块上）", te?.Attach == SlateAttach.Floor, te?.Attach.ToString() ?? "");
 
         // 阿卡夏书架上存的那一条
         var shelf = AkashicBookshelfEntity.FindAt(_arena.ShelfX, _arena.ShelfY);
@@ -1030,6 +1157,19 @@ internal static class ClientTestCases
             if (gte?.Pattern == null || want == null || !gte.Pattern.SigsEqual(want) || gte.Pattern.StartDir != want.StartDir) wrongGreat.Add(g.Id);
         }
         run.Check($"读档后大法术石板上是本世界的笔顺（{_arena.GreatSlates.Count} 块）", _arena.GreatSlates.Count > 0 && wrongGreat.Count == 0, string.Join("、", wrongGreat));
+        if (_arena.GreatSlates.Count > 0)
+        {
+            // 这排石板放在场地顶上（外面没有背景墙），贴的是下面的石头；把石头挖掉，石板掉下来，图案跟着物品走
+            var g0 = _arena.GreatSlates[0];
+            run.Check("大法术石板贴在下面的方块上", HexSlateEntity.FindAt(g0.X, g0.Y)?.ResolveAttach() == SlateAttach.Floor);
+            var before = ActiveItems();
+            WorldGen.KillTile(g0.X, g0.Y + 1, noItem: true);
+            var drops = NewItems(before);
+            var want = PatternRegistry.PatternInThisWorld(PatternRegistry.FindById(g0.Id)!);
+            bool dropped = drops.Select(i => Main.item[i].ModItem).OfType<HexSlateItem>().Any(it => it.Pattern != null && it.Pattern.SigsEqual(want));
+            run.Check("挖掉撑着石板的方块：石板掉下来，带着图案", !Main.tile[g0.X, g0.Y].HasTile && dropped, Describe(drops));
+            foreach (int i in drops) Main.item[i].active = false;
+        }
 
         // 挂轴框上挂着的图案
         var scroll = WallScrollEntity.FindAt(_arena.ScrollX, _arena.ScrollY);

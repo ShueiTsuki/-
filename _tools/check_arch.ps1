@@ -627,6 +627,15 @@ foreach ($kv in $hookSrc.GetEnumerator()) {
 }
 Check "图格实体的放置钩子用 Generic_HookPostPlaceMyPlayer（Hook_AfterPlacement 默认不放实体）" ($badHook.Count -eq 0) ($badHook -join ', ')
 
+# ── 图格实体的每帧逻辑写在 Update：PreGlobalUpdate / PostGlobalUpdate 只对每种图格实体的模板调一次，世界里的实体收不到。
+#    2026-10-02 促动石推进法术环、导向石的通电倒计时都写在 PostGlobalUpdate 里，环启动后一格都不走；
+#    离线测试和专用服务器测试都不真走环，客户端测试搭了一个环才发现 ──
+$badGlobal = New-Object System.Collections.Generic.List[string]
+foreach ($kv in $hookSrc.GetEnumerator()) {
+    if ($kv.Value -match 'override void (PreGlobalUpdate|PostGlobalUpdate)\s*\(') { $badGlobal.Add((Rel $kv.Key $mod) + ' -> ' + $Matches[1]) }
+}
+Check "图格实体不用 PreGlobalUpdate / PostGlobalUpdate 推进自己（只对模板调）" ($badGlobal.Count -eq 0) ($badGlobal -join ', ')
+
 # ── 本地化文件：不加引号的值不能以 { [ , : 开头（Hjson 会当成对象 / 数组，整个语言文件加载失败、全部退回键名；只有专用服务器测试才看得出来）──
 $badHjson = New-Object System.Collections.Generic.List[string]
 foreach ($f in (Get-ChildItem (Join-Path $mod 'Localization') -Filter *.hjson)) {

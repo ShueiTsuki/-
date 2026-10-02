@@ -88,6 +88,19 @@ public readonly struct CircleComponent
     // ── 三种构造方式，对应源项目的三类方块 ──────────────────────────
 
     /// <summary>
+    /// 朝向不在画面这个平面里的普通部件：贴在背景墙上的石板，朝向是「朝屏幕外」。
+    /// 原版平铺在地上的石板朝上，环在水平面里前后左右都能走；这里一样，上下左右都能进、都能出。
+    /// `Facing` 没有意义，填 Up 占位。
+    /// </summary>
+    public static CircleComponent OutOfPlane(CircleComponentKind kind) => new()
+    {
+        Kind = kind,
+        AllowedEntries = CircleDirMask.All,
+        ExitMask = CircleDirMask.All,
+        Facing = CircleDir.Up,
+    };
+
+    /// <summary>
     /// 普通部件（石板）：不能往 `normal` 出去、不能从 `normal` 的反方向进来。
     /// 注意**允许**沿 `normal` 的反方向穿过（源项目那行是注释掉的）。
     /// </summary>

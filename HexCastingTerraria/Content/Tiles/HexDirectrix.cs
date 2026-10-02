@@ -44,10 +44,9 @@ public abstract class HexDirectrixBase : ModTile
         HitSound = SoundID.Tink;
         AddMapEntry(new Microsoft.Xna.Framework.Color(100, 84, 130));
 
+        // 原版是完整方块：不用下面有东西撑着，挨着方块或背景墙就能放（见 CircleFacing.CanPlaceBlock）
         TileObjectData.newTile.CopyFrom(TileObjectData.Style1x1);
-        TileObjectData.newTile.AnchorBottom = new AnchorData(
-            AnchorType.SolidTile | AnchorType.SolidWithTop | AnchorType.Table,
-            TileObjectData.newTile.Width, 0);
+        TileObjectData.newTile.AnchorBottom = AnchorData.Empty;
         TileObjectData.newTile.HookPostPlaceMyPlayer = ModContent.GetInstance<HexDirectrixEntity>().Generic_HookPostPlaceMyPlayer;   // 1.4.4 的 Hook_AfterPlacement 默认什么都不放，见 TileEntityRepair
         TileObjectData.addTile(Type);
     }
@@ -66,10 +65,41 @@ public abstract class HexDirectrixBase : ModTile
         ModContent.GetInstance<HexDirectrixEntity>().Kill(i, j);
     }
 
-    /// <summary>贴图第 2 帧（x = 18）是亮着的样子（原版 *_lit），环走到它时切过去。</summary>
+    /// <summary>
+    /// 图集（原版的 top 面，按出口方向转）：行 = 出口方向（<see cref="CircleFacing.Row"/>），列 = 状态：
+    /// 空白 [暗, 亮]（环正走到它时亮）；红石 [没通电, 通电]；布尔 [都不亮, 真, 假]（原版 STATE）。
+    /// </summary>
     public override void AnimateIndividualTile(int type, int i, int j, ref int frameXOffset, ref int frameYOffset)
     {
-        if (HexDirectrixEntity.FindAt(i, j) is { IsRunning: true }) frameXOffset = 18;
+        var entity = HexDirectrixEntity.FindAt(i, j);
+        frameYOffset = CircleFacing.Row(entity?.Facing ?? CircleDir.Right) * 18;
+        int column = Kind switch
+        {
+            CircleComponentKind.DirectrixRedstone => entity is { IsPowered: true } ? 1 : 0,
+            CircleComponentKind.DirectrixBool => (int)(entity?.BoolState ?? DirectrixBool.Neither),
+            _ => CircleCursor.IsActive(i, j) ? 1 : 0,
+        };
+        frameXOffset = column * 18;
+    }
+
+    public override bool CanPlace(int i, int j) => CircleFacing.CanPlaceBlock(i, j);
+
+    /// <summary>锤子敲一下：轴的朝向顺时针转 90°（用户定，2026-10-02；原版放下以后改不了）。只在挥锤的本地客户端跑，联机发给服务端改。</summary>
+    public override bool Slope(int i, int j)
+    {
+        if (HexDirectrixEntity.FindAt(i, j) is not { } entity) return false;
+        var dir = entity.Facing.Clockwise();
+        if (Main.netMode == NetmodeID.MultiplayerClient)
+        {
+            Content.Net.HexNetSync.RequestDirectrixFacing(i, j, (byte)dir);
+        }
+        else
+        {
+            entity.SetFacing(dir);
+            entity.Sync();
+        }
+        CircleFacing.PlayHammer(i, j);
+        return false;
     }
 
     /// <summary>
@@ -93,8 +123,8 @@ public abstract class HexDirectrixBase : ModTile
     }
 
     /// <summary>
-    /// 原版 placeStateDirAndSneak：朝向 = 放置时视线最接近的方向，潜行反过来；之后不能再改
-    ///（这里曾经是「右键转 90°」，原版没有）。
+    /// 原版 placeStateDirAndSneak：朝向 = 放置时视线最接近的方向，潜行反过来；原版之后不能再改，
+    /// 这里另外可以拿锤子敲（见 <see cref="Slope"/>，用户定）。曾经是「右键转 90°」，原版没有。
     /// </summary>
     public override void PlaceInWorld(int i, int j, Item item)
     {
@@ -109,8 +139,14 @@ public abstract class HexDirectrixBase : ModTile
         }
     }
 
-    public override void PostDraw(int i, int j, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
-        => CircleFacing.DrawArrow(spriteBatch, i, j, HexDirectrixEntity.FindAt(i, j)?.Facing ?? CircleDir.Right);
+}
+
+/// <summary>布尔导向石显示的状态（原版 BlockBooleanDirectrix.STATE），也是图集的列号。</summary>
+public enum DirectrixBool : byte
+{
+    Neither = 0,
+    True = 1,
+    False = 2,
 }
 
 /// <summary>空导线：随机出轴的一端。</summary>
@@ -140,6 +176,9 @@ public sealed class HexDirectrixEntity : ModTileEntity
     /// <summary>是否正在被环走过（仅供发光显示）。</summary>
     public bool IsRunning { get; set; }
 
+    /// <summary>布尔导向石：这一轮经过时取到的值（显示用，环停下回到 Neither；不存档）。</summary>
+    public DirectrixBool BoolState { get; set; }
+
     /// <summary>红石信号是否有效。见 `HitWire` 的说明（泰拉没有直接的「当前通电」查询）。</summary>
     public bool IsPowered { get; private set; }
 
@@ -156,7 +195,8 @@ public sealed class HexDirectrixEntity : ModTileEntity
         _powerTicks = PowerHoldTicks;
     }
 
-    public override void PostGlobalUpdate()
+    /// <summary>供电保持的倒计时。必须是 Update：PostGlobalUpdate 只对模板调（见 HexImpetusEntity.Update），通上一次电就永远「通电」。</summary>
+    public override void Update()
     {
         if (!IsPowered) return;
 
@@ -218,6 +258,8 @@ public sealed class HexDirectrixEntity : ModTileEntity
     {
         writer.Write((byte)Facing);
         writer.Write(IsRunning);
+        writer.Write(IsPowered);
+        writer.Write((byte)BoolState);
     }
 
     public override void NetReceive(System.IO.BinaryReader reader)
@@ -225,5 +267,8 @@ public sealed class HexDirectrixEntity : ModTileEntity
         byte d = reader.ReadByte();
         Facing = d <= (byte)CircleDir.Right ? (CircleDir)d : CircleDir.Right;
         IsRunning = reader.ReadBoolean();
+        IsPowered = reader.ReadBoolean();
+        byte s = reader.ReadByte();
+        BoolState = s <= (byte)DirectrixBool.False ? (DirectrixBool)s : DirectrixBool.Neither;
     }
 }

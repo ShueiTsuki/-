@@ -757,8 +757,9 @@ Mods: {
 					'''
 					One instruction of a spell circle
 					Right click holding a pattern item to write the pattern
-					Right click empty-handed to rotate 90° clockwise
-					Orientation must be perpendicular to the control flow
+					On a background wall the circle can flow in any direction
+					On a block it will not flow away from that block
+					Hammer it to switch where it is attached; it drops if its support is removed
 					'''
 			}
 			HexImpetusItem: {
@@ -767,14 +768,15 @@ Mods: {
 					'''
 					Starts a spell circle when right-clicked
 					Right-click holding a media item to insert its media
-					Faces the mouse direction when placed
+					Faces the mouse direction when placed; hammer it to turn clockwise
 					'''
 			}
 			HexImpetusEmptyItem: {
 				DisplayName: Empty Impetus
 				Tooltip:
 					'''
-					Media flows out only in the direction of the arrow
+					Media flows out only through its exit
+					Faces the mouse direction when placed; hammer it to turn clockwise
 					Brainsweep a Goblin Tinkerer / Arms Dealer / Nurse standing on it to make an impetus
 					'''
 			}
@@ -783,6 +785,7 @@ Mods: {
 				Tooltip:
 					'''
 					Starts a spell circle on a wire signal
+					Faces the mouse direction when placed; hammer it to turn clockwise
 					Right-click with a focus holding a player to bind them
 					Right-click holding a media item to insert its media
 					'''
@@ -793,7 +796,7 @@ Mods: {
 					'''
 					Starts a spell circle after being looked at for 1.5 seconds
 					Right-click holding a media item to insert its media
-					Faces the mouse direction when placed
+					Faces the mouse direction when placed; hammer it to turn clockwise
 					'''
 			}
 			HexDirectrixEmptyItem: {
@@ -801,23 +804,23 @@ Mods: {
 				Tooltip:
 					'''
 					Media leaves from a random end of its axis
-					Faces the mouse direction when placed
+					Faces the mouse direction when placed; hammer it to turn clockwise
 					'''
 			}
 			HexDirectrixBooleanItem: {
 				DisplayName: Shepherd Directrix
 				Tooltip:
 					'''
-					Pops a boolean: true exits against the arrow, false along it
-					Faces the mouse direction when placed
+					Pops a boolean: false exits the way it faces, true the other way
+					Faces the mouse direction when placed; hammer it to turn clockwise
 					'''
 			}
 			HexDirectrixRedstoneItem: {
 				DisplayName: Mason Directrix
 				Tooltip:
 					'''
-					Powered: exits along the arrow; otherwise against it
-					Faces the mouse direction when placed
+					Powered: exits the way it faces; otherwise the other way
+					Faces the mouse direction when placed; hammer it to turn clockwise
 					'''
 			}
 		}

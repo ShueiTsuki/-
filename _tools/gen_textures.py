@@ -124,20 +124,91 @@ for name in FRAMED_KEEP:
 
 # ── 固定帧的方块 ──────────────────────────────────────────────────
 C = 'block/circle/'
+
+
+def slate_glyph():
+    """原版「已写入石板」物品图标上那几点紫色刻痕：和空白石板图标逐像素比出来的 [(x, y, 颜色)]。"""
+    blank, written = src('item/slate_blank'), src('item/slate_written')
+    return [(x, y, written.getpixel((x, y))) for y in range(16) for x in range(16)
+            if written.getpixel((x, y)) != blank.getpixel((x, y))]
+
+
+def slate_sheet():
+    """
+    石板图集：列 = [空白, 刻了图案]，行 = 贴法 [背景墙, 地面, 天花板, 左边方块, 右边方块]（Content/Tiles/HexSlate.cs 的 SlateAttach）。
+    原版石板是 1/16 格厚的薄板，贴在一个方块面上：贴背景墙时正面朝着屏幕，画整格；贴在旁边方块上时从侧面看，
+    画成 4 像素厚的薄板（原版 1 像素在泰拉里看不见，用户定加厚到 4 像素），取原版贴图边上那 4 行 / 列。
+    刻了图案：整格的正中放原版「已写入石板」图标上的刻痕；薄板上在中间点两点刻痕的颜色。
+    原版是把图案直接画在方块上，泰拉一格太小看不清，改成两种样子 + 鼠标悬停显示图案（用户定，2026-10-02）。
+    """
+    face = src('block/slate')
+    glyph = slate_glyph()
+    bright = [c for (_, _, c) in glyph if sum(c[:3]) > 600][:2]
+    sheet = Image.new('RGBA', (34, 18 * 5 - 2), (0, 0, 0, 0))
+    for row, side in enumerate(['wall', 'floor', 'ceiling', 'left', 'right']):
+        for col in range(2):
+            cell = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+            if side == 'wall':
+                cell.paste(face, (0, 0))
+                if col == 1:
+                    for (x, y, c) in glyph:
+                        if 0 <= y + 2 < 16:
+                            cell.putpixel((x, y + 2), c)
+            else:
+                horizontal = side in ('floor', 'ceiling')
+                strip = face.crop((0, 0, 16, 4)) if horizontal else face.crop((0, 0, 4, 16))
+                at = {'floor': (0, 12), 'ceiling': (0, 0), 'left': (0, 0), 'right': (12, 0)}[side]
+                cell.paste(strip, at)
+                if col == 1:
+                    for k, c in enumerate(bright):
+                        cell.putpixel((at[0] + 7 + k, at[1] + 1 + k) if horizontal else (at[0] + 1 + k, at[1] + 7 + k), c)
+            sheet.paste(cell, (col * 18, row * 18))
+    return sheet
+
+
+def rotated(im, facing):
+    """原版的 top 面：图的上边是出口（facing）那一侧。泰拉看法术环 = 从环的上方往下看，按出口方向转。"""
+    return {'up': im, 'right': im.rotate(-90), 'down': im.rotate(180), 'left': im.rotate(90)}[facing]
+
+
+def circle_sheet(tops):
+    """
+    促动石 / 导向石图集：列 = 状态（tops 的顺序），行 = 出口方向 [上, 右, 下, 左]（只有画面里的四个方向）。
+    以前用的是原版的正面（front，有「脸」的那一面），看上去像朝着屏幕，再画一个小箭头标出口（用户指出不该有朝向屏幕的样子）。
+    """
+    sheet = Image.new('RGBA', (18 * len(tops) - 2, 18 * 4 - 2), (0, 0, 0, 0))
+    for row, facing in enumerate(['up', 'right', 'down', 'left']):
+        for col, t in enumerate(tops):
+            sheet.paste(rotated(t, facing), (col * 18, row * 18))
+    return sheet
+
+
+CIRCLE = {
+    'HexImpetus': ([C + 'impetus/rightclick/top_dim', C + 'impetus/rightclick/top_lit'], C + 'impetus/rightclick/front_dim'),
+    'HexImpetusLook': ([C + 'impetus/look/top_dim', C + 'impetus/look/top_lit'], C + 'impetus/look/front_dim'),
+    'HexImpetusRedstone': ([C + 'impetus/redstone/top_dim', C + 'impetus/redstone/top_lit'], C + 'impetus/redstone/front_dim'),
+    'HexImpetusEmpty': ([C + 'impetus/empty/top_dim', C + 'impetus/empty/top_lit'], C + 'impetus/empty/front_dim'),
+    'HexDirectrixEmpty': ([C + 'directrix/empty/top_dim', C + 'directrix/empty/top_lit'], C + 'directrix/empty/front_dim'),
+    # 布尔：[都不亮, 真, 假]（原版 STATE neither / true / false：媒质经过时按取到的值亮一头，环停下回到都不亮）
+    'HexDirectrixBoolean': ([C + 'directrix/boolean/top_neither', C + 'directrix/boolean/top_true', C + 'directrix/boolean/top_false'],
+                            C + 'directrix/boolean/front_dim_false'),
+    # 红石：[没通电, 通电]（通电时亮出口那一头）
+    'HexDirectrixRedstone': ([C + 'directrix/redstone/top_unpowered', C + 'directrix/redstone/top_powered'],
+                             C + 'directrix/redstone/front_dim_unpowered'),
+}
+for name, (tops, front) in CIRCLE.items():
+    save(circle_sheet([src(t) for t in tops]), 'Tiles', name + '.png')
+    # 物品图标还用原版的正面：原版物品是带正面的方块模型，一眼认得出是哪种
+    save(x2(src(front)), 'Items', 'Blocks', name + '.png')
+
+save(slate_sheet(), 'Tiles', 'HexSlate.png')
+save(x2(src('block/slate')), 'Items', 'Blocks', 'HexSlate.png')
+
 FIXED = {
-    'HexSlate': [src('block/slate')],
     'ScrollPaper': [src('block/scroll_paper')],
     'AncientScrollPaper': [src('block/ancient_scroll_paper')],
     'ScrollPaperLantern': [src('block/scroll_paper_lantern_side')],
     'AncientScrollPaperLantern': [src('block/ancient_scroll_paper_lantern_side')],
-    # 促动石 / 导向石：正面（原版的「脸」），暗 + 亮两帧；出口方向另画箭头
-    'HexImpetus': [src(C + 'impetus/rightclick/front_dim'), src(C + 'impetus/rightclick/front_lit')],
-    'HexImpetusLook': [src(C + 'impetus/look/front_dim'), src(C + 'impetus/look/front_lit')],
-    'HexImpetusRedstone': [src(C + 'impetus/redstone/front_dim'), src(C + 'impetus/redstone/front_lit')],
-    'HexImpetusEmpty': [src(C + 'impetus/empty/front_dim'), src(C + 'impetus/empty/front_lit')],
-    'HexDirectrixEmpty': [src(C + 'directrix/empty/front_dim'), src(C + 'directrix/empty/front_lit')],
-    'HexDirectrixBoolean': [src(C + 'directrix/boolean/front_dim_false'), src(C + 'directrix/boolean/front_lit_false')],
-    'HexDirectrixRedstone': [src(C + 'directrix/redstone/front_dim_unpowered'), src(C + 'directrix/redstone/front_lit_powered')],
 }
 for name, faces in FIXED.items():
     save(frames(faces), 'Tiles', name + '.png')
@@ -148,7 +219,7 @@ save(x2(existing_face('Tiles', 'AmethystSconce.png')), 'Items', 'Blocks', 'Ameth
 # 促动石物品沿用各自类名的贴图路径
 for tile, item in [('HexImpetus', 'HexImpetusItem'), ('HexImpetusLook', 'HexImpetusLookItem'),
                    ('HexImpetusRedstone', 'HexImpetusRedstoneItem'), ('HexImpetusEmpty', 'HexImpetusEmptyItem')]:
-    save(x2(FIXED[tile][0]), 'Items', item + '.png')
+    save(x2(src(CIRCLE[tile][1])), 'Items', item + '.png')
 
 # ── 物品（原版 ×2）────────────────────────────────────────────────
 ITEMS = {

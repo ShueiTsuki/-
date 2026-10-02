@@ -5,8 +5,8 @@ using HexCastingTerraria.Content.Net;
 using HexCastingTerraria.Core.Casting.Circles;
 using HexCastingTerraria.Core.Casting.Iotas;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
-using Terraria.Enums;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -15,49 +15,182 @@ using Terraria.ObjectData;
 namespace HexCastingTerraria.Content.Tiles;
 
 /// <summary>
+/// 石板贴在哪（原版 AttachFace + FACING）。原版石板是 1/16 格厚的薄板，贴在旁边某个方块的一个面上，
+/// 朝向 = 那一面朝外的方向。泰拉的画面是一个平面，于是有五种：
+/// 贴背景墙（朝屏幕外），贴下面 / 上面 / 左边 / 右边的方块（朝上 / 朝下 / 朝右 / 朝左）。
+/// 存档按字节存，顺序不能改。
+/// </summary>
+public enum SlateAttach : byte
+{
+    Wall = 0,
+    Floor = 1,
+    Ceiling = 2,
+    LeftBlock = 3,
+    RightBlock = 4,
+}
+
+/// <summary>
 /// 石板。对应源项目 `hexcasting:slate` —— **法术环的「指令」**。
 ///
 /// 注意：关键机制（读 `BlockSlate.acceptControlFlow` 得到）：
 /// **石板存一个图案，走环时执行它**；空石板是直通（只改流向，不执行任何东西）。
 /// 所以环是**可改写的物理程序** —— 换掉某块石板就改了程序。
 ///
-/// ## 朝向决定控制流怎么走
+/// ## 贴法决定控制流怎么走（照原版 BlockSlate）
 ///
-/// 每块石板有一个「朝外」方向 `Normal`，它同时决定：
-///   - **能往哪出去**：不能往 `Normal` 本身出去
-///   - **不能从哪进来**：不能从 `Normal` 的反方向进来
+/// 朝向（normalDir）= 贴着的那一面朝外的方向：不能往朝向出去，不能顺着朝向的反方向进来。
+///   - 贴背景墙：朝屏幕外，画面里上下左右都能走 —— 原版平铺在地上的环就是这样（石板朝上，环在水平面里随便走）；
+///   - 贴下面的方块（地面）：朝上，不往上出去；贴天花板朝下；贴左边方块朝右；贴右边方块朝左。
+/// 贴法由**贴在哪**决定（<see cref="SlateAttach"/>）：放下时有背景墙先贴墙，没有就贴地面、天花板、左、右里第一个撑得住的；
+/// 锤子敲一下在撑得住的几种之间轮换（用户定，2026-10-02）；撑着它的方块或墙没了就掉下来（原版 canSurvive）。
+/// 这里曾经是「只能放在实心方块上面，朝向默认朝上、空手右键随便转」：朝向和贴在哪没关系，
+/// 最上面一排石板下面是空的放不下，闭合的环其实搭不出来（2026-10-02 用户和群友指出）。
 ///
-/// 所以部件的 `Normal` 必须**垂直于局部流向**，否则会挡住控制流。
-/// 注意：这一点对玩家不直观 —— 见下方 RightClick 的「空手右键旋转」设计。
+/// ## 样子
 ///
-/// ## 与源项目的差异
-///
-/// 源项目用 `AttachFace`（地/顶/墙）+ `FACING` 四个朝向。
-/// 泰拉侧**没有等价的自动判定**（图格不记录「贴在哪个面」），
-/// 所以改成：放置时默认为「朝上」，**空手右键循环旋转**四向。
-/// 这是有意的简化，换来的是朝向完全可控、且不依赖帧运算。
+/// 贴背景墙画整格正面；贴在方块上从侧面看，画成 4 像素厚的薄板（原版 1/16 格 = 1 像素，泰拉里看不见，用户定加厚）。
+/// 原版是薄板，人能走过去，这里也不挡路（不是实心方块）。
+/// 原版把图案画在石板正面；泰拉一格只有 16 像素看不清，用户定改成「空白 / 刻了图案」两种样子，图案在鼠标悬停时看
+///（<see cref="TileHoverPanel"/>）。法术环正走到这块时发亮。
 /// </summary>
 public sealed class HexSlate : ModTile
 {
     public override void SetStaticDefaults()
     {
-        Main.tileSolid[Type] = true;
-        Main.tileBlockLight[Type] = true;
+        Main.tileSolid[Type] = false;
+        Main.tileBlockLight[Type] = false;
         Main.tileLighted[Type] = true;
-        Main.tileFrameImportant[Type] = true;   // 需要存朝向 -> framed，代价是不支持斜坡
+        Main.tileFrameImportant[Type] = true;
+        Main.tileNoAttach[Type] = true;
+        // 不是实心方块，锤子默认敲不到；登记成「能敲」，敲的时候走 Slope 换贴法
+        TileID.Sets.CanBeSloped[Type] = true;
+        // 拆掉背景墙时泰拉只对登记了的方块重算这一格（WorldGen.KillWall）：贴墙的石板要靠它发现墙没了
+        TileID.Sets.FramesOnKillWall[Type] = true;
 
         MinPick = 0;
         DustType = DustID.PurpleTorch;
         HitSound = SoundID.Tink;
         AddMapEntry(new Microsoft.Xna.Framework.Color(88, 76, 116));
 
+        // 不用泰拉的锚点：五种贴法由 CanPlace / TileFrame 自己判断（锚点表达不了「贴在哪」，还会和图集的帧打架）
         TileObjectData.newTile.CopyFrom(TileObjectData.Style1x1);
-        TileObjectData.newTile.AnchorBottom = new AnchorData(
-            AnchorType.SolidTile | AnchorType.SolidWithTop | AnchorType.Table,
-            TileObjectData.newTile.Width, 0);
+        TileObjectData.newTile.AnchorBottom = AnchorData.Empty;
         TileObjectData.newTile.HookPostPlaceMyPlayer = ModContent.GetInstance<HexSlateEntity>().Generic_HookPostPlaceMyPlayer;   // 1.4.4 的 Hook_AfterPlacement 默认什么都不放，见 TileEntityRepair
         TileObjectData.addTile(Type);
     }
+
+    // ── 贴法 ──────────────────────────────────────────────────────────
+
+    /// <summary>轮换顺序，也是放下时挑选的优先顺序。</summary>
+    private static readonly SlateAttach[] Order =
+        { SlateAttach.Wall, SlateAttach.Floor, SlateAttach.Ceiling, SlateAttach.LeftBlock, SlateAttach.RightBlock };
+
+    /// <summary>贴法对应的朝向（在画面里）；贴背景墙朝屏幕外 → null。</summary>
+    public static CircleDir? NormalOf(SlateAttach attach) => attach switch
+    {
+        SlateAttach.Floor => CircleDir.Up,
+        SlateAttach.Ceiling => CircleDir.Down,
+        SlateAttach.LeftBlock => CircleDir.Right,
+        SlateAttach.RightBlock => CircleDir.Left,
+        _ => null,
+    };
+
+    /// <summary>(x, y) 这块石板按这种贴法撑不撑得住：贴墙要有背景墙，贴方块要那一侧是实心方块（地面也认平台的顶面）。</summary>
+    public static bool Supported(int x, int y, SlateAttach attach) => attach switch
+    {
+        SlateAttach.Wall => Main.tile[x, y].WallType > WallID.None,
+        SlateAttach.Floor => SolidFace(x, y + 1, allowTopOnly: true),
+        SlateAttach.Ceiling => SolidFace(x, y - 1, allowTopOnly: false),
+        SlateAttach.LeftBlock => SolidFace(x - 1, y, allowTopOnly: false),
+        _ => SolidFace(x + 1, y, allowTopOnly: false),
+    };
+
+    private static bool SolidFace(int x, int y, bool allowTopOnly)
+    {
+        if (!WorldGen.InWorld(x, y)) return false;
+        var t = Main.tile[x, y];
+        if (!t.HasTile || t.IsActuated || !Main.tileSolid[t.TileType]) return false;
+        return allowTopOnly || !Main.tileSolidTop[t.TileType];
+    }
+
+    /// <summary>放下时的贴法：按优先顺序第一个撑得住的；一个都没有（不该发生，CanPlace 拦过了）就当贴墙。</summary>
+    public static SlateAttach DefaultAttach(int x, int y)
+    {
+        foreach (var a in Order)
+        {
+            if (Supported(x, y, a)) return a;
+        }
+        return SlateAttach.Wall;
+    }
+
+    /// <summary>锤子敲一下：下一种撑得住的贴法（只有一种就不变）。</summary>
+    public static SlateAttach NextAttach(int x, int y, SlateAttach current)
+    {
+        int at = System.Array.IndexOf(Order, current);
+        for (int k = 1; k <= Order.Length; k++)
+        {
+            var a = Order[(at + k) % Order.Length];
+            if (Supported(x, y, a)) return a;
+        }
+        return current;
+    }
+
+    public static string Describe(SlateAttach attach) => attach switch
+    {
+        SlateAttach.Wall => "贴在背景墙上",
+        SlateAttach.Floor => "贴在下面的方块上",
+        SlateAttach.Ceiling => "贴在上面的方块上",
+        SlateAttach.LeftBlock => "贴在左边的方块上",
+        _ => "贴在右边的方块上",
+    };
+
+    /// <summary>原版 canSurvive：至少有一种贴法撑得住才放得下（不能浮空）。</summary>
+    public override bool CanPlace(int i, int j)
+    {
+        foreach (var a in Order)
+        {
+            if (Supported(i, j, a)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 邻格变了（挖掉方块、拆掉背景墙都会走到这里）：撑着它的东西没了就掉下来（原版 canSurvive 失败 → 方块被破坏，照常掉落）。
+    /// 分区重画时泰拉会带着 noBreak 调，这时不动；联机客户端不动，由服务端拆。
+    /// </summary>
+    public override bool TileFrame(int i, int j, ref bool resetFrame, ref bool noBreak)
+    {
+        if (noBreak || Main.netMode == NetmodeID.MultiplayerClient) return false;
+        if (HexSlateEntity.FindAt(i, j) is { } entity && !Supported(i, j, entity.ResolveAttach()))
+        {
+            WorldGen.KillTile(i, j);
+            if (Main.netMode == NetmodeID.Server) NetMessage.SendData(MessageID.TileManipulation, -1, -1, null, 0, i, j);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 锤子敲一下：换成下一种撑得住的贴法（用户定，2026-10-02；原版放下以后改不了，只能拆了重放）。
+    /// 泰拉锤子敲方块会先问 Slope，返回 false 就不做斜坡。只在挥锤的本地客户端跑，联机发给服务端改。
+    /// </summary>
+    public override bool Slope(int i, int j)
+    {
+        if (HexSlateEntity.FindAt(i, j) is not { } entity) return false;
+        var next = NextAttach(i, j, entity.ResolveAttach());
+        if (Main.netMode == NetmodeID.MultiplayerClient)
+        {
+            HexNetSync.RequestSlateAttach(i, j, next);
+        }
+        else
+        {
+            entity.Attach = next;
+            entity.Sync();
+        }
+        SoundEngine.PlaySound(SoundID.Dig, new Microsoft.Xna.Framework.Vector2(i * 16 + 8, j * 16 + 8));
+        return false;
+    }
+
+    // ── 样子 ──────────────────────────────────────────────────────────
 
     public override void ModifyLight(int i, int j, ref float r, ref float g, ref float b)
     {
@@ -75,47 +208,20 @@ public sealed class HexSlate : ModTile
         b = 0.22f;
     }
 
-    /// <summary>
-    /// 要在方块**之上**画图案，只能靠 `SpecialDraw`（方块是从上到下逐块画的，
-    /// `PostDraw` 里画的东西会被后面的方块盖住）。
-    ///
-    /// 用 `AddSpecialPoint` 而不是 `AddSpecialLegacyPoint`：后者走 tile render target、只有 15fps。
-    /// 石板是实心方块，计数类型必须是 `CustomSolid`：实心方块的 DrawEffects 在「实心那一遍」里调用，
-    /// 紧接着「非实心那一遍」开头会把 `CustomNonSolid` 的点清零（TileDrawing.PreDrawTiles）—— 这里曾经用 CustomNonSolid，
-    /// 刻上去的图案一帧都画不出来（2026-10-02 客户端测试截图发现）。`CustomSolid` 的点在实心方块画完后每帧画一次。
-    /// </summary>
-    public override void DrawEffects(int i, int j, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch,
-                                     ref Terraria.DataStructures.TileDrawInfo drawData)
+    /// <summary>图集：列 = [空白, 刻了图案]，行 = 贴法（顺序同 <see cref="SlateAttach"/>），见 _tools/gen_textures.py。</summary>
+    public override void AnimateIndividualTile(int type, int i, int j, ref int frameXOffset, ref int frameYOffset)
     {
-        if (Main.dedServ) return;
-        if (HexSlateEntity.FindAt(i, j)?.Pattern == null) return;
-
-        Main.instance.TilesRenderer.AddSpecialPoint(i, j,
-            Terraria.GameContent.Drawing.TileDrawing.TileCounterType.CustomSolid);
+        if (HexSlateEntity.FindAt(i, j) is not { } entity) return;
+        if (entity.Pattern != null) frameXOffset = 18;
+        frameYOffset = (int)entity.ResolveAttach() * 18;
     }
 
-    /// <summary>
-    /// 把石板上存的图案画出来。
-    ///
-    /// 为什么这件「纯表现」的事优先级很高：法术环是**可改写的物理程序**，
-    /// 而玩家看不见每块石板上写了什么 —— 那就等于在盲改一台机器。
-    /// 右键虽然能读到文字，但那要求玩家一块一块去点。
-    /// </summary>
-    public override void SpecialDraw(int i, int j, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
-    {
-        if (Main.dedServ) return;
+    /// <summary>鼠标指着刻了图案的石板：旁边弹出图案（照泰拉告示牌，离多远都看得到）。</summary>
+    public override void MouseOver(int i, int j) => TileHoverPanel.Hover(i, j);
 
-        var pattern = HexSlateEntity.FindAt(i, j)?.Pattern;
-        if (pattern == null) return;
+    public override void MouseOverFar(int i, int j) => TileHoverPanel.Hover(i, j);
 
-        // 原版 renderPatternForSlate：图案画满石板那一面（WORLDLY：留 2/16 边、线宽 0.8/16）；
-        // 法术环正走到这块（充能）时换成抖动的紫色电光（WOBBLY + SLATE_WOBBLY_PURPLE_COLOR）
-        bool active = CircleCursor.IsActive(i, j);
-        PatternArt.QueueWorld(pattern, new Microsoft.Xna.Framework.Vector2(i * 16f, j * 16f), 16f,
-            active ? Core.Canvas.PatternStyle.Wobbly : Core.Canvas.PatternStyle.Worldly,
-            active ? Core.Canvas.PatternPalette.SlatePurple : Core.Canvas.PatternPalette.Default,
-            (i * 31) ^ (j * 17));
-    }
+    // ── 挖掉、放下、右键 ──────────────────────────────────────────────
 
     /// <summary>
     /// 挖掉：刻着图案的石板掉「有图案的石板」（原版掉落表把方块里的图案复制到物品上），空的掉空白石板。
@@ -135,80 +241,59 @@ public sealed class HexSlate : ModTile
         ModContent.GetInstance<HexSlateEntity>().Kill(i, j);
     }
 
-    /// <summary>放下有图案的石板：图案跟着进方块（见 <see cref="Items.HexSlateItem.ApplyToPlaced"/>）。</summary>
-    public override void PlaceInWorld(int i, int j, Item item) => Items.HexSlateItem.ApplyToPlaced(i, j, item);
-
     /// <summary>
-    /// 空手右键：把朝向**顺时针转 90°**。
-    ///
-    /// 为什么这么设计：朝向必须垂直于流向，配错了环就走不通，
-    /// 而泰拉没有「贴在哪个面」的自动判定。给一个显式的旋转操作，
-    /// 玩家能立刻纠正，也比去猜帧值友好得多。
-    ///
-    /// 手上拿着能存图案的物品时：把图案**写进石板**（这是「编程」动作）。
+    /// 放下：定贴法（单机；联机时服务端的图格实体第一次用到时按同样的规则定，见 <see cref="HexSlateEntity.ResolveAttach"/>），
+    /// 有图案的石板图案跟着进方块（见 <see cref="Items.HexSlateItem.ApplyToPlaced"/>）。
     /// </summary>
+    public override void PlaceInWorld(int i, int j, Item item)
+    {
+        if (Main.netMode != NetmodeID.MultiplayerClient && HexSlateEntity.FindAt(i, j) is { } entity)
+        {
+            entity.Attach = DefaultAttach(i, j);
+        }
+        Items.HexSlateItem.ApplyToPlaced(i, j, item);
+    }
+
+    /// <summary>手上拿着能存图案的物品时右键：把图案**写进石板**（移植版的便利操作；原版要先写进石板物品再放）。</summary>
     public override bool RightClick(int i, int j)
     {
         var entity = HexSlateEntity.FindAt(i, j);
-        if (entity == null) return true;
+        if (entity == null) return false;
 
         var held = Main.LocalPlayer.HeldItem;
+        if (held.ModItem is not Content.Items.ItemIotaStorage storage || storage.Read() is not PatternIota pi) return false;
 
-        // 拿着存了图案的物品 -> 写进石板
-        if (held.ModItem is Content.Items.ItemIotaStorage storage
-            && storage.Read() is PatternIota pi)
-        {
-            entity.Pattern = pi.Pattern;
+        entity.Pattern = pi.Pattern;
 
-            if (Main.netMode == NetmodeID.MultiplayerClient)
-            {
-                // 右击跑在**本地客户端**，所以必须上报服务端 ——
-                // 否则只有自己看到石板变了（方块实体是服务端权威的）
-                Content.Net.HexNetSync.RequestSlatePattern(i, j, pi.Pattern);
-            }
-            else
-            {
-                entity.Sync();
-            }
-
-            Content.SpellSounds.Play("scroll.scribble",
-                new Microsoft.Xna.Framework.Vector2(i * 16f + 8f, j * 16f + 8f));
-            Main.NewText($"已把图案写入石板：{pi.Pattern.AnglesSignature()}");
-            return true;
-        }
-
-        // 空手（或拿着别的东西）-> 旋转朝向
-        entity.RotateNormal();
         if (Main.netMode == NetmodeID.MultiplayerClient)
         {
-            Content.Net.HexNetSync.RequestSlateNormal(i, j, (byte)entity.Normal);
+            // 右击跑在**本地客户端**，所以必须上报服务端 ——
+            // 否则只有自己看到石板变了（方块实体是服务端权威的）
+            HexNetSync.RequestSlatePattern(i, j, pi.Pattern);
         }
         else
         {
             entity.Sync();
         }
 
-        Main.NewText($"石板朝向：{DescribeNormal(entity.Normal)}");
+        Content.SpellSounds.Play("scroll.scribble",
+            new Microsoft.Xna.Framework.Vector2(i * 16f + 8f, j * 16f + 8f));
+        Main.NewText($"已把图案写入石板：{pi.Pattern.AnglesSignature()}");
         return true;
     }
-
-    private static string DescribeNormal(CircleDir dir) => dir switch
-    {
-        CircleDir.Up => "上",
-        CircleDir.Down => "下",
-        CircleDir.Left => "左",
-        _ => "右",
-    };
 }
 
-/// <summary>石板的数据：一个图案 + 一个朝向。</summary>
+/// <summary>石板的数据：一个图案 + 贴法。</summary>
 public sealed class HexSlateEntity : ModTileEntity
 {
     /// <summary>石板上存的图案。null = 空石板（走环时直通）。</summary>
     public Core.Casting.Math.HexPattern? Pattern { get; set; }
 
-    /// <summary>该石板「朝外」的方向。见 <see cref="HexSlate"/> 的说明。</summary>
-    public CircleDir Normal { get; private set; } = CircleDir.Up;
+    /// <summary>贴法。null = 还没定（刚由放置消息建出来的，或者旧存档）：第一次用到时定，见 <see cref="ResolveAttach"/>。</summary>
+    public SlateAttach? Attach { get; set; }
+
+    /// <summary>旧存档里那个随便转的朝向（2026-10-02 之前），定贴法时尽量照它。</summary>
+    private CircleDir? _legacyNormal;
 
     public override bool IsTileValidForEntity(int x, int y)
         => Main.tile[x, y].HasTile && Main.tile[x, y].TileType == ModContent.TileType<HexSlate>();
@@ -222,17 +307,29 @@ public sealed class HexSlateEntity : ModTileEntity
             ? te as HexSlateEntity
             : null;
 
-    /// <summary>顺时针转 90°。</summary>
-    public void RotateNormal()
-        => Normal = Normal switch
+    /// <summary>
+    /// 当前贴法；还没定就现在定：旧存档的石板有背景墙就贴墙（画面里四个方向都通，原来走得通的环照样走得通），
+    /// 没有就照旧朝向对应的那一侧（撑得住的话），再不行按放下时的规则挑。
+    /// </summary>
+    public SlateAttach ResolveAttach()
+    {
+        if (Attach is { } a) return a;
+        int x = Position.X, y = Position.Y;
+        SlateAttach chosen = HexSlate.DefaultAttach(x, y);
+        if (chosen != SlateAttach.Wall && _legacyNormal is { } n)
         {
-            CircleDir.Up => CircleDir.Right,
-            CircleDir.Right => CircleDir.Down,
-            CircleDir.Down => CircleDir.Left,
-            _ => CircleDir.Up,
-        };
-
-    public void SetNormal(CircleDir dir) => Normal = dir;
+            var wanted = n switch
+            {
+                CircleDir.Up => SlateAttach.Floor,
+                CircleDir.Down => SlateAttach.Ceiling,
+                CircleDir.Right => SlateAttach.LeftBlock,
+                _ => SlateAttach.RightBlock,
+            };
+            if (HexSlate.Supported(x, y, wanted)) chosen = wanted;
+        }
+        Attach = chosen;
+        return chosen;
+    }
 
     /// <summary>把变化同步出去（联机时必须，否则只有改的人看得见）。</summary>
     public void Sync()
@@ -245,7 +342,7 @@ public sealed class HexSlateEntity : ModTileEntity
 
     public override void SaveData(TagCompound tag)
     {
-        tag["normal"] = (byte)Normal;
+        tag["attach"] = (byte)ResolveAttach();
         if (Pattern != null)
         {
             // 图案用现有的信封格式存，直接落进 TagCompound
@@ -255,8 +352,16 @@ public sealed class HexSlateEntity : ModTileEntity
 
     public override void LoadData(TagCompound tag)
     {
-        byte n = tag.ContainsKey("normal") ? tag.GetByte("normal") : (byte)0;
-        Normal = n <= (byte)CircleDir.Right ? (CircleDir)n : CircleDir.Up;
+        Attach = null;
+        _legacyNormal = null;
+        if (tag.ContainsKey("attach") && tag.GetByte("attach") <= (byte)SlateAttach.RightBlock)
+        {
+            Attach = (SlateAttach)tag.GetByte("attach");
+        }
+        else if (tag.ContainsKey("normal") && tag.GetByte("normal") <= (byte)CircleDir.Right)
+        {
+            _legacyNormal = (CircleDir)tag.GetByte("normal");
+        }
 
         Pattern = null;
         if (tag.ContainsKey("pattern")
@@ -269,7 +374,7 @@ public sealed class HexSlateEntity : ModTileEntity
 
     public override void NetSend(System.IO.BinaryWriter writer)
     {
-        writer.Write((byte)Normal);
+        writer.Write((byte)ResolveAttach());
         writer.Write(Pattern != null);
         if (Pattern != null)
         {
@@ -279,8 +384,8 @@ public sealed class HexSlateEntity : ModTileEntity
 
     public override void NetReceive(System.IO.BinaryReader reader)
     {
-        byte n = reader.ReadByte();
-        Normal = n <= (byte)CircleDir.Right ? (CircleDir)n : CircleDir.Up;
+        byte a = reader.ReadByte();
+        Attach = a <= (byte)SlateAttach.RightBlock ? (SlateAttach)a : SlateAttach.Wall;
 
         Pattern = reader.ReadBoolean() ? IotaWire.ReadPattern(reader) : null;
     }

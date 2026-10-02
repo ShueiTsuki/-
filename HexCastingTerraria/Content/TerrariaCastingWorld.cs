@@ -1739,7 +1739,12 @@ public sealed class TerrariaCastingWorld : ICastingWorld
 
     // ── 方块操作 ────────────────────────────────────────────────────
 
-    /// <summary>该格是否可以被替换。</summary>
+    /// <summary>
+    /// 该格是否可以被替换（原版 BlockState.canBeReplaced：空气、草、花这一类）。
+    /// 泰拉自己的说法是 TileID.Sets.BreakableWhenPlacing：往上放方块时会被顶掉的那些（草、花、藤蔓、小石子）。
+    /// 这里曾经写成「不是实心方块就算」：箱子、火把、家具、石板都会被放置方块直接盖掉
+    ///（2026-10-02 石板改成不挡路的薄板时发现）。
+    /// </summary>
     public bool IsReplaceable(double x, double y)
     {
         int tx = (int)System.Math.Floor(x);
@@ -1750,8 +1755,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         var tile = Main.tile[tx, ty];
         if (!tile.HasTile) return true;                      // 空气
 
-        // 只认「草、花、藤」这类贴地小物件；实心方块不算可替换
-        return !Main.tileSolid[tile.TileType] && tile.TileType != ModContent.TileType<ConjuredBlock>();
+        return Terraria.ID.TileID.Sets.BreakableWhenPlacing[tile.TileType];
     }
 
     /// <summary>凭空造出召唤方块/光源。替换前先确认是空气。</summary>

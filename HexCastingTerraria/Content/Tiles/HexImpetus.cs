@@ -57,13 +57,13 @@ public sealed class TerrariaCircleWorld : ICircleWorld
 
         int type = tile.TileType;
 
-        // 石板
+        // 石板：贴背景墙朝屏幕外，画面里四个方向都通；贴在方块上朝那一面朝外的方向（见 HexSlate）
         if (type == ModContent.TileType<HexSlate>())
         {
-            var entity = HexSlateEntity.FindAt(x, y);
-            var normal = entity?.Normal ?? CircleDir.Up;
-
-            return CircleComponent.Ordinary(CircleComponentKind.Slate, normal);
+            var attach = HexSlateEntity.FindAt(x, y)?.ResolveAttach() ?? SlateAttach.Wall;
+            return HexSlate.NormalOf(attach) is { } normal
+                ? CircleComponent.Ordinary(CircleComponentKind.Slate, normal)
+                : CircleComponent.OutOfPlane(CircleComponentKind.Slate);
         }
 
         // 三种导向石
@@ -105,7 +105,7 @@ public enum ImpetusKind : byte
 ///
 /// | | 原版 | 泰拉 |
 /// |---|---|---|
-/// | 出口方向 | 放置时按视线方向（潜行反过来），之后不能改 | 同：按鼠标相对角色的方向取最近的上下左右，潜行反过来 |
+/// | 出口方向 | 放置时按视线方向（潜行反过来），之后不能改 | 同：按鼠标相对角色的方向取最近的上下左右，潜行反过来；另外锤子敲一下顺时针转 90°（用户定） |
 /// | 媒质 | 新放的是 0，用漏斗等容器塞媒质物品进去（整件抽干） | 泰拉没有漏斗：**拿着媒质物品右键**塞进去，规则相同 |
 /// | 触发 | 工具匠：不潜行右键；制箭师：被盯着 30 刻；牧师：红石信号上升沿 | 工具匠同；制箭师：视线（鼠标方向）射线打中它；牧师：电线信号 |
 /// | 施法者 | 启动它的玩家 / 牧师绑定的玩家 | 同 |
@@ -127,10 +127,9 @@ public abstract class HexImpetusBase : ModTile
         HitSound = SoundID.Tink;
         AddMapEntry(new Color(120, 70, 150));
 
+        // 原版是完整方块：不用下面有东西撑着，挨着方块或背景墙就能放（见 CircleFacing.CanPlaceBlock）
         TileObjectData.newTile.CopyFrom(TileObjectData.Style1x1);
-        TileObjectData.newTile.AnchorBottom = new AnchorData(
-            AnchorType.SolidTile | AnchorType.SolidWithTop | AnchorType.Table,
-            TileObjectData.newTile.Width, 0);
+        TileObjectData.newTile.AnchorBottom = AnchorData.Empty;
         TileObjectData.newTile.HookPostPlaceMyPlayer = ModContent.GetInstance<HexImpetusEntity>().Generic_HookPostPlaceMyPlayer;   // 1.4.4 的 Hook_AfterPlacement 默认什么都不放，见 TileEntityRepair
         TileObjectData.addTile(Type);
     }
@@ -148,10 +147,23 @@ public abstract class HexImpetusBase : ModTile
         }
     }
 
-    /// <summary>贴图第 2 帧（x = 18）是亮着的样子（原版 *_lit.png），运行时切过去。</summary>
+    /// <summary>图集（原版的 top 面，按出口方向转）：列 = [暗, 亮]（运行时亮），行 = 出口方向，见 <see cref="CircleFacing.Row"/>。</summary>
     public override void AnimateIndividualTile(int type, int i, int j, ref int frameXOffset, ref int frameYOffset)
     {
-        if (HexImpetusEntity.FindAt(i, j) is { IsRunning: true }) frameXOffset = 18;
+        var entity = HexImpetusEntity.FindAt(i, j);
+        if (entity is { IsRunning: true }) frameXOffset = 18;
+        frameYOffset = CircleFacing.Row(entity?.StartDir ?? CircleDir.Right) * 18;
+    }
+
+    public override bool CanPlace(int i, int j) => CircleFacing.CanPlaceBlock(i, j);
+
+    /// <summary>锤子敲一下：出口顺时针转 90°（用户定，2026-10-02；原版放下以后改不了）。</summary>
+    public override bool Slope(int i, int j)
+    {
+        var dir = HexImpetusEntity.FindAt(i, j)?.StartDir ?? CircleDir.Right;
+        HexImpetusEntity.Request(i, j, ImpetusAction.SetDir, (byte)dir.Clockwise());
+        CircleFacing.PlayHammer(i, j);
+        return false;
     }
 
     public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem)
@@ -163,10 +175,6 @@ public abstract class HexImpetusBase : ModTile
     /// <summary>原版 placeStateDirAndSneak：出口 = 放置时视线最接近的方向，潜行反过来。</summary>
     public override void PlaceInWorld(int i, int j, Item item)
         => HexImpetusEntity.Request(i, j, ImpetusAction.SetDir, (byte)CircleFacing.FromPlacement(Main.LocalPlayer));
-
-    /// <summary>2D 看不见「哪一面是正面」，画一个小箭头标出媒质流出的方向。</summary>
-    public override void PostDraw(int i, int j, SpriteBatch spriteBatch)
-        => CircleFacing.DrawArrow(spriteBatch, i, j, HexImpetusEntity.FindAt(i, j)?.StartDir ?? CircleDir.Right);
 
     public override bool RightClick(int i, int j)
     {
@@ -547,8 +555,10 @@ public sealed class HexImpetusEntity : ModTileEntity
     /// <summary>
     /// 每帧推进。对应源项目 tickExecution + getTickSpeed：
     /// **一格一格走**，且**环走得越深越快**（起步 10 MC 刻/格 = 30 帧，最低 2 刻 = 6 帧）。
+    /// 必须是 Update（每个图格实体每帧一次）：这里曾经写成 PostGlobalUpdate，tML 只对每种图格实体的**模板**调它一次，
+    /// 世界里的促动石从来收不到 —— 环启动以后一格都不走（2026-10-02 客户端测试真搭了一个环才发现）。
     /// </summary>
-    public override void PostGlobalUpdate()
+    public override void Update()
     {
         if (!IsRunning) return;
         if (Main.netMode == NetmodeID.MultiplayerClient) return;   // 服务端权威
@@ -716,6 +726,9 @@ public sealed class HexImpetusEntity : ModTileEntity
     }
 
     /// <summary>牧羊人导向石：弹栈顶。出错是 mishap（显示在促动石上），惩罚是把导向石打掉（destroyBlock(pos, true)）。</summary>
+    /// <summary>这一轮亮过的布尔导向石，停下时熄掉。</summary>
+    private readonly List<(int X, int Y)> _shownBools = new();
+
     private CircleDir PickByBool(CircleComponent comp, ref bool shouldStop)
     {
         if (_vm == null) { shouldStop = true; return comp.Facing; }
@@ -738,6 +751,12 @@ public sealed class HexImpetusEntity : ModTileEntity
 
         stack.RemoveAt(stack.Count - 1);
         _vm.SetImage(_vm.Image.WithStack(stack));
+        if (HexDirectrixEntity.FindAt(CurrentX, CurrentY) is { } directrix)
+        {
+            directrix.BoolState = b.Value ? DirectrixBool.True : DirectrixBool.False;
+            directrix.Sync();
+            _shownBools.Add((CurrentX, CurrentY));
+        }
         return b.Value ? comp.Facing.Opposite() : comp.Facing;
     }
 
@@ -761,6 +780,16 @@ public sealed class HexImpetusEntity : ModTileEntity
     /// <summary>原版 endExecution：停下、熄灭。正常走完不发任何消息。</summary>
     private void End()
     {
+        // 原版 endEnergized：布尔导向石回到都不亮
+        foreach (var (bx, by) in _shownBools)
+        {
+            if (HexDirectrixEntity.FindAt(bx, by) is { } directrix)
+            {
+                directrix.BoolState = DirectrixBool.Neither;
+                directrix.Sync();
+            }
+        }
+        _shownBools.Clear();
         IsRunning = false;
         _vm = null;
         _savedImage = null;
@@ -970,19 +999,29 @@ public static class CircleFacing
         return HexPlayer.ShiftHeld() ? dir.Opposite() : dir;
     }
 
-    /// <summary>在图格边缘画一个小三角，尖朝出口方向。</summary>
-    public static void DrawArrow(SpriteBatch sb, int i, int j, CircleDir dir)
+    /// <summary>
+    /// 图集里出口方向对应的行：[上, 右, 下, 左]。贴图是原版的 top 面（从环的上方往下看，图的上边是出口），
+    /// 只有画面里的四个方向。以前用的是原版的正面（有「脸」的那一面），看上去像朝着屏幕，另画一个小箭头标出口（用户指出）。
+    /// </summary>
+    public static int Row(CircleDir dir) => dir switch
     {
-        // 图格层画在带 offScreenRange 边距的渲染目标上（tML 里 drawToScreen 恒为 false）
-        var zero = new Vector2(Main.offScreenRange);
-        var center = new Vector2(i * 16 + 8, j * 16 + 8) - Main.screenPosition + zero;
-        var (dx, dy) = dir.Step();
-        var fwd = new Vector2(dx, dy);
-        var side = new Vector2(-dy, dx);
-        var tip = center + fwd * 7f;
-        var baseMid = center + fwd * 3f;
-        var color = new Color(230, 200, 255, 220) * 0.9f;
-        Client.HexPixel.DrawLine(sb, baseMid + side * 3f, tip, 1.5f, color);
-        Client.HexPixel.DrawLine(sb, baseMid - side * 3f, tip, 1.5f, color);
+        CircleDir.Up => 0,
+        CircleDir.Right => 1,
+        CircleDir.Down => 2,
+        _ => 3,
+    };
+
+    /// <summary>原版是完整方块：和泰拉的普通方块一样，挨着上下左右任意一块方块、或者背后有背景墙就能放，不能凭空浮着。</summary>
+    public static bool CanPlaceBlock(int i, int j)
+    {
+        if (Main.tile[i, j].WallType > WallID.None) return true;
+        foreach (var (dx, dy) in new[] { (0, 1), (0, -1), (-1, 0), (1, 0) })
+        {
+            if (WorldGen.InWorld(i + dx, j + dy) && Main.tile[i + dx, j + dy].HasTile) return true;
+        }
+        return false;
     }
+
+    public static void PlayHammer(int i, int j)
+        => Terraria.Audio.SoundEngine.PlaySound(SoundID.Dig, new Vector2(i * 16 + 8, j * 16 + 8));
 }
