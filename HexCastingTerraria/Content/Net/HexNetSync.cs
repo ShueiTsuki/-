@@ -301,7 +301,7 @@ internal static class HexNetSync
     }
 
     /// <summary>客户端 → 服务端：请求改壁挂卷轴上挂的图案（null = 取下来）。</summary>
-    public static void RequestWallScroll(int x, int y, Core.Casting.Math.HexPattern? pattern)
+    public static void RequestWallScroll(int x, int y, Core.Casting.Math.HexPattern? pattern, string ancientOp)
     {
         var packet = HexCastingTerraria.Instance?.GetPacket();
         if (packet == null) return;
@@ -314,6 +314,7 @@ internal static class HexNetSync
         {
             IotaWire.WritePattern(packet, pattern);
         }
+        packet.Write(ancientOp);
 
         packet.Send();
     }
@@ -325,6 +326,7 @@ internal static class HexNetSync
         int y = reader.ReadInt16();
         bool has = reader.ReadBoolean();
         var pattern = has ? IotaWire.ReadPattern(reader) : null;
+        string ancientOp = reader.ReadString();
 
         if (!WorldGen.InWorld(x, y, 1)) return;
 
@@ -332,6 +334,7 @@ internal static class HexNetSync
         if (entity == null) return;
 
         entity.Pattern = pattern;
+        entity.AncientOp = pattern == null ? "" : ancientOp;
         entity.Sync();
     }
 }

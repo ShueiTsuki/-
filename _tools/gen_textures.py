@@ -372,4 +372,30 @@ for effect, name in (('enlarge_grid', 'EnlargeGrid'), ('shrink_grid', 'ShrinkGri
     buff.alpha_composite(eye, ((32 - eye.width) // 2, (32 - eye.height) // 2))
     save(buff, 'Buffs', name + '.png')
 
+# 壁挂卷轴（原版 WallScrollRenderer）：卷轴底图铺满整张，小 / 中 / 大 = 1 / 2 / 3 格见方，
+# 底图分别是 block/scroll_paper（16）、entity/scroll_medium（32）、entity/scroll_large（48），一格正好 16 像素、一比一。
+# 方块图集按泰拉多格方块的格式切开：每格 16×16、间隔 18。
+# 远古卷轴挂上去时换成做旧的底图（原版 isAncient → *_ancient_*），整张存着，由 WallScrollTile.SpecialDraw 盖在上面。
+# 挂轴框物品（移植版的两段式挂法才有，原版没有）的图标就用这张底图：小号 ×2，中、大号原尺寸。
+def whole(name):
+    return Image.open(os.path.join(JAR, name + '.png')).convert('RGBA')
+
+
+def tile_sheet(im):
+    n = im.width // 16
+    sheet = Image.new('RGBA', (18 * n - 2, 18 * n - 2), (0, 0, 0, 0))
+    for fy in range(n):
+        for fx in range(n):
+            sheet.paste(im.crop((fx * 16, fy * 16, fx * 16 + 16, fy * 16 + 16)), (fx * 18, fy * 18))
+    return sheet
+
+
+for size, pristine, ancient in (('Small', 'block/scroll_paper', 'block/ancient_scroll_paper'),
+                                ('Medium', 'entity/scroll_medium', 'entity/scroll_ancient_medium'),
+                                ('Large', 'entity/scroll_large', 'entity/scroll_ancient_large')):
+    bg = whole(pristine)
+    save(tile_sheet(bg), 'Tiles', 'WallScroll' + size + '.png')
+    save(whole(ancient), 'Tiles', 'WallScrollAncient' + size + '.png')
+    save(x2(bg) if bg.width == 16 else bg, 'Items', 'WallScrollFrame' + size + '.png')
+
 print(f'写出 {len(written)} 张')

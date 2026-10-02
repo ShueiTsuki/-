@@ -46,7 +46,11 @@ namespace HexCastingTerraria.Content.Tiles;
 /// </summary>
 public abstract class WallScrollTile : ModTile
 {
-    /// <summary>方形尺寸（2/3/4）。对应源项目的 `blockSize` 1/2/3。</summary>
+    /// <summary>
+    /// 方形尺寸（格）= 源项目的 `blockSize` 1/2/3。贴图是原版的卷轴底图（16 / 32 / 48 像素），一格 16 像素一比一。
+    /// 曾经是 2/3/4 格、贴一张 16×16 的占位图，只有左上角那格有图，其余格子是拉伸出来的棕色（2026-10-02 用户指出，照原版改回 1/2/3）；
+    /// 世界里的旧挂板读档时由 <see cref="TileEntityRepair"/> 换成新尺寸。
+    /// </summary>
     public abstract int ObjectSize { get; }
 
     /// <summary>取回时给哪个卷轴物品。</summary>
@@ -80,11 +84,9 @@ public abstract class WallScrollTile : ModTile
                 break;
 
             default:
-                // 1.4.4 没有 4×4 的现成样式：从 3×3 挂墙样式放大
-                TileObjectData.newTile.CopyFrom(TileObjectData.Style3x3Wall);
-                TileObjectData.newTile.Width = 4;
-                TileObjectData.newTile.Height = 4;
-                TileObjectData.newTile.CoordinateHeights = new[] { 16, 16, 16, 16 };
+                TileObjectData.newTile.CopyFrom(TileObjectData.Style1x1);
+                TileObjectData.newTile.AnchorWall = true;
+                TileObjectData.newTile.AnchorBottom = AnchorData.Empty;
                 break;
         }
 
@@ -109,25 +111,48 @@ public abstract class WallScrollTile : ModTile
     /// （之前这里只清图格实体，挖掉挂板图案就没了）。挂轴框本身照常由 tML 按 createTile 掉落。
     /// (i, j) 是左上角，图格实体就在那里；掉落物只在服务端 / 单机生成。
     /// </summary>
-    public override void KillMultiTile(int i, int j, int frameX, int frameY)
+    public override void KillMultiTile(int i, int j, int frameX, int frameY) => DropHungScroll(i, j);
+
+    /// <summary>
+    /// 1×1 的小挂板不算多格方块：挖掉时泰拉不调 <see cref="KillMultiTile"/>，掉卷轴、拆图格实体在这里做
+    ///（挂板从 2×2 改成 1×1 以后才有这种情况，2026-10-02 客户端测试挖掉小挂板时发现卷轴没掉出来）。
+    /// </summary>
+    public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem)
     {
-        if (Main.netMode != NetmodeID.MultiplayerClient && WallScrollEntity.FindAt(i, j)?.Pattern is { } pattern)
+        if (ObjectSize == 1 && !fail && !effectOnly) DropHungScroll(i, j);
+    }
+
+    private void DropHungScroll(int i, int j)
+    {
+        if (Main.netMode != NetmodeID.MultiplayerClient && WallScrollEntity.FindAt(i, j) is { Pattern: not null } entity)
         {
-            Item.NewItem(new EntitySource_TileBreak(i, j), i * 16, j * 16, ObjectSize * 16, ObjectSize * 16, MakeScroll(pattern));
+            Item.NewItem(new EntitySource_TileBreak(i, j), i * 16, j * 16, ObjectSize * 16, ObjectSize * 16, MakeScroll(entity));
         }
         ModContent.GetInstance<WallScrollEntity>().Kill(i, j);
     }
 
-    /// <summary>这种尺寸的卷轴物品，里面写着 <paramref name="pattern"/>（取回、拆掉时给的就是它）。</summary>
-    public Item MakeScroll(HexPattern pattern)
+    /// <summary>
+    /// 取回、拆掉时还给玩家的卷轴：挂上去的是远古卷轴就还远古卷轴（照原版只记是哪个大法术），
+    /// 否则是这种尺寸的卷轴，里面写着挂着的图案。
+    /// </summary>
+    public Item MakeScroll(WallScrollEntity entity)
     {
+        if (entity.AncientOp.Length > 0)
+        {
+            var ancient = new Item(ModContent.ItemType<Items.AncientScroll>());
+            (ancient.ModItem as Items.AncientScroll)?.SetOp(entity.AncientOp);
+            return ancient;
+        }
         var scroll = new Item(ScrollItemType);
-        if (scroll.ModItem is Items.ItemIotaStorage target)
+        if (scroll.ModItem is Items.ItemIotaStorage target && entity.Pattern is { } pattern)
         {
             target.WriteIota(new PatternIota(pattern), simulate: false);
         }
         return scroll;
     }
+
+    /// <summary>远古卷轴的做旧底图（原版 scroll_ancient_* / ancient_scroll_paper），整张、和挂板一样大。</summary>
+    public abstract string AncientTexture { get; }
 
     /// <summary>画图案只能靠 `SpecialDraw`（理由见 <see cref="AkashicRecord.DrawEffects"/>）。</summary>
     public override void DrawEffects(int i, int j, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch,
@@ -135,7 +160,7 @@ public abstract class WallScrollTile : ModTile
     {
         if (Main.dedServ) return;
 
-        // 只在**左上角那一格**登记一次，否则 4x4 的卷轴会被画 16 遍
+        // 只在**左上角那一格**登记一次，否则 3x3 的卷轴会被画 9 遍
         if (!IsTopLeft(i, j)) return;
         if (WallScrollEntity.FindAt(i, j)?.Pattern == null) return;
 
@@ -148,8 +173,23 @@ public abstract class WallScrollTile : ModTile
         if (Main.dedServ) return;
         if (!IsTopLeft(i, j)) return;
 
-        var pattern = WallScrollEntity.FindAt(i, j)?.Pattern;
+        var entity = WallScrollEntity.FindAt(i, j);
+        var pattern = entity?.Pattern;
         if (pattern == null) return;
+
+        // 原版 WallScrollRenderer：远古卷轴换成做旧的底图（isAncient），按格取光照盖在挂板上
+        if (entity!.AncientOp.Length > 0)
+        {
+            var bg = ModContent.Request<Microsoft.Xna.Framework.Graphics.Texture2D>(AncientTexture).Value;
+            for (int dx = 0; dx < ObjectSize; dx++)
+            {
+                for (int dy = 0; dy < ObjectSize; dy++)
+                {
+                    spriteBatch.Draw(bg, new Microsoft.Xna.Framework.Vector2((i + dx) * 16, (j + dy) * 16) - Main.screenPosition,
+                        new Microsoft.Xna.Framework.Rectangle(dx * 16, dy * 16, 16, 16), Lighting.GetColor(i + dx, j + dy));
+                }
+            }
+        }
 
         // 原版 renderPatternForScroll：图案画满整张卷轴（SCROLL_SETTINGS，默认配色）
         PatternArt.QueueWorld(pattern, new Microsoft.Xna.Framework.Vector2(i * 16f, j * 16f), ObjectSize * 16f,
@@ -198,6 +238,7 @@ public abstract class WallScrollTile : ModTile
         if (held.ModItem is Items.ItemIotaStorage storage && storage.Read() is PatternIota pi)
         {
             entity.Pattern = pi.Pattern;
+            entity.AncientOp = (held.ModItem as Items.AncientScroll)?.OpId ?? "";
             SyncEntity(entity);
 
             held.stack--;
@@ -214,12 +255,13 @@ public abstract class WallScrollTile : ModTile
         }
 
         // 取回：把图案带走，挂板留下
-        var scroll = MakeScroll(entity.Pattern);
+        var scroll = MakeScroll(entity);
 
         Main.LocalPlayer.QuickSpawnItem(
             Main.LocalPlayer.GetSource_Misc("HexWallScroll"), scroll);
 
         entity.Pattern = null;
+        entity.AncientOp = "";
         SyncEntity(entity);
 
         Main.NewText("已取下卷轴");
@@ -231,7 +273,7 @@ public abstract class WallScrollTile : ModTile
         if (Main.netMode == NetmodeID.MultiplayerClient)
         {
             Content.Net.HexNetSync.RequestWallScroll(entity.Position.X, entity.Position.Y,
-                entity.Pattern);
+                entity.Pattern, entity.AncientOp);
         }
         else
         {
@@ -240,24 +282,27 @@ public abstract class WallScrollTile : ModTile
     }
 }
 
-/// <summary>小卷轴挂板（2x2）。</summary>
+/// <summary>小卷轴挂板（1x1，原版 blockSize 1）。</summary>
 public sealed class WallScrollSmall : WallScrollTile
 {
-    public override int ObjectSize => 2;
+    public override int ObjectSize => 1;
+    public override string AncientTexture => "HexCastingTerraria/Content/Tiles/WallScrollAncientSmall";
     public override int ScrollItemType => ModContent.ItemType<Items.ScrollSmall>();
 }
 
-/// <summary>中卷轴挂板（3x3）。</summary>
+/// <summary>中卷轴挂板（2x2，原版 blockSize 2）。</summary>
 public sealed class WallScrollMedium : WallScrollTile
 {
-    public override int ObjectSize => 3;
+    public override int ObjectSize => 2;
+    public override string AncientTexture => "HexCastingTerraria/Content/Tiles/WallScrollAncientMedium";
     public override int ScrollItemType => ModContent.ItemType<Items.ScrollMedium>();
 }
 
-/// <summary>大卷轴挂板（4x4）。</summary>
+/// <summary>大卷轴挂板（3x3，原版 blockSize 3）。</summary>
 public sealed class WallScrollLarge : WallScrollTile
 {
-    public override int ObjectSize => 4;
+    public override int ObjectSize => 3;
+    public override string AncientTexture => "HexCastingTerraria/Content/Tiles/WallScrollAncientLarge";
     public override int ScrollItemType => ModContent.ItemType<Items.ScrollLarge>();
 }
 
@@ -268,6 +313,9 @@ public sealed class WallScrollLarge : WallScrollTile
 public sealed class WallScrollEntity : ModTileEntity
 {
     public HexPattern? Pattern { get; set; }
+
+    /// <summary>挂上去的是远古卷轴：是哪个大法术（原版 TAG_OP_ID，决定用做旧的底图、取回时还远古卷轴）；空 = 普通卷轴。</summary>
+    public string AncientOp { get; set; } = "";
 
     public override bool IsTileValidForEntity(int x, int y)
     {
@@ -320,6 +368,7 @@ public sealed class WallScrollEntity : ModTileEntity
         {
             tag["pattern"] = IotaTag.ToTag(new PatternIota(Pattern));
         }
+        if (AncientOp.Length > 0) tag["ancientOp"] = AncientOp;
     }
 
     public override void LoadData(TagCompound tag)
@@ -332,6 +381,7 @@ public sealed class WallScrollEntity : ModTileEntity
         {
             Pattern = pi.Pattern;
         }
+        AncientOp = tag.ContainsKey("ancientOp") ? tag.GetString("ancientOp") : "";
     }
 
     public override void NetSend(System.IO.BinaryWriter writer)
@@ -341,10 +391,12 @@ public sealed class WallScrollEntity : ModTileEntity
         {
             Content.Net.IotaWire.WritePattern(writer, Pattern);
         }
+        writer.Write(AncientOp);
     }
 
     public override void NetReceive(System.IO.BinaryReader reader)
     {
         Pattern = reader.ReadBoolean() ? Content.Net.IotaWire.ReadPattern(reader) : null;
+        AncientOp = reader.ReadString();
     }
 }

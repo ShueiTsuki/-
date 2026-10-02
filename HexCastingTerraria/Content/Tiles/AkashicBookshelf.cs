@@ -70,12 +70,12 @@ public sealed class AkashicBookshelf : ModTile
         spriteBatch.Draw(tex, pos, new Rectangle(variant * 18, 0, 16, 16), tint);
     }
 
-    /// <summary>键图案要画在所有方块之上，只能走 SpecialDraw（理由见 <see cref="HexSlate.DrawEffects"/>）。</summary>
+    /// <summary>键图案要画在所有方块之上，只能走 SpecialDraw；书架是实心方块，计数类型用 CustomSolid（理由见 <see cref="HexSlate.DrawEffects"/>）。</summary>
     public override void DrawEffects(int i, int j, SpriteBatch spriteBatch, ref TileDrawInfo drawData)
     {
         if (Main.dedServ) return;
         if (AkashicBookshelfEntity.FindAt(i, j)?.Pattern == null) return;
-        Main.instance.TilesRenderer.AddSpecialPoint(i, j, Terraria.GameContent.Drawing.TileDrawing.TileCounterType.CustomNonSolid);
+        Main.instance.TilesRenderer.AddSpecialPoint(i, j, Terraria.GameContent.Drawing.TileDrawing.TileCounterType.CustomSolid);
     }
 
     /// <summary>原版 renderPatternForAkashicBookshelf：键图案画在书架正面（WORLDLY，默认配色，种子取方块位置）。</summary>

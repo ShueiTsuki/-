@@ -8,6 +8,7 @@
 # 用法：
 #   .\run_all.ps1              # 全部离线验证
 #   .\run_all.ps1 -Package     # 另外打包 .tmod 并在专用服务器里真实加载（需先关游戏）
+#   .\run_all.ps1 -Package -Client  # 再开真的客户端跑一键测试（client_test.ps1，会弹出游戏窗口，两段各约半分钟）
 #   .\run_all.ps1 -SkipBuild   # 已经编译过时跳过编译（汇总里记为 SKIP，不算全绿）
 #
 # 判定规则（上一版在这里栽过的坑，逐条写明）：
@@ -22,7 +23,9 @@
 param(
     [switch]$SkipBuild,
     [switch]$SkipVmTest,
-    [switch]$Package
+    [switch]$Package,
+    # 客户端一键测试（client_test.ps1）：开游戏窗口进测试世界，贴图、放方块、真实施法、存档读档。不指定就不跑、也不记 SKIP
+    [switch]$Client
 )
 
 $ErrorActionPreference = 'Stop'
@@ -220,6 +223,18 @@ if ($Package) {
     } else { Skip '专用服务器加载 + 进入世界' '打包失败' }
 } else {
     Skip '打包 + 专用服务器加载' '未指定 -Package'
+}
+
+# ── 5b.（可选）客户端一键测试 ──────────────────────────────────────
+if ($Client) {
+    Step '客户端一键测试（开游戏窗口）' {
+        $argv = @()
+        if ($Package) { $argv += '-NoBuild' }   # 上面刚打过包
+        $r = Invoke-Ps1 (Join-Path $tools 'client_test.ps1') $argv
+        ($r.Out -split "`n" | Where-Object { $_ -match 'FAIL|共 |日志里|客户端测试：' }) | ForEach-Object { Write-Host "  $($_.Trim())" }
+        $script:facts.client = [ordered]@{ ok = ($r.Code -eq 0) }
+        return ($r.Code -eq 0)
+    }
 }
 
 # ── 6. 生成物 ───────────────────────────────────────────────────────

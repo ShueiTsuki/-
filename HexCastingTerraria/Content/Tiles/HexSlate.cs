@@ -79,8 +79,10 @@ public sealed class HexSlate : ModTile
     /// 要在方块**之上**画图案，只能靠 `SpecialDraw`（方块是从上到下逐块画的，
     /// `PostDraw` 里画的东西会被后面的方块盖住）。
     ///
-    /// 用 `CustomNonSolid` 而不是 `AddSpecialLegacyPoint`：后者走 tile render target、
-    /// 只有 15fps。这条经验是从记录方块那边抄过来的，见 `AkashicRecord.DrawEffects`。
+    /// 用 `AddSpecialPoint` 而不是 `AddSpecialLegacyPoint`：后者走 tile render target、只有 15fps。
+    /// 石板是实心方块，计数类型必须是 `CustomSolid`：实心方块的 DrawEffects 在「实心那一遍」里调用，
+    /// 紧接着「非实心那一遍」开头会把 `CustomNonSolid` 的点清零（TileDrawing.PreDrawTiles）—— 这里曾经用 CustomNonSolid，
+    /// 刻上去的图案一帧都画不出来（2026-10-02 客户端测试截图发现）。`CustomSolid` 的点在实心方块画完后每帧画一次。
     /// </summary>
     public override void DrawEffects(int i, int j, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch,
                                      ref Terraria.DataStructures.TileDrawInfo drawData)
@@ -89,7 +91,7 @@ public sealed class HexSlate : ModTile
         if (HexSlateEntity.FindAt(i, j)?.Pattern == null) return;
 
         Main.instance.TilesRenderer.AddSpecialPoint(i, j,
-            Terraria.GameContent.Drawing.TileDrawing.TileCounterType.CustomNonSolid);
+            Terraria.GameContent.Drawing.TileDrawing.TileCounterType.CustomSolid);
     }
 
     /// <summary>

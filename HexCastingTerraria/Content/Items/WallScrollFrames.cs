@@ -44,7 +44,7 @@ public abstract class WallScrollFrameItem : ModItem
     }
 }
 
-/// <summary>小挂板（2x2）。配小卷轴。</summary>
+/// <summary>小挂板（1x1，原版 blockSize 1）。配小卷轴。</summary>
 public sealed class WallScrollFrameSmall : WallScrollFrameItem
 {
     public override int TileType => ModContent.TileType<WallScrollSmall>();
@@ -59,7 +59,7 @@ public sealed class WallScrollFrameSmall : WallScrollFrameItem
     }
 }
 
-/// <summary>中挂板（3x3）。配中卷轴。</summary>
+/// <summary>中挂板（2x2，原版 blockSize 2）。配中卷轴。</summary>
 public sealed class WallScrollFrameMedium : WallScrollFrameItem
 {
     public override int TileType => ModContent.TileType<WallScrollMedium>();
@@ -74,7 +74,7 @@ public sealed class WallScrollFrameMedium : WallScrollFrameItem
     }
 }
 
-/// <summary>大挂板（4x4）。配大卷轴。</summary>
+/// <summary>大挂板（3x3，原版 blockSize 3）。配大卷轴。</summary>
 public sealed class WallScrollFrameLarge : WallScrollFrameItem
 {
     public override int TileType => ModContent.TileType<WallScrollLarge>();

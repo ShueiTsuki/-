@@ -400,7 +400,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
         => e.Target == EntityIota.EntityKind.WallScroll ? WallScrollEntity.ById(e.Index) : null;
 
     /// <summary>
-    /// 判定箱 = 挂板实际占的格子：小 / 中 / 大分别是 2×2、3×3、4×4 格（原版的判定箱是 blockSize 1 / 2 / 3 格见方）。
+    /// 判定箱 = 挂板实际占的格子：小 / 中 / 大分别是 1×1、2×2、3×3 格，和原版的 blockSize 1 / 2 / 3 一样。
     /// 图格实体在左上角。
     /// </summary>
     private static Rectangle ScrollBox(WallScrollEntity s)
@@ -469,6 +469,7 @@ public sealed class TerrariaCastingWorld : ICastingWorld
     ///   - 玩家：直接改 velocity（泰拉玩家速度由自身逻辑接管，通常下一帧就衰减）
     ///   - NPC：改 velocity 并置 `netUpdate = true`，否则联机下客户端看不到
     ///   - 弹幕：直接改 velocity
+    ///   - 掉落物：直接改 velocity，服务端再同步一次
     ///   - 物品框、壁挂卷轴：原版是 HangingEntity，推一下就掉下来（拆掉方块）
     /// </summary>
     public void ApplyMotion(EntityIota entity, double mx, double my)
@@ -518,6 +519,19 @@ public sealed class TerrariaCastingWorld : ICastingWorld
                 if (pr is not { active: true }) return;
                 pr.velocity += delta;
                 pr.netUpdate = true;
+                break;
+            }
+
+            case EntityIota.EntityKind.Item:
+            {
+                // 原版 OpAddMotion 对任何实体都是 Entity.push，地上的掉落物（ItemEntity）一样推得动。
+                // 这里曾经漏了这一类，推掉落物什么都不发生、媒质照扣（2026-10-02 客户端测试找到）
+                if (GroundItem(entity) is not { } it) return;
+                it.velocity += delta;
+                if (Main.netMode == Terraria.ID.NetmodeID.Server)
+                {
+                    NetMessage.SendData(Terraria.ID.MessageID.SyncItem, -1, -1, null, entity.Index);
+                }
                 break;
             }
 

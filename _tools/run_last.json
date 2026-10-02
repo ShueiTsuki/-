@@ -1,5 +1,5 @@
 {
-    "at":  "2026-10-02 14:29:24",
+    "at":  "2026-10-02 15:33:03",
     "compile":  {
                     "ok":  true,
                     "errors":  0,
@@ -26,9 +26,12 @@
                },
     "package":  {
                     "ok":  true,
-                    "bytes":  1082473
+                    "bytes":  1124826
                 },
     "server":  {
+                   "ok":  true
+               },
+    "client":  {
                    "ok":  true
                },
     "tml":  {
